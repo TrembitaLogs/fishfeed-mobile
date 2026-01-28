@@ -117,36 +117,27 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
           cp tag_message.txt release/
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Upload files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk,release/tag_message.txt"
+          target: "${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}"
+          strip_components: 1
 
       - name: Deploy to server
-        run: |
-          # Create release directory on server
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "mkdir -p ${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}"
-
-          # Upload APK
-          scp -i ~/.ssh/deploy_key \
-            release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}/
-
-          # Upload release notes
-          scp -i ~/.ssh/deploy_key \
-            release/tag_message.txt \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}/release-notes.txt
-
-          # Create/update latest symlink
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ${{ secrets.DEPLOY_PATH }} && rm -f latest && ln -s ${{ steps.tag_info.outputs.TAG_NAME }} latest"
-
-          # Create index.json with all releases
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'SCRIPT'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}
+            mv tag_message.txt release-notes.txt
             cd ${{ secrets.DEPLOY_PATH }}
+            rm -f latest && ln -s ${{ steps.tag_info.outputs.TAG_NAME }} latest
             echo '{"releases": [' > index.json.tmp
             first=true
             for dir in $(ls -d v* 2>/dev/null | sort -V -r); do
@@ -163,7 +154,6 @@ jobs:
             done
             echo ']}' >> index.json.tmp
             mv index.json.tmp index.json
-          SCRIPT
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
