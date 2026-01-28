@@ -37,7 +37,9 @@ Future<void> main() async {
       final packageInfo = await PackageInfo.fromPlatform();
 
       // Initialize analytics (PostHog)
-      await AnalyticsService.instance.initialize(appVersion: packageInfo.version);
+      await AnalyticsService.instance.initialize(
+        appVersion: packageInfo.version,
+      );
 
       // Initialize notification service
       await NotificationService.instance.initialize();
