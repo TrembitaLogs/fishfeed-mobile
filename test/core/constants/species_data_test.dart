@@ -9,7 +9,7 @@ void main() {
         const species = SpeciesData.defaultSpecies;
 
         expect(species.id, equals('default'));
-        expect(species.name, equals('Unknown Species'));
+        expect(species.name, equals('Fish'));
         // imageAsset is optional and not set for static species data
         expect(species.feedingFrequency, isNotNull);
         expect(species.foodType, isNotNull);

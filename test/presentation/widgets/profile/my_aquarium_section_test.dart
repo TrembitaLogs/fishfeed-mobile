@@ -407,7 +407,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show default species name
-        expect(find.text('Unknown Species'), findsOneWidget);
+        expect(find.text('Fish'), findsOneWidget);
       });
 
       testWidgets('handles large quantity numbers', (tester) async {

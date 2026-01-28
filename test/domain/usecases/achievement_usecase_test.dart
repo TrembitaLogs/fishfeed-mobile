@@ -60,13 +60,12 @@ void main() {
     DateTime? unlockedAt,
     double progress = 0.0,
   }) {
-    final data = type.data;
     return AchievementModel(
       id: 'achievement_${userId}_${type.name}',
       userId: userId,
       type: type.name,
-      title: data.titleUk,
-      description: data.descriptionUk,
+      title: type.name,
+      description: type.name,
       unlockedAt: unlockedAt,
       progress: progress,
     );

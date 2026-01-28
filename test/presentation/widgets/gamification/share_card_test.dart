@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/widgets/gamification/share_card.dart';
 
 void main() {
@@ -21,30 +22,48 @@ void main() {
     testWidgets('displays achievement title', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
 
-      expect(find.text(unlockedAchievement.title), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(
+          unlockedAchievement.achievementType!.localizedTitle(l10n),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('displays achievement description', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
 
-      expect(find.text(unlockedAchievement.description!), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(
+          unlockedAchievement.achievementType!.localizedDescription(l10n),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('displays XP reward', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -57,6 +76,8 @@ void main() {
     testWidgets('displays FishFeed branding', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -69,6 +90,8 @@ void main() {
     testWidgets('displays ACHIEVEMENT UNLOCKED label', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -81,6 +104,8 @@ void main() {
     testWidgets('displays formatted unlock date', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -94,6 +119,8 @@ void main() {
     testWidgets('has correct default dimensions', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -108,6 +135,8 @@ void main() {
     testWidgets('respects custom dimensions', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(
               child: ShareCard(
@@ -128,6 +157,8 @@ void main() {
     testWidgets('displays correct icon for achievement type', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -141,6 +172,8 @@ void main() {
     testWidgets('displays star icon for XP badge', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -153,6 +186,8 @@ void main() {
     testWidgets('displays water_drop icon for branding', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
@@ -173,13 +208,19 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
 
-        expect(find.text(achievement.title), findsOneWidget);
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        expect(
+          find.text(achievement.achievementType!.localizedTitle(l10n)),
+          findsOneWidget,
+        );
         expect(find.byIcon(Icons.celebration), findsOneWidget);
       });
 
@@ -193,13 +234,19 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
 
-        expect(find.text(achievement.title), findsOneWidget);
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        expect(
+          find.text(achievement.achievementType!.localizedTitle(l10n)),
+          findsOneWidget,
+        );
         expect(find.byIcon(Icons.emoji_events), findsOneWidget);
       });
 
@@ -213,13 +260,19 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
 
-        expect(find.text(achievement.title), findsOneWidget);
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        expect(
+          find.text(achievement.achievementType!.localizedTitle(l10n)),
+          findsOneWidget,
+        );
         expect(find.byIcon(Icons.stars), findsOneWidget);
       });
     });
@@ -234,6 +287,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: ShareCard(achievement: achievement)),
           ),
@@ -241,7 +296,11 @@ void main() {
       );
 
       // Should not crash, just not show the date
-      expect(find.text(achievement.title), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(achievement.achievementType!.localizedTitle(l10n)),
+        findsOneWidget,
+      );
     });
   });
 }

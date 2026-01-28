@@ -127,8 +127,10 @@ void main() {
           ),
         );
 
-        // Achievement.fromType uses Ukrainian titles (data.titleUk)
-        expect(find.text(achievements[0].title), findsOneWidget);
+        // Achievement title uses localized string from ARB
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        final type = achievements[0].achievementType!;
+        expect(find.text(type.localizedTitle(l10n)), findsOneWidget);
       });
 
       testWidgets('displays ??? for locked achievement', (tester) async {
@@ -285,8 +287,10 @@ void main() {
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
 
-        // Modal should show achievement title (uses Ukrainian from Achievement.fromType)
-        expect(find.text(achievements[0].title), findsWidgets);
+        // Modal should show localized achievement title
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        final type = achievements[0].achievementType!;
+        expect(find.text(type.localizedTitle(l10n)), findsWidgets);
       });
 
       testWidgets('modal shows share button for unlocked achievement', (
@@ -353,8 +357,10 @@ void main() {
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
 
-        // Achievement.fromType uses Ukrainian descriptions (data.descriptionUk)
-        expect(find.text(achievements[0].description!), findsOneWidget);
+        // Achievement description uses localized string from ARB
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        final type = achievements[0].achievementType!;
+        expect(find.text(type.localizedDescription(l10n)), findsOneWidget);
       });
 
       testWidgets('modal does not show share button for locked achievement', (
@@ -452,8 +458,10 @@ void main() {
           ),
         );
 
-        // Just verify it renders without errors (uses Ukrainian title)
-        expect(find.text(achievements[0].title), findsOneWidget);
+        // Verify it renders with localized title
+        final l10n = lookupAppLocalizations(const Locale('en'));
+        final type = achievements[0].achievementType!;
+        expect(find.text(type.localizedTitle(l10n)), findsOneWidget);
       });
 
       testWidgets('locked achievement shows muted icon', (tester) async {

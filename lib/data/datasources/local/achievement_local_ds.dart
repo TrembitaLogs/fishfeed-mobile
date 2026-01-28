@@ -121,8 +121,8 @@ class AchievementLocalDataSource {
       id: id,
       userId: userId,
       type: type.name,
-      title: data.titleUk,
-      description: data.descriptionUk,
+      title: type.name,
+      description: type.name,
       unlockedAt: DateTime.now(),
       iconUrl: data.iconAsset,
       progress: 1.0,
@@ -146,15 +146,14 @@ class AchievementLocalDataSource {
   ) async {
     final id = _createAchievementId(userId, type);
     var achievement = getAchievementById(id);
-    final data = type.data;
 
     if (achievement == null) {
       achievement = AchievementModel(
         id: id,
         userId: userId,
         type: type.name,
-        title: data.titleUk,
-        description: data.descriptionUk,
+        title: type.name,
+        description: type.name,
         progress: progress.clamp(0.0, 1.0),
       );
     } else {
@@ -176,13 +175,12 @@ class AchievementLocalDataSource {
     for (final type in AchievementType.values) {
       final id = _createAchievementId(userId, type);
       if (getAchievementById(id) == null) {
-        final data = type.data;
         final achievement = AchievementModel(
           id: id,
           userId: userId,
           type: type.name,
-          title: data.titleUk,
-          description: data.descriptionUk,
+          title: type.name,
+          description: type.name,
           progress: 0.0,
         );
         await saveAchievement(achievement);

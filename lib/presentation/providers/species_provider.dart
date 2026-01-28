@@ -162,9 +162,9 @@ final speciesByIdProvider = FutureProvider.family<Species?, String>((
     return species;
   }
 
-  // 3. Check hardcoded SpeciesData as fallback (but not if it returns default)
+  // 3. Check hardcoded SpeciesData as fallback
   final hardcoded = SpeciesData.findById(speciesId);
-  if (hardcoded.id != 'default') {
+  if (hardcoded.id == speciesId) {
     ref.read(_speciesCacheProvider.notifier).state = {
       ...memoryCache,
       speciesId: hardcoded,
@@ -218,9 +218,9 @@ final speciesNameByIdProvider = Provider.family<String, String>((
     return cachedModel.name;
   }
 
-  // Check hardcoded data (but not if it returns the default "Unknown Species")
+  // Check hardcoded data
   final hardcoded = SpeciesData.findById(speciesId);
-  if (hardcoded.id != 'default') {
+  if (hardcoded.id == speciesId) {
     return hardcoded.name;
   }
 

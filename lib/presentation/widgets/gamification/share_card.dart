@@ -177,7 +177,10 @@ class ShareCard extends StatelessWidget {
 
                       // Achievement title
                       Text(
-                        achievement.title,
+                        achievement.achievementType?.localizedTitle(
+                              AppLocalizations.of(context)!,
+                            ) ??
+                            achievement.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -190,9 +193,13 @@ class ShareCard extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       // Achievement description
-                      if (achievement.description != null)
+                      if (achievement.description != null ||
+                          achievement.achievementType != null)
                         Text(
-                          achievement.description!,
+                          achievement.achievementType?.localizedDescription(
+                                AppLocalizations.of(context)!,
+                              ) ??
+                              achievement.description!,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14,

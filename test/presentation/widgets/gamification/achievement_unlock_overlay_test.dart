@@ -58,7 +58,11 @@ void main() {
 
       await tester.pumpWidget(buildTestWidget(achievement: achievement));
 
-      expect(find.text(achievement.title), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(achievement.achievementType!.localizedTitle(l10n)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should display achievement description', (tester) async {
@@ -66,7 +70,11 @@ void main() {
 
       await tester.pumpWidget(buildTestWidget(achievement: achievement));
 
-      expect(find.text(achievement.description!), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(achievement.achievementType!.localizedDescription(l10n)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should display XP reward', (tester) async {
@@ -191,8 +199,11 @@ void main() {
         ),
       );
 
-      // Achievement.fromType uses Ukrainian titles (data.titleUk)
-      expect(find.text(achievements[0].title), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(
+        find.text(achievements[0].achievementType!.localizedTitle(l10n)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should show next achievement after dismiss', (tester) async {
@@ -214,8 +225,12 @@ void main() {
       // Allow localization and initial render
       await tester.pump();
 
-      // First achievement visible (uses Ukrainian title from Achievement.fromType)
-      expect(find.text(achievements[0].title), findsOneWidget);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      // First achievement visible
+      expect(
+        find.text(achievements[0].achievementType!.localizedTitle(l10n)),
+        findsOneWidget,
+      );
 
       // Tap to dismiss
       await tester.tap(find.byType(GestureDetector).first);
@@ -224,7 +239,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Second achievement should now be visible
-      expect(find.text(achievements[1].title), findsOneWidget);
+      expect(
+        find.text(achievements[1].achievementType!.localizedTitle(l10n)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should call onAllDismissed after last achievement', (

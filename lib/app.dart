@@ -83,10 +83,18 @@ class _FishFeedAppState extends ConsumerState<FishFeedApp> {
       supportedLocales: AppLocalizations.supportedLocales,
       locale: Locale(language),
 
-      // Global error listener wrapper
+      // Global error listener wrapper with text scale clamping
       builder: (context, child) {
-        return _GlobalAuthErrorListener(
-          child: child ?? const SizedBox.shrink(),
+        final mediaQuery = MediaQuery.of(context);
+        final clampedTextScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.8,
+          maxScaleFactor: 1.0,
+        );
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedTextScaler),
+          child: _GlobalAuthErrorListener(
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );

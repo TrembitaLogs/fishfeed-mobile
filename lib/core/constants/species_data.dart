@@ -8,7 +8,7 @@ abstract final class SpeciesData {
   /// Uses universal safe feeding parameters.
   static const Species defaultSpecies = Species(
     id: 'default',
-    name: 'Unknown Species',
+    name: 'Fish',
     feedingFrequency: 'daily',
     foodType: FoodType.flakes,
     portionHint: PortionHint.small,

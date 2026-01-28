@@ -240,7 +240,10 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
 
                     // Achievement title
                     Text(
-                      widget.achievement.title,
+                      widget.achievement.achievementType?.localizedTitle(
+                            AppLocalizations.of(context)!,
+                          ) ??
+                          widget.achievement.title,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
@@ -248,9 +251,14 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                     const SizedBox(height: 8),
 
                     // Achievement description
-                    if (widget.achievement.description != null)
+                    if (widget.achievement.description != null ||
+                        widget.achievement.achievementType != null)
                       Text(
-                        widget.achievement.description!,
+                        widget.achievement.achievementType
+                                ?.localizedDescription(
+                              AppLocalizations.of(context)!,
+                            ) ??
+                            widget.achievement.description!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
