@@ -101,6 +101,13 @@ jobs:
           echo "Set version to ${{ steps.tag_info.outputs.VERSION }}"
           grep "^version:" pubspec.yaml
 
+      - name: Configure Gradle for CI
+        run: |
+          # Override local gradle.properties which requests 8GB (too much for CI runner)
+          sed -i 's/-Xmx8G/-Xmx4G/g' android/gradle.properties
+          sed -i 's/-XX:MaxMetaspaceSize=4G/-XX:MaxMetaspaceSize=1G/g' android/gradle.properties
+          cat android/gradle.properties
+
       - name: Build signed APK
         run: flutter build apk --release
 
