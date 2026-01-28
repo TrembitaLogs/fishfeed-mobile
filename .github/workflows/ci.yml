@@ -99,6 +99,11 @@ jobs:
       - name: Create .env from example
         run: cp .env.example .env
 
+      - name: Configure Gradle for CI
+        run: |
+          sed -i 's/-Xmx8G/-Xmx4G/g' android/gradle.properties
+          sed -i 's/-XX:MaxMetaspaceSize=4G/-XX:MaxMetaspaceSize=1G/g' android/gradle.properties
+
       - name: Build APK (debug)
         run: flutter build apk --debug
 
