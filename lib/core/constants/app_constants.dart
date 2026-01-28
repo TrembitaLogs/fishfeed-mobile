@@ -3,9 +3,6 @@ abstract final class AppConstants {
   /// Application name
   static const String appName = 'FishFeed';
 
-  /// Application version
-  static const String appVersion = '1.0.0';
-
   /// Minimum supported iOS version
   static const String minIosVersion = '14.0';
 

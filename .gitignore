@@ -47,3 +47,4 @@ coverage/
 
 # Task Master
 .taskmaster/
+*.jks

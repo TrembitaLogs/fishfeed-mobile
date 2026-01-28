@@ -244,7 +244,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showLicensePage(
       context: context,
       applicationName: 'FishFeed',
-      applicationVersion: '1.0.0',
+      applicationVersion: _appVersion,
       applicationIcon: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Icon(

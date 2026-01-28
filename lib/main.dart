@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:fishfeed/app.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
@@ -32,8 +33,11 @@ Future<void> main() async {
       // Run data migration if needed (from 'default' aquariumId to UUID)
       await _runMigrationIfNeeded();
 
+      // Get app version from package info
+      final packageInfo = await PackageInfo.fromPlatform();
+
       // Initialize analytics (PostHog)
-      await AnalyticsService.instance.initialize(appVersion: '1.0.0');
+      await AnalyticsService.instance.initialize(appVersion: packageInfo.version);
 
       // Initialize notification service
       await NotificationService.instance.initialize();
