@@ -49,8 +49,12 @@ jobs:
       - name: Get tag name and commit message
         id: tag_info
         run: |
-          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "TAG_NAME=${TAG}" >> $GITHUB_OUTPUT
           echo "COMMIT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          # Extract version and build number from tag (v1.2.3 -> 1.2.3, v1.2.3+4 -> 1.2.3+4)
+          VERSION="${TAG#v}"
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           # Get the tag annotation or commit message
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
           TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/} | head -20)
@@ -92,6 +96,12 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           storeFile=upload-keystore.jks
           EOF
+
+      - name: Set version from tag
+        run: |
+          sed -i "s/^version: .*/version: ${{ steps.tag_info.outputs.VERSION }}/" pubspec.yaml
+          echo "Set version to ${{ steps.tag_info.outputs.VERSION }}"
+          grep "^version:" pubspec.yaml
 
       - name: Build signed APK
         run: flutter build apk --release
