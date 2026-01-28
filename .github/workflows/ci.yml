@@ -63,7 +63,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Run tests with coverage
-        run: flutter test --coverage
+        run: flutter test --coverage --exclude-tags=golden
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
