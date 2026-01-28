@@ -83,8 +83,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Create .env from example
-        run: cp .env.example .env
+      - name: Create production .env
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env
 
       - name: Decode keystore
         run: |
