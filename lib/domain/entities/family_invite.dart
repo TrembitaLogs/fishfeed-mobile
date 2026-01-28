@@ -98,14 +98,14 @@ class FamilyInvite extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        aquariumId,
-        inviteCode,
-        createdBy,
-        createdAt,
-        expiresAt,
-        status,
-        acceptedBy,
-        acceptedAt,
-      ];
+    id,
+    aquariumId,
+    inviteCode,
+    createdBy,
+    createdAt,
+    expiresAt,
+    status,
+    acceptedBy,
+    acceptedAt,
+  ];
 }

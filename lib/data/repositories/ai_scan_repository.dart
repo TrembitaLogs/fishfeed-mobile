@@ -25,9 +25,8 @@ abstract interface class AiScanRepository {
 ///
 /// Handles AI scan operations with proper error mapping.
 class AiScanRepositoryImpl implements AiScanRepository {
-  AiScanRepositoryImpl({
-    required AiScanRemoteDataSource remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource;
+  AiScanRepositoryImpl({required AiScanRemoteDataSource remoteDataSource})
+    : _remoteDataSource = remoteDataSource;
 
   final AiScanRemoteDataSource _remoteDataSource;
 
@@ -43,9 +42,7 @@ class AiScanRepositoryImpl implements AiScanRepository {
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
     } catch (e) {
-      return const Left(UnexpectedFailure(
-        message: 'Failed to analyze image',
-      ));
+      return const Left(UnexpectedFailure(message: 'Failed to analyze image'));
     }
   }
 
@@ -53,26 +50,26 @@ class AiScanRepositoryImpl implements AiScanRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(
-          message: 'Check your connection',
-        ),
+        message: 'Check your connection',
+      ),
       ServerException() => const ServerFailure(
-          message: 'Server error. Try again later',
-        ),
+        message: 'Server error. Try again later',
+      ),
       UnauthorizedException() => const AuthenticationFailure(
-          message: 'Please log in to use AI scan',
-        ),
+        message: 'Please log in to use AI scan',
+      ),
       ValidationException(:final message) => ValidationFailure(
-          message: message,
-        ),
+        message: message,
+      ),
       ForbiddenException() => const AuthenticationFailure(
-          message: 'AI scan not available for your account',
-        ),
+        message: 'AI scan not available for your account',
+      ),
       NotFoundException() => const ServerFailure(
-          message: 'AI scan service unavailable',
-        ),
+        message: 'AI scan service unavailable',
+      ),
       UnknownApiException(:final message) => UnexpectedFailure(
-          message: message ?? 'An unexpected error occurred',
-        ),
+        message: message ?? 'An unexpected error occurred',
+      ),
     };
   }
 }

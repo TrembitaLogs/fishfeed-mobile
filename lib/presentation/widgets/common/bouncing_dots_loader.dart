@@ -41,11 +41,7 @@ class BouncingDotsLoader extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({
-    required this.color,
-    required this.size,
-    required this.delay,
-  });
+  const _Dot({required this.color, required this.size, required this.delay});
 
   final Color color;
   final double size;
@@ -54,13 +50,10 @@ class _Dot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-    )
+          width: size,
+          height: size,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        )
         .animate(
           onPlay: (controller) => controller.repeat(reverse: true),
           delay: delay,
@@ -71,10 +64,7 @@ class _Dot extends StatelessWidget {
           duration: 400.ms,
           curve: Curves.easeInOut,
         )
-        .fadeIn(
-          begin: 0.3,
-          duration: 400.ms,
-        );
+        .fadeIn(begin: 0.3, duration: 400.ms);
   }
 }
 
@@ -112,10 +102,7 @@ class EnhancedLoadingIndicator extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (useDots)
-            BouncingDotsLoader(
-              color: indicatorColor,
-              size: size / 3,
-            )
+            BouncingDotsLoader(color: indicatorColor, size: size / 3)
           else
             SizedBox(
               height: size,
@@ -143,10 +130,7 @@ class EnhancedLoadingIndicator extends StatelessWidget {
 
 /// A pulsing logo animation for splash screens.
 class PulsingLogo extends StatelessWidget {
-  const PulsingLogo({
-    super.key,
-    required this.child,
-  });
+  const PulsingLogo({super.key, required this.child});
 
   /// The logo widget to animate.
   final Widget child;
@@ -154,18 +138,13 @@ class PulsingLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return child
-        .animate(
-          onPlay: (controller) => controller.repeat(reverse: true),
-        )
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
         .scaleXY(
           begin: 0.95,
           end: 1.05,
           duration: 1200.ms,
           curve: Curves.easeInOut,
         )
-        .fadeIn(
-          begin: 0.7,
-          duration: 1200.ms,
-        );
+        .fadeIn(begin: 0.7, duration: 1200.ms);
   }
 }

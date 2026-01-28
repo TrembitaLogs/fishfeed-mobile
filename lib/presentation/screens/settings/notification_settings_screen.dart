@@ -19,9 +19,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-      ),
+      appBar: AppBar(title: const Text('Notifications')),
       body: ListView(
         children: [
           // Master toggle section
@@ -241,7 +239,9 @@ class _NotificationToggleTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: enabled
               ? theme.colorScheme.surfaceContainerHighest
-              : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -313,7 +313,9 @@ class _QuietHoursSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: enabled
                   ? theme.colorScheme.surfaceContainerHighest
-                  : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  : theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -409,10 +411,7 @@ class _TimePickerButton extends StatelessWidget {
 
   Future<void> _showTimePicker(BuildContext context) async {
     final theme = Theme.of(context);
-    final initialTime = TimeOfDay(
-      hour: minutes ~/ 60,
-      minute: minutes % 60,
-    );
+    final initialTime = TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
 
     final selectedTime = await showTimePicker(
       context: context,

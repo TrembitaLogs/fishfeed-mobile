@@ -8,10 +8,12 @@ import 'package:fishfeed/services/purchase/purchase_service.dart';
 void main() {
   setUpAll(() async {
     // Initialize dotenv with test values (empty string means no actual .env file)
-    dotenv.testLoad(fileInput: '''
+    dotenv.testLoad(
+      fileInput: '''
 REVENUECAT_API_KEY_IOS=
 REVENUECAT_API_KEY_ANDROID=
-''');
+''',
+    );
   });
 
   group('PurchaseService', () {
@@ -42,10 +44,7 @@ REVENUECAT_API_KEY_ANDROID=
         final service = PurchaseService.instance;
 
         // This should not throw even without API key
-        await expectLater(
-          service.initialize(),
-          completes,
-        );
+        await expectLater(service.initialize(), completes);
 
         // Should not be initialized because API key is missing
         expect(service.isInitialized, isFalse);
@@ -68,10 +67,7 @@ REVENUECAT_API_KEY_ANDROID=
         final service = PurchaseService.instance;
 
         // Should not throw even if not properly initialized
-        await expectLater(
-          service.logIn('test_user_id'),
-          completes,
-        );
+        await expectLater(service.logIn('test_user_id'), completes);
       });
     });
 
@@ -80,75 +76,80 @@ REVENUECAT_API_KEY_ANDROID=
         final service = PurchaseService.instance;
 
         // Should not throw even if not properly initialized
-        await expectLater(
-          service.logOut(),
-          completes,
-        );
+        await expectLater(service.logOut(), completes);
       });
     });
 
     group('getOfferings', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        final result = await service.getOfferings();
+          final result = await service.getOfferings();
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
-          (_) => fail('Expected Left with failure'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
+            (_) => fail('Expected Left with failure'),
+          );
+        },
+      );
     });
 
     group('purchasePackage', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        // We can't create a real Package without the SDK, so we test the
-        // initialization check by passing null (which would throw if it
-        // got past the initialization check). Instead, we verify the
-        // failure type when not initialized.
-        // This test verifies the guard clause works.
-        expect(service.isInitialized, isFalse);
+          // We can't create a real Package without the SDK, so we test the
+          // initialization check by passing null (which would throw if it
+          // got past the initialization check). Instead, we verify the
+          // failure type when not initialized.
+          // This test verifies the guard clause works.
+          expect(service.isInitialized, isFalse);
 
-        // The method signature requires a Package, so we verify via
-        // getOfferings which has the same guard clause
-        final result = await service.getOfferings();
-        expect(result.isLeft(), isTrue);
-      });
+          // The method signature requires a Package, so we verify via
+          // getOfferings which has the same guard clause
+          final result = await service.getOfferings();
+          expect(result.isLeft(), isTrue);
+        },
+      );
     });
 
     group('restorePurchases', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        final result = await service.restorePurchases();
+          final result = await service.restorePurchases();
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
-          (_) => fail('Expected Left with failure'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
+            (_) => fail('Expected Left with failure'),
+          );
+        },
+      );
     });
 
     group('getCustomerInfo', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        final result = await service.getCustomerInfo();
+          final result = await service.getCustomerInfo();
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
-          (_) => fail('Expected Left with failure'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
+            (_) => fail('Expected Left with failure'),
+          );
+        },
+      );
     });
 
     group('isPremium', () {
@@ -181,33 +182,37 @@ REVENUECAT_API_KEY_ANDROID=
     });
 
     group('getRemoveAdsPackage', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        final result = await service.getRemoveAdsPackage();
+          final result = await service.getRemoveAdsPackage();
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
-          (_) => fail('Expected Left with failure'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
+            (_) => fail('Expected Left with failure'),
+          );
+        },
+      );
     });
 
     group('purchaseRemoveAds', () {
-      test('should return PurchaseNotInitializedFailure when not initialized',
-          () async {
-        final service = PurchaseService.instance;
+      test(
+        'should return PurchaseNotInitializedFailure when not initialized',
+        () async {
+          final service = PurchaseService.instance;
 
-        final result = await service.purchaseRemoveAds();
+          final result = await service.purchaseRemoveAds();
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
-          (_) => fail('Expected Left with failure'),
-        );
-      });
+          expect(result.isLeft(), isTrue);
+          result.fold(
+            (failure) => expect(failure, isA<PurchaseNotInitializedFailure>()),
+            (_) => fail('Expected Left with failure'),
+          );
+        },
+      );
     });
   });
 
@@ -219,24 +224,24 @@ REVENUECAT_API_KEY_ANDROID=
   });
 
   group('syncSubscriptionStatus', () {
-    test('should return free status when not initialized and no cache', () async {
-      final service = PurchaseService.instance;
+    test(
+      'should return free status when not initialized and no cache',
+      () async {
+        final service = PurchaseService.instance;
 
-      // Without initialization and no cache, should return free status
-      final status = await service.syncSubscriptionStatus();
+        // Without initialization and no cache, should return free status
+        final status = await service.syncSubscriptionStatus();
 
-      expect(status.tier, SubscriptionTier.free);
-      expect(status.isPremium, isFalse);
-    });
+        expect(status.tier, SubscriptionTier.free);
+        expect(status.isPremium, isFalse);
+      },
+    );
 
     test('should complete without error when Dio not configured', () async {
       final service = PurchaseService.instance;
 
       // Should not throw when Dio is not configured
-      await expectLater(
-        service.syncSubscriptionStatus(),
-        completes,
-      );
+      await expectLater(service.syncSubscriptionStatus(), completes);
     });
 
     test('should respect rate limiting', () async {
@@ -262,10 +267,7 @@ REVENUECAT_API_KEY_ANDROID=
       await service.syncSubscriptionStatus(force: true);
 
       // Forced sync should still execute (won't be rate limited)
-      await expectLater(
-        service.syncSubscriptionStatus(force: true),
-        completes,
-      );
+      await expectLater(service.syncSubscriptionStatus(force: true), completes);
     });
   });
 
@@ -273,10 +275,7 @@ REVENUECAT_API_KEY_ANDROID=
     test('should complete without error', () async {
       final service = PurchaseService.instance;
 
-      await expectLater(
-        service.clearCachedSubscriptionStatus(),
-        completes,
-      );
+      await expectLater(service.clearCachedSubscriptionStatus(), completes);
     });
   });
 
@@ -284,7 +283,10 @@ REVENUECAT_API_KEY_ANDROID=
     test('should provide a broadcast stream', () {
       final service = PurchaseService.instance;
 
-      expect(service.subscriptionStatusStream, isA<Stream<SubscriptionStatus>>());
+      expect(
+        service.subscriptionStatusStream,
+        isA<Stream<SubscriptionStatus>>(),
+      );
       expect(service.subscriptionStatusStream.isBroadcast, isTrue);
     });
   });

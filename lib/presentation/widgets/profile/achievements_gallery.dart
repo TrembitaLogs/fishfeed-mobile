@@ -39,11 +39,7 @@ class AchievementsGallery extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Icon(
-              Icons.error_outline,
-              color: theme.colorScheme.error,
-              size: 48,
-            ),
+            Icon(Icons.error_outline, color: theme.colorScheme.error, size: 48),
             const SizedBox(height: 8),
             Text(
               achievementsState.error ?? l10n.achievementFailedToLoad,
@@ -52,7 +48,8 @@ class AchievementsGallery extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () => ref.read(achievementsProvider.notifier).refresh(),
+              onPressed: () =>
+                  ref.read(achievementsProvider.notifier).refresh(),
               child: Text(l10n.retry),
             ),
           ],
@@ -142,10 +139,7 @@ class AchievementsGallery extends ConsumerWidget {
 /// - Unlocked: Colored icon with glow, title, and unlock date
 /// - Locked: Greyscale icon, "???" text, and lock overlay
 class _AchievementTile extends StatelessWidget {
-  const _AchievementTile({
-    required this.achievement,
-    required this.onTap,
-  });
+  const _AchievementTile({required this.achievement, required this.onTap});
 
   final Achievement achievement;
   final VoidCallback onTap;
@@ -164,7 +158,9 @@ class _AchievementTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isUnlocked
               ? color.withValues(alpha: 0.1)
-              : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isUnlocked
@@ -204,7 +200,9 @@ class _AchievementTile extends StatelessWidget {
                       size: 24,
                       color: isUnlocked
                           ? color
-                          : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                          : theme.colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.4,
+                            ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -216,7 +214,9 @@ class _AchievementTile extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: isUnlocked
                           ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          : theme.colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.5,
+                            ),
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
@@ -227,7 +227,9 @@ class _AchievementTile extends StatelessWidget {
                   if (isUnlocked && achievement.unlockedAt != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat.MMMd(Localizations.localeOf(context).languageCode).format(achievement.unlockedAt!),
+                      DateFormat.MMMd(
+                        Localizations.localeOf(context).languageCode,
+                      ).format(achievement.unlockedAt!),
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontSize: 9,
                         color: theme.colorScheme.onSurfaceVariant,
@@ -252,7 +254,9 @@ class _AchievementTile extends StatelessWidget {
                   child: Icon(
                     Icons.lock,
                     size: 12,
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
               ),
@@ -277,7 +281,8 @@ class _AchievementDetailModal extends StatefulWidget {
   final Achievement achievement;
 
   @override
-  State<_AchievementDetailModal> createState() => _AchievementDetailModalState();
+  State<_AchievementDetailModal> createState() =>
+      _AchievementDetailModalState();
 }
 
 class _AchievementDetailModalState extends State<_AchievementDetailModal> {
@@ -308,7 +313,9 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.3,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -323,13 +330,12 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
                     ? LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          color.withValues(alpha: 0.8),
-                          color,
-                        ],
+                        colors: [color.withValues(alpha: 0.8), color],
                       )
                     : null,
-                color: isUnlocked ? null : theme.colorScheme.surfaceContainerHighest,
+                color: isUnlocked
+                    ? null
+                    : theme.colorScheme.surfaceContainerHighest,
                 boxShadow: isUnlocked
                     ? [
                         BoxShadow(
@@ -363,7 +369,8 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
 
             // Description
             Text(
-              achievement.description ?? (isUnlocked ? '' : l10n.achievementCompleteToUnlock),
+              achievement.description ??
+                  (isUnlocked ? '' : l10n.achievementCompleteToUnlock),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -378,7 +385,9 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
                 label: DateFormat.yMMMd(locale).format(achievement.unlockedAt!),
                 color: color,
               ),
-            ] else if (!isUnlocked && targetValue != null && achievement.progress > 0) ...[
+            ] else if (!isUnlocked &&
+                targetValue != null &&
+                achievement.progress > 0) ...[
               // Progress bar for progress-based achievements
               Column(
                 children: [
@@ -405,7 +414,8 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: achievement.progress,
-                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                       minHeight: 8,
                     ),
@@ -442,7 +452,9 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
                           ),
                         )
                       : const Icon(Icons.share),
-                  label: Text(_isSharing ? l10n.sharingButton : l10n.shareButton),
+                  label: Text(
+                    _isSharing ? l10n.sharingButton : l10n.shareButton,
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: color,
                     foregroundColor: Colors.white,
@@ -497,25 +509,16 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: color,
-          ),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
           Text(
             label,

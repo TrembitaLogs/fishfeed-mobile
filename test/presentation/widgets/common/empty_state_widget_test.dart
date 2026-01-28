@@ -18,9 +18,7 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
@@ -42,8 +40,9 @@ void main() {
       expect(find.text('Add some items to get started'), findsOneWidget);
     });
 
-    testWidgets('shows action button when actionLabel and onAction provided',
-        (tester) async {
+    testWidgets('shows action button when actionLabel and onAction provided', (
+      tester,
+    ) async {
       var actionPressed = false;
 
       await tester.pumpWidget(
@@ -65,8 +64,9 @@ void main() {
       expect(actionPressed, isTrue);
     });
 
-    testWidgets('does not show action button when actionLabel is null',
-        (tester) async {
+    testWidgets('does not show action button when actionLabel is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           EmptyStateWidget(
@@ -82,8 +82,9 @@ void main() {
       expect(find.text('Add Item'), findsNothing);
     });
 
-    testWidgets('does not show action button when onAction is null',
-        (tester) async {
+    testWidgets('does not show action button when onAction is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           const EmptyStateWidget(
@@ -115,11 +116,14 @@ void main() {
       expect(find.byKey(const Key('custom_illustration')), findsOneWidget);
       // The default icon should not be in a circular container
       expect(
-          find.byWidgetPredicate((widget) =>
+        find.byWidgetPredicate(
+          (widget) =>
               widget is Container &&
               widget.decoration is BoxDecoration &&
-              (widget.decoration as BoxDecoration).shape == BoxShape.circle),
-          findsNothing);
+              (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets('renders correctly with theme colors', (tester) async {
@@ -140,8 +144,9 @@ void main() {
   });
 
   group('ScrollableEmptyState', () {
-    testWidgets('renders EmptyStateWidget inside CustomScrollView',
-        (tester) async {
+    testWidgets('renders EmptyStateWidget inside CustomScrollView', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           const ScrollableEmptyState(
@@ -158,8 +163,9 @@ void main() {
       expect(find.text('No items'), findsOneWidget);
     });
 
-    testWidgets('supports pull to refresh with RefreshIndicator',
-        (tester) async {
+    testWidgets('supports pull to refresh with RefreshIndicator', (
+      tester,
+    ) async {
       var refreshed = false;
 
       await tester.pumpWidget(

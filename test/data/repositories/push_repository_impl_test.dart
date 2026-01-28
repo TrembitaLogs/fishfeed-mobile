@@ -59,30 +59,33 @@ void main() {
   });
 
   group('registerToken', () {
-    test('should register token on server and store locally on success', () async {
-      when(
-        () => mockRemoteDataSource.registerToken(
-          token: any(named: 'token'),
-          platform: any(named: 'platform'),
-        ),
-      ).thenAnswer((_) async {});
+    test(
+      'should register token on server and store locally on success',
+      () async {
+        when(
+          () => mockRemoteDataSource.registerToken(
+            token: any(named: 'token'),
+            platform: any(named: 'platform'),
+          ),
+        ).thenAnswer((_) async {});
 
-      final result = await repository.registerToken(
-        token: 'test-fcm-token',
-        platform: 'android',
-      );
-
-      expect(result, const Right<Failure, Unit>(unit));
-      expect(HiveBoxes.getPushToken(), 'test-fcm-token');
-      expect(HiveBoxes.getPushTokenPlatform(), 'android');
-
-      verify(
-        () => mockRemoteDataSource.registerToken(
+        final result = await repository.registerToken(
           token: 'test-fcm-token',
           platform: 'android',
-        ),
-      ).called(1);
-    });
+        );
+
+        expect(result, const Right<Failure, Unit>(unit));
+        expect(HiveBoxes.getPushToken(), 'test-fcm-token');
+        expect(HiveBoxes.getPushTokenPlatform(), 'android');
+
+        verify(
+          () => mockRemoteDataSource.registerToken(
+            token: 'test-fcm-token',
+            platform: 'android',
+          ),
+        ).called(1);
+      },
+    );
 
     test('should skip registration if token unchanged', () async {
       // Pre-store the token
@@ -316,8 +319,9 @@ void main() {
       // Pre-store a token
       await HiveBoxes.setPushToken('stored-token', 'android');
 
-      when(() => mockRemoteDataSource.unregisterToken())
-          .thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.unregisterToken(),
+      ).thenAnswer((_) async {});
 
       final result = await repository.unregisterToken();
 
@@ -338,8 +342,9 @@ void main() {
     test('should clear local token even if server fails', () async {
       await HiveBoxes.setPushToken('stored-token', 'android');
 
-      when(() => mockRemoteDataSource.unregisterToken())
-          .thenThrow(const ServerException());
+      when(
+        () => mockRemoteDataSource.unregisterToken(),
+      ).thenThrow(const ServerException());
 
       final result = await repository.unregisterToken();
 

@@ -17,7 +17,7 @@ import 'package:fishfeed/domain/entities/achievement.dart';
 /// ```
 class AchievementLocalDataSource {
   AchievementLocalDataSource({Box<dynamic>? achievementsBox})
-      : _achievementsBox = achievementsBox;
+    : _achievementsBox = achievementsBox;
 
   final Box<dynamic>? _achievementsBox;
 
@@ -61,9 +61,7 @@ class AchievementLocalDataSource {
   /// [userId] - The ID of the user.
   /// Returns only achievements that have been unlocked.
   List<AchievementModel> getUnlockedAchievements(String userId) {
-    return getAchievements(userId)
-        .where((a) => a.unlockedAt != null)
-        .toList();
+    return getAchievements(userId).where((a) => a.unlockedAt != null).toList();
   }
 
   /// Gets an achievement by user ID and type.

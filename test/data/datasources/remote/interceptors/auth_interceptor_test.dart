@@ -33,8 +33,9 @@ void main() {
     group('onRequest', () {
       test('should add Authorization header when token exists', () async {
         const accessToken = 'test-access-token';
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => accessToken);
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => accessToken);
 
         final options = RequestOptions(path: '/api/users');
 
@@ -45,8 +46,9 @@ void main() {
       });
 
       test('should not add Authorization header when token is null', () async {
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => null);
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => null);
 
         final options = RequestOptions(path: '/api/users');
 
@@ -57,8 +59,9 @@ void main() {
       });
 
       test('should not add Authorization header when token is empty', () async {
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => '');
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => '');
 
         final options = RequestOptions(path: '/api/users');
 
@@ -110,8 +113,9 @@ void main() {
 
       test('should add auth for non-public endpoints', () async {
         const accessToken = 'valid-token';
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => accessToken);
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => accessToken);
 
         final options = RequestOptions(path: '/api/aquariums');
 
@@ -123,8 +127,9 @@ void main() {
 
       test('should handle path with query parameters', () async {
         const accessToken = 'valid-token';
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => accessToken);
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => accessToken);
 
         final options = RequestOptions(path: '/api/users?page=1&limit=10');
 

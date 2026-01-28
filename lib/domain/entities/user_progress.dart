@@ -109,14 +109,14 @@ class UserProgress extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        totalXp,
-        streakBonusesEarned,
-        lastXpAwardedAt,
-        lastLevelUpAt,
-        synced,
-        updatedAt,
-        serverUpdatedAt,
-      ];
+    id,
+    userId,
+    totalXp,
+    streakBonusesEarned,
+    lastXpAwardedAt,
+    lastLevelUpAt,
+    synced,
+    updatedAt,
+    serverUpdatedAt,
+  ];
 }

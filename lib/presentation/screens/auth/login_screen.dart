@@ -35,9 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   );
 
   /// Password validation: min 8 chars, 1 number, 1 uppercase.
-  static final _passwordRegex = RegExp(
-    r'^(?=.*[A-Z])(?=.*\d).{8,}$',
-  );
+  static final _passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d).{8,}$');
 
   @override
   void dispose() {
@@ -93,11 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildHeader(ThemeData theme, AppLocalizations l10n) {
     return Column(
       children: [
-        Icon(
-          Icons.pets,
-          size: 64,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(Icons.pets, size: 64, color: theme.colorScheme.primary),
         const SizedBox(height: 16),
         Text(
           l10n.welcomeMessage,
@@ -137,7 +131,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       prefixIcon: const Icon(Icons.lock_outlined),
       suffixIcon: IconButton(
         icon: Icon(
-          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          _obscurePassword
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
         ),
         onPressed: () {
           setState(() {
@@ -209,7 +205,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authNotifierProvider.notifier).login(
+      ref
+          .read(authNotifierProvider.notifier)
+          .login(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );

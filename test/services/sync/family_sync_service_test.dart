@@ -50,12 +50,15 @@ void main() {
     receivedFeedingEvents = [];
     shownToasts = [];
 
-    when(() => mockConnectivity.onConnectivityChanged)
-        .thenAnswer((_) => connectivityController.stream);
-    when(() => mockConnectivity.checkConnectivity())
-        .thenAnswer((_) async => [ConnectivityResult.wifi]);
-    when(() => mockNotificationService.cancelScheduledNotification(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockConnectivity.onConnectivityChanged,
+    ).thenAnswer((_) => connectivityController.stream);
+    when(
+      () => mockConnectivity.checkConnectivity(),
+    ).thenAnswer((_) async => [ConnectivityResult.wifi]);
+    when(
+      () => mockNotificationService.cancelScheduledNotification(any()),
+    ).thenAnswer((_) async {});
   });
 
   tearDown(() {
@@ -149,19 +152,21 @@ void main() {
       service.dispose();
     });
 
-    test('should switch aquarium when starting polling for different aquarium',
-        () async {
-      final service = createService();
-      service.initialize();
+    test(
+      'should switch aquarium when starting polling for different aquarium',
+      () async {
+        final service = createService();
+        service.initialize();
 
-      service.startPolling(aquariumId: 'aq1');
-      expect(service.activeAquariumId, 'aq1');
+        service.startPolling(aquariumId: 'aq1');
+        expect(service.activeAquariumId, 'aq1');
 
-      service.startPolling(aquariumId: 'aq2');
-      expect(service.activeAquariumId, 'aq2');
+        service.startPolling(aquariumId: 'aq2');
+        expect(service.activeAquariumId, 'aq2');
 
-      service.dispose();
-    });
+        service.dispose();
+      },
+    );
   });
 
   group('Event processing', () {
@@ -229,8 +234,9 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
-      verify(() => mockNotificationService.cancelScheduledNotification(any()))
-          .called(greaterThan(0));
+      verify(
+        () => mockNotificationService.cancelScheduledNotification(any()),
+      ).called(greaterThan(0));
 
       service.dispose();
     });
@@ -276,8 +282,9 @@ void main() {
 
     test('should resume polling when coming back online', () async {
       // Start offline
-      when(() => mockConnectivity.checkConnectivity())
-          .thenAnswer((_) async => [ConnectivityResult.none]);
+      when(
+        () => mockConnectivity.checkConnectivity(),
+      ).thenAnswer((_) async => [ConnectivityResult.none]);
 
       final service = createService();
       service.initialize();
@@ -345,7 +352,9 @@ void main() {
         config: const FamilySyncConfig(
           pollingInterval: Duration(milliseconds: 50),
           maxRetries: 2,
-          retryDelay: Duration(seconds: 10), // Long delay so we can check paused state
+          retryDelay: Duration(
+            seconds: 10,
+          ), // Long delay so we can check paused state
         ),
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
@@ -417,11 +426,9 @@ void main() {
         feedingTime: DateTime(2025, 6, 15, 10, 0),
       );
 
-      final hasConflict = service.hasConflict(
-        newEvent,
-        [existingEvent],
-        conflictWindow: const Duration(minutes: 5),
-      );
+      final hasConflict = service.hasConflict(newEvent, [
+        existingEvent,
+      ], conflictWindow: const Duration(minutes: 5));
 
       expect(hasConflict, isTrue);
 
@@ -438,11 +445,9 @@ void main() {
         feedingTime: DateTime(2025, 6, 15, 10, 0),
       );
 
-      final hasConflict = service.hasConflict(
-        newEvent,
-        [existingEvent],
-        conflictWindow: const Duration(minutes: 5),
-      );
+      final hasConflict = service.hasConflict(newEvent, [
+        existingEvent,
+      ], conflictWindow: const Duration(minutes: 5));
 
       expect(hasConflict, isFalse);
 

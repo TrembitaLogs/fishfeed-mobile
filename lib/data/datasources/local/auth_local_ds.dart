@@ -30,11 +30,9 @@ const String _currentUserKey = 'current_user';
 /// );
 /// ```
 class AuthLocalDataSource {
-  AuthLocalDataSource({
-    FlutterSecureStorage? storage,
-    Box<dynamic>? usersBox,
-  })  : _storage = storage ?? _createSecureStorage(),
-        _usersBox = usersBox;
+  AuthLocalDataSource({FlutterSecureStorage? storage, Box<dynamic>? usersBox})
+    : _storage = storage ?? _createSecureStorage(),
+      _usersBox = usersBox;
 
   final FlutterSecureStorage _storage;
   final Box<dynamic>? _usersBox;
@@ -158,9 +156,6 @@ class AuthLocalDataSource {
   ///
   /// Convenience method that clears both tokens and user data.
   Future<void> clearAll() async {
-    await Future.wait([
-      clearTokens(),
-      clearUserData(),
-    ]);
+    await Future.wait([clearTokens(), clearUserData()]);
   }
 }

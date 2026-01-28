@@ -4,12 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 export 'home_tab_provider.dart';
 
 /// Time period of the day for greeting messages.
-enum TimePeriod {
-  morning,
-  afternoon,
-  evening,
-  night,
-}
+enum TimePeriod { morning, afternoon, evening, night }
 
 /// Greeting data including message and time period.
 class GreetingData {
@@ -83,7 +78,10 @@ final greetingMessageProvider = Provider<String>((ref) {
 ///
 /// Returns a personalized greeting like "Good morning, John!"
 /// Falls back to just the greeting if user name is not available.
-final personalizedGreetingProvider = Provider.family<String, String?>((ref, userName) {
+final personalizedGreetingProvider = Provider.family<String, String?>((
+  ref,
+  userName,
+) {
   final greeting = ref.watch(greetingProvider).greeting;
 
   if (userName != null && userName.isNotEmpty) {

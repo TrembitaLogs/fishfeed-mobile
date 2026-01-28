@@ -17,9 +17,7 @@ void main() {
   Widget buildTestWidget(Widget child, {bool darkMode = false}) {
     return MaterialApp(
       theme: darkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
@@ -28,10 +26,7 @@ void main() {
       testWidgets('renders correctly with Google text', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(
-            OAuthButton(
-              provider: OAuthProvider.google,
-              onPressed: () {},
-            ),
+            OAuthButton(provider: OAuthProvider.google, onPressed: () {}),
           ),
         );
 
@@ -59,10 +54,7 @@ void main() {
 
         await tester.pumpWidget(
           buildTestWidget(
-            const OAuthButton(
-              provider: OAuthProvider.google,
-              onPressed: null,
-            ),
+            const OAuthButton(provider: OAuthProvider.google, onPressed: null),
           ),
         );
 
@@ -70,8 +62,9 @@ void main() {
         expect(pressed, isFalse);
       });
 
-      testWidgets('shows loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('shows loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             OAuthButton(
@@ -106,10 +99,7 @@ void main() {
       testWidgets('has white background in light mode', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(
-            OAuthButton(
-              provider: OAuthProvider.google,
-              onPressed: () {},
-            ),
+            OAuthButton(provider: OAuthProvider.google, onPressed: () {}),
             darkMode: false,
           ),
         );
@@ -124,10 +114,7 @@ void main() {
       testWidgets('renders correctly with Apple text', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(
-            OAuthButton(
-              provider: OAuthProvider.apple,
-              onPressed: () {},
-            ),
+            OAuthButton(provider: OAuthProvider.apple, onPressed: () {}),
           ),
         );
 
@@ -151,8 +138,9 @@ void main() {
         expect(pressed, isTrue);
       });
 
-      testWidgets('shows loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('shows loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             OAuthButton(
@@ -167,14 +155,12 @@ void main() {
         expect(find.text('Sign in with Apple'), findsNothing);
       });
 
-      testWidgets('has black background in light mode (Apple HIG)',
-          (tester) async {
+      testWidgets('has black background in light mode (Apple HIG)', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
-            OAuthButton(
-              provider: OAuthProvider.apple,
-              onPressed: () {},
-            ),
+            OAuthButton(provider: OAuthProvider.apple, onPressed: () {}),
             darkMode: false,
           ),
         );
@@ -184,14 +170,12 @@ void main() {
         expect(decoration.color, equals(Colors.black));
       });
 
-      testWidgets('has white background in dark mode (Apple HIG)',
-          (tester) async {
+      testWidgets('has white background in dark mode (Apple HIG)', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
-            OAuthButton(
-              provider: OAuthProvider.apple,
-              onPressed: () {},
-            ),
+            OAuthButton(provider: OAuthProvider.apple, onPressed: () {}),
             darkMode: true,
           ),
         );
@@ -207,18 +191,16 @@ void main() {
     testWidgets('renders Google button', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          OAuthButtonsRow(
-            onGooglePressed: () {},
-            showAppleButton: false,
-          ),
+          OAuthButtonsRow(onGooglePressed: () {}, showAppleButton: false),
         ),
       );
 
       expect(find.text('Continue with Google'), findsOneWidget);
     });
 
-    testWidgets('shows Apple button when showAppleButton is true',
-        (tester) async {
+    testWidgets('shows Apple button when showAppleButton is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           OAuthButtonsRow(
@@ -233,8 +215,9 @@ void main() {
       expect(find.text('Sign in with Apple'), findsOneWidget);
     });
 
-    testWidgets('hides Apple button when showAppleButton is false',
-        (tester) async {
+    testWidgets('hides Apple button when showAppleButton is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           OAuthButtonsRow(
@@ -249,8 +232,9 @@ void main() {
       expect(find.text('Sign in with Apple'), findsNothing);
     });
 
-    testWidgets('calls correct callbacks when buttons are tapped',
-        (tester) async {
+    testWidgets('calls correct callbacks when buttons are tapped', (
+      tester,
+    ) async {
       var googlePressed = false;
       var applePressed = false;
 
@@ -302,8 +286,9 @@ void main() {
       // Verify there is a SizedBox with height 12 between buttons
       final column = tester.widget<Column>(find.byType(Column).first);
       expect(
-        column.children.any((widget) =>
-            widget is SizedBox && widget.height == 12),
+        column.children.any(
+          (widget) => widget is SizedBox && widget.height == 12,
+        ),
         isTrue,
       );
     });

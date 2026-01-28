@@ -15,7 +15,7 @@ import 'package:fishfeed/data/models/user_progress_model.dart';
 /// ```
 class UserProgressLocalDataSource {
   UserProgressLocalDataSource({Box<dynamic>? progressBox})
-      : _progressBox = progressBox;
+    : _progressBox = progressBox;
 
   final Box<dynamic>? _progressBox;
 
@@ -135,10 +135,7 @@ class UserProgressLocalDataSource {
       return false;
     }
 
-    progress.streakBonusesEarned = [
-      ...progress.streakBonusesEarned,
-      milestone,
-    ];
+    progress.streakBonusesEarned = [...progress.streakBonusesEarned, milestone];
     await saveProgress(progress);
     return true;
   }

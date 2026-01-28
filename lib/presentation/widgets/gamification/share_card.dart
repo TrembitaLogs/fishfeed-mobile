@@ -97,7 +97,9 @@ class ShareCard extends StatelessWidget {
           // Background pattern
           Positioned.fill(
             child: CustomPaint(
-              painter: _WavePatternPainter(color: Colors.white.withValues(alpha: 0.05)),
+              painter: _WavePatternPainter(
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
             ),
           ),
 
@@ -159,10 +161,7 @@ class ShareCard extends StatelessWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [
-                              color.withValues(alpha: 0.9),
-                              color,
-                            ],
+                            colors: [color.withValues(alpha: 0.9), color],
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -172,11 +171,7 @@ class ShareCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Icon(
-                          icon,
-                          size: 50,
-                          color: Colors.white,
-                        ),
+                        child: Icon(icon, size: 50, color: Colors.white),
                       ),
                       const SizedBox(height: 20),
 
@@ -230,11 +225,7 @@ class ShareCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: color,
-                            size: 20,
-                          ),
+                          Icon(Icons.star, color: color, size: 20),
                           const SizedBox(width: 6),
                           Text(
                             '+${achievement.xpReward} XP',
@@ -270,8 +261,18 @@ class ShareCard extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

@@ -7,15 +7,11 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 
 void main() {
   group('AuthErrorHandler extension', () {
-    Widget buildTestWidget({
-      required Widget Function(BuildContext) builder,
-    }) {
+    Widget buildTestWidget({required Widget Function(BuildContext) builder}) {
       return MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(
-          builder: (context) => Scaffold(body: builder(context)),
-        ),
+        home: Builder(builder: (context) => Scaffold(body: builder(context))),
       );
     }
 
@@ -64,8 +60,9 @@ void main() {
         );
       });
 
-      testWidgets('shows error snackbar for AuthenticationFailure',
-          (tester) async {
+      testWidgets('shows error snackbar for AuthenticationFailure', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
@@ -92,11 +89,13 @@ void main() {
           buildTestWidget(
             builder: (context) => ElevatedButton(
               onPressed: () {
-                context.showAuthError(const ValidationFailure(
-                  errors: {
-                    'email': ['Email is already taken'],
-                  },
-                ));
+                context.showAuthError(
+                  const ValidationFailure(
+                    errors: {
+                      'email': ['Email is already taken'],
+                    },
+                  ),
+                );
               },
               child: const Text('Show'),
             ),
@@ -110,8 +109,9 @@ void main() {
         expect(find.text('Email is already taken'), findsOneWidget);
       });
 
-      testWidgets('shows generic validation message for empty errors',
-          (tester) async {
+      testWidgets('shows generic validation message for empty errors', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
@@ -133,15 +133,14 @@ void main() {
         );
       });
 
-      testWidgets('shows error snackbar for Google OAuthFailure',
-          (tester) async {
+      testWidgets('shows error snackbar for Google OAuthFailure', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
               onPressed: () {
-                context.showAuthError(
-                  const OAuthFailure(provider: 'google'),
-                );
+                context.showAuthError(const OAuthFailure(provider: 'google'));
               },
               child: const Text('Show'),
             ),
@@ -158,15 +157,14 @@ void main() {
         );
       });
 
-      testWidgets('shows error snackbar for Apple OAuthFailure',
-          (tester) async {
+      testWidgets('shows error snackbar for Apple OAuthFailure', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
               onPressed: () {
-                context.showAuthError(
-                  const OAuthFailure(provider: 'apple'),
-                );
+                context.showAuthError(const OAuthFailure(provider: 'apple'));
               },
               child: const Text('Show'),
             ),
@@ -183,8 +181,9 @@ void main() {
         );
       });
 
-      testWidgets('shows generic OAuth error for unknown provider',
-          (tester) async {
+      testWidgets('shows generic OAuth error for unknown provider', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
@@ -200,14 +199,12 @@ void main() {
         await tester.tap(find.text('Show'));
         await tester.pumpAndSettle();
 
-        expect(
-          find.text('Sign in failed. Please try again.'),
-          findsOneWidget,
-        );
+        expect(find.text('Sign in failed. Please try again.'), findsOneWidget);
       });
 
-      testWidgets('shows error snackbar for CancellationFailure',
-          (tester) async {
+      testWidgets('shows error snackbar for CancellationFailure', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             builder: (context) => ElevatedButton(
@@ -296,10 +293,7 @@ void main() {
   group('FailureMessageMapper', () {
     test('returns correct message for NetworkFailure', () {
       final message = FailureMessageMapper.toMessage(const NetworkFailure());
-      expect(
-        message,
-        'No internet connection. Please check your network.',
-      );
+      expect(message, 'No internet connection. Please check your network.');
     });
 
     test('returns correct message for ServerFailure', () {
@@ -308,8 +302,9 @@ void main() {
     });
 
     test('returns correct message for AuthenticationFailure', () {
-      final message =
-          FailureMessageMapper.toMessage(const AuthenticationFailure());
+      final message = FailureMessageMapper.toMessage(
+        const AuthenticationFailure(),
+      );
       expect(message, 'Invalid credentials. Please try again.');
     });
 
@@ -321,8 +316,7 @@ void main() {
     });
 
     test('returns default message for ValidationFailure without message', () {
-      final message =
-          FailureMessageMapper.toMessage(const ValidationFailure());
+      final message = FailureMessageMapper.toMessage(const ValidationFailure());
       expect(message, 'Validation failed');
     });
 
@@ -342,15 +336,14 @@ void main() {
     });
 
     test('returns default message for OAuthFailure without provider', () {
-      final message = FailureMessageMapper.toMessage(
-        const OAuthFailure(),
-      );
+      final message = FailureMessageMapper.toMessage(const OAuthFailure());
       expect(message, 'OAuth authentication failed');
     });
 
     test('returns correct message for CancellationFailure', () {
-      final message =
-          FailureMessageMapper.toMessage(const CancellationFailure());
+      final message = FailureMessageMapper.toMessage(
+        const CancellationFailure(),
+      );
       expect(message, 'Operation was cancelled.');
     });
 
@@ -367,8 +360,7 @@ void main() {
     });
 
     test('returns default message for UnexpectedFailure without message', () {
-      final message =
-          FailureMessageMapper.toMessage(const UnexpectedFailure());
+      final message = FailureMessageMapper.toMessage(const UnexpectedFailure());
       expect(message, 'An unexpected error occurred');
     });
   });

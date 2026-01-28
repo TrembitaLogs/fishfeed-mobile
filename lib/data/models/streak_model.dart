@@ -92,7 +92,11 @@ class StreakModel extends HiveObject {
   DateTime? serverUpdatedAt;
 
   /// Whether this streak needs to be synced.
-  bool get needsSync => !synced || (updatedAt != null && serverUpdatedAt != null && updatedAt!.isAfter(serverUpdatedAt!));
+  bool get needsSync =>
+      !synced ||
+      (updatedAt != null &&
+          serverUpdatedAt != null &&
+          updatedAt!.isAfter(serverUpdatedAt!));
 
   /// Converts this model to a domain entity.
   Streak toEntity() {

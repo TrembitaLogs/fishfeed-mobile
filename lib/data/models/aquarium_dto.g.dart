@@ -29,35 +29,35 @@ Map<String, dynamic> _$$AquariumDtoImplToJson(_$AquariumDtoImpl instance) =>
     };
 
 _$CreateAquariumRequestDtoImpl _$$CreateAquariumRequestDtoImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CreateAquariumRequestDtoImpl(
-      name: json['name'] as String,
-      capacity: (json['capacity'] as num?)?.toDouble(),
-      waterType: json['water_type'] as String?,
-    );
+  Map<String, dynamic> json,
+) => _$CreateAquariumRequestDtoImpl(
+  name: json['name'] as String,
+  capacity: (json['capacity'] as num?)?.toDouble(),
+  waterType: json['water_type'] as String?,
+);
 
 Map<String, dynamic> _$$CreateAquariumRequestDtoImplToJson(
-        _$CreateAquariumRequestDtoImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'capacity': instance.capacity,
-      'water_type': instance.waterType,
-    };
+  _$CreateAquariumRequestDtoImpl instance,
+) => <String, dynamic>{
+  'name': instance.name,
+  'capacity': instance.capacity,
+  'water_type': instance.waterType,
+};
 
 _$UpdateAquariumRequestDtoImpl _$$UpdateAquariumRequestDtoImplFromJson(
-        Map<String, dynamic> json) =>
-    _$UpdateAquariumRequestDtoImpl(
-      name: json['name'] as String?,
-      capacity: (json['capacity'] as num?)?.toDouble(),
-      waterType: json['water_type'] as String?,
-      imageUrl: json['image_url'] as String?,
-    );
+  Map<String, dynamic> json,
+) => _$UpdateAquariumRequestDtoImpl(
+  name: json['name'] as String?,
+  capacity: (json['capacity'] as num?)?.toDouble(),
+  waterType: json['water_type'] as String?,
+  imageUrl: json['image_url'] as String?,
+);
 
 Map<String, dynamic> _$$UpdateAquariumRequestDtoImplToJson(
-        _$UpdateAquariumRequestDtoImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'capacity': instance.capacity,
-      'water_type': instance.waterType,
-      'image_url': instance.imageUrl,
-    };
+  _$UpdateAquariumRequestDtoImpl instance,
+) => <String, dynamic>{
+  'name': instance.name,
+  'capacity': instance.capacity,
+  'water_type': instance.waterType,
+  'image_url': instance.imageUrl,
+};

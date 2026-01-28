@@ -128,10 +128,8 @@ class AppRouter {
     GoRoute(
       path: home,
       name: 'home',
-      pageBuilder: (context, state) => _buildPage(
-        state: state,
-        child: const HomeScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          _buildPage(state: state, child: const HomeScreen()),
     ),
     GoRoute(
       path: auth,
@@ -171,10 +169,8 @@ class AppRouter {
     GoRoute(
       path: profile,
       name: 'profile',
-      pageBuilder: (context, state) => _buildPage(
-        state: state,
-        child: const ProfileScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          _buildPage(state: state, child: const ProfileScreen()),
     ),
     GoRoute(
       path: settings,
@@ -319,38 +315,38 @@ class AppRouter {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return switch (transitionType) {
           _PageTransitionType.fade => FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: AnimationConfig.pageTransitionCurve,
-              ),
-              child: child,
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: AnimationConfig.pageTransitionCurve,
             ),
+            child: child,
+          ),
           _PageTransitionType.slideRight => SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: AnimationConfig.pageTransitionCurve,
-              )),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            ),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: AnimationConfig.pageTransitionCurve,
+                  ),
+                ),
+            child: FadeTransition(opacity: animation, child: child),
+          ),
           _PageTransitionType.slideUp => SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.3),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: AnimationConfig.pageTransitionCurve,
-              )),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            ),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0.0, 0.3),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: AnimationConfig.pageTransitionCurve,
+                  ),
+                ),
+            child: FadeTransition(opacity: animation, child: child),
+          ),
         };
       },
     );
@@ -383,9 +379,7 @@ class PlaceholderScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
+      appBar: AppBar(title: Text(title)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -396,10 +390,7 @@ class PlaceholderScreen extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 16),
-            Text(
-              'FishFeed - $title',
-              style: theme.textTheme.headlineMedium,
-            ),
+            Text('FishFeed - $title', style: theme.textTheme.headlineMedium),
             const SizedBox(height: 8),
             Text(
               'Screen placeholder',

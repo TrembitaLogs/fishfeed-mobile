@@ -69,9 +69,8 @@ class StreakBonusResult {
 /// - Checking and awarding streak bonuses
 /// - Tracking level progression
 class XpUseCase {
-  XpUseCase({
-    required UserProgressLocalDataSource progressDataSource,
-  }) : _progressDataSource = progressDataSource;
+  XpUseCase({required UserProgressLocalDataSource progressDataSource})
+    : _progressDataSource = progressDataSource;
 
   final UserProgressLocalDataSource _progressDataSource;
 
@@ -91,13 +90,19 @@ class XpUseCase {
   }) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
     try {
       // Get current progress to check for level up
-      final beforeProgress = await _progressDataSource.getOrCreateProgress(userId);
+      final beforeProgress = await _progressDataSource.getOrCreateProgress(
+        userId,
+      );
       final beforeLevel = LevelConstants.getLevelForXp(beforeProgress.totalXp);
 
       // Determine XP amount based on timing
@@ -115,13 +120,15 @@ class XpUseCase {
         await _progressDataSource.recordLevelUp(userId);
       }
 
-      return Right(XpAwardResult(
-        progress: updatedModel.toEntity(),
-        xpAwarded: xpAmount,
-        didLevelUp: didLevelUp,
-        previousLevel: didLevelUp ? beforeLevel : null,
-        newLevel: didLevelUp ? afterLevel : null,
-      ));
+      return Right(
+        XpAwardResult(
+          progress: updatedModel.toEntity(),
+          xpAwarded: xpAmount,
+          didLevelUp: didLevelUp,
+          previousLevel: didLevelUp ? beforeLevel : null,
+          newLevel: didLevelUp ? afterLevel : null,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to award XP: $e'));
     }
@@ -143,13 +150,19 @@ class XpUseCase {
   }) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
     try {
       // Get current progress
-      final beforeProgress = await _progressDataSource.getOrCreateProgress(userId);
+      final beforeProgress = await _progressDataSource.getOrCreateProgress(
+        userId,
+      );
       final beforeLevel = LevelConstants.getLevelForXp(beforeProgress.totalXp);
 
       // Find the highest milestone the current streak qualifies for
@@ -167,16 +180,21 @@ class XpUseCase {
 
       if (eligibleMilestone == null) {
         // No bonus to award
-        return Right(StreakBonusResult(
-          progress: beforeProgress.toEntity(),
-          bonusAwarded: 0,
-          milestone: null,
-          didLevelUp: false,
-        ));
+        return Right(
+          StreakBonusResult(
+            progress: beforeProgress.toEntity(),
+            bonusAwarded: 0,
+            milestone: null,
+            didLevelUp: false,
+          ),
+        );
       }
 
       // Record that this bonus has been earned
-      await _progressDataSource.recordStreakBonusEarned(userId, eligibleMilestone);
+      await _progressDataSource.recordStreakBonusEarned(
+        userId,
+        eligibleMilestone,
+      );
 
       // Award the bonus XP
       final updatedModel = await _progressDataSource.addXp(userId, bonusXp);
@@ -188,14 +206,16 @@ class XpUseCase {
         await _progressDataSource.recordLevelUp(userId);
       }
 
-      return Right(StreakBonusResult(
-        progress: updatedModel.toEntity(),
-        bonusAwarded: bonusXp,
-        milestone: eligibleMilestone,
-        didLevelUp: didLevelUp,
-        previousLevel: didLevelUp ? beforeLevel : null,
-        newLevel: didLevelUp ? afterLevel : null,
-      ));
+      return Right(
+        StreakBonusResult(
+          progress: updatedModel.toEntity(),
+          bonusAwarded: bonusXp,
+          milestone: eligibleMilestone,
+          didLevelUp: didLevelUp,
+          previousLevel: didLevelUp ? beforeLevel : null,
+          newLevel: didLevelUp ? afterLevel : null,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to check streak bonus: $e'));
     }
@@ -212,7 +232,11 @@ class XpUseCase {
   Future<Either<Failure, UserProgress>> getProgress(String userId) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -230,9 +254,9 @@ class XpUseCase {
   ///
   /// Emits new values whenever the progress is updated.
   Stream<UserProgress?> watchProgress(String userId) {
-    return _progressDataSource.watchProgress(userId).map(
-      (model) => model?.toEntity(),
-    );
+    return _progressDataSource
+        .watchProgress(userId)
+        .map((model) => model?.toEntity());
   }
 
   /// Calculates level up information for a given XP amount.

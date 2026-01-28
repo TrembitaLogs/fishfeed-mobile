@@ -125,15 +125,15 @@ void main() {
             builder: (context) {
               return ElevatedButton(
                 onPressed: () async {
-                  final result =
-                      await Navigator.of(context).push<PhotoPreviewResult>(
-                    MaterialPageRoute(
-                      builder: (_) => PhotoPreviewScreen(
-                        imagePath: testImagePath,
-                        imageProcessingService: mockImageService,
-                      ),
-                    ),
-                  );
+                  final result = await Navigator.of(context)
+                      .push<PhotoPreviewResult>(
+                        MaterialPageRoute(
+                          builder: (_) => PhotoPreviewScreen(
+                            imagePath: testImagePath,
+                            imageProcessingService: mockImageService,
+                          ),
+                        ),
+                      );
                   poppedResult = result == null ? 'null' : 'has result';
                 },
                 child: const Text('Open Preview'),
@@ -164,15 +164,15 @@ void main() {
             builder: (context) {
               return ElevatedButton(
                 onPressed: () async {
-                  final result =
-                      await Navigator.of(context).push<PhotoPreviewResult>(
-                    MaterialPageRoute(
-                      builder: (_) => PhotoPreviewScreen(
-                        imagePath: testImagePath,
-                        imageProcessingService: mockImageService,
-                      ),
-                    ),
-                  );
+                  final result = await Navigator.of(context)
+                      .push<PhotoPreviewResult>(
+                        MaterialPageRoute(
+                          builder: (_) => PhotoPreviewScreen(
+                            imagePath: testImagePath,
+                            imageProcessingService: mockImageService,
+                          ),
+                        ),
+                      );
                   poppedResult = result == null ? 'null' : 'has result';
                 },
                 child: const Text('Open Preview'),
@@ -212,15 +212,15 @@ void main() {
             builder: (context) {
               return ElevatedButton(
                 onPressed: () async {
-                  poppedResult =
-                      await Navigator.of(context).push<PhotoPreviewResult>(
-                    MaterialPageRoute(
-                      builder: (_) => PhotoPreviewScreen(
-                        imagePath: testImagePath,
-                        imageProcessingService: mockImageService,
-                      ),
-                    ),
-                  );
+                  poppedResult = await Navigator.of(context)
+                      .push<PhotoPreviewResult>(
+                        MaterialPageRoute(
+                          builder: (_) => PhotoPreviewScreen(
+                            imagePath: testImagePath,
+                            imageProcessingService: mockImageService,
+                          ),
+                        ),
+                      );
                 },
                 child: const Text('Open Preview'),
               );
@@ -243,13 +243,14 @@ void main() {
       expect(poppedResult!.compressionInfo, isNotNull);
     });
 
-    testWidgets('shows processing state when Use Photo is tapped',
-        (tester) async {
+    testWidgets('shows processing state when Use Photo is tapped', (
+      tester,
+    ) async {
       // Use a completer to control when compression finishes
       final completer = Completer<CompressionResult>();
-      when(() => mockImageService.compressImage(any())).thenAnswer(
-        (_) => completer.future,
-      );
+      when(
+        () => mockImageService.compressImage(any()),
+      ).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(
         buildTestWidget(
@@ -270,18 +271,20 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsWidgets);
 
       // Complete the future to clean up
-      completer.complete(CompressionResult(
-        bytes: Uint8List.fromList([1, 2, 3]),
-        originalSize: 1000,
-        compressedSize: 500,
-      ));
+      completer.complete(
+        CompressionResult(
+          bytes: Uint8List.fromList([1, 2, 3]),
+          originalSize: 1000,
+          compressedSize: 500,
+        ),
+      );
       await tester.pumpAndSettle();
     });
 
     testWidgets('shows error banner when compression fails', (tester) async {
-      when(() => mockImageService.compressImage(any())).thenThrow(
-        const ImageProcessingException('Compression failed'),
-      );
+      when(
+        () => mockImageService.compressImage(any()),
+      ).thenThrow(const ImageProcessingException('Compression failed'));
 
       await tester.pumpWidget(
         buildTestWidget(
@@ -301,9 +304,9 @@ void main() {
     });
 
     testWidgets('error banner can be dismissed', (tester) async {
-      when(() => mockImageService.compressImage(any())).thenThrow(
-        const ImageProcessingException('Compression failed'),
-      );
+      when(
+        () => mockImageService.compressImage(any()),
+      ).thenThrow(const ImageProcessingException('Compression failed'));
 
       await tester.pumpWidget(
         buildTestWidget(
@@ -340,9 +343,9 @@ void main() {
     testWidgets('buttons are disabled during processing', (tester) async {
       // Use a completer so we can control when the compression finishes
       final completer = Completer<CompressionResult>();
-      when(() => mockImageService.compressImage(any())).thenAnswer(
-        (_) => completer.future,
-      );
+      when(
+        () => mockImageService.compressImage(any()),
+      ).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(
         buildTestWidget(
@@ -363,28 +366,34 @@ void main() {
       expect(retakeButton.onPressed, isNull);
 
       // Complete the future to clean up
-      completer.complete(CompressionResult(
-        bytes: Uint8List.fromList([1, 2, 3]),
-        originalSize: 1000,
-        compressedSize: 500,
-      ));
+      completer.complete(
+        CompressionResult(
+          bytes: Uint8List.fromList([1, 2, 3]),
+          originalSize: 1000,
+          compressedSize: 500,
+        ),
+      );
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows error widget for invalid image path', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(imagePath: '/invalid/path/image.jpg'),
-      );
-      // Pump multiple times to allow error to propagate
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 100));
+    testWidgets(
+      'shows error widget for invalid image path',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(imagePath: '/invalid/path/image.jpg'),
+        );
+        // Pump multiple times to allow error to propagate
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
-      // Should show broken image icon and error text
-      // Note: Image.file error might take some frames to render
-      expect(find.byIcon(Icons.broken_image), findsOneWidget);
-      expect(find.text('Failed to load image'), findsOneWidget);
-    }, skip: true); // Skip: Image.file error handling depends on platform timing
+        // Should show broken image icon and error text
+        // Note: Image.file error might take some frames to render
+        expect(find.byIcon(Icons.broken_image), findsOneWidget);
+        expect(find.text('Failed to load image'), findsOneWidget);
+      },
+      skip: true,
+    ); // Skip: Image.file error handling depends on platform timing
   });
 
   group('PhotoPreviewResult', () {

@@ -75,10 +75,11 @@ final streakLocalDataSourceProvider = Provider<StreakLocalDataSource>((ref) {
 /// final achievementDs = ref.watch(achievementLocalDataSourceProvider);
 /// final achievements = achievementDs.getAchievements(userId);
 /// ```
-final achievementLocalDataSourceProvider =
-    Provider<AchievementLocalDataSource>((ref) {
-  return AchievementLocalDataSource();
-});
+final achievementLocalDataSourceProvider = Provider<AchievementLocalDataSource>(
+  (ref) {
+    return AchievementLocalDataSource();
+  },
+);
 
 /// Provider for [FishLocalDataSource].
 ///
@@ -104,7 +105,9 @@ final fishLocalDataSourceProvider = Provider<FishLocalDataSource>((ref) {
 /// final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
 /// final aquariums = aquariumDs.getAllAquariums();
 /// ```
-final aquariumLocalDataSourceProvider = Provider<AquariumLocalDataSource>((ref) {
+final aquariumLocalDataSourceProvider = Provider<AquariumLocalDataSource>((
+  ref,
+) {
   return AquariumLocalDataSource();
 });
 
@@ -120,5 +123,5 @@ final aquariumLocalDataSourceProvider = Provider<AquariumLocalDataSource>((ref) 
 /// ```
 final feedingScheduleLocalDataSourceProvider =
     Provider<FeedingScheduleLocalDataSource>((ref) {
-  return FeedingScheduleLocalDataSource();
-});
+      return FeedingScheduleLocalDataSource();
+    });

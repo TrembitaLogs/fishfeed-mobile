@@ -12,7 +12,8 @@ part of 'token_pair_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 TokenPairDto _$TokenPairDtoFromJson(Map<String, dynamic> json) {
   return _TokenPairDto.fromJson(json);
@@ -36,13 +37,15 @@ mixin _$TokenPairDto {
 /// @nodoc
 abstract class $TokenPairDtoCopyWith<$Res> {
   factory $TokenPairDtoCopyWith(
-          TokenPairDto value, $Res Function(TokenPairDto) then) =
-      _$TokenPairDtoCopyWithImpl<$Res, TokenPairDto>;
+    TokenPairDto value,
+    $Res Function(TokenPairDto) then,
+  ) = _$TokenPairDtoCopyWithImpl<$Res, TokenPairDto>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken,
-      @JsonKey(name: 'expires_in') int? expiresIn});
+  $Res call({
+    @JsonKey(name: 'access_token') String accessToken,
+    @JsonKey(name: 'refresh_token') String refreshToken,
+    @JsonKey(name: 'expires_in') int? expiresIn,
+  });
 }
 
 /// @nodoc
@@ -62,20 +65,23 @@ class _$TokenPairDtoCopyWithImpl<$Res, $Val extends TokenPairDto>
     Object? refreshToken = null,
     Object? expiresIn = freezed,
   }) {
-    return _then(_value.copyWith(
-      accessToken: null == accessToken
-          ? _value.accessToken
-          : accessToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      refreshToken: null == refreshToken
-          ? _value.refreshToken
-          : refreshToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      expiresIn: freezed == expiresIn
-          ? _value.expiresIn
-          : expiresIn // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            accessToken: null == accessToken
+                ? _value.accessToken
+                : accessToken // ignore: cast_nullable_to_non_nullable
+                      as String,
+            refreshToken: null == refreshToken
+                ? _value.refreshToken
+                : refreshToken // ignore: cast_nullable_to_non_nullable
+                      as String,
+            expiresIn: freezed == expiresIn
+                ? _value.expiresIn
+                : expiresIn // ignore: cast_nullable_to_non_nullable
+                      as int?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -83,14 +89,16 @@ class _$TokenPairDtoCopyWithImpl<$Res, $Val extends TokenPairDto>
 abstract class _$$TokenPairDtoImplCopyWith<$Res>
     implements $TokenPairDtoCopyWith<$Res> {
   factory _$$TokenPairDtoImplCopyWith(
-          _$TokenPairDtoImpl value, $Res Function(_$TokenPairDtoImpl) then) =
-      __$$TokenPairDtoImplCopyWithImpl<$Res>;
+    _$TokenPairDtoImpl value,
+    $Res Function(_$TokenPairDtoImpl) then,
+  ) = __$$TokenPairDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken,
-      @JsonKey(name: 'expires_in') int? expiresIn});
+  $Res call({
+    @JsonKey(name: 'access_token') String accessToken,
+    @JsonKey(name: 'refresh_token') String refreshToken,
+    @JsonKey(name: 'expires_in') int? expiresIn,
+  });
 }
 
 /// @nodoc
@@ -98,8 +106,9 @@ class __$$TokenPairDtoImplCopyWithImpl<$Res>
     extends _$TokenPairDtoCopyWithImpl<$Res, _$TokenPairDtoImpl>
     implements _$$TokenPairDtoImplCopyWith<$Res> {
   __$$TokenPairDtoImplCopyWithImpl(
-      _$TokenPairDtoImpl _value, $Res Function(_$TokenPairDtoImpl) _then)
-      : super(_value, _then);
+    _$TokenPairDtoImpl _value,
+    $Res Function(_$TokenPairDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -108,30 +117,33 @@ class __$$TokenPairDtoImplCopyWithImpl<$Res>
     Object? refreshToken = null,
     Object? expiresIn = freezed,
   }) {
-    return _then(_$TokenPairDtoImpl(
-      accessToken: null == accessToken
-          ? _value.accessToken
-          : accessToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      refreshToken: null == refreshToken
-          ? _value.refreshToken
-          : refreshToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      expiresIn: freezed == expiresIn
-          ? _value.expiresIn
-          : expiresIn // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+    return _then(
+      _$TokenPairDtoImpl(
+        accessToken: null == accessToken
+            ? _value.accessToken
+            : accessToken // ignore: cast_nullable_to_non_nullable
+                  as String,
+        refreshToken: null == refreshToken
+            ? _value.refreshToken
+            : refreshToken // ignore: cast_nullable_to_non_nullable
+                  as String,
+        expiresIn: freezed == expiresIn
+            ? _value.expiresIn
+            : expiresIn // ignore: cast_nullable_to_non_nullable
+                  as int?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$TokenPairDtoImpl implements _TokenPairDto {
-  const _$TokenPairDtoImpl(
-      {@JsonKey(name: 'access_token') required this.accessToken,
-      @JsonKey(name: 'refresh_token') required this.refreshToken,
-      @JsonKey(name: 'expires_in') this.expiresIn});
+  const _$TokenPairDtoImpl({
+    @JsonKey(name: 'access_token') required this.accessToken,
+    @JsonKey(name: 'refresh_token') required this.refreshToken,
+    @JsonKey(name: 'expires_in') this.expiresIn,
+  });
 
   factory _$TokenPairDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$TokenPairDtoImplFromJson(json);
@@ -177,17 +189,16 @@ class _$TokenPairDtoImpl implements _TokenPairDto {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TokenPairDtoImplToJson(
-      this,
-    );
+    return _$$TokenPairDtoImplToJson(this);
   }
 }
 
 abstract class _TokenPairDto implements TokenPairDto {
-  const factory _TokenPairDto(
-      {@JsonKey(name: 'access_token') required final String accessToken,
-      @JsonKey(name: 'refresh_token') required final String refreshToken,
-      @JsonKey(name: 'expires_in') final int? expiresIn}) = _$TokenPairDtoImpl;
+  const factory _TokenPairDto({
+    @JsonKey(name: 'access_token') required final String accessToken,
+    @JsonKey(name: 'refresh_token') required final String refreshToken,
+    @JsonKey(name: 'expires_in') final int? expiresIn,
+  }) = _$TokenPairDtoImpl;
 
   factory _TokenPairDto.fromJson(Map<String, dynamic> json) =
       _$TokenPairDtoImpl.fromJson;

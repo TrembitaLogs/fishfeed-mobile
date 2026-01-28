@@ -12,7 +12,8 @@ part of 'user_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 UserDto _$UserDtoFromJson(Map<String, dynamic> json) {
   return _UserDto.fromJson(json);
@@ -43,14 +44,15 @@ abstract class $UserDtoCopyWith<$Res> {
   factory $UserDtoCopyWith(UserDto value, $Res Function(UserDto) then) =
       _$UserDtoCopyWithImpl<$Res, UserDto>;
   @useResult
-  $Res call(
-      {String id,
-      String email,
-      @JsonKey(name: 'display_name') String? displayName,
-      @JsonKey(name: 'avatar_url') String? avatarUrl,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'subscription_status') String subscriptionStatus,
-      @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining});
+  $Res call({
+    String id,
+    String email,
+    @JsonKey(name: 'display_name') String? displayName,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'subscription_status') String subscriptionStatus,
+    @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining,
+  });
 }
 
 /// @nodoc
@@ -74,54 +76,59 @@ class _$UserDtoCopyWithImpl<$Res, $Val extends UserDto>
     Object? subscriptionStatus = null,
     Object? freeAiScansRemaining = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      subscriptionStatus: null == subscriptionStatus
-          ? _value.subscriptionStatus
-          : subscriptionStatus // ignore: cast_nullable_to_non_nullable
-              as String,
-      freeAiScansRemaining: null == freeAiScansRemaining
-          ? _value.freeAiScansRemaining
-          : freeAiScansRemaining // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            email: null == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                      as String,
+            displayName: freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatarUrl: freezed == avatarUrl
+                ? _value.avatarUrl
+                : avatarUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            subscriptionStatus: null == subscriptionStatus
+                ? _value.subscriptionStatus
+                : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+                      as String,
+            freeAiScansRemaining: null == freeAiScansRemaining
+                ? _value.freeAiScansRemaining
+                : freeAiScansRemaining // ignore: cast_nullable_to_non_nullable
+                      as int,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$UserDtoImplCopyWith<$Res> implements $UserDtoCopyWith<$Res> {
   factory _$$UserDtoImplCopyWith(
-          _$UserDtoImpl value, $Res Function(_$UserDtoImpl) then) =
-      __$$UserDtoImplCopyWithImpl<$Res>;
+    _$UserDtoImpl value,
+    $Res Function(_$UserDtoImpl) then,
+  ) = __$$UserDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String email,
-      @JsonKey(name: 'display_name') String? displayName,
-      @JsonKey(name: 'avatar_url') String? avatarUrl,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'subscription_status') String subscriptionStatus,
-      @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining});
+  $Res call({
+    String id,
+    String email,
+    @JsonKey(name: 'display_name') String? displayName,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'subscription_status') String subscriptionStatus,
+    @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining,
+  });
 }
 
 /// @nodoc
@@ -129,8 +136,9 @@ class __$$UserDtoImplCopyWithImpl<$Res>
     extends _$UserDtoCopyWithImpl<$Res, _$UserDtoImpl>
     implements _$$UserDtoImplCopyWith<$Res> {
   __$$UserDtoImplCopyWithImpl(
-      _$UserDtoImpl _value, $Res Function(_$UserDtoImpl) _then)
-      : super(_value, _then);
+    _$UserDtoImpl _value,
+    $Res Function(_$UserDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -143,50 +151,53 @@ class __$$UserDtoImplCopyWithImpl<$Res>
     Object? subscriptionStatus = null,
     Object? freeAiScansRemaining = null,
   }) {
-    return _then(_$UserDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      subscriptionStatus: null == subscriptionStatus
-          ? _value.subscriptionStatus
-          : subscriptionStatus // ignore: cast_nullable_to_non_nullable
-              as String,
-      freeAiScansRemaining: null == freeAiScansRemaining
-          ? _value.freeAiScansRemaining
-          : freeAiScansRemaining // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
+    return _then(
+      _$UserDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        email: null == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayName: freezed == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatarUrl: freezed == avatarUrl
+            ? _value.avatarUrl
+            : avatarUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        subscriptionStatus: null == subscriptionStatus
+            ? _value.subscriptionStatus
+            : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+                  as String,
+        freeAiScansRemaining: null == freeAiScansRemaining
+            ? _value.freeAiScansRemaining
+            : freeAiScansRemaining // ignore: cast_nullable_to_non_nullable
+                  as int,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserDtoImpl implements _UserDto {
-  const _$UserDtoImpl(
-      {required this.id,
-      required this.email,
-      @JsonKey(name: 'display_name') this.displayName,
-      @JsonKey(name: 'avatar_url') this.avatarUrl,
-      @JsonKey(name: 'created_at') required this.createdAt,
-      @JsonKey(name: 'subscription_status') this.subscriptionStatus = 'free',
-      @JsonKey(name: 'free_ai_scans_remaining') this.freeAiScansRemaining = 5});
+  const _$UserDtoImpl({
+    required this.id,
+    required this.email,
+    @JsonKey(name: 'display_name') this.displayName,
+    @JsonKey(name: 'avatar_url') this.avatarUrl,
+    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'subscription_status') this.subscriptionStatus = 'free',
+    @JsonKey(name: 'free_ai_scans_remaining') this.freeAiScansRemaining = 5,
+  });
 
   factory _$UserDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserDtoImplFromJson(json);
@@ -237,8 +248,16 @@ class _$UserDtoImpl implements _UserDto {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, displayName,
-      avatarUrl, createdAt, subscriptionStatus, freeAiScansRemaining);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    email,
+    displayName,
+    avatarUrl,
+    createdAt,
+    subscriptionStatus,
+    freeAiScansRemaining,
+  );
 
   @JsonKey(ignore: true)
   @override
@@ -248,22 +267,20 @@ class _$UserDtoImpl implements _UserDto {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserDtoImplToJson(
-      this,
-    );
+    return _$$UserDtoImplToJson(this);
   }
 }
 
 abstract class _UserDto implements UserDto {
-  const factory _UserDto(
-      {required final String id,
-      required final String email,
-      @JsonKey(name: 'display_name') final String? displayName,
-      @JsonKey(name: 'avatar_url') final String? avatarUrl,
-      @JsonKey(name: 'created_at') required final DateTime createdAt,
-      @JsonKey(name: 'subscription_status') final String subscriptionStatus,
-      @JsonKey(name: 'free_ai_scans_remaining')
-      final int freeAiScansRemaining}) = _$UserDtoImpl;
+  const factory _UserDto({
+    required final String id,
+    required final String email,
+    @JsonKey(name: 'display_name') final String? displayName,
+    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'subscription_status') final String subscriptionStatus,
+    @JsonKey(name: 'free_ai_scans_remaining') final int freeAiScansRemaining,
+  }) = _$UserDtoImpl;
 
   factory _UserDto.fromJson(Map<String, dynamic> json) = _$UserDtoImpl.fromJson;
 

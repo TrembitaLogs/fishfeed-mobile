@@ -32,7 +32,5 @@ abstract interface class UserRepository {
   /// - [AuthenticationFailure] if not authenticated
   /// - [NetworkFailure] for connectivity issues
   /// - [ServerFailure] for server errors
-  Future<Either<Failure, User>> updateAvatar({
-    required File avatarFile,
-  });
+  Future<Either<Failure, User>> updateAvatar({required File avatarFile});
 }

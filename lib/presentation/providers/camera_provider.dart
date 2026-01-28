@@ -6,11 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ============================================================================
 
 /// Available flash modes for camera.
-enum CameraFlashMode {
-  off,
-  auto,
-  on,
-}
+enum CameraFlashMode { off, auto, on }
 
 /// Extension to convert between CameraFlashMode and FlashMode.
 extension CameraFlashModeExtension on CameraFlashMode {
@@ -140,14 +136,18 @@ class CameraNotifier extends StateNotifier<CameraState> {
 }
 
 /// Provider for camera state.
-final cameraProvider = StateNotifierProvider<CameraNotifier, CameraState>((ref) {
+final cameraProvider = StateNotifierProvider<CameraNotifier, CameraState>((
+  ref,
+) {
   return CameraNotifier();
 });
 
 /// Provider for available cameras.
 ///
 /// Fetches available cameras once and caches the result.
-final availableCamerasProvider = FutureProvider<List<CameraDescription>>((ref) async {
+final availableCamerasProvider = FutureProvider<List<CameraDescription>>((
+  ref,
+) async {
   return await availableCameras();
 });
 
@@ -166,9 +166,9 @@ final currentCameraProvider = Provider<CameraDescription?>((ref) {
 
       // Try to find camera with target direction
       final camera = cameraList.cast<CameraDescription?>().firstWhere(
-            (c) => c?.lensDirection == targetDirection,
-            orElse: () => cameraList.first,
-          );
+        (c) => c?.lensDirection == targetDirection,
+        orElse: () => cameraList.first,
+      );
 
       return camera;
     },

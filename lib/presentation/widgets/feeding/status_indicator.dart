@@ -83,7 +83,10 @@ class StatusIndicator extends StatelessWidget {
   }
 
   /// Returns a positive framing message for the given status.
-  static String getPositiveMessage(FeedingStatus status, AppLocalizations l10n) {
+  static String getPositiveMessage(
+    FeedingStatus status,
+    AppLocalizations l10n,
+  ) {
     return switch (status) {
       FeedingStatus.fed => l10n.statusGreatJob,
       FeedingStatus.missed => l10n.statusNextTime,
@@ -94,20 +97,20 @@ class StatusIndicator extends StatelessWidget {
   _IndicatorDimensions _getDimensions(StatusIndicatorSize size) {
     return switch (size) {
       StatusIndicatorSize.small => const _IndicatorDimensions(
-          containerSize: 32,
-          iconSize: 18,
-          borderRadius: 8,
-        ),
+        containerSize: 32,
+        iconSize: 18,
+        borderRadius: 8,
+      ),
       StatusIndicatorSize.medium => const _IndicatorDimensions(
-          containerSize: 40,
-          iconSize: 22,
-          borderRadius: 10,
-        ),
+        containerSize: 40,
+        iconSize: 22,
+        borderRadius: 10,
+      ),
       StatusIndicatorSize.large => const _IndicatorDimensions(
-          containerSize: 56,
-          iconSize: 32,
-          borderRadius: 14,
-        ),
+        containerSize: 56,
+        iconSize: 32,
+        borderRadius: 14,
+      ),
     };
   }
 }

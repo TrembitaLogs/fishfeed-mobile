@@ -26,10 +26,7 @@ class AchievementsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.achievementsTitle),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(l10n.achievementsTitle), centerTitle: true),
       body: achievementsAsync.when(
         data: (achievements) {
           if (achievements.isEmpty) {
@@ -78,9 +75,8 @@ class AchievementsScreen extends ConsumerWidget {
               mainAxisSpacing: 16,
             ),
             delegate: SliverChildBuilderDelegate(
-              (context, index) => _AchievementCard(
-                achievement: achievements[index],
-              ),
+              (context, index) =>
+                  _AchievementCard(achievement: achievements[index]),
               childCount: achievements.length,
             ),
           ),
@@ -116,8 +112,8 @@ class AchievementsScreen extends ConsumerWidget {
               Text(
                 '$unlocked / $total',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -134,11 +130,10 @@ class AchievementsScreen extends ConsumerWidget {
           Text(
             AppLocalizations.of(context)!.achievementProgressTitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimaryContainer
-                      .withValues(alpha: 0.7),
-                ),
+              color: Theme.of(
+                context,
+              ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+            ),
           ),
         ],
       ),
@@ -211,130 +206,125 @@ class _AchievementCardState extends State<_AchievementCard> {
         child: Stack(
           children: [
             Container(
-          padding: const EdgeInsets.all(16),
-          decoration: isUnlocked
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      color.withValues(alpha: 0.1),
-                      color.withValues(alpha: 0.05),
-                    ],
-                  ),
-                )
-              : null,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icon with badge
-              Stack(
-                alignment: Alignment.center,
+              padding: const EdgeInsets.all(16),
+              decoration: isUnlocked
+                  ? BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withValues(alpha: 0.1),
+                          color.withValues(alpha: 0.05),
+                        ],
+                      ),
+                    )
+                  : null,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isUnlocked
-                          ? color.withValues(alpha: 0.2)
-                          : Colors.grey.shade200,
-                      boxShadow: isUnlocked
-                          ? [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 32,
-                      color: isUnlocked ? color : Colors.grey.shade400,
-                    ),
-                  ),
-                  if (!isUnlocked && achievement.progress > 0)
-                    SizedBox(
-                      width: 70,
-                      height: 70,
-                      child: CircularProgressIndicator(
-                        value: achievement.progress,
-                        strokeWidth: 3,
-                        backgroundColor: Colors.grey.shade300,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          color.withValues(alpha: 0.5),
+                  // Icon with badge
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isUnlocked
+                              ? color.withValues(alpha: 0.2)
+                              : Colors.grey.shade200,
+                          boxShadow: isUnlocked
+                              ? [
+                                  BoxShadow(
+                                    color: color.withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 32,
+                          color: isUnlocked ? color : Colors.grey.shade400,
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
+                      if (!isUnlocked && achievement.progress > 0)
+                        SizedBox(
+                          width: 70,
+                          height: 70,
+                          child: CircularProgressIndicator(
+                            value: achievement.progress,
+                            strokeWidth: 3,
+                            backgroundColor: Colors.grey.shade300,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              color.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
-              // Title
-              Text(
-                achievement.title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  // Title
+                  Text(
+                    achievement.title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isUnlocked ? null : Colors.grey.shade600,
                     ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
 
-              // Status or progress
-              if (isUnlocked) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 14,
-                      color: color,
+                  // Status or progress
+                  if (isUnlocked) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, size: 14, color: color),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(achievement.unlockedAt!, context),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: color),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
+                  ] else if (achievement.progress > 0) ...[
                     Text(
-                      _formatDate(achievement.unlockedAt!, context),
+                      '${(achievement.progress * 100).toInt()}%',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: color,
-                          ),
-                    ),
-                  ],
-                ),
-              ] else if (achievement.progress > 0) ...[
-                Text(
-                  '${(achievement.progress * 100).toInt()}%',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.bold,
                       ),
-                ),
-              ] else ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock_outline,
-                      size: 14,
-                      color: Colors.grey.shade500,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      AppLocalizations.of(context)!.achievementLocked,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey.shade500,
-                          ),
+                  ] else ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocalizations.of(context)!.achievementLocked,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey.shade500),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
             // Share icon for unlocked achievements
             if (isUnlocked)
               Positioned(
@@ -398,7 +388,9 @@ class _AchievementCardState extends State<_AchievementCard> {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isUnlocked ? color.withValues(alpha: 0.2) : Colors.grey.shade200,
+                color: isUnlocked
+                    ? color.withValues(alpha: 0.2)
+                    : Colors.grey.shade200,
               ),
               child: Icon(
                 icon,
@@ -411,9 +403,9 @@ class _AchievementCardState extends State<_AchievementCard> {
             // Title
             Text(
               achievement.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -423,11 +415,10 @@ class _AchievementCardState extends State<_AchievementCard> {
               Text(
                 achievement.description!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
                 textAlign: TextAlign.center,
               ),
             const SizedBox(height: 16),
@@ -446,10 +437,7 @@ class _AchievementCardState extends State<_AchievementCard> {
                   const SizedBox(width: 8),
                   Text(
                     '+${achievement.xpReward} XP',
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: color, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -465,7 +453,9 @@ class _AchievementCardState extends State<_AchievementCard> {
                   const SizedBox(width: 8),
                   Text(
                     AppLocalizations.of(context)!.achievementUnlockedOn(
-                      DateFormat.yMMMd(Localizations.localeOf(context).languageCode).format(achievement.unlockedAt!),
+                      DateFormat.yMMMd(
+                        Localizations.localeOf(context).languageCode,
+                      ).format(achievement.unlockedAt!),
                     ),
                     style: TextStyle(color: color),
                   ),
@@ -493,7 +483,9 @@ class _AchievementCardState extends State<_AchievementCard> {
               Column(
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.achievementProgress((achievement.progress * 100).toInt()),
+                    AppLocalizations.of(context)!.achievementProgress(
+                      (achievement.progress * 100).toInt(),
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),

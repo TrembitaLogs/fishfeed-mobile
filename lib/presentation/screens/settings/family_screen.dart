@@ -26,11 +26,7 @@ const int kMaxPremiumTierMembers = 10;
 /// - View active invitations with expiry countdown
 /// - Remove family members (owner only)
 class FamilyScreen extends ConsumerStatefulWidget {
-  const FamilyScreen({
-    super.key,
-    required this.aquariumId,
-    this.aquariumName,
-  });
+  const FamilyScreen({super.key, required this.aquariumId, this.aquariumName});
 
   /// ID of the aquarium to manage family access for.
   final String aquariumId;
@@ -48,7 +44,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
     super.initState();
     // Load family data when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(familyNotifierProvider.notifier).loadFamilyData(widget.aquariumId);
+      ref
+          .read(familyNotifierProvider.notifier)
+          .loadFamilyData(widget.aquariumId);
     });
   }
 
@@ -69,18 +67,15 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     // Listen for newly created invite to trigger share
-    ref.listen<FamilyState>(
-      familyNotifierProvider,
-      (previous, next) {
-        if (next.lastCreatedInvite != null &&
-            previous?.lastCreatedInvite != next.lastCreatedInvite) {
-          _showShareInviteSheet(next.lastCreatedInvite!);
-        }
-        if (next.error != null && previous?.error != next.error) {
-          _showErrorSnackBar(next.error!.message ?? l10n.errorOccurred);
-        }
-      },
-    );
+    ref.listen<FamilyState>(familyNotifierProvider, (previous, next) {
+      if (next.lastCreatedInvite != null &&
+          previous?.lastCreatedInvite != next.lastCreatedInvite) {
+        _showShareInviteSheet(next.lastCreatedInvite!);
+      }
+      if (next.error != null && previous?.error != next.error) {
+        _showErrorSnackBar(next.error!.message ?? l10n.errorOccurred);
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -96,9 +91,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
               child: CustomScrollView(
                 slivers: [
                   // Header section
-                  SliverToBoxAdapter(
-                    child: _buildHeader(context, theme),
-                  ),
+                  SliverToBoxAdapter(child: _buildHeader(context, theme)),
 
                   // Member limit indicator (free tier)
                   if (!isPremium)
@@ -115,7 +108,12 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                   SliverToBoxAdapter(
                     child: hasReachedLimit && !isPremium
                         ? _buildUpgradePrompt(context, theme)
-                        : _buildInviteButton(context, theme, state.isLoading, canInvite),
+                        : _buildInviteButton(
+                            context,
+                            theme,
+                            state.isLoading,
+                            canInvite,
+                          ),
                   ),
 
                   // Active invitations section
@@ -132,7 +130,8 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                         (context, index) => _InviteCard(
                           invite: state.invites[index],
                           onShare: () => _shareInvite(state.invites[index]),
-                          onCancel: () => _cancelInvite(state.invites[index].id),
+                          onCancel: () =>
+                              _cancelInvite(state.invites[index].id),
                         ),
                         childCount: state.invites.length,
                       ),
@@ -153,25 +152,21 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                     )
                   else
                     SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final member = state.members[index];
-                          // Only premium users can remove members (and owners can't be removed)
-                          final canRemove =
-                              isPremium && !member.isOwner;
-                          return _MemberCard(
-                            member: member,
-                            onRemove: canRemove
-                                ? () => _removeMember(member)
-                                : null,
-                            isPremium: isPremium,
-                            // TODO: Add actual feeding stats from API when available
-                            feedingsThisWeek: isPremium ? 0 : null,
-                            feedingsThisMonth: isPremium ? 0 : null,
-                          );
-                        },
-                        childCount: state.members.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final member = state.members[index];
+                        // Only premium users can remove members (and owners can't be removed)
+                        final canRemove = isPremium && !member.isOwner;
+                        return _MemberCard(
+                          member: member,
+                          onRemove: canRemove
+                              ? () => _removeMember(member)
+                              : null,
+                          isPremium: isPremium,
+                          // TODO: Add actual feeding stats from API when available
+                          feedingsThisWeek: isPremium ? 0 : null,
+                          feedingsThisMonth: isPremium ? 0 : null,
+                        );
+                      }, childCount: state.members.length),
                     ),
 
                   // Bottom padding
@@ -217,7 +212,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
           Text(
             l10n.familyModeDescription,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+              color: theme.colorScheme.onPrimaryContainer.withValues(
+                alpha: 0.8,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
@@ -399,9 +396,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -432,8 +429,8 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
               Text(
                 l10n.inviteSomeone,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -450,21 +447,16 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
   void _showPremiumUpgrade() {
     final l10n = AppLocalizations.of(context)!;
     // TODO: Navigate to premium upgrade screen when available
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.premiumComingSoon),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.premiumComingSoon)));
   }
 
   void _shareInvite(FamilyInvite invite) {
     final l10n = AppLocalizations.of(context)!;
     final shareText = l10n.joinMyAquarium(invite.deepLink, invite.inviteCode);
 
-    Share.share(
-      shareText,
-      subject: l10n.invitationToFishFeed,
-    );
+    Share.share(shareText, subject: l10n.invitationToFishFeed);
   }
 
   void _showShareInviteSheet(FamilyInvite invite) {
@@ -483,9 +475,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
         onCopy: () {
           Clipboard.setData(ClipboardData(text: invite.deepLink));
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.linkCopied)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.linkCopied)));
         },
       ),
     );
@@ -572,11 +564,7 @@ class _PremiumBenefit extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 24,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(icon, size: 24, color: theme.colorScheme.primary),
         const SizedBox(height: 4),
         Text(
           text,
@@ -845,7 +833,9 @@ class _MemberCard extends StatelessWidget {
                     ? AppCachedAvatar(
                         imageUrl: member.avatarUrl,
                         radius: 20,
-                        fallbackIcon: member.isOwner ? Icons.star : Icons.person,
+                        fallbackIcon: member.isOwner
+                            ? Icons.star
+                            : Icons.person,
                       )
                     : CircleAvatar(
                         backgroundColor: member.isOwner
@@ -873,7 +863,9 @@ class _MemberCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      l10n.joinedDate(_formatJoinedDate(member.joinedAt, locale)),
+                      l10n.joinedDate(
+                        _formatJoinedDate(member.joinedAt, locale),
+                      ),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.outline,
                       ),
@@ -890,11 +882,8 @@ class _MemberCard extends StatelessWidget {
                         tooltip: l10n.remove,
                       )
                     : member.isOwner
-                        ? Icon(
-                            Icons.verified,
-                            color: theme.colorScheme.primary,
-                          )
-                        : null,
+                    ? Icon(Icons.verified, color: theme.colorScheme.primary)
+                    : null,
               ),
               // Premium: Show feeding statistics
               if (isPremium &&
@@ -951,11 +940,7 @@ class _StatChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(icon, size: 14, color: theme.colorScheme.primary),
           const SizedBox(width: 4),
           Text(
             label,

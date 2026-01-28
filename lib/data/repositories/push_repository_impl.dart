@@ -40,8 +40,8 @@ class PushRepositoryImpl implements PushRepository {
   PushRepositoryImpl({
     required PushRemoteDataSource remoteDataSource,
     PushRetryConfig? retryConfig,
-  })  : _remoteDataSource = remoteDataSource,
-        _retryConfig = retryConfig ?? const PushRetryConfig();
+  }) : _remoteDataSource = remoteDataSource,
+       _retryConfig = retryConfig ?? const PushRetryConfig();
 
   final PushRemoteDataSource _remoteDataSource;
   final PushRetryConfig _retryConfig;
@@ -60,10 +60,7 @@ class PushRepositoryImpl implements PushRepository {
     }
 
     try {
-      await _remoteDataSource.registerToken(
-        token: token,
-        platform: platform,
-      );
+      await _remoteDataSource.registerToken(token: token, platform: platform);
 
       // Store token locally after successful registration
       await HiveBoxes.setPushToken(token, platform);
@@ -101,10 +98,7 @@ class PushRepositoryImpl implements PushRepository {
 
     while (retryCount <= _retryConfig.maxRetries) {
       try {
-        await _remoteDataSource.registerToken(
-          token: token,
-          platform: platform,
-        );
+        await _remoteDataSource.registerToken(token: token, platform: platform);
 
         // Store token locally after successful registration
         await HiveBoxes.setPushToken(token, platform);
@@ -214,8 +208,9 @@ class PushRepositoryImpl implements PushRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() =>
-        const AuthenticationFailure(message: 'Not authenticated'),
+      UnauthorizedException() => const AuthenticationFailure(
+        message: 'Not authenticated',
+      ),
       ServerException() => const ServerFailure(),
       _ => const UnexpectedFailure(),
     };

@@ -21,8 +21,8 @@ class UserRepositoryImpl implements UserRepository {
   UserRepositoryImpl({
     required UserRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource;
 
   final UserRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
@@ -42,7 +42,9 @@ class UserRepositoryImpl implements UserRepository {
         displayName: userDto.displayName,
         avatarUrl: userDto.avatarUrl,
         createdAt: userDto.createdAt,
-        subscriptionStatus: _parseSubscriptionStatus(userDto.subscriptionStatus),
+        subscriptionStatus: _parseSubscriptionStatus(
+          userDto.subscriptionStatus,
+        ),
         freeAiScansRemaining: userDto.freeAiScansRemaining,
       );
 
@@ -59,9 +61,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Either<Failure, User>> updateAvatar({
-    required File avatarFile,
-  }) async {
+  Future<Either<Failure, User>> updateAvatar({required File avatarFile}) async {
     try {
       final userDto = await _remoteDataSource.uploadAvatar(
         avatarFile: avatarFile,
@@ -73,7 +73,9 @@ class UserRepositoryImpl implements UserRepository {
         displayName: userDto.displayName,
         avatarUrl: userDto.avatarUrl,
         createdAt: userDto.createdAt,
-        subscriptionStatus: _parseSubscriptionStatus(userDto.subscriptionStatus),
+        subscriptionStatus: _parseSubscriptionStatus(
+          userDto.subscriptionStatus,
+        ),
         freeAiScansRemaining: userDto.freeAiScansRemaining,
       );
 
@@ -101,16 +103,21 @@ class UserRepositoryImpl implements UserRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() =>
-        const AuthenticationFailure(message: 'Not authenticated'),
-      ValidationException(:final message, :final errors) =>
-        ValidationFailure(message: message, errors: errors),
-      ForbiddenException() =>
-        const AuthenticationFailure(message: 'Access denied'),
+      UnauthorizedException() => const AuthenticationFailure(
+        message: 'Not authenticated',
+      ),
+      ValidationException(:final message, :final errors) => ValidationFailure(
+        message: message,
+        errors: errors,
+      ),
+      ForbiddenException() => const AuthenticationFailure(
+        message: 'Access denied',
+      ),
       NotFoundException() => const ServerFailure(message: 'User not found'),
       ServerException() => const ServerFailure(),
-      UnknownApiException(:final message) =>
-        UnexpectedFailure(message: message),
+      UnknownApiException(:final message) => UnexpectedFailure(
+        message: message,
+      ),
     };
   }
 }

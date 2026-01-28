@@ -23,11 +23,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 /// }
 /// ```
 abstract class BaseHiveModel extends HiveObject {
-  BaseHiveModel({
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  BaseHiveModel({DateTime? createdAt, DateTime? updatedAt})
+    : createdAt = createdAt ?? DateTime.now(),
+      updatedAt = updatedAt ?? DateTime.now();
 
   /// Timestamp when this record was created locally.
   ///

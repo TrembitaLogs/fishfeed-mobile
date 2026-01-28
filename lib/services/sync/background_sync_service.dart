@@ -17,8 +17,7 @@ import 'package:fishfeed/data/models/feeding_event_model.dart';
 const String kBackgroundSyncTaskName = 'fishfeed_background_sync';
 
 /// Task identifier for iOS BGTaskScheduler.
-const String kBackgroundSyncTaskIdentifier =
-    'com.fishfeed.app.backgroundSync';
+const String kBackgroundSyncTaskIdentifier = 'com.fishfeed.app.backgroundSync';
 
 /// Key for storing the last background sync timestamp.
 const String _lastBackgroundSyncKey = 'last_background_sync';
@@ -36,7 +35,9 @@ String _resolveBaseUrl() {
   final iosDeviceUrl = dotenv.env['API_BASE_URL_IOS_DEVICE'];
 
   if (Platform.isIOS && iosDeviceUrl != null && iosDeviceUrl.isNotEmpty) {
-    final isSimulator = Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+    final isSimulator = Platform.environment.containsKey(
+      'SIMULATOR_DEVICE_NAME',
+    );
     if (!isSimulator) {
       debugPrint('BackgroundSync: Using iOS device URL');
       return iosDeviceUrl;
@@ -63,7 +64,8 @@ void backgroundSyncCallbackDispatcher() {
       // Check connectivity first
       final connectivity = Connectivity();
       final connectivityResults = await connectivity.checkConnectivity();
-      final isOnline = connectivityResults.isNotEmpty &&
+      final isOnline =
+          connectivityResults.isNotEmpty &&
           !connectivityResults.contains(ConnectivityResult.none);
 
       if (!isOnline) {
@@ -109,8 +111,9 @@ Future<bool> _performBackgroundSync() async {
     await _initializeHiveForBackground();
 
     // 2. Get unsynced feeding events
-    final feedingEventsBox =
-        await Hive.openBox<dynamic>(HiveBoxNames.feedingEvents);
+    final feedingEventsBox = await Hive.openBox<dynamic>(
+      HiveBoxNames.feedingEvents,
+    );
     final unsyncedEvents = feedingEventsBox.values
         .whereType<FeedingEventModel>()
         .where((event) => !event.synced)
@@ -122,12 +125,15 @@ Future<bool> _performBackgroundSync() async {
       return true;
     }
 
-    debugPrint('BackgroundSync: Found ${unsyncedEvents.length} unsynced events');
+    debugPrint(
+      'BackgroundSync: Found ${unsyncedEvents.length} unsynced events',
+    );
 
     // 3. Get auth token from secure storage
     const secureStorage = FlutterSecureStorage();
-    final accessToken =
-        await secureStorage.read(key: SecureStorageKeys.accessToken);
+    final accessToken = await secureStorage.read(
+      key: SecureStorageKeys.accessToken,
+    );
 
     if (accessToken == null || accessToken.isEmpty) {
       debugPrint('BackgroundSync: No auth token, skipping sync');
@@ -143,16 +149,18 @@ Future<bool> _performBackgroundSync() async {
       return false;
     }
 
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    ));
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      ),
+    );
 
     // 5. Prepare payload (lightweight - only essential fields)
     final payload = unsyncedEvents.map((e) => _feedingEventToJson(e)).toList();
@@ -194,7 +202,9 @@ Future<bool> _performBackgroundSync() async {
       await feedingEventsBox.close();
       return true;
     } else {
-      debugPrint('BackgroundSync: Sync failed with status ${response.statusCode}');
+      debugPrint(
+        'BackgroundSync: Sync failed with status ${response.statusCode}',
+      );
       await feedingEventsBox.close();
       return false;
     }
@@ -244,7 +254,10 @@ Map<String, dynamic> _feedingEventToJson(FeedingEventModel event) {
 Future<void> _updateLastBackgroundSyncTime() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_lastBackgroundSyncKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt(
+      _lastBackgroundSyncKey,
+      DateTime.now().millisecondsSinceEpoch,
+    );
   } catch (e) {
     debugPrint('BackgroundSync: Failed to update last sync time - $e');
   }
@@ -326,7 +339,9 @@ class BackgroundSyncService {
   /// The task will only run when network is available.
   Future<void> registerPeriodicSync() async {
     if (!_isInitialized) {
-      debugPrint('BackgroundSyncService: Not initialized, call initialize() first');
+      debugPrint(
+        'BackgroundSyncService: Not initialized, call initialize() first',
+      );
       return;
     }
 
@@ -343,8 +358,10 @@ class BackgroundSyncService {
       backoffPolicyDelay: const Duration(minutes: 5),
     );
 
-    debugPrint('BackgroundSyncService: Periodic sync registered '
-        '(frequency: ${kBackgroundSyncFrequency.inMinutes} minutes)');
+    debugPrint(
+      'BackgroundSyncService: Periodic sync registered '
+      '(frequency: ${kBackgroundSyncFrequency.inMinutes} minutes)',
+    );
   }
 
   /// Cancels the periodic background sync task.
@@ -371,9 +388,7 @@ class BackgroundSyncService {
     await Workmanager().registerOneOffTask(
       '${kBackgroundSyncTaskName}_immediate_${DateTime.now().millisecondsSinceEpoch}',
       kBackgroundSyncTaskName,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
+      constraints: Constraints(networkType: NetworkType.connected),
     );
 
     debugPrint('BackgroundSyncService: Immediate sync triggered');

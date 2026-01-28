@@ -17,20 +17,14 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
   group('AppCard', () {
     testWidgets('renders Card widget', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppCard(
-            child: Text('Card Content'),
-          ),
-        ),
+        buildTestWidget(const AppCard(child: Text('Card Content'))),
       );
 
       expect(find.byType(Card), findsOneWidget);
@@ -39,43 +33,37 @@ void main() {
 
     testWidgets('applies default padding', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppCard(
-            child: Text('Padded Content'),
-          ),
-        ),
+        buildTestWidget(const AppCard(child: Text('Padded Content'))),
       );
 
       final padding = tester.widget<Padding>(
-        find.ancestor(
-          of: find.text('Padded Content'),
-          matching: find.byType(Padding),
-        ).first,
+        find
+            .ancestor(
+              of: find.text('Padded Content'),
+              matching: find.byType(Padding),
+            )
+            .first,
       );
 
       expect(padding.padding, const EdgeInsets.all(16));
     });
 
     testWidgets('applies custom padding', (tester) async {
-      const customPadding = EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 12,
-      );
+      const customPadding = EdgeInsets.symmetric(horizontal: 24, vertical: 12);
 
       await tester.pumpWidget(
         buildTestWidget(
-          const AppCard(
-            padding: customPadding,
-            child: Text('Custom Padding'),
-          ),
+          const AppCard(padding: customPadding, child: Text('Custom Padding')),
         ),
       );
 
       final padding = tester.widget<Padding>(
-        find.ancestor(
-          of: find.text('Custom Padding'),
-          matching: find.byType(Padding),
-        ).first,
+        find
+            .ancestor(
+              of: find.text('Custom Padding'),
+              matching: find.byType(Padding),
+            )
+            .first,
       );
 
       expect(padding.padding, customPadding);
@@ -100,10 +88,7 @@ void main() {
     testWidgets('renders InkWell when onTap is provided', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          AppCard(
-            onTap: () {},
-            child: const Text('With InkWell'),
-          ),
+          AppCard(onTap: () {}, child: const Text('With InkWell')),
         ),
       );
 
@@ -112,11 +97,7 @@ void main() {
 
     testWidgets('does not render InkWell when onTap is null', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppCard(
-            child: Text('Without InkWell'),
-          ),
-        ),
+        buildTestWidget(const AppCard(child: Text('Without InkWell'))),
       );
 
       expect(find.byType(InkWell), findsNothing);
@@ -140,11 +121,7 @@ void main() {
 
     testWidgets('uses theme card style', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppCard(
-            child: Text('Themed Card'),
-          ),
-        ),
+        buildTestWidget(const AppCard(child: Text('Themed Card'))),
       );
 
       final card = tester.widget<Card>(find.byType(Card));

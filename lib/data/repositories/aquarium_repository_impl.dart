@@ -22,9 +22,9 @@ class AquariumRepositoryImpl implements AquariumRepository {
     required AquariumRemoteDataSource remoteDataSource,
     required AquariumLocalDataSource localDataSource,
     required AuthLocalDataSource authLocalDataSource,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource,
-        _authLocalDataSource = authLocalDataSource;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource,
+       _authLocalDataSource = authLocalDataSource;
 
   final AquariumRemoteDataSource _remoteDataSource;
   final AquariumLocalDataSource _localDataSource;
@@ -253,17 +253,21 @@ class AquariumRepositoryImpl implements AquariumRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() =>
-        const AuthenticationFailure(message: 'Session expired'),
-      ValidationException(:final message, :final errors) =>
-        ValidationFailure(message: message, errors: errors),
-      ForbiddenException() =>
-        const AuthenticationFailure(message: 'Access denied'),
-      NotFoundException() =>
-        const CacheFailure(message: 'Aquarium not found'),
+      UnauthorizedException() => const AuthenticationFailure(
+        message: 'Session expired',
+      ),
+      ValidationException(:final message, :final errors) => ValidationFailure(
+        message: message,
+        errors: errors,
+      ),
+      ForbiddenException() => const AuthenticationFailure(
+        message: 'Access denied',
+      ),
+      NotFoundException() => const CacheFailure(message: 'Aquarium not found'),
       ServerException() => const ServerFailure(),
-      UnknownApiException(:final message) =>
-        UnexpectedFailure(message: message),
+      UnknownApiException(:final message) => UnexpectedFailure(
+        message: message,
+      ),
     };
   }
 }

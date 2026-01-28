@@ -112,7 +112,8 @@ class CachedSubscriptionStatusModelAdapter
     }
 
     return CachedSubscriptionStatusModel(
-      status: fields[0] as SubscriptionStatus? ?? const SubscriptionStatus.free(),
+      status:
+          fields[0] as SubscriptionStatus? ?? const SubscriptionStatus.free(),
       cachedAt: fields[1] as DateTime? ?? DateTime.now(),
       ttlMinutes: fields[2] as int? ?? 60,
     );

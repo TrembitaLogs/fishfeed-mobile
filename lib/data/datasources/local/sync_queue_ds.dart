@@ -16,7 +16,7 @@ import 'package:fishfeed/data/models/sync_operation_model.dart';
 /// ```
 class SyncQueueDataSource {
   SyncQueueDataSource({Box<dynamic>? syncQueueBox})
-      : _syncQueueBox = syncQueueBox;
+    : _syncQueueBox = syncQueueBox;
 
   final Box<dynamic>? _syncQueueBox;
 
@@ -38,8 +38,9 @@ class SyncQueueDataSource {
   /// Returns all sync operations regardless of status,
   /// sorted by timestamp (oldest first) for FIFO processing.
   List<SyncOperationModel> getQueuedOperations() {
-    final operations =
-        _syncQueue.values.whereType<SyncOperationModel>().toList();
+    final operations = _syncQueue.values
+        .whereType<SyncOperationModel>()
+        .toList();
     operations.sort((a, b) => a.timestamp.compareTo(b.timestamp));
     return operations;
   }
@@ -52,9 +53,11 @@ class SyncQueueDataSource {
   List<SyncOperationModel> getPendingOperations() {
     final operations = _syncQueue.values
         .whereType<SyncOperationModel>()
-        .where((op) =>
-            op.status == SyncOperationStatus.pending ||
-            (op.status == SyncOperationStatus.failed && op.canRetry))
+        .where(
+          (op) =>
+              op.status == SyncOperationStatus.pending ||
+              (op.status == SyncOperationStatus.failed && op.canRetry),
+        )
         .toList();
 
     operations.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -199,8 +202,7 @@ class SyncQueueDataSource {
   Future<int> clearFailedOperations() async {
     final failed = _syncQueue.values
         .whereType<SyncOperationModel>()
-        .where(
-            (op) => op.status == SyncOperationStatus.failed && !op.canRetry)
+        .where((op) => op.status == SyncOperationStatus.failed && !op.canRetry)
         .toList();
 
     for (final op in failed) {
@@ -242,11 +244,11 @@ class SyncQueueDataSource {
 
   /// Checks if there are any pending operations.
   bool hasPendingOperations() {
-    return _syncQueue.values
-        .whereType<SyncOperationModel>()
-        .any((op) =>
-            op.status == SyncOperationStatus.pending ||
-            (op.status == SyncOperationStatus.failed && op.canRetry));
+    return _syncQueue.values.whereType<SyncOperationModel>().any(
+      (op) =>
+          op.status == SyncOperationStatus.pending ||
+          (op.status == SyncOperationStatus.failed && op.canRetry),
+    );
   }
 
   /// Gets operations by status.

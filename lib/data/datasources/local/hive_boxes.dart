@@ -228,7 +228,9 @@ class HiveBoxes {
     if (!Hive.isAdapterRegistered(SubscriptionStatusAdapter().typeId)) {
       Hive.registerAdapter(SubscriptionStatusAdapter());
     }
-    if (!Hive.isAdapterRegistered(CachedSubscriptionStatusModelAdapter().typeId)) {
+    if (!Hive.isAdapterRegistered(
+      CachedSubscriptionStatusModelAdapter().typeId,
+    )) {
       Hive.registerAdapter(CachedSubscriptionStatusModelAdapter());
     }
 
@@ -378,9 +380,10 @@ class HiveBoxes {
   static bool getOnboardingCompleted() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.onboardingCompleted,
-      defaultValue: false,
-    ) as bool;
+          AppPreferenceKeys.onboardingCompleted,
+          defaultValue: false,
+        )
+        as bool;
   }
 
   /// Sets the onboarding completion status in app preferences.
@@ -469,9 +472,10 @@ class HiveBoxes {
   static String getThemeMode() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.themeMode,
-      defaultValue: 'system',
-    ) as String;
+          AppPreferenceKeys.themeMode,
+          defaultValue: 'system',
+        )
+        as String;
   }
 
   /// Sets the theme mode setting.
@@ -484,60 +488,76 @@ class HiveBoxes {
   static bool getNotificationsEnabled() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.notificationsEnabled,
-      defaultValue: true,
-    ) as bool;
+          AppPreferenceKeys.notificationsEnabled,
+          defaultValue: true,
+        )
+        as bool;
   }
 
   /// Sets whether notifications are enabled.
   static Future<void> setNotificationsEnabled(bool enabled) async {
     _ensureInitialized();
-    await _appPreferencesBox.put(AppPreferenceKeys.notificationsEnabled, enabled);
+    await _appPreferencesBox.put(
+      AppPreferenceKeys.notificationsEnabled,
+      enabled,
+    );
   }
 
   /// Gets whether feeding reminders are enabled.
   static bool getFeedingRemindersEnabled() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.feedingRemindersEnabled,
-      defaultValue: true,
-    ) as bool;
+          AppPreferenceKeys.feedingRemindersEnabled,
+          defaultValue: true,
+        )
+        as bool;
   }
 
   /// Sets whether feeding reminders are enabled.
   static Future<void> setFeedingRemindersEnabled(bool enabled) async {
     _ensureInitialized();
-    await _appPreferencesBox.put(AppPreferenceKeys.feedingRemindersEnabled, enabled);
+    await _appPreferencesBox.put(
+      AppPreferenceKeys.feedingRemindersEnabled,
+      enabled,
+    );
   }
 
   /// Gets whether streak alerts are enabled.
   static bool getStreakAlertsEnabled() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.streakAlertsEnabled,
-      defaultValue: true,
-    ) as bool;
+          AppPreferenceKeys.streakAlertsEnabled,
+          defaultValue: true,
+        )
+        as bool;
   }
 
   /// Sets whether streak alerts are enabled.
   static Future<void> setStreakAlertsEnabled(bool enabled) async {
     _ensureInitialized();
-    await _appPreferencesBox.put(AppPreferenceKeys.streakAlertsEnabled, enabled);
+    await _appPreferencesBox.put(
+      AppPreferenceKeys.streakAlertsEnabled,
+      enabled,
+    );
   }
 
   /// Gets whether weekly summary is enabled.
   static bool getWeeklySummaryEnabled() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.weeklySummaryEnabled,
-      defaultValue: true,
-    ) as bool;
+          AppPreferenceKeys.weeklySummaryEnabled,
+          defaultValue: true,
+        )
+        as bool;
   }
 
   /// Sets whether weekly summary is enabled.
   static Future<void> setWeeklySummaryEnabled(bool enabled) async {
     _ensureInitialized();
-    await _appPreferencesBox.put(AppPreferenceKeys.weeklySummaryEnabled, enabled);
+    await _appPreferencesBox.put(
+      AppPreferenceKeys.weeklySummaryEnabled,
+      enabled,
+    );
   }
 
   /// Gets the quiet hours start time as minutes from midnight.
@@ -582,9 +602,10 @@ class HiveBoxes {
   static String getLanguage() {
     _ensureInitialized();
     return _appPreferencesBox.get(
-      AppPreferenceKeys.language,
-      defaultValue: 'en',
-    ) as String;
+          AppPreferenceKeys.language,
+          defaultValue: 'en',
+        )
+        as String;
   }
 
   /// Sets the preferred language code.

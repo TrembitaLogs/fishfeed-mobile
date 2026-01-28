@@ -74,10 +74,7 @@ class UnexpectedFailure extends Failure {
 
 /// Failure due to in-app purchase issues.
 class PurchaseFailure extends Failure {
-  const PurchaseFailure({
-    super.message = 'Purchase failed',
-    this.errorCode,
-  });
+  const PurchaseFailure({super.message = 'Purchase failed', this.errorCode});
 
   /// The error code from the purchase SDK.
   final String? errorCode;
@@ -88,7 +85,9 @@ class PurchaseFailure extends Failure {
 
 /// Failure when user cancels a purchase.
 class PurchaseCancelledFailure extends Failure {
-  const PurchaseCancelledFailure({super.message = 'Purchase cancelled by user'});
+  const PurchaseCancelledFailure({
+    super.message = 'Purchase cancelled by user',
+  });
 }
 
 /// Failure when product is not available for purchase.

@@ -148,9 +148,7 @@ void main() {
 
     testWidgets('loading state', (tester) async {
       await tester.pumpWidget(
-        buildGoldenWidget(
-          streakState: const StreakState(isLoading: true),
-        ),
+        buildGoldenWidget(streakState: const StreakState(isLoading: true)),
       );
       // Don't use pumpAndSettle for shimmer - it animates forever
       await tester.pump(const Duration(milliseconds: 500));
@@ -187,10 +185,7 @@ void main() {
 /// Test-only StreakNotifier that returns a fixed state.
 class _TestStreakNotifier extends StreakNotifier {
   _TestStreakNotifier(this._initialState)
-      : super(
-          streakDataSource: _MockStreakLocalDataSource(),
-          ref: _MockRef(),
-        );
+    : super(streakDataSource: _MockStreakLocalDataSource(), ref: _MockRef());
 
   final StreakState _initialState;
 
@@ -209,8 +204,8 @@ class _TestStreakNotifier extends StreakNotifier {
 }
 
 /// Minimal mock for StreakLocalDataSource.
-class _MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {
-}
+class _MockStreakLocalDataSource extends Mock
+    implements StreakLocalDataSource {}
 
 /// Minimal mock for Ref.
 class _MockRef extends Mock implements Ref {}

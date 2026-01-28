@@ -31,10 +31,7 @@ class CameraControls extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withValues(alpha: 0.6),
-          ],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
         ),
       ),
       child: SafeArea(
@@ -132,9 +129,10 @@ class _CaptureButtonState extends State<_CaptureButton>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -172,10 +170,7 @@ class _CaptureButtonState extends State<_CaptureButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: Semantics(
           label: 'Take photo',
@@ -219,10 +214,7 @@ class _CaptureButtonState extends State<_CaptureButton>
 
 /// Camera flip button for switching front/back camera.
 class _CameraFlipButton extends StatelessWidget {
-  const _CameraFlipButton({
-    required this.isEnabled,
-    required this.onPressed,
-  });
+  const _CameraFlipButton({required this.isEnabled, required this.onPressed});
 
   final bool isEnabled;
   final VoidCallback onPressed;
@@ -275,11 +267,7 @@ class _ControlButton extends StatelessWidget {
 
 /// Top bar for camera screen with close button and scans remaining badge.
 class CameraTopBar extends StatelessWidget {
-  const CameraTopBar({
-    super.key,
-    required this.onClose,
-    this.scansRemaining,
-  });
+  const CameraTopBar({super.key, required this.onClose, this.scansRemaining});
 
   /// Callback when close button is pressed.
   final VoidCallback onClose;
@@ -295,10 +283,7 @@ class CameraTopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.6),
-            Colors.transparent,
-          ],
+          colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
         ),
       ),
       child: SafeArea(
@@ -312,9 +297,7 @@ class CameraTopBar extends StatelessWidget {
               color: Colors.white,
               iconSize: 28,
               onPressed: onClose,
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black38,
-              ),
+              style: IconButton.styleFrom(backgroundColor: Colors.black38),
             ),
             // Scans remaining badge
             if (scansRemaining != null)

@@ -69,10 +69,7 @@ abstract interface class StreakRepository {
   /// Returns [Right(Streak)] with updated freeze count on success.
   /// Returns [Left(Failure)] on error:
   /// - [ValidationFailure] if no freeze days available
-  Future<Either<Failure, Streak>> useFreeze(
-    String userId,
-    DateTime freezeDate,
-  );
+  Future<Either<Failure, Streak>> useFreeze(String userId, DateTime freezeDate);
 
   /// Resets the monthly freeze availability.
   ///

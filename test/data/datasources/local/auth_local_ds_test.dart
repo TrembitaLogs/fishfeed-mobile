@@ -73,18 +73,22 @@ void main() {
   group('getAccessToken', () {
     test('should return access token when exists', () async {
       const expectedToken = 'stored_access_token';
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => expectedToken);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => expectedToken);
 
       final result = await authLocalDataSource.getAccessToken();
 
       expect(result, expectedToken);
-      verify(() => mockStorage.read(key: AuthStorageKeys.accessToken)).called(1);
+      verify(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).called(1);
     });
 
     test('should return null when no access token exists', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => null);
 
       final result = await authLocalDataSource.getAccessToken();
 
@@ -95,19 +99,22 @@ void main() {
   group('getRefreshToken', () {
     test('should return refresh token when exists', () async {
       const expectedToken = 'stored_refresh_token';
-      when(() => mockStorage.read(key: AuthStorageKeys.refreshToken))
-          .thenAnswer((_) async => expectedToken);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.refreshToken),
+      ).thenAnswer((_) async => expectedToken);
 
       final result = await authLocalDataSource.getRefreshToken();
 
       expect(result, expectedToken);
-      verify(() => mockStorage.read(key: AuthStorageKeys.refreshToken))
-          .called(1);
+      verify(
+        () => mockStorage.read(key: AuthStorageKeys.refreshToken),
+      ).called(1);
     });
 
     test('should return null when no refresh token exists', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.refreshToken))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.refreshToken),
+      ).thenAnswer((_) async => null);
 
       final result = await authLocalDataSource.getRefreshToken();
 
@@ -118,18 +125,22 @@ void main() {
   group('getTokenExpiry', () {
     test('should return DateTime when valid expiry exists', () async {
       final expectedExpiry = DateTime(2025, 12, 31, 23, 59, 59);
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => expectedExpiry.toIso8601String());
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => expectedExpiry.toIso8601String());
 
       final result = await authLocalDataSource.getTokenExpiry();
 
       expect(result, expectedExpiry);
-      verify(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry)).called(1);
+      verify(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).called(1);
     });
 
     test('should return null when no expiry exists', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => null);
 
       final result = await authLocalDataSource.getTokenExpiry();
 
@@ -137,8 +148,9 @@ void main() {
     });
 
     test('should return null when expiry string is invalid', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => 'invalid_date_string');
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => 'invalid_date_string');
 
       final result = await authLocalDataSource.getTokenExpiry();
 
@@ -151,10 +163,12 @@ void main() {
       const testAccessToken = 'valid_access_token';
       final futureExpiry = DateTime.now().add(const Duration(hours: 1));
 
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => testAccessToken);
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => futureExpiry.toIso8601String());
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => testAccessToken);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => futureExpiry.toIso8601String());
 
       final result = await authLocalDataSource.isTokenValid();
 
@@ -162,8 +176,9 @@ void main() {
     });
 
     test('should return false when no access token exists', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => null);
 
       final result = await authLocalDataSource.isTokenValid();
 
@@ -171,10 +186,12 @@ void main() {
     });
 
     test('should return false when no expiry exists', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => 'some_token');
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => 'some_token');
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => null);
 
       final result = await authLocalDataSource.isTokenValid();
 
@@ -185,10 +202,12 @@ void main() {
       const testAccessToken = 'expired_access_token';
       final pastExpiry = DateTime.now().subtract(const Duration(hours: 1));
 
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => testAccessToken);
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => pastExpiry.toIso8601String());
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => testAccessToken);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => pastExpiry.toIso8601String());
 
       final result = await authLocalDataSource.isTokenValid();
 
@@ -199,10 +218,12 @@ void main() {
       const testAccessToken = 'edge_case_token';
       final exactlyNow = DateTime.now();
 
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => testAccessToken);
-      when(() => mockStorage.read(key: AuthStorageKeys.tokenExpiry))
-          .thenAnswer((_) async => exactlyNow.toIso8601String());
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => testAccessToken);
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.tokenExpiry),
+      ).thenAnswer((_) async => exactlyNow.toIso8601String());
 
       final result = await authLocalDataSource.isTokenValid();
 
@@ -212,17 +233,21 @@ void main() {
 
   group('clearTokens', () {
     test('should delete all tokens from secure storage', () async {
-      when(() => mockStorage.delete(key: any<String>(named: 'key')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorage.delete(key: any<String>(named: 'key')),
+      ).thenAnswer((_) async {});
 
       await authLocalDataSource.clearTokens();
 
-      verify(() => mockStorage.delete(key: AuthStorageKeys.accessToken))
-          .called(1);
-      verify(() => mockStorage.delete(key: AuthStorageKeys.refreshToken))
-          .called(1);
-      verify(() => mockStorage.delete(key: AuthStorageKeys.tokenExpiry))
-          .called(1);
+      verify(
+        () => mockStorage.delete(key: AuthStorageKeys.accessToken),
+      ).called(1);
+      verify(
+        () => mockStorage.delete(key: AuthStorageKeys.refreshToken),
+      ).called(1);
+      verify(
+        () => mockStorage.delete(key: AuthStorageKeys.tokenExpiry),
+      ).called(1);
     });
   });
 
@@ -233,13 +258,16 @@ void main() {
     });
 
     test('should use provided storage instance', () async {
-      when(() => mockStorage.read(key: AuthStorageKeys.accessToken))
-          .thenAnswer((_) async => 'custom_token');
+      when(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).thenAnswer((_) async => 'custom_token');
 
       final result = await authLocalDataSource.getAccessToken();
 
       expect(result, 'custom_token');
-      verify(() => mockStorage.read(key: AuthStorageKeys.accessToken)).called(1);
+      verify(
+        () => mockStorage.read(key: AuthStorageKeys.accessToken),
+      ).called(1);
     });
   });
 
@@ -266,7 +294,9 @@ void main() {
 
     group('saveUserLocally', () {
       test('should save user to Hive box', () async {
-        when(() => mockUsersBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockUsersBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await authDsWithUsersBox.saveUserLocally(testUser);
 
@@ -304,7 +334,9 @@ void main() {
 
     group('updateUserLocally', () {
       test('should save user to local storage', () async {
-        when(() => mockUsersBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockUsersBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final updatedUser = UserModel(
           id: 'user_123',
@@ -321,7 +353,9 @@ void main() {
       });
 
       test('should save user even when no user previously exists', () async {
-        when(() => mockUsersBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockUsersBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await authDsWithUsersBox.updateUserLocally(testUser);
 
@@ -331,7 +365,9 @@ void main() {
 
     group('clearUserData', () {
       test('should delete user from Hive box', () async {
-        when(() => mockUsersBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockUsersBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await authDsWithUsersBox.clearUserData();
 
@@ -341,18 +377,24 @@ void main() {
 
     group('clearAll', () {
       test('should clear both tokens and user data', () async {
-        when(() => mockStorage.delete(key: any<String>(named: 'key')))
-            .thenAnswer((_) async {});
-        when(() => mockUsersBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStorage.delete(key: any<String>(named: 'key')),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUsersBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await authDsWithUsersBox.clearAll();
 
-        verify(() => mockStorage.delete(key: AuthStorageKeys.accessToken))
-            .called(1);
-        verify(() => mockStorage.delete(key: AuthStorageKeys.refreshToken))
-            .called(1);
-        verify(() => mockStorage.delete(key: AuthStorageKeys.tokenExpiry))
-            .called(1);
+        verify(
+          () => mockStorage.delete(key: AuthStorageKeys.accessToken),
+        ).called(1);
+        verify(
+          () => mockStorage.delete(key: AuthStorageKeys.refreshToken),
+        ).called(1);
+        verify(
+          () => mockStorage.delete(key: AuthStorageKeys.tokenExpiry),
+        ).called(1);
         verify(() => mockUsersBox.delete('current_user')).called(1);
       });
     });

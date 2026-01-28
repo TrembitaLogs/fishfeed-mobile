@@ -77,15 +77,9 @@ void main() {
   group('EditFishScreen', () {
     group('form initialization', () {
       testWidgets('displays fish data with custom name', (tester) async {
-        final fishModel = _createFishModel(
-          '1',
-          'guppy',
-          5,
-          name: 'My Guppy',
-        );
+        final fishModel = _createFishModel('1', 'guppy', 5, name: 'My Guppy');
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -100,12 +94,12 @@ void main() {
         expect(find.text('5'), findsOneWidget);
       });
 
-      testWidgets('displays species name when fish has no custom name',
-          (tester) async {
+      testWidgets('displays species name when fish has no custom name', (
+        tester,
+      ) async {
         final fishModel = _createFishModel('1', 'betta', 3);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -122,8 +116,7 @@ void main() {
       testWidgets('increment button increases quantity', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -140,8 +133,7 @@ void main() {
       testWidgets('decrement button decreases quantity', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -158,8 +150,7 @@ void main() {
       testWidgets('quantity cannot go below 1', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 1);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -177,8 +168,7 @@ void main() {
       testWidgets('quantity cannot exceed 999', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 999);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -195,12 +185,12 @@ void main() {
     });
 
     group('save action', () {
-      testWidgets('Save button saves quantity change and navigates back',
-          (tester) async {
+      testWidgets('Save button saves quantity change and navigates back', (
+        tester,
+      ) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
         when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
@@ -215,8 +205,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify update was called with new quantity
-        final captured =
-            verify(() => mockFishDs.updateFish(captureAny())).captured;
+        final captured = verify(
+          () => mockFishDs.updateFish(captureAny()),
+        ).captured;
         final updatedModel = captured.first as FishModel;
         expect(updatedModel.quantity, equals(6));
       });
@@ -224,8 +215,7 @@ void main() {
       testWidgets('Save preserves original custom name', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5, name: 'My Fish');
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
         when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
@@ -240,8 +230,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify name was preserved
-        final captured =
-            verify(() => mockFishDs.updateFish(captureAny())).captured;
+        final captured = verify(
+          () => mockFishDs.updateFish(captureAny()),
+        ).captured;
         final updatedModel = captured.first as FishModel;
         expect(updatedModel.name, equals('My Fish'));
       });
@@ -249,8 +240,7 @@ void main() {
       testWidgets('shows loading indicator while saving', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
         when(() => mockFishDs.updateFish(any())).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(seconds: 1));
           return true;
@@ -272,12 +262,12 @@ void main() {
     });
 
     group('cancel action', () {
-      testWidgets('Cancel button navigates back without saving',
-          (tester) async {
+      testWidgets('Cancel button navigates back without saving', (
+        tester,
+      ) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -298,8 +288,9 @@ void main() {
     });
 
     group('fish not found', () {
-      testWidgets('shows not found state when fish does not exist',
-          (tester) async {
+      testWidgets('shows not found state when fish does not exist', (
+        tester,
+      ) async {
         when(() => mockFishDs.getFishById(any())).thenReturn(null);
 
         await tester.pumpWidget(buildTestWidget(fishId: 'nonexistent'));
@@ -332,8 +323,7 @@ void main() {
       testWidgets('has correct title', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -346,8 +336,7 @@ void main() {
       testWidgets('displays Quantity label', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
@@ -358,8 +347,7 @@ void main() {
       testWidgets('displays fish icon', (tester) async {
         final fishModel = _createFishModel('1', 'guppy', 5);
 
-        when(() => mockFishDs.getFishById(any()))
-            .thenReturn(fishModel);
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
 
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();

@@ -25,12 +25,12 @@ class SubscriptionStatus extends Equatable {
 
   /// Creates a free tier subscription status.
   const SubscriptionStatus.free()
-      : tier = SubscriptionTier.free,
-        expirationDate = null,
-        isTrialActive = false,
-        willRenew = false,
-        hasRemoveAds = false,
-        productIdentifier = null;
+    : tier = SubscriptionTier.free,
+      expirationDate = null,
+      isTrialActive = false,
+      willRenew = false,
+      hasRemoveAds = false,
+      productIdentifier = null;
 
   /// Creates a premium subscription status.
   factory SubscriptionStatus.premium({
@@ -51,12 +51,12 @@ class SubscriptionStatus extends Equatable {
 
   /// Creates a status with only remove ads purchased.
   const SubscriptionStatus.removeAdsOnly()
-      : tier = SubscriptionTier.free,
-        expirationDate = null,
-        isTrialActive = false,
-        willRenew = false,
-        hasRemoveAds = true,
-        productIdentifier = null;
+    : tier = SubscriptionTier.free,
+      expirationDate = null,
+      isTrialActive = false,
+      willRenew = false,
+      hasRemoveAds = true,
+      productIdentifier = null;
 
   /// The subscription tier (free or premium).
   final SubscriptionTier tier;
@@ -99,8 +99,9 @@ class SubscriptionStatus extends Equatable {
   }) {
     return SubscriptionStatus(
       tier: tier ?? this.tier,
-      expirationDate:
-          clearExpirationDate ? null : (expirationDate ?? this.expirationDate),
+      expirationDate: clearExpirationDate
+          ? null
+          : (expirationDate ?? this.expirationDate),
       isTrialActive: isTrialActive ?? this.isTrialActive,
       willRenew: willRenew ?? this.willRenew,
       hasRemoveAds: hasRemoveAds ?? this.hasRemoveAds,
@@ -112,11 +113,11 @@ class SubscriptionStatus extends Equatable {
 
   @override
   List<Object?> get props => [
-        tier,
-        expirationDate,
-        isTrialActive,
-        willRenew,
-        hasRemoveAds,
-        productIdentifier,
-      ];
+    tier,
+    expirationDate,
+    isTrialActive,
+    willRenew,
+    hasRemoveAds,
+    productIdentifier,
+  ];
 }

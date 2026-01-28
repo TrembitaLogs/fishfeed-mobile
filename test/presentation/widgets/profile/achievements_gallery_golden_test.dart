@@ -42,7 +42,9 @@ void main() {
     int unlockedCount = 0,
     double lockedProgress = 0.0,
   }) {
-    return AchievementConstants.orderedAchievements.asMap().entries.map((entry) {
+    return AchievementConstants.orderedAchievements.asMap().entries.map((
+      entry,
+    ) {
       final index = entry.key;
       final type = entry.value;
       return createTestAchievement(
@@ -222,10 +224,7 @@ void main() {
 /// Test-only AchievementsNotifier that returns a fixed state.
 class _TestAchievementsNotifier extends AchievementsNotifier {
   _TestAchievementsNotifier(this._initialState)
-      : super(
-          achievementUseCase: _MockAchievementUseCase(),
-          ref: _MockRef(),
-        );
+    : super(achievementUseCase: _MockAchievementUseCase(), ref: _MockRef());
 
   final AchievementsState _initialState;
 

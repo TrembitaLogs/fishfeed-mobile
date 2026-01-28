@@ -40,9 +40,9 @@ class _SchedulePreviewStepState extends ConsumerState<SchedulePreviewStep> {
 
     // Use the GenerateScheduleUseCase for schedule generation
     const usecase = GenerateScheduleUseCase();
-    final schedule = usecase(GenerateScheduleParams(
-      speciesSelections: selectedSpecies,
-    ));
+    final schedule = usecase(
+      GenerateScheduleParams(speciesSelections: selectedSpecies),
+    );
 
     notifier.setGeneratedSchedule(schedule);
   }
@@ -115,11 +115,7 @@ class _SchedulePreviewStepState extends ConsumerState<SchedulePreviewStep> {
             ),
           const SizedBox(height: 16),
           if (state.isGeneratingSchedule)
-            const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
+            const Expanded(child: Center(child: CircularProgressIndicator()))
           else
             Expanded(
               child: ListView.separated(
@@ -147,10 +143,7 @@ class _SchedulePreviewStepState extends ConsumerState<SchedulePreviewStep> {
 
 /// Summary card showing total fish and feedings per day.
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.totalFish,
-    required this.feedingsPerDay,
-  });
+  const _SummaryCard({required this.totalFish, required this.feedingsPerDay});
 
   final int totalFish;
   final int feedingsPerDay;
@@ -176,7 +169,9 @@ class _SummaryCard extends StatelessWidget {
             Container(
               width: 1,
               height: 40,
-              color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.2),
+              color: theme.colorScheme.onPrimaryContainer.withValues(
+                alpha: 0.2,
+              ),
             ),
             Expanded(
               child: _SummaryItem(
@@ -211,11 +206,7 @@ class _SummaryItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: theme.colorScheme.onPrimaryContainer,
-        ),
+        Icon(icon, size: 20, color: theme.colorScheme.onPrimaryContainer),
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +221,9 @@ class _SummaryItem extends StatelessWidget {
             Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                color: theme.colorScheme.onPrimaryContainer.withValues(
+                  alpha: 0.8,
+                ),
               ),
             ),
           ],
@@ -242,10 +235,7 @@ class _SummaryItem extends StatelessWidget {
 
 /// Schedule card for a single species.
 class _ScheduleCard extends StatelessWidget {
-  const _ScheduleCard({
-    required this.entry,
-    required this.onEditTime,
-  });
+  const _ScheduleCard({required this.entry, required this.onEditTime});
 
   final GeneratedScheduleEntry entry;
   final void Function(int timeIndex, String currentTime) onEditTime;
@@ -363,7 +353,10 @@ class _EditableFeedingTimes extends StatelessWidget {
                 onTap: () => onEditTime(index, time),
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -410,11 +403,7 @@ class _InfoRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
         Text(
           '$label: ',

@@ -146,21 +146,21 @@ class SyncService {
     Connectivity? connectivity,
     Logger? logger,
     ConflictResolver? conflictResolver,
-  })  : _apiClient = apiClient,
-        _aquariumDs = aquariumDs,
-        _fishDs = fishDs,
-        _feedingDs = feedingDs,
-        _scheduleDs = scheduleDs,
-        _config = config,
-        _connectivity = connectivity ?? Connectivity(),
-        _logger = logger ?? Logger(printer: PrettyPrinter(methodCount: 0)),
-        _conflictResolver = conflictResolver ?? ConflictResolver(),
-        _changeTracker = ChangeTracker(
-          aquariumDs: aquariumDs,
-          fishDs: fishDs,
-          feedingDs: feedingDs,
-          scheduleDs: scheduleDs,
-        );
+  }) : _apiClient = apiClient,
+       _aquariumDs = aquariumDs,
+       _fishDs = fishDs,
+       _feedingDs = feedingDs,
+       _scheduleDs = scheduleDs,
+       _config = config,
+       _connectivity = connectivity ?? Connectivity(),
+       _logger = logger ?? Logger(printer: PrettyPrinter(methodCount: 0)),
+       _conflictResolver = conflictResolver ?? ConflictResolver(),
+       _changeTracker = ChangeTracker(
+         aquariumDs: aquariumDs,
+         fishDs: fishDs,
+         feedingDs: feedingDs,
+         scheduleDs: scheduleDs,
+       );
 
   final ApiClient _apiClient;
   final AquariumLocalDataSource _aquariumDs;
@@ -189,7 +189,8 @@ class SyncService {
 
   // Conflict management
   final List<SyncConflict<Map<String, dynamic>>> _pendingConflicts = [];
-  final StreamController<SyncConflict<Map<String, dynamic>>> _conflictController =
+  final StreamController<SyncConflict<Map<String, dynamic>>>
+  _conflictController =
       StreamController<SyncConflict<Map<String, dynamic>>>.broadcast();
 
   /// Stream of sync state changes for UI updates.
@@ -416,10 +417,7 @@ class SyncService {
       if (data == null) {
         // No data returned, mark all changes as synced
         await _markChangesAsSynced(changes);
-        return SyncResult(
-          uploadedCount: changes.length,
-          downloadedCount: 0,
-        );
+        return SyncResult(uploadedCount: changes.length, downloadedCount: 0);
       }
 
       return await _processSyncResponse(data, changes);
@@ -524,7 +522,9 @@ class SyncService {
     final aquariums = serverState['aquariums'] as List<dynamic>?;
     if (aquariums != null) {
       for (final aquariumData in aquariums) {
-        await _aquariumDs.applyServerUpdate(aquariumData as Map<String, dynamic>);
+        await _aquariumDs.applyServerUpdate(
+          aquariumData as Map<String, dynamic>,
+        );
         appliedCount++;
       }
     }
@@ -552,7 +552,9 @@ class SyncService {
     final scheduleDs = _scheduleDs;
     if (schedules != null && scheduleDs != null) {
       for (final scheduleData in schedules) {
-        await scheduleDs.applyServerUpdate(scheduleData as Map<String, dynamic>);
+        await scheduleDs.applyServerUpdate(
+          scheduleData as Map<String, dynamic>,
+        );
         appliedCount++;
       }
     }
@@ -562,7 +564,8 @@ class SyncService {
   }
 
   Future<List<String>> _applyServerDeletions(
-      Map<String, dynamic> deleted) async {
+    Map<String, dynamic> deleted,
+  ) async {
     final deletedIds = <String>[];
 
     // Delete aquariums
@@ -627,7 +630,9 @@ class SyncService {
   }
 
   Future<void> _markChangesByIdAsSynced(
-      List<String> ids, List<SyncChange> changes) async {
+    List<String> ids,
+    List<SyncChange> changes,
+  ) async {
     final idSet = ids.toSet();
     final now = DateTime.now();
 
@@ -671,11 +676,13 @@ class SyncService {
   // ============ Conflict Handling ============
 
   SyncConflict<Map<String, dynamic>>? _parseConflict(
-      Map<String, dynamic> conflictData) {
+    Map<String, dynamic> conflictData,
+  ) {
     try {
       final entityId = conflictData['entity_id']?.toString();
       final entityType = conflictData['entity_type']?.toString();
-      final localVersion = conflictData['local_version'] as Map<String, dynamic>?;
+      final localVersion =
+          conflictData['local_version'] as Map<String, dynamic>?;
       final serverVersion =
           conflictData['server_version'] as Map<String, dynamic>?;
 
@@ -687,11 +694,15 @@ class SyncService {
       }
 
       final localUpdatedAt =
-          DateTime.tryParse(conflictData['local_updated_at']?.toString() ?? '') ??
-              DateTime.now();
+          DateTime.tryParse(
+            conflictData['local_updated_at']?.toString() ?? '',
+          ) ??
+          DateTime.now();
       final serverUpdatedAt =
-          DateTime.tryParse(conflictData['server_updated_at']?.toString() ?? '') ??
-              DateTime.now();
+          DateTime.tryParse(
+            conflictData['server_updated_at']?.toString() ?? '',
+          ) ??
+          DateTime.now();
 
       return SyncConflict<Map<String, dynamic>>(
         entityId: entityId,
@@ -735,10 +746,12 @@ class SyncService {
   }
 
   Future<void> _applyConflictServerVersion(
-      SyncConflict<Map<String, dynamic>> conflict) async {
+    SyncConflict<Map<String, dynamic>> conflict,
+  ) async {
     final serverData = conflict.serverVersion;
-    final serverUpdatedAt =
-        DateTime.tryParse(serverData['updated_at']?.toString() ?? '');
+    final serverUpdatedAt = DateTime.tryParse(
+      serverData['updated_at']?.toString() ?? '',
+    );
 
     switch (conflict.entityType) {
       case 'aquarium':
@@ -802,8 +815,9 @@ class SyncService {
     _currentRetryCount++;
 
     _logger.i(
-        'SyncService: Scheduling retry $_currentRetryCount/${_config.maxRetries} '
-        'in ${delay.inSeconds}s');
+      'SyncService: Scheduling retry $_currentRetryCount/${_config.maxRetries} '
+      'in ${delay.inSeconds}s',
+    );
 
     _retryTimer = Timer(delay, () {
       if (_isOnline && hasPendingChanges) {
@@ -872,8 +886,7 @@ final syncStateProvider = StreamProvider<SyncState>((ref) {
   return _syncStateStreamWithInitial(syncService);
 });
 
-Stream<SyncState> _syncStateStreamWithInitial(
-    SyncService syncService) async* {
+Stream<SyncState> _syncStateStreamWithInitial(SyncService syncService) async* {
   yield syncService.currentState;
   await for (final state in syncService.stateStream) {
     yield state;

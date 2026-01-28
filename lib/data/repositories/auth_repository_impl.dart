@@ -23,9 +23,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required AuthRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
     required SecureStorageService secureStorageService,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource,
-        _secureStorageService = secureStorageService;
+  }) : _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource,
+       _secureStorageService = secureStorageService;
 
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
@@ -42,8 +42,11 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
-      await _saveAuthData(response.user, response.tokens.accessToken,
-          response.tokens.refreshToken);
+      await _saveAuthData(
+        response.user,
+        response.tokens.accessToken,
+        response.tokens.refreshToken,
+      );
 
       return Right(_mapUserDtoToEntity(response.user));
     } on ApiException catch (e) {
@@ -64,8 +67,11 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
-      await _saveAuthData(response.user, response.tokens.accessToken,
-          response.tokens.refreshToken);
+      await _saveAuthData(
+        response.user,
+        response.tokens.accessToken,
+        response.tokens.refreshToken,
+      );
 
       return Right(_mapUserDtoToEntity(response.user));
     } on ApiException catch (e) {
@@ -86,8 +92,11 @@ class AuthRepositoryImpl implements AuthRepository {
         idToken: idToken,
       );
 
-      await _saveAuthData(response.user, response.tokens.accessToken,
-          response.tokens.refreshToken);
+      await _saveAuthData(
+        response.user,
+        response.tokens.accessToken,
+        response.tokens.refreshToken,
+      );
 
       return Right(_mapUserDtoToEntity(response.user));
     } on ApiException catch (e) {
@@ -132,7 +141,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return Right(userModel.toEntity());
     } catch (e) {
-      return const Left(CacheFailure(message: 'Failed to read user from cache'));
+      return const Left(
+        CacheFailure(message: 'Failed to read user from cache'),
+      );
     }
   }
 
@@ -193,16 +204,21 @@ class AuthRepositoryImpl implements AuthRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() =>
-        const AuthenticationFailure(message: 'Invalid credentials'),
-      ValidationException(:final message, :final errors) =>
-        ValidationFailure(message: message, errors: errors),
-      ForbiddenException() =>
-        const AuthenticationFailure(message: 'Access denied'),
+      UnauthorizedException() => const AuthenticationFailure(
+        message: 'Invalid credentials',
+      ),
+      ValidationException(:final message, :final errors) => ValidationFailure(
+        message: message,
+        errors: errors,
+      ),
+      ForbiddenException() => const AuthenticationFailure(
+        message: 'Access denied',
+      ),
       NotFoundException() => const ServerFailure(message: 'Resource not found'),
       ServerException() => const ServerFailure(),
-      UnknownApiException(:final message) =>
-        UnexpectedFailure(message: message),
+      UnknownApiException(:final message) => UnexpectedFailure(
+        message: message,
+      ),
     };
   }
 }

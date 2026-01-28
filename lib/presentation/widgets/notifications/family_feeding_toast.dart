@@ -8,11 +8,7 @@ import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 /// Displays when another family member completes a feeding.
 /// Shows the family member's name and avatar.
 class FamilyFeedingToast extends StatelessWidget {
-  const FamilyFeedingToast({
-    required this.event,
-    this.onDismiss,
-    super.key,
-  });
+  const FamilyFeedingToast({required this.event, this.onDismiss, super.key});
 
   /// The feeding event from the family member.
   final FeedingEvent event;
@@ -52,10 +48,7 @@ class FamilyFeedingToast extends StatelessWidget {
           children: [
             // Avatar or icon
             if (avatarUrl != null)
-              AppCachedAvatar(
-                imageUrl: avatarUrl,
-                radius: 20,
-              )
+              AppCachedAvatar(imageUrl: avatarUrl, radius: 20)
             else
               Container(
                 width: 40,
@@ -100,11 +93,7 @@ class FamilyFeedingToast extends StatelessWidget {
                 color: Color(0xFF4CAF50),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 18,
-              ),
+              child: const Icon(Icons.check, color: Colors.white, size: 18),
             ),
 
             // Dismiss button
@@ -127,11 +116,7 @@ class FamilyFeedingToast extends StatelessWidget {
 
   Widget _buildDefaultAvatar() {
     return const Center(
-      child: Icon(
-        Icons.person,
-        color: Color(0xFF4CAF50),
-        size: 20,
-      ),
+      child: Icon(Icons.person, color: Color(0xFF4CAF50), size: 20),
     );
   }
 }
@@ -217,18 +202,12 @@ class _AnimatedToastState extends State<_AnimatedToast>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _fadeAnimation = Tween<double>(
       begin: 0,
       end: 1,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
 
@@ -271,10 +250,7 @@ class _AnimatedToastState extends State<_AnimatedToast>
                 _dismiss();
               }
             },
-            child: FamilyFeedingToast(
-              event: widget.event,
-              onDismiss: _dismiss,
-            ),
+            child: FamilyFeedingToast(event: widget.event, onDismiss: _dismiss),
           ),
         ),
       ),

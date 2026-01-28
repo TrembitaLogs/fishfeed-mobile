@@ -9,10 +9,7 @@ import 'package:fishfeed/services/connectivity/connectivity_service.dart';
 /// Shows a colored bar at the top of the content with an offline message.
 /// Automatically hides when connectivity is restored.
 class OfflineBanner extends ConsumerWidget {
-  const OfflineBanner({
-    super.key,
-    this.child,
-  });
+  const OfflineBanner({super.key, this.child});
 
   /// The child widget to display below the banner.
   final Widget? child;
@@ -38,9 +35,7 @@ class OfflineBanner extends ConsumerWidget {
 }
 
 class _OfflineBannerContent extends StatelessWidget {
-  const _OfflineBannerContent({
-    required this.l10n,
-  });
+  const _OfflineBannerContent({required this.l10n});
 
   final AppLocalizations l10n;
 
@@ -54,10 +49,7 @@ class _OfflineBannerContent extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Icon(
@@ -81,7 +73,9 @@ class _OfflineBannerContent extends StatelessWidget {
                     Text(
                       l10n.offlineBannerDescription,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onErrorContainer.withValues(alpha: 0.8),
+                        color: colorScheme.onErrorContainer.withValues(
+                          alpha: 0.8,
+                        ),
                       ),
                     ),
                   ],
@@ -100,10 +94,7 @@ class _OfflineBannerContent extends StatelessWidget {
 /// Use this as a wrapper for your main app content to automatically
 /// show an offline notification when connectivity is lost.
 class OfflineBannerWrapper extends ConsumerWidget {
-  const OfflineBannerWrapper({
-    super.key,
-    required this.child,
-  });
+  const OfflineBannerWrapper({super.key, required this.child});
 
   /// The main content to display.
   final Widget child;
@@ -118,9 +109,7 @@ class OfflineBannerWrapper extends ConsumerWidget {
         // Main content with padding when offline
         AnimatedPadding(
           duration: const Duration(milliseconds: 300),
-          padding: EdgeInsets.only(
-            top: isOffline ? 60 : 0,
-          ),
+          padding: EdgeInsets.only(top: isOffline ? 60 : 0),
           child: child,
         ),
         // Offline banner

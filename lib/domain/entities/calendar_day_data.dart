@@ -17,10 +17,7 @@ class CalendarDayData extends Equatable {
 
   /// Creates a day data with no feedings.
   factory CalendarDayData.empty(DateTime date) {
-    return CalendarDayData(
-      date: date,
-      status: DayFeedingStatus.noData,
-    );
+    return CalendarDayData(date: date, status: DayFeedingStatus.noData);
   }
 
   /// The date this data represents.
@@ -69,10 +66,10 @@ class CalendarDayData extends Equatable {
 
   @override
   List<Object?> get props => [
-        date,
-        status,
-        totalFeedings,
-        completedFeedings,
-        missedFeedings,
-      ];
+    date,
+    status,
+    totalFeedings,
+    completedFeedings,
+    missedFeedings,
+  ];
 }

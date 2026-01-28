@@ -19,10 +19,7 @@ abstract interface class PushRemoteDataSource {
   /// [platform] is the device platform ('android' or 'ios').
   ///
   /// Throws [DioException] on network or server errors.
-  Future<void> registerToken({
-    required String token,
-    required String platform,
-  });
+  Future<void> registerToken({required String token, required String platform});
 
   /// Unregisters the push token from the backend.
   ///
@@ -45,10 +42,7 @@ class PushRemoteDataSourceImpl implements PushRemoteDataSource {
   }) async {
     await _dio.post<void>(
       PushEndpoints.token,
-      data: {
-        'token': token,
-        'platform': platform,
-      },
+      data: {'token': token, 'platform': platform},
     );
   }
 

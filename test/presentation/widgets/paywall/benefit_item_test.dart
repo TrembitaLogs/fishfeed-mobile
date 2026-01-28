@@ -23,11 +23,7 @@ void main() {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        body: BenefitItem(
-          icon: icon,
-          text: text,
-          iconColor: iconColor,
-        ),
+        body: BenefitItem(icon: icon, text: text, iconColor: iconColor),
       ),
     );
   }
@@ -47,10 +43,9 @@ void main() {
     });
 
     testWidgets('displays different icons correctly', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        icon: Icons.camera_enhance,
-        text: 'Unlimited AI Scans',
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(icon: Icons.camera_enhance, text: 'Unlimited AI Scans'),
+      );
 
       expect(find.byIcon(Icons.camera_enhance), findsOneWidget);
       expect(find.text('Unlimited AI Scans'), findsOneWidget);
@@ -59,9 +54,7 @@ void main() {
     testWidgets('applies custom icon color', (tester) async {
       const customColor = Colors.red;
 
-      await tester.pumpWidget(buildTestWidget(
-        iconColor: customColor,
-      ));
+      await tester.pumpWidget(buildTestWidget(iconColor: customColor));
 
       final iconFinder = find.byIcon(Icons.star);
       final iconWidget = tester.widget<Icon>(iconFinder);
@@ -81,7 +74,8 @@ void main() {
     });
 
     testWidgets('wraps long text correctly', (tester) async {
-      const longText = 'This is a very long benefit description that should wrap correctly in the widget';
+      const longText =
+          'This is a very long benefit description that should wrap correctly in the widget';
 
       await tester.pumpWidget(buildTestWidget(text: longText));
 

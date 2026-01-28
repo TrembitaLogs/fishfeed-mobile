@@ -119,7 +119,9 @@ class PurchaseService with WidgetsBindingObserver {
 
     if (apiKey == null || apiKey.isEmpty) {
       if (kDebugMode) {
-        print('PurchaseService: API key not configured, skipping initialization');
+        print(
+          'PurchaseService: API key not configured, skipping initialization',
+        );
         print('PurchaseService: Set $_envKeyIos or $_envKeyAndroid in .env');
       }
       return;
@@ -212,7 +214,9 @@ class PurchaseService with WidgetsBindingObserver {
 
     if (kDebugMode) {
       print('PurchaseService: Customer info updated');
-      print('PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}');
+      print(
+        'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
+      );
     }
   }
 
@@ -298,10 +302,12 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: Failed to fetch offerings: $e');
       }
-      return Left(PurchaseFailure(
-        message: e.message ?? 'Failed to fetch offerings',
-        errorCode: e.code,
-      ));
+      return Left(
+        PurchaseFailure(
+          message: e.message ?? 'Failed to fetch offerings',
+          errorCode: e.code,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('PurchaseService: Failed to fetch offerings: $e');
@@ -330,7 +336,9 @@ class PurchaseService with WidgetsBindingObserver {
 
       if (kDebugMode) {
         print('PurchaseService: Purchase successful');
-        print('PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}');
+        print(
+          'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
+        );
       }
 
       // Sync with backend after successful purchase
@@ -351,19 +359,23 @@ class PurchaseService with WidgetsBindingObserver {
         if (kDebugMode) {
           print('PurchaseService: Product not available');
         }
-        return Left(ProductNotAvailableFailure(
-          productId: package.storeProduct.identifier,
-        ));
+        return Left(
+          ProductNotAvailableFailure(
+            productId: package.storeProduct.identifier,
+          ),
+        );
       }
 
       if (kDebugMode) {
         print('PurchaseService: Purchase failed: $e');
       }
 
-      return Left(PurchaseFailure(
-        message: e.message ?? 'Purchase failed',
-        errorCode: errorCode.name,
-      ));
+      return Left(
+        PurchaseFailure(
+          message: e.message ?? 'Purchase failed',
+          errorCode: errorCode.name,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('PurchaseService: Purchase failed: $e');
@@ -392,7 +404,9 @@ class PurchaseService with WidgetsBindingObserver {
 
       if (kDebugMode) {
         print('PurchaseService: Purchases restored successfully');
-        print('PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}');
+        print(
+          'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
+        );
       }
 
       // Sync with backend after successful restore
@@ -405,10 +419,12 @@ class PurchaseService with WidgetsBindingObserver {
       }
 
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
-      return Left(PurchaseFailure(
-        message: e.message ?? 'Failed to restore purchases',
-        errorCode: errorCode.name,
-      ));
+      return Left(
+        PurchaseFailure(
+          message: e.message ?? 'Failed to restore purchases',
+          errorCode: errorCode.name,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('PurchaseService: Restore failed: $e');
@@ -438,10 +454,12 @@ class PurchaseService with WidgetsBindingObserver {
       }
 
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
-      return Left(PurchaseFailure(
-        message: e.message ?? 'Failed to get customer info',
-        errorCode: errorCode.name,
-      ));
+      return Left(
+        PurchaseFailure(
+          message: e.message ?? 'Failed to get customer info',
+          errorCode: errorCode.name,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('PurchaseService: Failed to get customer info: $e');
@@ -459,8 +477,9 @@ class PurchaseService with WidgetsBindingObserver {
       return false;
     }
 
-    return _cachedCustomerInfo!.entitlements.active
-        .containsKey(PurchaseEntitlements.premium);
+    return _cachedCustomerInfo!.entitlements.active.containsKey(
+      PurchaseEntitlements.premium,
+    );
   }
 
   /// Checks if the user has the remove ads entitlement.
@@ -499,9 +518,7 @@ class PurchaseService with WidgetsBindingObserver {
       final current = offerings.current;
 
       if (current == null) {
-        return const Left(PurchaseFailure(
-          message: 'No offerings available',
-        ));
+        return const Left(PurchaseFailure(message: 'No offerings available'));
       }
 
       // Look for remove_ads package in the current offering
@@ -527,9 +544,7 @@ class PurchaseService with WidgetsBindingObserver {
       }
 
       if (removeAdsPackage == null) {
-        return const Left(ProductNotAvailableFailure(
-          productId: 'remove_ads',
-        ));
+        return const Left(ProductNotAvailableFailure(productId: 'remove_ads'));
       }
 
       return Right(removeAdsPackage);
@@ -537,10 +552,12 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: Failed to get remove ads package: $e');
       }
-      return Left(PurchaseFailure(
-        message: e.message ?? 'Failed to get remove ads package',
-        errorCode: e.code,
-      ));
+      return Left(
+        PurchaseFailure(
+          message: e.message ?? 'Failed to get remove ads package',
+          errorCode: e.code,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) {
         print('PurchaseService: Failed to get remove ads package: $e');
@@ -614,7 +631,9 @@ class PurchaseService with WidgetsBindingObserver {
   /// [force] - If true, ignores rate limiting and syncs immediately.
   ///
   /// Returns the synchronized [SubscriptionStatus].
-  Future<SubscriptionStatus> syncSubscriptionStatus({bool force = false}) async {
+  Future<SubscriptionStatus> syncSubscriptionStatus({
+    bool force = false,
+  }) async {
     // Rate limiting check
     if (!force && _lastSyncTime != null) {
       final elapsed = DateTime.now().difference(_lastSyncTime!);
@@ -668,7 +687,9 @@ class PurchaseService with WidgetsBindingObserver {
   }
 
   /// Syncs subscription status with the backend API.
-  Future<SubscriptionStatus> _syncWithBackend(SubscriptionStatus localStatus) async {
+  Future<SubscriptionStatus> _syncWithBackend(
+    SubscriptionStatus localStatus,
+  ) async {
     if (_dio == null) {
       throw StateError('Dio client not configured');
     }

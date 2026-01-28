@@ -116,11 +116,13 @@ class AppLifecycleService with WidgetsBindingObserver {
     // Check for DST transition
     if (_lastTimezoneOffset != null && _lastTimezoneOffset != currentOffset) {
       debugPrint('AppLifecycleService: DST transition detected');
-      _eventController.add(LifecycleEventData(
-        event: AppLifecycleEvent.dstTransition,
-        timestamp: now,
-        previousTimezoneOffset: _lastTimezoneOffset,
-      ));
+      _eventController.add(
+        LifecycleEventData(
+          event: AppLifecycleEvent.dstTransition,
+          timestamp: now,
+          previousTimezoneOffset: _lastTimezoneOffset,
+        ),
+      );
     }
     _lastTimezoneOffset = currentOffset;
 
@@ -128,19 +130,23 @@ class AppLifecycleService with WidgetsBindingObserver {
     if (_lastPausedTime != null &&
         DateTimeUtils.hasMidnightCrossed(_lastPausedTime!)) {
       debugPrint('AppLifecycleService: Midnight crossed during background');
-      _eventController.add(LifecycleEventData(
-        event: AppLifecycleEvent.midnightCrossed,
-        timestamp: now,
-        previousTimestamp: _lastPausedTime,
-      ));
+      _eventController.add(
+        LifecycleEventData(
+          event: AppLifecycleEvent.midnightCrossed,
+          timestamp: now,
+          previousTimestamp: _lastPausedTime,
+        ),
+      );
     }
 
     // Emit resume event
-    _eventController.add(LifecycleEventData(
-      event: AppLifecycleEvent.resumed,
-      timestamp: now,
-      previousTimestamp: _lastPausedTime,
-    ));
+    _eventController.add(
+      LifecycleEventData(
+        event: AppLifecycleEvent.resumed,
+        timestamp: now,
+        previousTimestamp: _lastPausedTime,
+      ),
+    );
 
     // Reschedule midnight check
     _scheduleMidnightCheck();
@@ -152,10 +158,12 @@ class AppLifecycleService with WidgetsBindingObserver {
 
     debugPrint('AppLifecycleService: App paused');
 
-    _eventController.add(LifecycleEventData(
-      event: AppLifecycleEvent.paused,
-      timestamp: _lastPausedTime!,
-    ));
+    _eventController.add(
+      LifecycleEventData(
+        event: AppLifecycleEvent.paused,
+        timestamp: _lastPausedTime!,
+      ),
+    );
   }
 
   void _scheduleMidnightCheck() {
@@ -164,7 +172,8 @@ class AppLifecycleService with WidgetsBindingObserver {
     final durationUntilMidnight = DateTimeUtils.durationUntilMidnight;
 
     // Add a small buffer to ensure we're past midnight
-    final scheduledDuration = durationUntilMidnight + const Duration(seconds: 5);
+    final scheduledDuration =
+        durationUntilMidnight + const Duration(seconds: 5);
 
     debugPrint(
       'AppLifecycleService: Scheduling midnight check in '
@@ -177,10 +186,12 @@ class AppLifecycleService with WidgetsBindingObserver {
   void _onMidnight() {
     debugPrint('AppLifecycleService: Midnight crossed');
 
-    _eventController.add(LifecycleEventData(
-      event: AppLifecycleEvent.midnightCrossed,
-      timestamp: DateTime.now(),
-    ));
+    _eventController.add(
+      LifecycleEventData(
+        event: AppLifecycleEvent.midnightCrossed,
+        timestamp: DateTime.now(),
+      ),
+    );
 
     // Schedule next midnight check
     _scheduleMidnightCheck();

@@ -41,29 +41,31 @@ void main() {
     });
 
     group('scanImage', () {
-      test('should transition to loading then success on successful scan',
-          () async {
-        when(
-          () => mockRepository.scanFishImage(
-            imageBytes: any(named: 'imageBytes'),
-          ),
-        ).thenAnswer((_) async => const Right(testScanResult));
+      test(
+        'should transition to loading then success on successful scan',
+        () async {
+          when(
+            () => mockRepository.scanFishImage(
+              imageBytes: any(named: 'imageBytes'),
+            ),
+          ).thenAnswer((_) async => const Right(testScanResult));
 
-        // Capture state changes
-        final states = <AiScanState>[];
-        notifier.addListener((state) => states.add(state));
+          // Capture state changes
+          final states = <AiScanState>[];
+          notifier.addListener((state) => states.add(state));
 
-        await notifier.scanImage(testImageBytes);
+          await notifier.scanImage(testImageBytes);
 
-        // Should have gone through loading
-        expect(states.any((s) => s is AiScanLoading), true);
+          // Should have gone through loading
+          expect(states.any((s) => s is AiScanLoading), true);
 
-        // Should end in success
-        expect(notifier.state, isA<AiScanSuccess>());
-        final successState = notifier.state as AiScanSuccess;
-        expect(successState.result.speciesId, 'species-123');
-        expect(successState.result.speciesName, 'Goldfish');
-      });
+          // Should end in success
+          expect(notifier.state, isA<AiScanSuccess>());
+          final successState = notifier.state as AiScanSuccess;
+          expect(successState.result.speciesId, 'species-123');
+          expect(successState.result.speciesName, 'Goldfish');
+        },
+      );
 
       test('should transition to loading then error on failed scan', () async {
         when(
@@ -144,7 +146,8 @@ void main() {
             imageBytes: any(named: 'imageBytes'),
           ),
         ).thenAnswer(
-            (_) async => const Left(AuthenticationFailure(message: 'Log in')));
+          (_) async => const Left(AuthenticationFailure(message: 'Log in')),
+        );
 
         await notifier.scanImage(testImageBytes);
 
@@ -159,7 +162,8 @@ void main() {
             imageBytes: any(named: 'imageBytes'),
           ),
         ).thenAnswer(
-            (_) async => const Left(ValidationFailure(message: 'Bad image')));
+          (_) async => const Left(ValidationFailure(message: 'Bad image')),
+        );
 
         await notifier.scanImage(testImageBytes);
 
@@ -214,7 +218,9 @@ void main() {
 
         expect(notifier.state, isA<AiScanIdle>());
         verifyNever(
-          () => mockRepository.scanFishImage(imageBytes: any(named: 'imageBytes')),
+          () => mockRepository.scanFishImage(
+            imageBytes: any(named: 'imageBytes'),
+          ),
         );
       });
     });

@@ -95,10 +95,7 @@ void main() {
 
     group('updateState', () {
       test('updates both isLoggedIn and hasCompletedOnboarding', () {
-        authState.updateState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        authState.updateState(isLoggedIn: true, hasCompletedOnboarding: true);
 
         expect(authState.isLoggedIn, true);
         expect(authState.hasCompletedOnboarding, true);
@@ -108,10 +105,7 @@ void main() {
         var notifyCount = 0;
         authState.addListener(() => notifyCount++);
 
-        authState.updateState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        authState.updateState(isLoggedIn: true, hasCompletedOnboarding: true);
 
         expect(notifyCount, 1);
       });

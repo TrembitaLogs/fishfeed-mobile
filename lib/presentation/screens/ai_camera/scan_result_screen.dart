@@ -162,11 +162,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
           errorBuilder: (context, error, stackTrace) => Container(
             color: Colors.grey.shade900,
             child: const Center(
-              child: Icon(
-                Icons.broken_image,
-                color: Colors.white38,
-                size: 64,
-              ),
+              child: Icon(Icons.broken_image, color: Colors.white38, size: 64),
             ),
           ),
         ),
@@ -199,9 +195,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
             color: Colors.white,
             iconSize: 28,
             onPressed: _onBack,
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.black38,
-            ),
+            style: IconButton.styleFrom(backgroundColor: Colors.black38),
           ),
           const Spacer(),
           Container(
@@ -213,11 +207,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.auto_awesome,
-                  color: Colors.amber,
-                  size: 16,
-                ),
+                Icon(Icons.auto_awesome, color: Colors.amber, size: 16),
                 SizedBox(width: 4),
                 Text(
                   'AI Result',
@@ -351,11 +341,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
       children: [
         Row(
           children: [
-            Icon(
-              Icons.lightbulb_outline,
-              size: 18,
-              color: colorScheme.primary,
-            ),
+            Icon(Icons.lightbulb_outline, size: 18, color: colorScheme.primary),
             const SizedBox(width: 8),
             Text(
               'Recommendations',
@@ -366,7 +352,9 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
           ],
         ),
         const SizedBox(height: 8),
-        ...widget.result.recommendations.take(3).map(
+        ...widget.result.recommendations
+            .take(3)
+            .map(
               (rec) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
@@ -382,12 +370,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        rec,
-                        style: textTheme.bodySmall,
-                      ),
-                    ),
+                    Expanded(child: Text(rec, style: textTheme.bodySmall)),
                   ],
                 ),
               ),

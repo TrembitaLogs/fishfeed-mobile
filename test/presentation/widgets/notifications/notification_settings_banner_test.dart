@@ -29,9 +29,7 @@ void main() {
     group('UI rendering', () {
       testWidgets('renders all elements', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            child: const NotificationSettingsBanner(),
-          ),
+          buildTestWidget(child: const NotificationSettingsBanner()),
         );
 
         await tester.pumpAndSettle();
@@ -54,9 +52,7 @@ void main() {
 
       testWidgets('shows dismiss button by default', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            child: const NotificationSettingsBanner(),
-          ),
+          buildTestWidget(child: const NotificationSettingsBanner()),
         );
 
         await tester.pumpAndSettle();
@@ -64,8 +60,9 @@ void main() {
         expect(find.byIcon(Icons.close), findsOneWidget);
       });
 
-      testWidgets('hides dismiss button when showDismissButton is false',
-          (tester) async {
+      testWidgets('hides dismiss button when showDismissButton is false', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             child: const NotificationSettingsBanner(showDismissButton: false),
@@ -79,8 +76,9 @@ void main() {
     });
 
     group('interactions', () {
-      testWidgets('calls onEnablePressed when enable button is tapped',
-          (tester) async {
+      testWidgets('calls onEnablePressed when enable button is tapped', (
+        tester,
+      ) async {
         var enablePressed = false;
 
         await tester.pumpWidget(
@@ -99,8 +97,9 @@ void main() {
         expect(enablePressed, isTrue);
       });
 
-      testWidgets('calls onEnablePressed when banner is tapped',
-          (tester) async {
+      testWidgets('calls onEnablePressed when banner is tapped', (
+        tester,
+      ) async {
         var enablePressed = false;
 
         await tester.pumpWidget(
@@ -120,8 +119,9 @@ void main() {
         expect(enablePressed, isTrue);
       });
 
-      testWidgets('calls onDismissed when dismiss button is tapped',
-          (tester) async {
+      testWidgets('calls onDismissed when dismiss button is tapped', (
+        tester,
+      ) async {
         var dismissed = false;
 
         await tester.pumpWidget(
@@ -144,9 +144,7 @@ void main() {
     group('styling', () {
       testWidgets('has rounded corners', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            child: const NotificationSettingsBanner(),
-          ),
+          buildTestWidget(child: const NotificationSettingsBanner()),
         );
 
         await tester.pumpAndSettle();
@@ -164,9 +162,7 @@ void main() {
     group('UI rendering', () {
       testWidgets('renders all elements', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            child: const NotificationSettingsTile(),
-          ),
+          buildTestWidget(child: const NotificationSettingsTile()),
         );
 
         await tester.pumpAndSettle();
@@ -191,9 +187,7 @@ void main() {
 
       testWidgets('renders as ListTile', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            child: const NotificationSettingsTile(),
-          ),
+          buildTestWidget(child: const NotificationSettingsTile()),
         );
 
         await tester.pumpAndSettle();
@@ -203,15 +197,14 @@ void main() {
     });
 
     group('interactions', () {
-      testWidgets('calls onTap when open settings button is tapped',
-          (tester) async {
+      testWidgets('calls onTap when open settings button is tapped', (
+        tester,
+      ) async {
         var tapped = false;
 
         await tester.pumpWidget(
           buildTestWidget(
-            child: NotificationSettingsTile(
-              onTap: () => tapped = true,
-            ),
+            child: NotificationSettingsTile(onTap: () => tapped = true),
           ),
         );
 
@@ -228,9 +221,7 @@ void main() {
 
         await tester.pumpWidget(
           buildTestWidget(
-            child: NotificationSettingsTile(
-              onTap: () => tapped = true,
-            ),
+            child: NotificationSettingsTile(onTap: () => tapped = true),
           ),
         );
 

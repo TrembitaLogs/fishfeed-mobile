@@ -20,12 +20,13 @@ class MockNotificationService extends Mock implements NotificationService {}
 
 class MockAuthNotifier extends Mock implements AuthNotifier {}
 
-class MockSpeciesRemoteDataSource extends Mock implements SpeciesRemoteDataSource {}
+class MockSpeciesRemoteDataSource extends Mock
+    implements SpeciesRemoteDataSource {}
 
 /// Mock SpeciesListNotifier that provides test data without API calls.
 class TestSpeciesListNotifier extends SpeciesListNotifier {
   TestSpeciesListNotifier()
-      : super(speciesDataSource: MockSpeciesRemoteDataSource());
+    : super(speciesDataSource: MockSpeciesRemoteDataSource());
 
   @override
   Future<void> loadPopularSpecies() async {
@@ -54,7 +55,8 @@ void main() {
 
   Widget createWidgetUnderTest({
     OnboardingNotifier? notifier,
-    bool isAddMode = true, // Use add mode to skip aquarium step and test species selection
+    bool isAddMode =
+        true, // Use add mode to skip aquarium step and test species selection
   }) {
     return ProviderScope(
       overrides: [
@@ -80,8 +82,9 @@ void main() {
       expect(find.byType(Expanded), findsAtLeast(3));
     });
 
-    testWidgets('should display species selection step initially',
-        (tester) async {
+    testWidgets('should display species selection step initially', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text('What fish do you have?'), findsOneWidget);
@@ -94,7 +97,9 @@ void main() {
       expect(find.text('Next'), findsOneWidget);
     });
 
-    testWidgets('should display Cancel button on first step in add mode', (tester) async {
+    testWidgets('should display Cancel button on first step in add mode', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // In add mode, first step shows Cancel (not Back)
@@ -102,8 +107,9 @@ void main() {
       expect(find.text('Back'), findsNothing);
     });
 
-    testWidgets('Next button should be disabled when no species selected',
-        (tester) async {
+    testWidgets('Next button should be disabled when no species selected', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final nextButton = find.widgetWithText(FilledButton, 'Next');
@@ -113,8 +119,9 @@ void main() {
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('should enable Next button when species is selected',
-        (tester) async {
+    testWidgets('should enable Next button when species is selected', (
+      tester,
+    ) async {
       final notifier = OnboardingNotifier();
       notifier.addSpecies(SpeciesData.guppy);
 
@@ -125,8 +132,9 @@ void main() {
       expect(button.onPressed, isNotNull);
     });
 
-    testWidgets('should display quantity step when navigated via notifier',
-        (tester) async {
+    testWidgets('should display quantity step when navigated via notifier', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
@@ -209,7 +217,9 @@ void main() {
       expect(find.text('Done'), findsOneWidget);
     });
 
-    testWidgets('should show Get Started on last step in full onboarding', (tester) async {
+    testWidgets('should show Get Started on last step in full onboarding', (
+      tester,
+    ) async {
       // This tests the full onboarding flow which starts with AquariumNameStep
       // In full onboarding mode (isAddMode: false), reset() is NOT called
       await tester.pumpWidget(createWidgetUnderTest(isAddMode: false));
@@ -321,13 +331,18 @@ void main() {
       // Chip should appear
       expect(find.byType(Chip), findsOneWidget);
       // Chip should have delete icon
-      expect(find.descendant(
-        of: find.byType(Chip),
-        matching: find.byIcon(Icons.close),
-      ), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(Chip),
+          matching: find.byIcon(Icons.close),
+        ),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('should remove species when chip delete is tapped', (tester) async {
+    testWidgets('should remove species when chip delete is tapped', (
+      tester,
+    ) async {
       // Pre-populate with a species
       final notifier = OnboardingNotifier();
       notifier.addSpecies(SpeciesData.guppy);
@@ -370,22 +385,30 @@ void main() {
       expect(notifier.selectedSpecies.length, 3);
     });
 
-    testWidgets('should select default species when "I don\'t know" is tapped', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets(
+      'should select default species when "I don\'t know" is tapped',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
 
-      // Tap "I don't know" option
-      await tester.tap(find.text("I don't know my species"));
-      await tester.pumpAndSettle();
+        // Tap "I don't know" option
+        await tester.tap(find.text("I don't know my species"));
+        await tester.pumpAndSettle();
 
-      // Chip should show "Unknown"
-      expect(find.byType(Chip), findsOneWidget);
-      expect(find.descendant(
-        of: find.byType(Chip),
-        matching: find.text('Unknown'),
-      ), findsOneWidget);
-    });
+        // Chip should show "Unknown"
+        expect(find.byType(Chip), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(Chip),
+            matching: find.text('Unknown'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('should show "No species found" when search has no results', (tester) async {
+    testWidgets('should show "No species found" when search has no results', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Enter search query with no matches
@@ -616,8 +639,9 @@ void main() {
       expect(find.text('fish'), findsOneWidget);
     });
 
-    testWidgets('should display summary card with feedings per day',
-        (tester) async {
+    testWidgets('should display summary card with feedings per day', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 

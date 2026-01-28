@@ -86,7 +86,9 @@ class _StreakSectionContent extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (_getMilestoneBadge(streak.currentStreak) != null)
-                  _MilestoneBadge(milestone: _getMilestoneBadge(streak.currentStreak)!),
+                  _MilestoneBadge(
+                    milestone: _getMilestoneBadge(streak.currentStreak)!,
+                  ),
               ],
             ),
             const SizedBox(height: 16),
@@ -112,9 +114,7 @@ class _StreakSectionContent extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _FreezeCard(
-                    freezeAvailable: streak.freezeAvailable,
-                  ),
+                  child: _FreezeCard(freezeAvailable: streak.freezeAvailable),
                 ),
               ],
             ),
@@ -127,28 +127,19 @@ class _StreakSectionContent extends StatelessWidget {
   LinearGradient _buildGradient(int streakCount) {
     if (streakCount >= 30) {
       return LinearGradient(
-        colors: [
-          Colors.red.shade400,
-          Colors.orange.shade500,
-        ],
+        colors: [Colors.red.shade400, Colors.orange.shade500],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else if (streakCount >= 7) {
       return LinearGradient(
-        colors: [
-          Colors.orange.shade400,
-          Colors.amber.shade400,
-        ],
+        colors: [Colors.orange.shade400, Colors.amber.shade400],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else {
       return LinearGradient(
-        colors: [
-          Colors.amber.shade300,
-          Colors.amber.shade100,
-        ],
+        colors: [Colors.amber.shade300, Colors.amber.shade100],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
@@ -202,11 +193,7 @@ class _StatCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 28,
-          ),
+          Icon(icon, color: iconColor, size: 28),
           const SizedBox(height: 8),
           if (animate)
             _AnimatedCounter(value: value)
@@ -256,11 +243,7 @@ class _FreezeCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.ac_unit,
-              color: Colors.blue.shade400,
-              size: 28,
-            ),
+            Icon(Icons.ac_unit, color: Colors.blue.shade400, size: 28),
             const SizedBox(height: 8),
             Text(
               freezeAvailable.toString(),
@@ -306,10 +289,7 @@ class _FreezeCard extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.ac_unit,
-              color: Colors.blue.shade400,
-            ),
+            Icon(Icons.ac_unit, color: Colors.blue.shade400),
             const SizedBox(width: 8),
             Text(l10n.freezeDaysTitle),
           ],
@@ -318,20 +298,14 @@ class _FreezeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.freezeDaysDescription,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(l10n.freezeDaysDescription, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 12),
             _InfoRow(
               icon: Icons.calendar_month,
               text: l10n.freezeDaysPerMonth(kDefaultFreezePerMonth),
             ),
             const SizedBox(height: 8),
-            _InfoRow(
-              icon: Icons.auto_fix_high,
-              text: l10n.freezeDaysAutoUsed,
-            ),
+            _InfoRow(icon: Icons.auto_fix_high, text: l10n.freezeDaysAutoUsed),
             const SizedBox(height: 8),
             _InfoRow(
               icon: Icons.ac_unit,
@@ -352,10 +326,7 @@ class _FreezeCard extends StatelessWidget {
 
 /// Info row for the freeze dialog.
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.text,
-  });
+  const _InfoRow({required this.icon, required this.text});
 
   final IconData icon;
   final String text;
@@ -367,18 +338,9 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 18,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(icon, size: 18, color: theme.colorScheme.primary),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: theme.textTheme.bodySmall,
-          ),
-        ),
+        Expanded(child: Text(text, style: theme.textTheme.bodySmall)),
       ],
     );
   }
@@ -401,14 +363,8 @@ class _AnimatedCounter extends StatelessWidget {
           position: Tween<Offset>(
             begin: const Offset(0, 0.5),
             end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOut,
-          )),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
       child: Text(
@@ -443,11 +399,7 @@ class _MilestoneBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getMilestoneIcon(),
-            size: 14,
-            color: _getMilestoneColor(),
-          ),
+          Icon(_getMilestoneIcon(), size: 14, color: _getMilestoneColor()),
           const SizedBox(width: 4),
           Text(
             l10n.milestoneDays(milestone),
@@ -500,9 +452,10 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
-    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

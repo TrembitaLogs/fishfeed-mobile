@@ -19,11 +19,7 @@ enum EntityType {
 }
 
 /// Operations that can be performed on entities.
-enum SyncOperation {
-  create,
-  update,
-  delete,
-}
+enum SyncOperation { create, update, delete }
 
 /// Represents a single change to be synced to the server.
 ///
@@ -92,10 +88,10 @@ class ChangeTracker {
     required FishLocalDataSource fishDs,
     required FeedingLocalDataSource feedingDs,
     FeedingScheduleLocalDataSource? scheduleDs,
-  })  : _aquariumDs = aquariumDs,
-        _fishDs = fishDs,
-        _feedingDs = feedingDs,
-        _scheduleDs = scheduleDs;
+  }) : _aquariumDs = aquariumDs,
+       _fishDs = fishDs,
+       _feedingDs = feedingDs,
+       _scheduleDs = scheduleDs;
 
   final AquariumLocalDataSource _aquariumDs;
   final FishLocalDataSource _fishDs;
@@ -178,25 +174,29 @@ class ChangeTracker {
     final unsyncedAquariums = _aquariumDs.getUnsyncedAquariums();
     for (final aquarium in unsyncedAquariums) {
       final operation = _determineAquariumOperation(aquarium);
-      changes.add(SyncChange(
-        entityType: EntityType.aquarium,
-        entityId: aquarium.id,
-        operation: operation,
-        data: _aquariumToSyncData(aquarium),
-        clientUpdatedAt: DateTime.now().toUtc(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.aquarium,
+          entityId: aquarium.id,
+          operation: operation,
+          data: _aquariumToSyncData(aquarium),
+          clientUpdatedAt: DateTime.now().toUtc(),
+        ),
+      );
     }
 
     // Get deleted aquariums
     final deletedAquariums = _aquariumDs.getDeletedAquariums();
     for (final aquarium in deletedAquariums) {
-      changes.add(SyncChange(
-        entityType: EntityType.aquarium,
-        entityId: aquarium.id,
-        operation: SyncOperation.delete,
-        data: {'deleted_at': aquarium.deletedAt?.toIso8601String()},
-        clientUpdatedAt: aquarium.deletedAt ?? DateTime.now(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.aquarium,
+          entityId: aquarium.id,
+          operation: SyncOperation.delete,
+          data: {'deleted_at': aquarium.deletedAt?.toIso8601String()},
+          clientUpdatedAt: aquarium.deletedAt ?? DateTime.now(),
+        ),
+      );
     }
 
     return changes;
@@ -230,25 +230,29 @@ class ChangeTracker {
     final unsyncedFish = _fishDs.getUnsyncedFish();
     for (final fish in unsyncedFish) {
       final operation = _determineFishOperation(fish);
-      changes.add(SyncChange(
-        entityType: EntityType.fish,
-        entityId: fish.id,
-        operation: operation,
-        data: _fishToSyncData(fish),
-        clientUpdatedAt: DateTime.now().toUtc(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.fish,
+          entityId: fish.id,
+          operation: operation,
+          data: _fishToSyncData(fish),
+          clientUpdatedAt: DateTime.now().toUtc(),
+        ),
+      );
     }
 
     // Get deleted fish
     final deletedFish = _fishDs.getDeletedFish();
     for (final fish in deletedFish) {
-      changes.add(SyncChange(
-        entityType: EntityType.fish,
-        entityId: fish.id,
-        operation: SyncOperation.delete,
-        data: {'deleted_at': fish.deletedAt?.toIso8601String()},
-        clientUpdatedAt: fish.deletedAt ?? DateTime.now(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.fish,
+          entityId: fish.id,
+          operation: SyncOperation.delete,
+          data: {'deleted_at': fish.deletedAt?.toIso8601String()},
+          clientUpdatedAt: fish.deletedAt ?? DateTime.now(),
+        ),
+      );
     }
 
     return changes;
@@ -277,10 +281,7 @@ class ChangeTracker {
     final changes = <SyncChange>[];
 
     // Build set of deleted fish IDs to filter out their events
-    final deletedFishIds = _fishDs
-        .getDeletedFish()
-        .map((f) => f.id)
-        .toSet();
+    final deletedFishIds = _fishDs.getDeletedFish().map((f) => f.id).toSet();
 
     // Get unsynced events (new or modified)
     final unsyncedEvents = _feedingDs.getUnsyncedEvents();
@@ -291,25 +292,29 @@ class ChangeTracker {
       }
 
       final operation = _determineEventOperation(event);
-      changes.add(SyncChange(
-        entityType: EntityType.event,
-        entityId: event.id,
-        operation: operation,
-        data: _eventToSyncData(event),
-        clientUpdatedAt: DateTime.now().toUtc(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.event,
+          entityId: event.id,
+          operation: operation,
+          data: _eventToSyncData(event),
+          clientUpdatedAt: DateTime.now().toUtc(),
+        ),
+      );
     }
 
     // Get deleted events
     final deletedEvents = _feedingDs.getDeletedEvents();
     for (final event in deletedEvents) {
-      changes.add(SyncChange(
-        entityType: EntityType.event,
-        entityId: event.id,
-        operation: SyncOperation.delete,
-        data: {'deleted_at': event.deletedAt?.toIso8601String()},
-        clientUpdatedAt: event.deletedAt ?? DateTime.now(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.event,
+          entityId: event.id,
+          operation: SyncOperation.delete,
+          data: {'deleted_at': event.deletedAt?.toIso8601String()},
+          clientUpdatedAt: event.deletedAt ?? DateTime.now(),
+        ),
+      );
     }
 
     return changes;
@@ -349,13 +354,15 @@ class ChangeTracker {
     final unsyncedSchedules = scheduleDs.getUnsyncedSchedules();
     for (final schedule in unsyncedSchedules) {
       final operation = _determineScheduleOperation(schedule);
-      changes.add(SyncChange(
-        entityType: EntityType.schedule,
-        entityId: schedule.id,
-        operation: operation,
-        data: schedule.toSyncJson(),
-        clientUpdatedAt: DateTime.now().toUtc(),
-      ));
+      changes.add(
+        SyncChange(
+          entityType: EntityType.schedule,
+          entityId: schedule.id,
+          operation: operation,
+          data: schedule.toSyncJson(),
+          clientUpdatedAt: DateTime.now().toUtc(),
+        ),
+      );
     }
 
     return changes;

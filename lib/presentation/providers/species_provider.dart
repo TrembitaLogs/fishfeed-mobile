@@ -36,10 +36,9 @@ class SpeciesListState {
 ///
 /// Fetches species from the API and provides search functionality.
 class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
-  SpeciesListNotifier({
-    required SpeciesRemoteDataSource speciesDataSource,
-  })  : _speciesDataSource = speciesDataSource,
-        super(const SpeciesListState()) {
+  SpeciesListNotifier({required SpeciesRemoteDataSource speciesDataSource})
+    : _speciesDataSource = speciesDataSource,
+      super(const SpeciesListState()) {
     loadPopularSpecies();
   }
 
@@ -53,10 +52,7 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
       final speciesDtos = await _speciesDataSource.getPopularSpecies();
       final speciesList = speciesDtos.map((dto) => dto.toEntity()).toList();
 
-      state = state.copyWith(
-        species: speciesList,
-        isLoading: false,
-      );
+      state = state.copyWith(species: speciesList, isLoading: false);
     } catch (e) {
       // Fallback to hardcoded data on error
       state = state.copyWith(
@@ -91,10 +87,7 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
       final speciesDtos = await _speciesDataSource.searchSpecies(query);
       final speciesList = speciesDtos.map((dto) => dto.toEntity()).toList();
 
-      state = state.copyWith(
-        species: speciesList,
-        isLoading: false,
-      );
+      state = state.copyWith(species: speciesList, isLoading: false);
     } catch (e) {
       // Fallback to local search on error
       final filtered = SpeciesData.searchByName(query);
@@ -110,9 +103,9 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
 /// Provider for species list state.
 final speciesListProvider =
     StateNotifierProvider<SpeciesListNotifier, SpeciesListState>((ref) {
-  final speciesDataSource = ref.watch(speciesRemoteDataSourceProvider);
-  return SpeciesListNotifier(speciesDataSource: speciesDataSource);
-});
+      final speciesDataSource = ref.watch(speciesRemoteDataSourceProvider);
+      return SpeciesListNotifier(speciesDataSource: speciesDataSource);
+    });
 
 /// Provider for current species list (convenience accessor).
 final availableSpeciesProvider = Provider<List<Species>>((ref) {
@@ -144,7 +137,10 @@ final _speciesCacheProvider = StateProvider<Map<String, Species>>((ref) => {});
 ///   error: (e, _) => Text('Error'),
 /// );
 /// ```
-final speciesByIdProvider = FutureProvider.family<Species?, String>((ref, speciesId) async {
+final speciesByIdProvider = FutureProvider.family<Species?, String>((
+  ref,
+  speciesId,
+) async {
   if (speciesId.isEmpty) return null;
 
   // 1. Check in-memory cache first
@@ -203,7 +199,10 @@ final speciesByIdProvider = FutureProvider.family<Species?, String>((ref, specie
 /// Returns the species name if cached, otherwise returns a formatted version
 /// of the speciesId (e.g., "bristlenose-pleco" -> "Bristlenose Pleco").
 /// Use this when you need a name immediately without async handling.
-final speciesNameByIdProvider = Provider.family<String, String>((ref, speciesId) {
+final speciesNameByIdProvider = Provider.family<String, String>((
+  ref,
+  speciesId,
+) {
   if (speciesId.isEmpty) return 'Feeding';
 
   // Check memory cache
@@ -236,8 +235,10 @@ final speciesNameByIdProvider = Provider.family<String, String>((ref, speciesId)
 String _formatSpeciesId(String speciesId) {
   return speciesId
       .split(RegExp(r'[-_]'))
-      .map((word) => word.isNotEmpty
-          ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
-          : '')
+      .map(
+        (word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+            : '',
+      )
       .join(' ');
 }

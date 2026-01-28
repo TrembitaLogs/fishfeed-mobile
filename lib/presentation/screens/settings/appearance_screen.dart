@@ -19,9 +19,7 @@ class AppearanceScreen extends ConsumerWidget {
     final settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Appearance'),
-      ),
+      appBar: AppBar(title: const Text('Appearance')),
       body: ListView(
         children: [
           // Theme section
@@ -61,12 +59,9 @@ class AppearanceScreen extends ConsumerWidget {
 
   String _getThemeDescription(AppThemeMode mode, AppLocalizations l10n) {
     return switch (mode) {
-      AppThemeMode.system =>
-        'Automatically matches your device settings',
-      AppThemeMode.light =>
-        'Always use light theme',
-      AppThemeMode.dark =>
-        'Always use dark theme',
+      AppThemeMode.system => 'Automatically matches your device settings',
+      AppThemeMode.light => 'Always use light theme',
+      AppThemeMode.dark => 'Always use dark theme',
     };
   }
 
@@ -112,10 +107,7 @@ class _SectionHeader extends StatelessWidget {
 
 /// Theme selector using SegmentedButton for System/Light/Dark options.
 class _ThemeSelector extends StatelessWidget {
-  const _ThemeSelector({
-    required this.selectedMode,
-    required this.onChanged,
-  });
+  const _ThemeSelector({required this.selectedMode, required this.onChanged});
 
   final AppThemeMode selectedMode;
   final ValueChanged<AppThemeMode> onChanged;
@@ -155,10 +147,7 @@ class _ThemeSelector extends StatelessWidget {
 
 /// Language tile showing current language with tap to change.
 class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({
-    required this.languageCode,
-    required this.onTap,
-  });
+  const _LanguageTile({required this.languageCode, required this.onTap});
 
   final String languageCode;
   final VoidCallback onTap;
@@ -175,10 +164,7 @@ class _LanguageTile extends StatelessWidget {
           color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          Icons.language,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        child: Icon(Icons.language, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Text(languageName),
       subtitle: Text(_getLanguageNativeName(languageCode)),
@@ -234,10 +220,7 @@ class _LanguageBottomSheet extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.language,
-              style: theme.textTheme.titleLarge,
-            ),
+            child: Text(l10n.language, style: theme.textTheme.titleLarge),
           ),
           const Divider(),
           ..._languages.map((lang) {
@@ -246,10 +229,7 @@ class _LanguageBottomSheet extends StatelessWidget {
 
             return ListTile(
               leading: isSelected
-                  ? Icon(
-                      Icons.check_circle,
-                      color: theme.colorScheme.primary,
-                    )
+                  ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
                   : const Icon(Icons.circle_outlined),
               title: Text(name),
               subtitle: Text(nativeName),

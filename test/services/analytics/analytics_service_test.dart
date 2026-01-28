@@ -114,9 +114,7 @@ void main() {
 
       test('handles failed scans', () {
         expect(
-          () => analyticsService.trackAiScanResult(
-            success: false,
-          ),
+          () => analyticsService.trackAiScanResult(success: false),
           returnsNormally,
         );
       });
@@ -125,18 +123,14 @@ void main() {
     group('trackAiScanFailed', () {
       test('logs scan failure with reason', () {
         expect(
-          () => analyticsService.trackAiScanFailed(
-            reason: 'Network timeout',
-          ),
+          () => analyticsService.trackAiScanFailed(reason: 'Network timeout'),
           returnsNormally,
         );
       });
 
       test('handles empty reason', () {
         expect(
-          () => analyticsService.trackAiScanFailed(
-            reason: '',
-          ),
+          () => analyticsService.trackAiScanFailed(reason: ''),
           returnsNormally,
         );
       });
@@ -157,10 +151,7 @@ void main() {
 
     group('trackMyAquariumOpened', () {
       test('logs my aquarium opened event', () {
-        expect(
-          () => analyticsService.trackMyAquariumOpened(),
-          returnsNormally,
-        );
+        expect(() => analyticsService.trackMyAquariumOpened(), returnsNormally);
       });
     });
 
@@ -199,18 +190,14 @@ void main() {
     group('trackFishDeleted', () {
       test('logs fish deleted event with species', () {
         expect(
-          () => analyticsService.trackFishDeleted(
-            speciesId: 'guppy',
-          ),
+          () => analyticsService.trackFishDeleted(speciesId: 'guppy'),
           returnsNormally,
         );
       });
 
       test('handles different species', () {
         expect(
-          () => analyticsService.trackFishDeleted(
-            speciesId: 'goldfish',
-          ),
+          () => analyticsService.trackFishDeleted(speciesId: 'goldfish'),
           returnsNormally,
         );
       });

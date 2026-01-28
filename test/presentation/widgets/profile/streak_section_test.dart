@@ -21,25 +21,19 @@ void main() {
     AppTheme.useDefaultFonts = false;
   });
 
-  Widget buildTestWidget({
-    required StreakState streakState,
-  }) {
+  Widget buildTestWidget({required StreakState streakState}) {
     return ProviderScope(
       overrides: [
-        currentStreakProvider.overrideWith(
-          (ref) {
-            return _TestStreakNotifier(streakState);
-          },
-        ),
+        currentStreakProvider.overrideWith((ref) {
+          return _TestStreakNotifier(streakState);
+        }),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
-          body: SingleChildScrollView(
-            child: StreakSection(),
-          ),
+          body: SingleChildScrollView(child: StreakSection()),
         ),
       ),
     );
@@ -62,41 +56,41 @@ void main() {
   group('StreakSection', () {
     group('Display', () {
       testWidgets('displays correct current streak value', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 5),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 5)),
           ),
-        ));
+        );
 
         expect(find.text('5'), findsOneWidget);
       });
 
       testWidgets('displays correct longest streak value', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 5, longestStreak: 15),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(
+              streak: createStreak(currentStreak: 5, longestStreak: 15),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('15'), findsOneWidget);
       });
 
       testWidgets('displays correct freeze days count', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(freezeAvailable: 1),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(freezeAvailable: 1)),
           ),
-        ));
+        );
 
         expect(find.text('1'), findsOneWidget);
       });
 
       testWidgets('displays all three stat labels', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(),
-          ),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: StreakState(streak: createStreak())),
+        );
 
         expect(find.text('Current streak'), findsOneWidget);
         expect(find.text('Best'), findsOneWidget);
@@ -104,21 +98,17 @@ void main() {
       });
 
       testWidgets('displays section title', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(),
-          ),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: StreakState(streak: createStreak())),
+        );
 
         expect(find.text('Streak'), findsOneWidget);
       });
 
       testWidgets('displays icons for all stat cards', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(),
-          ),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: StreakState(streak: createStreak())),
+        );
 
         // Flame icon appears twice (title + stat card)
         expect(find.byIcon(Icons.local_fire_department), findsNWidgets(2));
@@ -129,9 +119,9 @@ void main() {
 
     group('Loading State', () {
       testWidgets('shows shimmer when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: const StreakState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: const StreakState(isLoading: true)),
+        );
 
         // Should not find stat values
         expect(find.text('Current streak'), findsNothing);
@@ -150,9 +140,9 @@ void main() {
       });
 
       testWidgets('does not show content when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: const StreakState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: const StreakState(isLoading: true)),
+        );
 
         expect(find.text('Current streak'), findsNothing);
         expect(find.byIcon(Icons.emoji_events), findsNothing);
@@ -161,9 +151,9 @@ void main() {
 
     group('Null Streak State', () {
       testWidgets('renders nothing when streak is null', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: const StreakState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: const StreakState()),
+        );
 
         expect(find.byType(SizedBox), findsWidgets);
         expect(find.text('Streak'), findsNothing);
@@ -172,15 +162,13 @@ void main() {
 
     group('Gradient Colors', () {
       testWidgets('uses amber gradient for streak < 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 3),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 3)),
           ),
-        ));
-
-        final containers = tester.widgetList<Container>(
-          find.byType(Container),
         );
+
+        final containers = tester.widgetList<Container>(find.byType(Container));
 
         final gradientContainer = containers.firstWhere(
           (c) =>
@@ -197,15 +185,13 @@ void main() {
       });
 
       testWidgets('uses orange gradient for streak >= 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 15),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 15)),
           ),
-        ));
-
-        final containers = tester.widgetList<Container>(
-          find.byType(Container),
         );
+
+        final containers = tester.widgetList<Container>(find.byType(Container));
 
         final gradientContainer = containers.firstWhere(
           (c) =>
@@ -222,15 +208,13 @@ void main() {
       });
 
       testWidgets('uses red gradient for streak >= 30', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 50),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 50)),
           ),
-        ));
-
-        final containers = tester.widgetList<Container>(
-          find.byType(Container),
         );
+
+        final containers = tester.widgetList<Container>(find.byType(Container));
 
         final gradientContainer = containers.firstWhere(
           (c) =>
@@ -249,15 +233,13 @@ void main() {
 
     group('Glow Effect', () {
       testWidgets('has glow effect when streak >= 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 10),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 10)),
           ),
-        ));
-
-        final containers = tester.widgetList<Container>(
-          find.byType(Container),
         );
+
+        final containers = tester.widgetList<Container>(find.byType(Container));
 
         final glowContainer = containers.firstWhere(
           (c) =>
@@ -273,15 +255,13 @@ void main() {
       });
 
       testWidgets('no glow effect when streak < 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 3),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 3)),
           ),
-        ));
-
-        final containers = tester.widgetList<Container>(
-          find.byType(Container),
         );
+
+        final containers = tester.widgetList<Container>(find.byType(Container));
 
         final glowContainers = containers.where(
           (c) =>
@@ -296,44 +276,44 @@ void main() {
 
     group('Milestone Badges', () {
       testWidgets('shows 7 days badge when streak >= 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 10),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 10)),
           ),
-        ));
+        );
 
         expect(find.text('7 days'), findsOneWidget);
         expect(find.byIcon(Icons.bolt), findsOneWidget);
       });
 
       testWidgets('shows 30 days badge when streak >= 30', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 45),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 45)),
           ),
-        ));
+        );
 
         expect(find.text('30 days'), findsOneWidget);
         expect(find.byIcon(Icons.star), findsOneWidget);
       });
 
       testWidgets('shows 100 days badge when streak >= 100', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 150),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 150)),
           ),
-        ));
+        );
 
         expect(find.text('100 days'), findsOneWidget);
         expect(find.byIcon(Icons.workspace_premium), findsOneWidget);
       });
 
       testWidgets('no badge when streak < 7', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 3),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 3)),
           ),
-        ));
+        );
 
         expect(find.text('7 days'), findsNothing);
         expect(find.text('30 days'), findsNothing);
@@ -343,11 +323,11 @@ void main() {
 
     group('Freeze Info Dialog', () {
       testWidgets('shows freeze info dialog on tap', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(freezeAvailable: 2),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(freezeAvailable: 2)),
           ),
-        ));
+        );
 
         // Find and tap the freeze card (the one with info icon)
         await tester.tap(find.byIcon(Icons.info_outline));
@@ -358,28 +338,23 @@ void main() {
       });
 
       testWidgets('dialog shows correct freeze days info', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(freezeAvailable: 1),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(freezeAvailable: 1)),
           ),
-        ));
+        );
 
         await tester.tap(find.byIcon(Icons.info_outline));
         await tester.pumpAndSettle();
 
         expect(find.text('Available freeze days: 1'), findsOneWidget);
-        expect(
-          find.text('You get 2 freeze days per month'),
-          findsOneWidget,
-        );
+        expect(find.text('You get 2 freeze days per month'), findsOneWidget);
       });
 
       testWidgets('dialog can be dismissed', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(),
-          ),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streakState: StreakState(streak: createStreak())),
+        );
 
         await tester.tap(find.byIcon(Icons.info_outline));
         await tester.pumpAndSettle();
@@ -395,11 +370,11 @@ void main() {
 
     group('Animated Counter', () {
       testWidgets('current streak has AnimatedSwitcher', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streakState: StreakState(
-            streak: createStreak(currentStreak: 5),
+        await tester.pumpWidget(
+          buildTestWidget(
+            streakState: StreakState(streak: createStreak(currentStreak: 5)),
           ),
-        ));
+        );
 
         expect(find.byType(AnimatedSwitcher), findsOneWidget);
       });
@@ -410,10 +385,7 @@ void main() {
 /// Test-only StreakNotifier that returns a fixed state.
 class _TestStreakNotifier extends StreakNotifier {
   _TestStreakNotifier(this._initialState)
-      : super(
-          streakDataSource: _MockStreakLocalDataSource(),
-          ref: _MockRef(),
-        );
+    : super(streakDataSource: _MockStreakLocalDataSource(), ref: _MockRef());
 
   final StreakState _initialState;
 
@@ -432,8 +404,8 @@ class _TestStreakNotifier extends StreakNotifier {
 }
 
 /// Minimal mock for StreakLocalDataSource.
-class _MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {
-}
+class _MockStreakLocalDataSource extends Mock
+    implements StreakLocalDataSource {}
 
 /// Minimal mock for Ref.
 class _MockRef extends Mock implements Ref {}

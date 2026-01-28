@@ -100,10 +100,7 @@ abstract final class SpeciesData {
   ];
 
   /// All species including default.
-  static const List<Species> allSpecies = [
-    defaultSpecies,
-    ...popularSpecies,
-  ];
+  static const List<Species> allSpecies = [defaultSpecies, ...popularSpecies];
 
   /// Finds a species by its ID.
   /// Returns [defaultSpecies] if not found.

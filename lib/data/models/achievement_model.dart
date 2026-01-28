@@ -86,7 +86,11 @@ class AchievementModel extends HiveObject {
   DateTime? serverUpdatedAt;
 
   /// Whether this achievement needs to be synced.
-  bool get needsSync => !synced || (updatedAt != null && serverUpdatedAt != null && updatedAt!.isAfter(serverUpdatedAt!));
+  bool get needsSync =>
+      !synced ||
+      (updatedAt != null &&
+          serverUpdatedAt != null &&
+          updatedAt!.isAfter(serverUpdatedAt!));
 
   /// Whether this achievement is unlocked.
   bool get isUnlocked => unlockedAt != null;

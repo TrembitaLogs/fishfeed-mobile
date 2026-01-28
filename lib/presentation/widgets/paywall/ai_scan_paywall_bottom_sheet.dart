@@ -60,7 +60,9 @@ class AiScanPaywallBottomSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.4,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -155,11 +157,7 @@ class AiScanPaywallBottomSheet extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                benefit.$1,
-                size: 18,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(benefit.$1, size: 18, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 benefit.$2,

@@ -39,26 +39,28 @@ void main() {
   });
 
   group('AppleAuthService.signIn', () {
-    test('should throw notAvailable when Sign in with Apple is not available',
-        () async {
-      appleAuthService = AppleAuthService(
-        storageService: mockStorageService,
-        isAvailableOverride: false,
-      );
+    test(
+      'should throw notAvailable when Sign in with Apple is not available',
+      () async {
+        appleAuthService = AppleAuthService(
+          storageService: mockStorageService,
+          isAvailableOverride: false,
+        );
 
-      expect(
-        () => appleAuthService.signIn(),
-        throwsA(
-          isA<AppleAuthException>()
-              .having((e) => e.code, 'code', AppleAuthErrorCode.notAvailable)
-              .having(
-                (e) => e.message,
-                'message',
-                'Sign in with Apple is not available on this device',
-              ),
-        ),
-      );
-    });
+        expect(
+          () => appleAuthService.signIn(),
+          throwsA(
+            isA<AppleAuthException>()
+                .having((e) => e.code, 'code', AppleAuthErrorCode.notAvailable)
+                .having(
+                  (e) => e.message,
+                  'message',
+                  'Sign in with Apple is not available on this device',
+                ),
+          ),
+        );
+      },
+    );
   });
 
   group('AppleAuthService.getIdToken', () {
@@ -108,8 +110,9 @@ void main() {
         isAvailableOverride: true,
       );
 
-      when(() => mockStorageService.clearAppleUserInfo())
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorageService.clearAppleUserInfo(),
+      ).thenAnswer((_) async {});
 
       await appleAuthService.clearStoredUserInfo();
 
@@ -132,8 +135,9 @@ void main() {
         isAvailableOverride: true,
       );
 
-      when(() => mockStorageService.clearAppleUserInfo())
-          .thenThrow(Exception('Storage error'));
+      when(
+        () => mockStorageService.clearAppleUserInfo(),
+      ).thenThrow(Exception('Storage error'));
 
       // Should not throw
       await appleAuthService.clearStoredUserInfo();
@@ -175,30 +179,33 @@ void main() {
       expect(result.displayName, 'John Doe');
     });
 
-    test('displayName should return given name when only given name is present',
-        () {
-      const result = AppleSignInResult(
-        identityToken: 'token',
-        authorizationCode: 'code',
-        userIdentifier: 'user123',
-        givenName: 'John',
-      );
+    test(
+      'displayName should return given name when only given name is present',
+      () {
+        const result = AppleSignInResult(
+          identityToken: 'token',
+          authorizationCode: 'code',
+          userIdentifier: 'user123',
+          givenName: 'John',
+        );
 
-      expect(result.displayName, 'John');
-    });
+        expect(result.displayName, 'John');
+      },
+    );
 
     test(
-        'displayName should return family name when only family name is present',
-        () {
-      const result = AppleSignInResult(
-        identityToken: 'token',
-        authorizationCode: 'code',
-        userIdentifier: 'user123',
-        familyName: 'Doe',
-      );
+      'displayName should return family name when only family name is present',
+      () {
+        const result = AppleSignInResult(
+          identityToken: 'token',
+          authorizationCode: 'code',
+          userIdentifier: 'user123',
+          familyName: 'Doe',
+        );
 
-      expect(result.displayName, 'Doe');
-    });
+        expect(result.displayName, 'Doe');
+      },
+    );
 
     test('displayName should return null when no name parts are present', () {
       const result = AppleSignInResult(

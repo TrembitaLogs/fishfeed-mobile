@@ -25,18 +25,12 @@ void main() {
     VoidCallback? onTap,
   }) {
     return ProviderScope(
-      overrides: [
-        subscriptionStatusProvider.overrideWith((ref) => status),
-      ],
+      overrides: [subscriptionStatusProvider.overrideWith((ref) => status)],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
         home: Scaffold(
           body: Center(
-            child: PremiumBadge(
-              size: size,
-              showLabel: showLabel,
-              onTap: onTap,
-            ),
+            child: PremiumBadge(size: size, showLabel: showLabel, onTap: onTap),
           ),
         ),
       ),
@@ -188,10 +182,7 @@ void main() {
 
       testWidgets('does not crash when onTap is null', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            status: const SubscriptionStatus.free(),
-            onTap: null,
-          ),
+          buildTestWidget(status: const SubscriptionStatus.free(), onTap: null),
         );
 
         await tester.tap(find.byType(PremiumBadge));

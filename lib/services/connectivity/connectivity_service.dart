@@ -10,9 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// current connectivity state. Used for displaying offline banners
 /// and managing offline-aware features.
 class ConnectivityService {
-  ConnectivityService({
-    Connectivity? connectivity,
-  }) : _connectivity = connectivity ?? Connectivity();
+  ConnectivityService({Connectivity? connectivity})
+    : _connectivity = connectivity ?? Connectivity();
 
   final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _subscription;
@@ -76,13 +75,16 @@ class ConnectivityService {
     _updateStatus(results);
 
     if (wasOnline != _isOnline) {
-      debugPrint('ConnectivityService: Status changed to ${_isOnline ? "online" : "offline"}');
+      debugPrint(
+        'ConnectivityService: Status changed to ${_isOnline ? "online" : "offline"}',
+      );
       _statusController.add(_isOnline);
     }
   }
 
   void _updateStatus(List<ConnectivityResult> results) {
-    _isOnline = results.isNotEmpty && !results.contains(ConnectivityResult.none);
+    _isOnline =
+        results.isNotEmpty && !results.contains(ConnectivityResult.none);
   }
 }
 

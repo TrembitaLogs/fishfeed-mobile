@@ -44,8 +44,9 @@ void main() {
     group('addToQueue', () {
       test('should add operation to Hive box', () async {
         final operation = createTestOperation();
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await syncQueueDs.addToQueue(operation);
 
@@ -54,25 +55,27 @@ void main() {
     });
 
     group('getQueuedOperations', () {
-      test('should return all operations sorted by timestamp (oldest first)',
-          () {
-        final newerOp = createTestOperation(
-          id: 'op_1',
-          timestamp: DateTime(2025, 6, 15, 12, 0),
-        );
-        final olderOp = createTestOperation(
-          id: 'op_2',
-          timestamp: DateTime(2025, 6, 15, 8, 0),
-        );
+      test(
+        'should return all operations sorted by timestamp (oldest first)',
+        () {
+          final newerOp = createTestOperation(
+            id: 'op_1',
+            timestamp: DateTime(2025, 6, 15, 12, 0),
+          );
+          final olderOp = createTestOperation(
+            id: 'op_2',
+            timestamp: DateTime(2025, 6, 15, 8, 0),
+          );
 
-        when(() => mockSyncQueueBox.values).thenReturn([newerOp, olderOp]);
+          when(() => mockSyncQueueBox.values).thenReturn([newerOp, olderOp]);
 
-        final result = syncQueueDs.getQueuedOperations();
+          final result = syncQueueDs.getQueuedOperations();
 
-        expect(result.length, 2);
-        expect(result[0].id, 'op_2'); // older first
-        expect(result[1].id, 'op_1');
-      });
+          expect(result.length, 2);
+          expect(result[0].id, 'op_2'); // older first
+          expect(result[1].id, 'op_1');
+        },
+      );
 
       test('should return empty list when queue is empty', () {
         when(() => mockSyncQueueBox.values).thenReturn([]);
@@ -98,8 +101,9 @@ void main() {
           status: SyncOperationStatus.inProgress,
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([pendingOp, completedOp, inProgressOp]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([pendingOp, completedOp, inProgressOp]);
 
         final result = syncQueueDs.getPendingOperations();
 
@@ -123,8 +127,9 @@ void main() {
           retryCount: 5, // exceeded max retries
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([pendingOp, failedRetryable, failedMaxRetries]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([pendingOp, failedRetryable, failedMaxRetries]);
 
         final result = syncQueueDs.getPendingOperations();
 
@@ -145,8 +150,9 @@ void main() {
           timestamp: DateTime(2025, 6, 15, 8, 0),
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([newerPending, olderPending]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([newerPending, olderPending]);
 
         final result = syncQueueDs.getPendingOperations();
 
@@ -174,14 +180,16 @@ void main() {
         expect(result, isNull);
       });
 
-      test('should return null when stored value is not SyncOperationModel',
-          () {
-        when(() => mockSyncQueueBox.get('op_1')).thenReturn('invalid');
+      test(
+        'should return null when stored value is not SyncOperationModel',
+        () {
+          when(() => mockSyncQueueBox.get('op_1')).thenReturn('invalid');
 
-        final result = syncQueueDs.getOperationById('op_1');
+          final result = syncQueueDs.getOperationById('op_1');
 
-        expect(result, isNull);
-      });
+          expect(result, isNull);
+        },
+      );
     });
 
     group('getOperationsForEntity', () {
@@ -204,8 +212,10 @@ void main() {
 
         when(() => mockSyncQueueBox.values).thenReturn([op1, op2, op3]);
 
-        final result =
-            syncQueueDs.getOperationsForEntity('feeding_event', 'entity_1');
+        final result = syncQueueDs.getOperationsForEntity(
+          'feeding_event',
+          'entity_1',
+        );
 
         expect(result.length, 1);
         expect(result[0].id, 'op_1');
@@ -216,10 +226,13 @@ void main() {
   group('Status Management', () {
     group('markAsInProgress', () {
       test('should mark operation as in progress', () async {
-        final operation = createTestOperation(status: SyncOperationStatus.pending);
+        final operation = createTestOperation(
+          status: SyncOperationStatus.pending,
+        );
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.markAsInProgress('op_1');
 
@@ -246,8 +259,9 @@ void main() {
           errorMessage: 'previous error',
         );
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.markAsCompleted('op_1');
 
@@ -268,10 +282,13 @@ void main() {
 
     group('markAsFailed', () {
       test('should mark operation as failed with error message', () async {
-        final operation = createTestOperation(status: SyncOperationStatus.inProgress);
+        final operation = createTestOperation(
+          status: SyncOperationStatus.inProgress,
+        );
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.markAsFailed('op_1', 'Network error');
 
@@ -291,22 +308,25 @@ void main() {
     });
 
     group('incrementRetryCount', () {
-      test('should increment retry count and reset status to pending',
-          () async {
-        final operation = createTestOperation(
-          status: SyncOperationStatus.failed,
-          retryCount: 2,
-        );
-        when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+      test(
+        'should increment retry count and reset status to pending',
+        () async {
+          final operation = createTestOperation(
+            status: SyncOperationStatus.failed,
+            retryCount: 2,
+          );
+          when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
+          when(
+            () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+          ).thenAnswer((_) async {});
 
-        final result = await syncQueueDs.incrementRetryCount('op_1');
+          final result = await syncQueueDs.incrementRetryCount('op_1');
 
-        expect(result, isTrue);
-        expect(operation.retryCount, 3);
-        expect(operation.status, SyncOperationStatus.pending);
-      });
+          expect(result, isTrue);
+          expect(operation.retryCount, 3);
+          expect(operation.status, SyncOperationStatus.pending);
+        },
+      );
 
       test('should not reset status when max retries exceeded', () async {
         final operation = createTestOperation(
@@ -314,8 +334,9 @@ void main() {
           retryCount: 4, // will become 5 which is max
         );
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await syncQueueDs.incrementRetryCount('op_1');
 
@@ -339,8 +360,9 @@ void main() {
           retryCount: 2,
         );
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.resetForRetry('op_1');
 
@@ -375,7 +397,9 @@ void main() {
       test('should remove operation when exists', () async {
         final operation = createTestOperation();
         when(() => mockSyncQueueBox.get('op_1')).thenReturn(operation);
-        when(() => mockSyncQueueBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.removeOperation('op_1');
 
@@ -408,9 +432,12 @@ void main() {
           status: SyncOperationStatus.pending,
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([completedOp1, completedOp2, pendingOp]);
-        when(() => mockSyncQueueBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([completedOp1, completedOp2, pendingOp]);
+        when(
+          () => mockSyncQueueBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await syncQueueDs.clearCompletedOperations();
 
@@ -421,7 +448,9 @@ void main() {
       });
 
       test('should return 0 when no completed operations', () async {
-        final pendingOp = createTestOperation(status: SyncOperationStatus.pending);
+        final pendingOp = createTestOperation(
+          status: SyncOperationStatus.pending,
+        );
         when(() => mockSyncQueueBox.values).thenReturn([pendingOp]);
 
         final result = await syncQueueDs.clearCompletedOperations();
@@ -432,34 +461,39 @@ void main() {
     });
 
     group('clearFailedOperations', () {
-      test('should remove only failed operations that exceeded max retries',
-          () async {
-        final failedMaxRetries = createTestOperation(
-          id: 'op_1',
-          status: SyncOperationStatus.failed,
-          retryCount: 5,
-        );
-        final failedCanRetry = createTestOperation(
-          id: 'op_2',
-          status: SyncOperationStatus.failed,
-          retryCount: 2,
-        );
-        final pendingOp = createTestOperation(
-          id: 'op_3',
-          status: SyncOperationStatus.pending,
-        );
+      test(
+        'should remove only failed operations that exceeded max retries',
+        () async {
+          final failedMaxRetries = createTestOperation(
+            id: 'op_1',
+            status: SyncOperationStatus.failed,
+            retryCount: 5,
+          );
+          final failedCanRetry = createTestOperation(
+            id: 'op_2',
+            status: SyncOperationStatus.failed,
+            retryCount: 2,
+          );
+          final pendingOp = createTestOperation(
+            id: 'op_3',
+            status: SyncOperationStatus.pending,
+          );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([failedMaxRetries, failedCanRetry, pendingOp]);
-        when(() => mockSyncQueueBox.delete(any<dynamic>())).thenAnswer((_) async {});
+          when(
+            () => mockSyncQueueBox.values,
+          ).thenReturn([failedMaxRetries, failedCanRetry, pendingOp]);
+          when(
+            () => mockSyncQueueBox.delete(any<dynamic>()),
+          ).thenAnswer((_) async {});
 
-        final result = await syncQueueDs.clearFailedOperations();
+          final result = await syncQueueDs.clearFailedOperations();
 
-        expect(result, 1);
-        verify(() => mockSyncQueueBox.delete('op_1')).called(1);
-        verifyNever(() => mockSyncQueueBox.delete('op_2'));
-        verifyNever(() => mockSyncQueueBox.delete('op_3'));
-      });
+          expect(result, 1);
+          verify(() => mockSyncQueueBox.delete('op_1')).called(1);
+          verifyNever(() => mockSyncQueueBox.delete('op_2'));
+          verifyNever(() => mockSyncQueueBox.delete('op_3'));
+        },
+      );
     });
 
     group('clearAll', () {
@@ -511,8 +545,9 @@ void main() {
           status: SyncOperationStatus.completed,
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([pendingOp1, pendingOp2, completedOp]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([pendingOp1, pendingOp2, completedOp]);
 
         final result = syncQueueDs.getPendingCount();
 
@@ -535,8 +570,9 @@ void main() {
           status: SyncOperationStatus.pending,
         );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([failedOp1, failedOp2, pendingOp]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([failedOp1, failedOp2, pendingOp]);
 
         final result = syncQueueDs.getFailedCount();
 
@@ -546,7 +582,9 @@ void main() {
 
     group('hasPendingOperations', () {
       test('should return true when has pending operations', () {
-        final pendingOp = createTestOperation(status: SyncOperationStatus.pending);
+        final pendingOp = createTestOperation(
+          status: SyncOperationStatus.pending,
+        );
         when(() => mockSyncQueueBox.values).thenReturn([pendingOp]);
 
         final result = syncQueueDs.hasPendingOperations();
@@ -566,25 +604,28 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should return false when only completed and max-retried operations',
-          () {
-        final completedOp = createTestOperation(
-          id: 'op_1',
-          status: SyncOperationStatus.completed,
-        );
-        final failedMaxRetries = createTestOperation(
-          id: 'op_2',
-          status: SyncOperationStatus.failed,
-          retryCount: 5,
-        );
+      test(
+        'should return false when only completed and max-retried operations',
+        () {
+          final completedOp = createTestOperation(
+            id: 'op_1',
+            status: SyncOperationStatus.completed,
+          );
+          final failedMaxRetries = createTestOperation(
+            id: 'op_2',
+            status: SyncOperationStatus.failed,
+            retryCount: 5,
+          );
 
-        when(() => mockSyncQueueBox.values)
-            .thenReturn([completedOp, failedMaxRetries]);
+          when(
+            () => mockSyncQueueBox.values,
+          ).thenReturn([completedOp, failedMaxRetries]);
 
-        final result = syncQueueDs.hasPendingOperations();
+          final result = syncQueueDs.hasPendingOperations();
 
-        expect(result, isFalse);
-      });
+          expect(result, isFalse);
+        },
+      );
 
       test('should return false when queue is empty', () {
         when(() => mockSyncQueueBox.values).thenReturn([]);
@@ -606,10 +647,13 @@ void main() {
           status: SyncOperationStatus.completed,
         );
 
-        when(() => mockSyncQueueBox.values).thenReturn([pendingOp, completedOp]);
+        when(
+          () => mockSyncQueueBox.values,
+        ).thenReturn([pendingOp, completedOp]);
 
-        final result =
-            syncQueueDs.getOperationsByStatus(SyncOperationStatus.pending);
+        final result = syncQueueDs.getOperationsByStatus(
+          SyncOperationStatus.pending,
+        );
 
         expect(result.length, 1);
         expect(result[0].id, 'op_1');

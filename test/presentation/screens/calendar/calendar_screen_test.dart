@@ -29,7 +29,9 @@ void main() {
           MockFeedingLocalDataSource(),
         ),
         if (initialState != null)
-          calendarProvider.overrideWith(() => TestCalendarNotifier(initialState)),
+          calendarProvider.overrideWith(
+            () => TestCalendarNotifier(initialState),
+          ),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -299,13 +301,15 @@ void main() {
         final now = DateTime.now();
         final differentDay = DateTime(now.year, now.month, 1);
 
-        await tester.pumpWidget(buildTestWidget(
-          initialState: CalendarState(
-            focusedDay: differentDay,
-            selectedDay: differentDay,
-            calendarFormat: CalendarFormat.month,
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialState: CalendarState(
+              focusedDay: differentDay,
+              selectedDay: differentDay,
+              calendarFormat: CalendarFormat.month,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Should not show "Today"

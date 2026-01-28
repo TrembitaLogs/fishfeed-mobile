@@ -50,9 +50,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<NetworkException>());
         expect(
           (captured.error as NetworkException).message,
@@ -67,9 +67,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<NetworkException>());
         expect((captured.error as NetworkException).message, 'Send timeout');
       });
@@ -81,9 +81,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<NetworkException>());
         expect((captured.error as NetworkException).message, 'Receive timeout');
       });
@@ -95,11 +95,14 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<NetworkException>());
-        expect((captured.error as NetworkException).message, 'Connection error');
+        expect(
+          (captured.error as NetworkException).message,
+          'Connection error',
+        );
       });
     });
 
@@ -109,9 +112,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ValidationException>());
       });
 
@@ -128,9 +131,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ValidationException>());
         final exception = captured.error as ValidationException;
         expect(exception.message, 'Validation error');
@@ -142,9 +145,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<UnauthorizedException>());
         expect((captured.error as ApiException).statusCode, 401);
       });
@@ -154,9 +157,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ForbiddenException>());
         expect((captured.error as ApiException).statusCode, 403);
       });
@@ -166,9 +169,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<NotFoundException>());
         expect((captured.error as ApiException).statusCode, 404);
       });
@@ -178,9 +181,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ServerException>());
         expect(
           (captured.error as ServerException).message,
@@ -193,9 +196,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ServerException>());
         expect((captured.error as ServerException).message, 'Bad gateway');
       });
@@ -205,9 +208,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ServerException>());
         expect(
           (captured.error as ServerException).message,
@@ -220,9 +223,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<ServerException>());
         expect((captured.error as ServerException).message, 'Gateway timeout');
       });
@@ -232,9 +235,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<UnknownApiException>());
         expect((captured.error as ApiException).statusCode, 418);
       });
@@ -249,9 +252,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.error, isA<UnknownApiException>());
       });
 
@@ -264,17 +267,14 @@ void main() {
         final dioException = DioException(
           type: DioExceptionType.badResponse,
           requestOptions: originalOptions,
-          response: Response(
-            requestOptions: originalOptions,
-            statusCode: 500,
-          ),
+          response: Response(requestOptions: originalOptions, statusCode: 500),
         );
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.requestOptions.path, '/test');
         expect(captured.requestOptions.method, 'POST');
         expect(captured.requestOptions.headers['X-Custom'], 'header');
@@ -288,9 +288,9 @@ void main() {
 
         errorInterceptor.onError(dioException, mockHandler);
 
-        final captured = verify(() => mockHandler.next(captureAny()))
-            .captured
-            .single as DioException;
+        final captured =
+            verify(() => mockHandler.next(captureAny())).captured.single
+                as DioException;
         expect(captured.response?.statusCode, 500);
         expect(captured.response?.data, {'error': 'details'});
       });

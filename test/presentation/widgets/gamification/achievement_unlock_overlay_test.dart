@@ -62,9 +62,7 @@ void main() {
     });
 
     testWidgets('should display achievement description', (tester) async {
-      final achievement = createTestAchievement(
-        type: AchievementType.streak7,
-      );
+      final achievement = createTestAchievement(type: AchievementType.streak7);
 
       await tester.pumpWidget(buildTestWidget(achievement: achievement));
 
@@ -72,9 +70,7 @@ void main() {
     });
 
     testWidgets('should display XP reward', (tester) async {
-      final achievement = createTestAchievement(
-        type: AchievementType.streak7,
-      );
+      final achievement = createTestAchievement(type: AchievementType.streak7);
 
       await tester.pumpWidget(buildTestWidget(achievement: achievement));
 
@@ -101,10 +97,12 @@ void main() {
       bool wasDismissed = false;
       final achievement = createTestAchievement();
 
-      await tester.pumpWidget(buildTestWidget(
-        achievement: achievement,
-        onDismiss: () => wasDismissed = true,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          achievement: achievement,
+          onDismiss: () => wasDismissed = true,
+        ),
+      );
 
       // Tap on the overlay
       await tester.tap(find.byType(GestureDetector).first);
@@ -117,11 +115,13 @@ void main() {
       bool wasDismissed = false;
       final achievement = createTestAchievement();
 
-      await tester.pumpWidget(buildTestWidget(
-        achievement: achievement,
-        onDismiss: () => wasDismissed = true,
-        autoDismissSeconds: 1,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          achievement: achievement,
+          onDismiss: () => wasDismissed = true,
+          autoDismissSeconds: 1,
+        ),
+      );
 
       // Wait for auto-dismiss
       await tester.pump(const Duration(milliseconds: 500));
@@ -140,11 +140,10 @@ void main() {
       expect(find.byType(Stack), findsWidgets);
     });
 
-    testWidgets('should display correct icon for achievement type',
-        (tester) async {
-      final achievement = createTestAchievement(
-        type: AchievementType.streak7,
-      );
+    testWidgets('should display correct icon for achievement type', (
+      tester,
+    ) async {
+      final achievement = createTestAchievement(type: AchievementType.streak7);
 
       await tester.pumpWidget(buildTestWidget(achievement: achievement));
 
@@ -152,8 +151,7 @@ void main() {
       expect(find.byIcon(Icons.local_fire_department), findsOneWidget);
     });
 
-    testWidgets('should display correct icon for firstFeeding',
-        (tester) async {
+    testWidgets('should display correct icon for firstFeeding', (tester) async {
       final achievement = createTestAchievement(
         type: AchievementType.firstFeeding,
       );
@@ -182,16 +180,16 @@ void main() {
         createTestAchievement(type: AchievementType.streak7),
       ];
 
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: AchievementUnlockQueue(
-            achievements: achievements,
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: AchievementUnlockQueue(achievements: achievements),
           ),
         ),
-      ));
+      );
 
       // Achievement.fromType uses Ukrainian titles (data.titleUk)
       expect(find.text(achievements[0].title), findsOneWidget);
@@ -203,16 +201,16 @@ void main() {
         createTestAchievement(type: AchievementType.streak7),
       ];
 
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: AchievementUnlockQueue(
-            achievements: achievements,
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: AchievementUnlockQueue(achievements: achievements),
           ),
         ),
-      ));
+      );
       // Allow localization and initial render
       await tester.pump();
 
@@ -229,24 +227,27 @@ void main() {
       expect(find.text(achievements[1].title), findsOneWidget);
     });
 
-    testWidgets('should call onAllDismissed after last achievement',
-        (tester) async {
+    testWidgets('should call onAllDismissed after last achievement', (
+      tester,
+    ) async {
       bool allDismissed = false;
       final achievements = [
         createTestAchievement(type: AchievementType.firstFeeding),
       ];
 
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: AchievementUnlockQueue(
-            achievements: achievements,
-            onAllDismissed: () => allDismissed = true,
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: AchievementUnlockQueue(
+              achievements: achievements,
+              onAllDismissed: () => allDismissed = true,
+            ),
           ),
         ),
-      ));
+      );
 
       // Tap to dismiss the only achievement
       await tester.tap(find.byType(GestureDetector).first);

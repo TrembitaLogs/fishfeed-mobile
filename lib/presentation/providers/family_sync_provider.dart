@@ -44,7 +44,9 @@ class FamilySyncState {
     return FamilySyncState(
       isPolling: isPolling ?? this.isPolling,
       isOnline: isOnline ?? this.isOnline,
-      activeAquariumId: clearAquarium ? null : (activeAquariumId ?? this.activeAquariumId),
+      activeAquariumId: clearAquarium
+          ? null
+          : (activeAquariumId ?? this.activeAquariumId),
       lastFamilyFeeding: lastFamilyFeeding ?? this.lastFamilyFeeding,
       error: clearError ? null : (error ?? this.error),
     );
@@ -53,10 +55,9 @@ class FamilySyncState {
 
 /// Notifier for managing family sync state.
 class FamilySyncNotifier extends StateNotifier<FamilySyncState> {
-  FamilySyncNotifier({
-    required Ref ref,
-  })  : _ref = ref,
-        super(const FamilySyncState());
+  FamilySyncNotifier({required Ref ref})
+    : _ref = ref,
+      super(const FamilySyncState());
 
   final Ref _ref;
   FamilySyncService? _syncService;
@@ -92,19 +93,13 @@ class FamilySyncNotifier extends StateNotifier<FamilySyncState> {
     }
 
     _syncService?.startPolling(aquariumId: aquariumId);
-    state = state.copyWith(
-      isPolling: true,
-      activeAquariumId: aquariumId,
-    );
+    state = state.copyWith(isPolling: true, activeAquariumId: aquariumId);
   }
 
   /// Stops all polling.
   void stopPolling() {
     _syncService?.stopPolling();
-    state = state.copyWith(
-      isPolling: false,
-      clearAquarium: true,
-    );
+    state = state.copyWith(isPolling: false, clearAquarium: true);
   }
 
   /// Triggers an immediate sync.
@@ -165,8 +160,8 @@ class FamilySyncNotifier extends StateNotifier<FamilySyncState> {
 /// Provider for family sync notifier.
 final familySyncProvider =
     StateNotifierProvider<FamilySyncNotifier, FamilySyncState>((ref) {
-  return FamilySyncNotifier(ref: ref);
-});
+      return FamilySyncNotifier(ref: ref);
+    });
 
 /// Provider for checking if family sync is active.
 final isFamilySyncActiveProvider = Provider<bool>((ref) {
@@ -190,10 +185,7 @@ final lastFamilyFeedingProvider = Provider<FeedingEvent?>((ref) {
 /// )
 /// ```
 class FamilySyncToastWrapper extends ConsumerStatefulWidget {
-  const FamilySyncToastWrapper({
-    required this.child,
-    super.key,
-  });
+  const FamilySyncToastWrapper({required this.child, super.key});
 
   final Widget child;
 
@@ -202,7 +194,8 @@ class FamilySyncToastWrapper extends ConsumerStatefulWidget {
       _FamilySyncToastWrapperState();
 }
 
-class _FamilySyncToastWrapperState extends ConsumerState<FamilySyncToastWrapper> {
+class _FamilySyncToastWrapperState
+    extends ConsumerState<FamilySyncToastWrapper> {
   @override
   void initState() {
     super.initState();
@@ -218,10 +211,7 @@ class _FamilySyncToastWrapperState extends ConsumerState<FamilySyncToastWrapper>
     ref.listen<FeedingEvent?>(lastFamilyFeedingProvider, (previous, next) {
       if (next != null && previous?.id != next.id) {
         final userName = next.completedByName ?? 'Family member';
-        SnackbarUtils.showSuccess(
-          context,
-          'Feeding completed: $userName',
-        );
+        SnackbarUtils.showSuccess(context, 'Feeding completed: $userName');
       }
     });
 

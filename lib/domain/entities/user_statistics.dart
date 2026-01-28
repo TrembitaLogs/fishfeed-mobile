@@ -61,7 +61,8 @@ class UserStatistics extends Equatable {
   final bool isMaxLevel;
 
   /// Formatted on-time percentage string.
-  String get onTimePercentageFormatted => '${onTimePercentage.toStringAsFixed(0)}%';
+  String get onTimePercentageFormatted =>
+      '${onTimePercentage.toStringAsFixed(0)}%';
 
   /// XP display string for progress bar.
   String get xpProgressText {
@@ -73,14 +74,14 @@ class UserStatistics extends Equatable {
 
   @override
   List<Object?> get props => [
-        onTimePercentage,
-        totalFeedings,
-        daysWithApp,
-        currentLevel,
-        totalXp,
-        xpInCurrentLevel,
-        xpForCurrentLevel,
-        levelProgress,
-        isMaxLevel,
-      ];
+    onTimePercentage,
+    totalFeedings,
+    daysWithApp,
+    currentLevel,
+    totalXp,
+    xpInCurrentLevel,
+    xpForCurrentLevel,
+    levelProgress,
+    isMaxLevel,
+  ];
 }

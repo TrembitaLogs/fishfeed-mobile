@@ -118,16 +118,12 @@ class AppTheme {
       textButtonTheme: _buildTextButtonTheme(colorScheme),
       outlinedButtonTheme: _buildOutlinedButtonTheme(colorScheme),
       floatingActionButtonTheme: _buildFabTheme(colorScheme),
-      iconTheme: IconThemeData(
-        color: colorScheme.onSurface,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: colorScheme.onSurface, size: 24),
       dividerTheme: DividerThemeData(
         color: colorScheme.outlineVariant,
         thickness: 1,
       ),
-      scaffoldBackgroundColor:
-          isLight ? _backgroundLight : _backgroundDark,
+      scaffoldBackgroundColor: isLight ? _backgroundLight : _backgroundDark,
     );
   }
 
@@ -213,12 +209,8 @@ class AppTheme {
       titleTextStyle: textTheme.titleLarge?.copyWith(
         color: colorScheme.onSurface,
       ),
-      iconTheme: IconThemeData(
-        color: colorScheme.onSurface,
-      ),
-      actionsIconTheme: IconThemeData(
-        color: colorScheme.onSurface,
-      ),
+      iconTheme: IconThemeData(color: colorScheme.onSurface),
+      actionsIconTheme: IconThemeData(color: colorScheme.onSurface),
     );
   }
 
@@ -227,9 +219,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: colorScheme.outlineVariant,
-        ),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
       color: colorScheme.surface,
       surfaceTintColor: colorScheme.surfaceTint,
@@ -242,51 +232,30 @@ class AppTheme {
     return InputDecorationTheme(
       filled: true,
       fillColor: colorScheme.surfaceContainerHighest,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(
-          color: colorScheme.outline,
-        ),
+        borderSide: BorderSide(color: colorScheme.outline),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(
-          color: colorScheme.outline,
-        ),
+        borderSide: BorderSide(color: colorScheme.outline),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(
-          color: colorScheme.primary,
-          width: 2,
-        ),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(
-          color: colorScheme.error,
-        ),
+        borderSide: BorderSide(color: colorScheme.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(
-          color: colorScheme.error,
-          width: 2,
-        ),
+        borderSide: BorderSide(color: colorScheme.error, width: 2),
       ),
-      labelStyle: TextStyle(
-        color: colorScheme.onSurfaceVariant,
-      ),
-      hintStyle: TextStyle(
-        color: colorScheme.onSurfaceVariant,
-      ),
-      errorStyle: TextStyle(
-        color: colorScheme.error,
-      ),
+      labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      errorStyle: TextStyle(color: colorScheme.error),
     );
   }
 
@@ -300,17 +269,9 @@ class AppTheme {
         foregroundColor: colorScheme.onPrimary,
         disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
         disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
     );
   }
@@ -320,17 +281,9 @@ class AppTheme {
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.primary,
         disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
     );
   }
@@ -342,34 +295,20 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: colorScheme.primary,
         disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        side: BorderSide(
-          color: colorScheme.outline,
-        ),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: BorderSide(color: colorScheme.outline),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
     );
   }
 
-  static FloatingActionButtonThemeData _buildFabTheme(
-    ColorScheme colorScheme,
-  ) {
+  static FloatingActionButtonThemeData _buildFabTheme(ColorScheme colorScheme) {
     return FloatingActionButtonThemeData(
       backgroundColor: colorScheme.primaryContainer,
       foregroundColor: colorScheme.onPrimaryContainer,
       elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     );
   }
 }

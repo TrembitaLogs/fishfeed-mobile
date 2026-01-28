@@ -52,9 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (await _inAppReview.isAvailable()) {
         await _inAppReview.requestReview();
       } else {
-        await _inAppReview.openStoreListing(
-          appStoreId: '6742628065',
-        );
+        await _inAppReview.openStoreListing(appStoreId: '6742628065');
       }
     } catch (e) {
       if (mounted) {
@@ -72,9 +70,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         children: [
           // Subscription section
@@ -201,10 +197,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       result.fold(
         (failure) {
-          SnackbarUtils.showError(context, failure.message ?? l10n.failedToRestorePurchases);
+          SnackbarUtils.showError(
+            context,
+            failure.message ?? l10n.failedToRestorePurchases,
+          );
         },
         (customerInfo) {
-          final hasActiveEntitlements = customerInfo.entitlements.active.isNotEmpty;
+          final hasActiveEntitlements =
+              customerInfo.entitlements.active.isNotEmpty;
           if (hasActiveEntitlements) {
             SnackbarUtils.showSuccess(context, l10n.purchasesRestoredSuccess);
           } else {
@@ -226,7 +226,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final uri = Uri.parse(url);
     final l10n = AppLocalizations.of(context)!;
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched && context.mounted) {
         SnackbarUtils.showError(context, l10n.couldNotOpenLink);
       }
@@ -279,7 +282,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _showDeleteAccountDialog(BuildContext dialogContext, WidgetRef ref) async {
+  Future<void> _showDeleteAccountDialog(
+    BuildContext dialogContext,
+    WidgetRef ref,
+  ) async {
     final theme = Theme.of(dialogContext);
     final errorColor = theme.colorScheme.error;
     final onErrorColor = theme.colorScheme.onError;
@@ -298,9 +304,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: errorColor,
-            ),
+            style: TextButton.styleFrom(foregroundColor: errorColor),
             child: Text(l10n.continueButton),
           ),
         ],
@@ -315,10 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: errorColor,
-            ),
+            Icon(Icons.warning_amber_rounded, color: errorColor),
             const SizedBox(width: 8),
             Text(l10n.deleteAccountConfirm),
           ],
@@ -338,10 +339,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16),
             Text(
               l10n.deleteAccountIrreversible,
-              style: TextStyle(
-                color: errorColor,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: errorColor, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -395,10 +393,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _SubscriptionTile extends StatelessWidget {
-  const _SubscriptionTile({
-    required this.status,
-    required this.onTap,
-  });
+  const _SubscriptionTile({required this.status, required this.onTap});
 
   final SubscriptionStatus status;
   final VoidCallback onTap;
@@ -414,11 +409,15 @@ class _SubscriptionTile extends StatelessWidget {
       if (status.isTrialActive) {
         subtitle = l10n.subscriptionTrialActive;
         if (status.expirationDate != null) {
-          final daysLeft = status.expirationDate!.difference(DateTime.now()).inDays;
+          final daysLeft = status.expirationDate!
+              .difference(DateTime.now())
+              .inDays;
           subtitle = l10n.subscriptionTrialEndsIn(daysLeft);
         }
       } else if (status.expirationDate != null) {
-        final formattedDate = DateFormat.yMMMd(locale).format(status.expirationDate!);
+        final formattedDate = DateFormat.yMMMd(
+          locale,
+        ).format(status.expirationDate!);
         subtitle = status.willRenew
             ? l10n.subscriptionRenewsOn(formattedDate)
             : l10n.subscriptionExpiresOn(formattedDate);
@@ -479,10 +478,7 @@ class _SubscriptionTile extends StatelessWidget {
 }
 
 class _RestorePurchasesTile extends StatelessWidget {
-  const _RestorePurchasesTile({
-    required this.isLoading,
-    required this.onTap,
-  });
+  const _RestorePurchasesTile({required this.isLoading, required this.onTap});
 
   final bool isLoading;
   final VoidCallback onTap;
@@ -499,10 +495,7 @@ class _RestorePurchasesTile extends StatelessWidget {
           color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          Icons.restore,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        child: Icon(Icons.restore, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Text(l10n.restorePurchases),
       subtitle: Text(l10n.restorePurchasesSubtitle),
@@ -542,18 +535,12 @@ class _SettingsTile extends StatelessWidget {
           color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        child: Icon(icon, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: onTap != null
-          ? Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.onSurfaceVariant,
-            )
+          ? Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant)
           : null,
       onTap: onTap,
     );

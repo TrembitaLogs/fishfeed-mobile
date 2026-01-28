@@ -80,13 +80,9 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
       duration: const Duration(seconds: 8),
     )..repeat();
 
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(CurvedAnimation(
-      parent: _snowflakeController,
-      curve: Curves.linear,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _snowflakeController, curve: Curves.linear),
+    );
 
     // Pulse animation for emphasis
     _pulseController = AnimationController(
@@ -94,13 +90,9 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -116,9 +108,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
     final canUseFreeze = widget.freezeAvailable > 0;
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -153,10 +143,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
 
             // Streak info chip
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(20),
@@ -188,9 +175,9 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).pop(
-                    FreezeDayDialogResult.useFreeze,
-                  ),
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).pop(FreezeDayDialogResult.useFreeze),
                   icon: const Icon(Icons.ac_unit),
                   label: Text(
                     'Use Freeze Day (${widget.freezeAvailable} left)',
@@ -208,15 +195,15 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
               width: double.infinity,
               child: canUseFreeze
                   ? TextButton(
-                      onPressed: () => Navigator.of(context).pop(
-                        FreezeDayDialogResult.loseStreak,
-                      ),
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pop(FreezeDayDialogResult.loseStreak),
                       child: const Text('Lose Streak'),
                     )
                   : FilledButton(
-                      onPressed: () => Navigator.of(context).pop(
-                        FreezeDayDialogResult.loseStreak,
-                      ),
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pop(FreezeDayDialogResult.loseStreak),
                       child: const Text('Continue'),
                     ),
             ),
@@ -243,10 +230,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
         height: 80,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.cyan.shade100,
-              Colors.blue.shade100,
-            ],
+            colors: [Colors.cyan.shade100, Colors.blue.shade100],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -259,11 +243,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
             ),
           ],
         ),
-        child: Icon(
-          Icons.ac_unit,
-          size: 44,
-          color: Colors.cyan.shade700,
-        ),
+        child: Icon(Icons.ac_unit, size: 44, color: Colors.cyan.shade700),
       ),
     );
   }

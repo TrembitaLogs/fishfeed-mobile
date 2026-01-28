@@ -14,10 +14,7 @@ import 'package:flutter/material.dart';
 /// )
 /// ```
 class ScansRemainingBadge extends StatefulWidget {
-  const ScansRemainingBadge({
-    super.key,
-    required this.scansRemaining,
-  });
+  const ScansRemainingBadge({super.key, required this.scansRemaining});
 
   /// Number of scans remaining.
   /// -1 means unlimited (premium user) - badge is hidden.
@@ -43,13 +40,17 @@ class _ScansRemainingBadgeState extends State<ScansRemainingBadge>
     );
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.2)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.2,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.2, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 1.2,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 50,
       ),
     ]).animate(_animationController);
@@ -85,17 +86,11 @@ class _ScansRemainingBadgeState extends State<ScansRemainingBadge>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: _getBackgroundColor(isWarning, isCritical),
           borderRadius: BorderRadius.circular(16),

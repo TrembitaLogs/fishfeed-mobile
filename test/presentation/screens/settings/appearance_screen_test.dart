@@ -16,9 +16,7 @@ void main() {
     teardownTestFonts();
   });
 
-  Widget buildTestWidget({
-    SettingsState? initialSettings,
-  }) {
+  Widget buildTestWidget({SettingsState? initialSettings}) {
     final settings = initialSettings ?? const SettingsState.initial();
     return wrapForTesting(
       child: const AppearanceScreen(),
@@ -95,9 +93,11 @@ void main() {
       });
 
       testWidgets('shows correct description for Light theme', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(themeMode: AppThemeMode.light),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(themeMode: AppThemeMode.light),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Always use light theme'), findsOneWidget);
@@ -118,9 +118,11 @@ void main() {
       });
 
       testWidgets('shows correct description for Dark theme', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(themeMode: AppThemeMode.dark),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(themeMode: AppThemeMode.dark),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Always use dark theme'), findsOneWidget);
@@ -144,8 +146,9 @@ void main() {
         expect(find.text('Language'), findsOneWidget);
       });
 
-      testWidgets('renders language tile with English by default',
-          (tester) async {
+      testWidgets('renders language tile with English by default', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -176,8 +179,9 @@ void main() {
         expect(find.text('Deutsch'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('selecting German in bottom sheet updates language',
-          (tester) async {
+      testWidgets('selecting German in bottom sheet updates language', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -198,8 +202,9 @@ void main() {
         expect(find.text('German'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('shows check icon for selected language in bottom sheet',
-          (tester) async {
+      testWidgets('shows check icon for selected language in bottom sheet', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -218,9 +223,9 @@ void main() {
       });
 
       testWidgets('shows German when language is set to de', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(language: 'de'),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(initialSettings: const SettingsState(language: 'de')),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('German'), findsOneWidget);
@@ -230,9 +235,11 @@ void main() {
 
     group('theme persistence', () {
       testWidgets('loads saved theme mode on startup', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(themeMode: AppThemeMode.dark),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(themeMode: AppThemeMode.dark),
+          ),
+        );
         await tester.pumpAndSettle();
 
         final segmentedButton = tester.widget<SegmentedButton<AppThemeMode>>(
@@ -243,9 +250,9 @@ void main() {
       });
 
       testWidgets('loads saved language on startup', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(language: 'de'),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(initialSettings: const SettingsState(language: 'de')),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('German'), findsOneWidget);

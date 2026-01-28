@@ -5,12 +5,7 @@ import 'package:fishfeed/data/models/base_hive_model.dart';
 
 /// Test implementation of BaseHiveModel for testing purposes.
 class TestHiveModel extends BaseHiveModel {
-
-  TestHiveModel({
-    required this.name,
-    super.createdAt,
-    super.updatedAt,
-  });
+  TestHiveModel({required this.name, super.createdAt, super.updatedAt});
   final String name;
 }
 
@@ -21,8 +16,14 @@ void main() {
       final model = TestHiveModel(name: 'test');
       final after = DateTime.now();
 
-      expect(model.createdAt.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
-      expect(model.createdAt.isBefore(after.add(const Duration(seconds: 1))), isTrue);
+      expect(
+        model.createdAt.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
+      expect(
+        model.createdAt.isBefore(after.add(const Duration(seconds: 1))),
+        isTrue,
+      );
     });
 
     test('should set updatedAt to current time when not provided', () {
@@ -30,8 +31,14 @@ void main() {
       final model = TestHiveModel(name: 'test');
       final after = DateTime.now();
 
-      expect(model.updatedAt.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
-      expect(model.updatedAt.isBefore(after.add(const Duration(seconds: 1))), isTrue);
+      expect(
+        model.updatedAt.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
+      expect(
+        model.updatedAt.isBefore(after.add(const Duration(seconds: 1))),
+        isTrue,
+      );
     });
 
     test('should use provided createdAt value', () {
@@ -61,8 +68,14 @@ void main() {
       model.touch();
       final after = DateTime.now();
 
-      expect(model.updatedAt.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
-      expect(model.updatedAt.isBefore(after.add(const Duration(seconds: 1))), isTrue);
+      expect(
+        model.updatedAt.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
+      expect(
+        model.updatedAt.isBefore(after.add(const Duration(seconds: 1))),
+        isTrue,
+      );
       expect(model.updatedAt.isAfter(oldTime), isTrue);
     });
 

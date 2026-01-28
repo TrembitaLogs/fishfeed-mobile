@@ -41,9 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   );
 
   /// Password validation: min 8 chars, 1 number, 1 uppercase.
-  static final _passwordRegex = RegExp(
-    r'^(?=.*[A-Z])(?=.*\d).{8,}$',
-  );
+  static final _passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d).{8,}$');
 
   @override
   void dispose() {
@@ -106,11 +104,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget _buildHeader(ThemeData theme, AppLocalizations l10n) {
     return Column(
       children: [
-        Icon(
-          Icons.person_add,
-          size: 64,
-          color: theme.colorScheme.primary,
-        ),
+        Icon(Icons.person_add, size: 64, color: theme.colorScheme.primary),
         const SizedBox(height: 16),
         Text(
           l10n.createAccount,
@@ -308,7 +302,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     if (formValid && _agreedToTerms) {
-      ref.read(authNotifierProvider.notifier).register(
+      ref
+          .read(authNotifierProvider.notifier)
+          .register(
             email: _emailController.text.trim(),
             password: _passwordController.text,
             confirmPassword: _confirmPasswordController.text,
@@ -324,11 +320,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 }
 
 /// Password strength level.
-enum _PasswordStrength {
-  weak,
-  medium,
-  strong,
-}
+enum _PasswordStrength { weak, medium, strong }
 
 /// Widget that displays password strength as a colored progress bar.
 class _PasswordStrengthIndicator extends StatelessWidget {

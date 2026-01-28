@@ -17,9 +17,7 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
@@ -27,12 +25,7 @@ void main() {
     group('primary button', () {
       testWidgets('renders correctly with label', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            AppButton(
-              label: 'Test Button',
-              onPressed: () {},
-            ),
-          ),
+          buildTestWidget(AppButton(label: 'Test Button', onPressed: () {})),
         );
 
         expect(find.text('Test Button'), findsOneWidget);
@@ -44,10 +37,7 @@ void main() {
 
         await tester.pumpWidget(
           buildTestWidget(
-            AppButton(
-              label: 'Test',
-              onPressed: () => pressed = true,
-            ),
+            AppButton(label: 'Test', onPressed: () => pressed = true),
           ),
         );
 
@@ -57,12 +47,7 @@ void main() {
 
       testWidgets('is disabled when onPressed is null', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            const AppButton(
-              label: 'Disabled',
-              onPressed: null,
-            ),
-          ),
+          buildTestWidget(const AppButton(label: 'Disabled', onPressed: null)),
         );
 
         final button = tester.widget<ElevatedButton>(
@@ -71,15 +56,12 @@ void main() {
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('shows loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('shows loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
-            AppButton(
-              label: 'Loading',
-              onPressed: () {},
-              isLoading: true,
-            ),
+            AppButton(label: 'Loading', onPressed: () {}, isLoading: true),
           ),
         );
 
@@ -107,11 +89,7 @@ void main() {
       testWidgets('renders with icon', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(
-            AppButton(
-              label: 'With Icon',
-              onPressed: () {},
-              icon: Icons.add,
-            ),
+            AppButton(label: 'With Icon', onPressed: () {}, icon: Icons.add),
           ),
         );
 
@@ -153,8 +131,9 @@ void main() {
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('shows loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('shows loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             AppButton(
@@ -197,14 +176,13 @@ void main() {
           ),
         );
 
-        final button = tester.widget<TextButton>(
-          find.byType(TextButton),
-        );
+        final button = tester.widget<TextButton>(find.byType(TextButton));
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('shows loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('shows loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             AppButton(

@@ -1,11 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Enum representing the tabs in the home screen bottom navigation.
-enum HomeTab {
-  home,
-  calendar,
-  profile,
-}
+enum HomeTab { home, calendar, profile }
 
 /// Provider for managing the current selected tab index in HomeScreen.
 ///

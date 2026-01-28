@@ -28,7 +28,9 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
   void initState() {
     super.initState();
     // Restore previous name if going back
-    final currentName = ref.read(onboardingNotifierProvider).currentAquariumName;
+    final currentName = ref
+        .read(onboardingNotifierProvider)
+        .currentAquariumName;
     if (currentName != null) {
       _nameController.text = currentName;
     }
@@ -110,8 +112,9 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
               decoration: InputDecoration(
                 hintText: l10n.aquariumNameHint,
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.5),
+                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -332,15 +335,17 @@ class _CreatedAquariumsSummary extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          ...aquariums.map((aquarium) => Padding(
-                padding: const EdgeInsets.only(left: 28, top: 4),
-                child: Text(
-                  '• ${aquarium.name}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+          ...aquariums.map(
+            (aquarium) => Padding(
+              padding: const EdgeInsets.only(left: 28, top: 4),
+              child: Text(
+                '• ${aquarium.name}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );

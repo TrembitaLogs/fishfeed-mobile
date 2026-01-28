@@ -218,7 +218,9 @@ void main() {
 
     test('should handle complex feeding IDs', () {
       expect(
-        parseScheduledFeedingIdFromPayload('feeding_reminder_aquarium_1_feed_2'),
+        parseScheduledFeedingIdFromPayload(
+          'feeding_reminder_aquarium_1_feed_2',
+        ),
         equals('aquarium_1_feed_2'),
       );
     });

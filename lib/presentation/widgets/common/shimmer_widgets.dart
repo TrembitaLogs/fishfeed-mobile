@@ -219,10 +219,7 @@ class ShimmerCalendarDay extends StatelessWidget {
 ///
 /// A generic shimmer placeholder for grid cards like species selection.
 class ShimmerGridCard extends StatelessWidget {
-  const ShimmerGridCard({
-    super.key,
-    this.aspectRatio = 1.0,
-  });
+  const ShimmerGridCard({super.key, this.aspectRatio = 1.0});
 
   /// Aspect ratio of the card.
   final double aspectRatio;
@@ -304,8 +301,9 @@ class ShimmerBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerLow,
           shape: shape,
-          borderRadius:
-              shape == BoxShape.rectangle ? BorderRadius.circular(borderRadius) : null,
+          borderRadius: shape == BoxShape.rectangle
+              ? BorderRadius.circular(borderRadius)
+              : null,
         ),
       ),
     );
@@ -316,11 +314,7 @@ class ShimmerBox extends StatelessWidget {
 ///
 /// Useful for creating custom shimmer loading states.
 class ShimmerWrapper extends StatelessWidget {
-  const ShimmerWrapper({
-    super.key,
-    required this.child,
-    this.enabled = true,
-  });
+  const ShimmerWrapper({super.key, required this.child, this.enabled = true});
 
   /// The child widget to apply shimmer effect to.
   final Widget child;

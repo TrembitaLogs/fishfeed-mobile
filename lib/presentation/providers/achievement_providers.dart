@@ -13,8 +13,8 @@ import 'package:fishfeed/presentation/providers/auth_provider.dart';
 /// Provider for [UserProgressLocalDataSource].
 final userProgressLocalDataSourceProvider =
     Provider<UserProgressLocalDataSource>((ref) {
-  return UserProgressLocalDataSource();
-});
+      return UserProgressLocalDataSource();
+    });
 
 /// Provider for [AchievementUseCase].
 ///
@@ -81,9 +81,9 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
   AchievementsNotifier({
     required AchievementUseCase achievementUseCase,
     required Ref ref,
-  })  : _achievementUseCase = achievementUseCase,
-        _ref = ref,
-        super(const AchievementsState()) {
+  }) : _achievementUseCase = achievementUseCase,
+       _ref = ref,
+       super(const AchievementsState()) {
     loadAchievements();
   }
 
@@ -100,16 +100,10 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
 
       result.fold(
         (failure) {
-          state = state.copyWith(
-            isLoading: false,
-            error: failure.message,
-          );
+          state = state.copyWith(isLoading: false, error: failure.message);
         },
         (achievements) {
-          state = state.copyWith(
-            achievements: achievements,
-            isLoading: false,
-          );
+          state = state.copyWith(achievements: achievements, isLoading: false);
         },
       );
     } catch (e) {
@@ -128,16 +122,13 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
       final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
       final result = await _achievementUseCase.checkAchievements(userId);
 
-      return result.fold(
-        (failure) => [],
-        (checkResult) {
-          if (checkResult.hasUnlocked) {
-            // Reload achievements to update state
-            loadAchievements();
-          }
-          return checkResult.newlyUnlocked;
-        },
-      );
+      return result.fold((failure) => [], (checkResult) {
+        if (checkResult.hasUnlocked) {
+          // Reload achievements to update state
+          loadAchievements();
+        }
+        return checkResult.newlyUnlocked;
+      });
     } catch (e) {
       return [];
     }
@@ -161,13 +152,13 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
 /// Provider for achievements state.
 final achievementsProvider =
     StateNotifierProvider<AchievementsNotifier, AchievementsState>((ref) {
-  final achievementUseCase = ref.watch(achievementUseCaseProvider);
+      final achievementUseCase = ref.watch(achievementUseCaseProvider);
 
-  return AchievementsNotifier(
-    achievementUseCase: achievementUseCase,
-    ref: ref,
-  );
-});
+      return AchievementsNotifier(
+        achievementUseCase: achievementUseCase,
+        ref: ref,
+      );
+    });
 
 /// Provider for all achievements as an async value.
 ///
@@ -184,8 +175,9 @@ final allAchievementsProvider = FutureProvider<List<Achievement>>((ref) async {
 });
 
 /// Provider for unlocked achievements only.
-final unlockedAchievementsProvider =
-    FutureProvider<List<Achievement>>((ref) async {
+final unlockedAchievementsProvider = FutureProvider<List<Achievement>>((
+  ref,
+) async {
   final userId = ref.read(currentUserProvider)?.id ?? 'default_user';
   final achievementUseCase = ref.watch(achievementUseCaseProvider);
 
@@ -211,8 +203,9 @@ final totalAchievementsCountProvider = Provider<int>((ref) {
 /// Provider that checks achievements when invalidated.
 ///
 /// Use this to trigger achievement checking after feeding events.
-final checkAchievementsProvider =
-    FutureProvider<List<Achievement>>((ref) async {
+final checkAchievementsProvider = FutureProvider<List<Achievement>>((
+  ref,
+) async {
   final notifier = ref.read(achievementsProvider.notifier);
   return notifier.checkAchievements();
 });

@@ -154,10 +154,7 @@ class _FeedingCardState extends State<FeedingCard>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: Dismissible(
         key: Key('feeding_card_${widget.feeding.id}'),
@@ -340,7 +337,9 @@ class _FeedingCardContent extends StatelessWidget {
                 Icon(
                   Icons.touch_app_outlined,
                   size: 18,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
               ],
             ],
@@ -359,11 +358,7 @@ class _FeedingCardContent extends StatelessWidget {
 
 /// Widget displaying who completed the feeding.
 class _FedByLabel extends StatelessWidget {
-  const _FedByLabel({
-    required this.name,
-    this.avatarUrl,
-    required this.theme,
-  });
+  const _FedByLabel({required this.name, this.avatarUrl, required this.theme});
 
   final String name;
   final String? avatarUrl;
@@ -374,10 +369,7 @@ class _FedByLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppCachedAvatar(
-          imageUrl: avatarUrl,
-          radius: 8,
-        ),
+        AppCachedAvatar(imageUrl: avatarUrl, radius: 8),
         const SizedBox(width: 4),
         Text(
           name,

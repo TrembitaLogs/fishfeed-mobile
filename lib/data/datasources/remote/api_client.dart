@@ -50,9 +50,9 @@ class ApiClient {
     Dio? dio,
     String? baseUrl,
     OnLogoutCallback? onLogout,
-  })  : _secureStorageService = secureStorageService,
-        _dio = dio ?? Dio(),
-        _onLogout = onLogout {
+  }) : _secureStorageService = secureStorageService,
+       _dio = dio ?? Dio(),
+       _onLogout = onLogout {
     _configure(baseUrl);
   }
 
@@ -79,10 +79,14 @@ class ApiClient {
     if (Platform.isIOS && iosDeviceUrl != null && iosDeviceUrl.isNotEmpty) {
       // Check if NOT running in simulator
       // In simulator, environment contains SIMULATOR_DEVICE_NAME
-      final isSimulator = Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+      final isSimulator = Platform.environment.containsKey(
+        'SIMULATOR_DEVICE_NAME',
+      );
       if (!isSimulator) {
         if (kDebugMode) {
-          print('ApiClient: Detected physical iOS device, using iOS device URL');
+          print(
+            'ApiClient: Detected physical iOS device, using iOS device URL',
+          );
         }
         return iosDeviceUrl;
       }
@@ -134,13 +138,9 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.add(
-      RetryInterceptor(dio: _dio),
-    );
+    _dio.interceptors.add(RetryInterceptor(dio: _dio));
 
-    _dio.interceptors.add(
-      const ErrorInterceptor(),
-    );
+    _dio.interceptors.add(const ErrorInterceptor());
 
     if (kDebugMode) {
       _dio.interceptors.add(
@@ -158,9 +158,7 @@ class ApiClient {
     // Add Sentry interceptor for HTTP tracing and error capture
     // Must be added last to wrap the entire request lifecycle
     if (SentryService.instance.isInitialized) {
-      _dio.addSentry(
-        captureFailedRequests: true,
-      );
+      _dio.addSentry(captureFailedRequests: true);
     }
   }
 }

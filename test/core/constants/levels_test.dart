@@ -151,10 +151,22 @@ void main() {
 
     test('levelThresholds contains all levels', () {
       expect(LevelConstants.levelThresholds.length, 4);
-      expect(LevelConstants.levelThresholds.containsKey(UserLevel.beginnerAquarist), isTrue);
-      expect(LevelConstants.levelThresholds.containsKey(UserLevel.caretaker), isTrue);
-      expect(LevelConstants.levelThresholds.containsKey(UserLevel.fishMaster), isTrue);
-      expect(LevelConstants.levelThresholds.containsKey(UserLevel.aquariumPro), isTrue);
+      expect(
+        LevelConstants.levelThresholds.containsKey(UserLevel.beginnerAquarist),
+        isTrue,
+      );
+      expect(
+        LevelConstants.levelThresholds.containsKey(UserLevel.caretaker),
+        isTrue,
+      );
+      expect(
+        LevelConstants.levelThresholds.containsKey(UserLevel.fishMaster),
+        isTrue,
+      );
+      expect(
+        LevelConstants.levelThresholds.containsKey(UserLevel.aquariumPro),
+        isTrue,
+      );
     });
   });
 }

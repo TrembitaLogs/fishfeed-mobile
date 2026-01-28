@@ -26,9 +26,7 @@ void main() {
 
   late List<String> pushedRoutes;
 
-  Widget buildTestWidget({
-    required FishManagementState fishState,
-  }) {
+  Widget buildTestWidget({required FishManagementState fishState}) {
     pushedRoutes = [];
 
     final router = GoRouter(
@@ -37,9 +35,7 @@ void main() {
         GoRoute(
           path: '/profile',
           builder: (context, state) => const Scaffold(
-            body: SingleChildScrollView(
-              child: MyAquariumSection(),
-            ),
+            body: SingleChildScrollView(child: MyAquariumSection()),
           ),
         ),
         GoRoute(
@@ -93,38 +89,43 @@ void main() {
   group('MyAquariumSection', () {
     group('Header', () {
       testWidgets('displays section title', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('My Aquarium'), findsOneWidget);
       });
 
       testWidgets('displays water drop icon', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.water_drop_rounded), findsOneWidget);
       });
 
       testWidgets('displays fish count badge when has fish', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(), createFish(id: 'fish-2')],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [
+                createFish(),
+                createFish(id: 'fish-2'),
+              ],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('2'), findsOneWidget);
       });
 
       testWidgets('does not display count badge when empty', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         // Only the section title should be present, no count
@@ -135,9 +136,9 @@ void main() {
 
     group('Empty State', () {
       testWidgets('shows empty state when no fish', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('No fish yet'), findsOneWidget);
@@ -145,9 +146,9 @@ void main() {
       });
 
       testWidgets('shows "Add your first fish" button', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Add your first fish'), findsOneWidget);
@@ -161,11 +162,12 @@ void main() {
         );
       });
 
-      testWidgets('"Add your first fish" navigates to AI Camera',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(),
-        ));
+      testWidgets('"Add your first fish" navigates to AI Camera', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(fishState: const FishManagementState()),
+        );
         await tester.pumpAndSettle();
 
         // Tap button to open modal
@@ -182,22 +184,26 @@ void main() {
 
     group('Fish Preview', () {
       testWidgets('displays single fish with species name', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(speciesId: 'guppy')],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [createFish(speciesId: 'guppy')],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Guppy'), findsOneWidget);
       });
 
       testWidgets('displays custom name over species name', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(speciesId: 'guppy', name: 'Nemo')],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [createFish(speciesId: 'guppy', name: 'Nemo')],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Nemo'), findsOneWidget);
@@ -205,26 +211,28 @@ void main() {
       });
 
       testWidgets('displays fish quantity', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(quantity: 5)],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish(quantity: 5)]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('x5'), findsOneWidget);
       });
 
       testWidgets('displays up to 3 fish in preview', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [
-              createFish(id: '1', speciesId: 'guppy'),
-              createFish(id: '2', speciesId: 'neon_tetra'),
-              createFish(id: '3', speciesId: 'betta'),
-            ],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [
+                createFish(id: '1', speciesId: 'guppy'),
+                createFish(id: '2', speciesId: 'neon_tetra'),
+                createFish(id: '3', speciesId: 'betta'),
+              ],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Guppy'), findsOneWidget);
@@ -233,17 +241,19 @@ void main() {
       });
 
       testWidgets('shows "+X more" when more than 3 fish', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [
-              createFish(id: '1', speciesId: 'guppy'),
-              createFish(id: '2', speciesId: 'neon_tetra'),
-              createFish(id: '3', speciesId: 'betta'),
-              createFish(id: '4', speciesId: 'goldfish'),
-              createFish(id: '5', speciesId: 'angelfish'),
-            ],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [
+                createFish(id: '1', speciesId: 'guppy'),
+                createFish(id: '2', speciesId: 'neon_tetra'),
+                createFish(id: '3', speciesId: 'betta'),
+                createFish(id: '4', speciesId: 'goldfish'),
+                createFish(id: '5', speciesId: 'angelfish'),
+              ],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('+2 more'), findsOneWidget);
@@ -256,28 +266,31 @@ void main() {
         expect(find.text('Angelfish'), findsNothing);
       });
 
-      testWidgets('does not show "+X more" when exactly 3 fish',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [
-              createFish(id: '1', speciesId: 'guppy'),
-              createFish(id: '2', speciesId: 'neon_tetra'),
-              createFish(id: '3', speciesId: 'betta'),
-            ],
+      testWidgets('does not show "+X more" when exactly 3 fish', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [
+                createFish(id: '1', speciesId: 'guppy'),
+                createFish(id: '2', speciesId: 'neon_tetra'),
+                createFish(id: '3', speciesId: 'betta'),
+              ],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('more'), findsNothing);
       });
 
       testWidgets('displays fish icon for each fish item', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.set_meal_rounded), findsOneWidget);
@@ -285,26 +298,26 @@ void main() {
     });
 
     group('Action Buttons', () {
-      testWidgets('shows Manage and Add Fish buttons when has fish',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+      testWidgets('shows Manage and Add Fish buttons when has fish', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Manage'), findsOneWidget);
         expect(find.text('Add Fish'), findsOneWidget);
       });
 
-      testWidgets('Manage button navigates to aquarium screen',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+      testWidgets('Manage button navigates to aquarium screen', (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Manage'));
@@ -314,11 +327,11 @@ void main() {
       });
 
       testWidgets('Add Fish button navigates to AI Camera', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Tap button to open modal
@@ -333,22 +346,22 @@ void main() {
       });
 
       testWidgets('Manage button has edit icon', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
       });
 
       testWidgets('Add Fish button has add icon', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish()],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(userFish: [createFish()]),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // One in Add Fish button (in fish preview), not counting empty state
@@ -358,9 +371,11 @@ void main() {
 
     group('Loading State', () {
       testWidgets('shows shimmer when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: const FishManagementState(isLoading: true),
+          ),
+        );
         await tester.pump();
 
         // Should not find content elements
@@ -369,9 +384,11 @@ void main() {
       });
 
       testWidgets('does not show fish content when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: const FishManagementState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: const FishManagementState(isLoading: true),
+          ),
+        );
         await tester.pump();
 
         expect(find.byIcon(Icons.set_meal_rounded), findsNothing);
@@ -380,11 +397,13 @@ void main() {
 
     group('Edge Cases', () {
       testWidgets('handles fish with unknown species', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(speciesId: 'unknown_species')],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [createFish(speciesId: 'unknown_species')],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Should show default species name
@@ -392,26 +411,30 @@ void main() {
       });
 
       testWidgets('handles large quantity numbers', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [createFish(quantity: 999)],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [createFish(quantity: 999)],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('x999'), findsOneWidget);
       });
 
       testWidgets('handles long fish names with ellipsis', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          fishState: FishManagementState(
-            userFish: [
-              createFish(
-                name: 'A Very Long Fish Name That Should Be Truncated',
-              ),
-            ],
+        await tester.pumpWidget(
+          buildTestWidget(
+            fishState: FishManagementState(
+              userFish: [
+                createFish(
+                  name: 'A Very Long Fish Name That Should Be Truncated',
+                ),
+              ],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // The widget should render without overflow errors
@@ -424,11 +447,11 @@ void main() {
 /// Test-only FishManagementNotifier that returns a fixed state.
 class _TestFishManagementNotifier extends FishManagementNotifier {
   _TestFishManagementNotifier(this._initialState)
-      : super(
-          fishDataSource: _MockFishLocalDataSource(),
-          aquariumDataSource: _MockAquariumLocalDataSource(),
-          ref: _MockRef(),
-        );
+    : super(
+        fishDataSource: _MockFishLocalDataSource(),
+        aquariumDataSource: _MockAquariumLocalDataSource(),
+        ref: _MockRef(),
+      );
 
   final FishManagementState _initialState;
 

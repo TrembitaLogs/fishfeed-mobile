@@ -47,10 +47,10 @@ class PendingNotificationAction {
   final DateTime timestamp;
 
   Map<String, dynamic> toJson() => {
-        'actionId': actionId,
-        'payload': payload,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'actionId': actionId,
+    'payload': payload,
+    'timestamp': timestamp.toIso8601String(),
+  };
 }
 
 /// Handles notification action storage and retrieval for background processing.
@@ -80,7 +80,9 @@ class NotificationActionStorage {
       await prefs.setString(_pendingActionsKey, jsonEncode(actions));
 
       if (kDebugMode) {
-        print('NotificationActionStorage: Added pending action ${action.actionId}');
+        print(
+          'NotificationActionStorage: Added pending action ${action.actionId}',
+        );
       }
     } catch (e) {
       if (kDebugMode) {
@@ -93,7 +95,8 @@ class NotificationActionStorage {
   ///
   /// Should be called during app initialization to process
   /// any actions that occurred while the app was terminated.
-  static Future<List<PendingNotificationAction>> getAndClearPendingActions() async {
+  static Future<List<PendingNotificationAction>>
+  getAndClearPendingActions() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final existingJson = prefs.getString(_pendingActionsKey);
@@ -112,7 +115,9 @@ class NotificationActionStorage {
       await prefs.remove(_pendingActionsKey);
 
       if (kDebugMode) {
-        print('NotificationActionStorage: Retrieved ${actions.length} pending actions');
+        print(
+          'NotificationActionStorage: Retrieved ${actions.length} pending actions',
+        );
       }
 
       return actions;

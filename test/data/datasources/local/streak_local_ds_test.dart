@@ -45,7 +45,9 @@ void main() {
     group('saveStreak', () {
       test('should save streak to Hive box', () async {
         final streak = createTestStreak();
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await streakDs.saveStreak(streak);
 
@@ -117,7 +119,9 @@ void main() {
       test('should delete streak when exists', () async {
         final streak = createTestStreak();
         when(() => mockStreaksBox.get('streak_user_1')).thenReturn(streak);
-        when(() => mockStreaksBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.deleteStreak('streak_user_1');
 
@@ -137,15 +141,25 @@ void main() {
 
     group('getAllStreaks', () {
       test('should return all streaks sorted by current streak', () {
-        final streak1 =
-            createTestStreak(id: 'streak_1', userId: 'user_1', currentStreak: 5);
+        final streak1 = createTestStreak(
+          id: 'streak_1',
+          userId: 'user_1',
+          currentStreak: 5,
+        );
         final streak2 = createTestStreak(
-            id: 'streak_2', userId: 'user_2', currentStreak: 10);
-        final streak3 =
-            createTestStreak(id: 'streak_3', userId: 'user_3', currentStreak: 3);
+          id: 'streak_2',
+          userId: 'user_2',
+          currentStreak: 10,
+        );
+        final streak3 = createTestStreak(
+          id: 'streak_3',
+          userId: 'user_3',
+          currentStreak: 3,
+        );
 
-        when(() => mockStreaksBox.values)
-            .thenReturn([streak1, streak2, streak3]);
+        when(
+          () => mockStreaksBox.values,
+        ).thenReturn([streak1, streak2, streak3]);
 
         final result = streakDs.getAllStreaks();
 
@@ -171,14 +185,18 @@ void main() {
         final feedingDate = DateTime(2025, 6, 15);
 
         when(() => mockStreaksBox.values).thenReturn([]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.incrementStreak('user_1', feedingDate);
 
         expect(result.currentStreak, 1);
         expect(result.longestStreak, 1);
         expect(result.userId, 'user_1');
-        verify(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).called(1);
+        verify(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).called(1);
       });
 
       test('should increment streak when feeding consecutive day', () async {
@@ -191,7 +209,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.incrementStreak('user_1', today);
 
@@ -209,7 +229,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.incrementStreak('user_1', today);
 
@@ -241,7 +263,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.incrementStreak('user_1', today);
 
@@ -255,7 +279,9 @@ void main() {
         final streak = createTestStreak(currentStreak: 5);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.resetStreak('user_1');
 
@@ -329,8 +355,11 @@ void main() {
 
       test('should return true when fed yesterday', () {
         final now = DateTime.now();
-        final yesterday = DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 1));
+        final yesterday = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 1));
         final streak = createTestStreak(lastFeedingDate: yesterday);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
@@ -342,8 +371,11 @@ void main() {
 
       test('should return false when no feeding for more than 1 day', () {
         final now = DateTime.now();
-        final twoDaysAgo = DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 2));
+        final twoDaysAgo = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 2));
         final streak = createTestStreak(lastFeedingDate: twoDaysAgo);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
@@ -443,7 +475,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.useFreeze('user_1', freezeDate);
 
@@ -455,10 +489,7 @@ void main() {
 
       test('should return null when no freeze available', () async {
         final freezeDate = DateTime(2025, 6, 16);
-        final streak = createTestStreak(
-          currentStreak: 5,
-          freezeAvailable: 0,
-        );
+        final streak = createTestStreak(currentStreak: 5, freezeAvailable: 0);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
 
@@ -507,7 +538,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.handleMissedDay('user_1', missedDate);
 
@@ -518,13 +551,12 @@ void main() {
 
       test('should reset streak when no freeze available', () async {
         final missedDate = DateTime(2025, 6, 16);
-        final streak = createTestStreak(
-          currentStreak: 5,
-          freezeAvailable: 0,
-        );
+        final streak = createTestStreak(currentStreak: 5, freezeAvailable: 0);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.handleMissedDay('user_1', missedDate);
 
@@ -536,7 +568,9 @@ void main() {
         final missedDate = DateTime(2025, 6, 16);
 
         when(() => mockStreaksBox.values).thenReturn([]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.handleMissedDay('user_1', missedDate);
 
@@ -546,10 +580,7 @@ void main() {
 
       test('should not change streak when already at 0', () async {
         final missedDate = DateTime(2025, 6, 16);
-        final streak = createTestStreak(
-          currentStreak: 0,
-          freezeAvailable: 2,
-        );
+        final streak = createTestStreak(currentStreak: 0, freezeAvailable: 2);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
 
@@ -570,7 +601,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.resetMonthlyFreeze('user_1');
 
@@ -591,9 +624,7 @@ void main() {
 
     group('needsMonthlyFreezeReset', () {
       test('should return true when lastFreezeResetDate is null', () {
-        final streak = createTestStreak(
-          lastFreezeResetDate: null,
-        );
+        final streak = createTestStreak(lastFreezeResetDate: null);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
 
@@ -605,9 +636,7 @@ void main() {
       test('should return true when last reset was in previous month', () {
         final now = DateTime.now();
         final previousMonth = DateTime(now.year, now.month - 1, 1);
-        final streak = createTestStreak(
-          lastFreezeResetDate: previousMonth,
-        );
+        final streak = createTestStreak(lastFreezeResetDate: previousMonth);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
 
@@ -619,9 +648,7 @@ void main() {
       test('should return false when last reset was in current month', () {
         final now = DateTime.now();
         final currentMonth = DateTime(now.year, now.month, 1);
-        final streak = createTestStreak(
-          lastFreezeResetDate: currentMonth,
-        );
+        final streak = createTestStreak(lastFreezeResetDate: currentMonth);
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
 
@@ -649,7 +676,9 @@ void main() {
         );
 
         when(() => mockStreaksBox.values).thenReturn([streak]);
-        when(() => mockStreaksBox.put(any<dynamic>(), any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockStreaksBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await streakDs.checkAndResetMonthlyFreeze('user_1');
 

@@ -43,10 +43,7 @@ class PremiumUpsellCard extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.amber.shade50,
-              Colors.orange.shade50,
-            ],
+            colors: [Colors.amber.shade50, Colors.orange.shade50],
           ),
         ),
         child: Padding(
@@ -143,18 +140,12 @@ class _BenefitChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.amber.shade200,
-        ),
+        border: Border.all(color: Colors.amber.shade200),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.check_circle,
-            size: 14,
-            color: Colors.amber.shade700,
-          ),
+          Icon(Icons.check_circle, size: 14, color: Colors.amber.shade700),
           const SizedBox(width: 4),
           Text(
             label,

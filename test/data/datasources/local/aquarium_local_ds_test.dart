@@ -39,26 +39,29 @@ void main() {
 
   group('CRUD Operations', () {
     group('getAllAquariums', () {
-      test('should return all aquariums sorted by createdAt (newest first)',
-          () {
-        final oldAquarium = createTestAquarium(
-          id: 'aquarium_1',
-          createdAt: DateTime(2025, 6, 15, 8, 0),
-        );
-        final newAquarium = createTestAquarium(
-          id: 'aquarium_2',
-          createdAt: DateTime(2025, 6, 15, 12, 0),
-        );
+      test(
+        'should return all aquariums sorted by createdAt (newest first)',
+        () {
+          final oldAquarium = createTestAquarium(
+            id: 'aquarium_1',
+            createdAt: DateTime(2025, 6, 15, 8, 0),
+          );
+          final newAquarium = createTestAquarium(
+            id: 'aquarium_2',
+            createdAt: DateTime(2025, 6, 15, 12, 0),
+          );
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([oldAquarium, newAquarium]);
+          when(
+            () => mockAquariumBox.values,
+          ).thenReturn([oldAquarium, newAquarium]);
 
-        final result = aquariumDs.getAllAquariums();
+          final result = aquariumDs.getAllAquariums();
 
-        expect(result.length, 2);
-        expect(result[0].id, 'aquarium_2');
-        expect(result[1].id, 'aquarium_1');
-      });
+          expect(result.length, 2);
+          expect(result[0].id, 'aquarium_2');
+          expect(result[1].id, 'aquarium_1');
+        },
+      );
 
       test('should return empty list when no aquariums exist', () {
         when(() => mockAquariumBox.values).thenReturn([]);
@@ -71,8 +74,9 @@ void main() {
       test('should filter out non-AquariumModel values', () {
         final aquarium = createTestAquarium();
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([aquarium, 'invalid', 123, null]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([aquarium, 'invalid', 123, null]);
 
         final result = aquariumDs.getAllAquariums();
 
@@ -126,8 +130,9 @@ void main() {
           userId: 'user_2',
         );
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([aquarium1, aquarium2, aquarium3]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([aquarium1, aquarium2, aquarium3]);
 
         final result = aquariumDs.getAquariumsByUserId('user_1');
 
@@ -145,8 +150,9 @@ void main() {
           createdAt: DateTime(2025, 6, 15, 12, 0),
         );
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([oldAquarium, newAquarium]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([oldAquarium, newAquarium]);
 
         final result = aquariumDs.getAquariumsByUserId('user_1');
 
@@ -166,8 +172,9 @@ void main() {
     group('saveAquarium', () {
       test('should save aquarium to Hive box', () async {
         final aquarium = createTestAquarium();
-        when(() => mockAquariumBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await aquariumDs.saveAquarium(aquarium);
 
@@ -188,14 +195,16 @@ void main() {
         );
 
         when(() => mockAquariumBox.get('aquarium_1')).thenReturn(aquarium);
-        when(() => mockAquariumBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await aquariumDs.updateAquarium(updatedAquarium);
 
         expect(result, isTrue);
-        verify(() => mockAquariumBox.put('aquarium_1', updatedAquarium))
-            .called(1);
+        verify(
+          () => mockAquariumBox.put('aquarium_1', updatedAquarium),
+        ).called(1);
       });
 
       test('should return false when aquarium does not exist', () async {
@@ -213,8 +222,9 @@ void main() {
       test('should delete aquarium when exists', () async {
         final aquarium = createTestAquarium();
         when(() => mockAquariumBox.get('aquarium_1')).thenReturn(aquarium);
-        when(() => mockAquariumBox.delete(any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await aquariumDs.deleteAquarium('aquarium_1');
 
@@ -240,8 +250,9 @@ void main() {
         final aquarium2 = createTestAquarium(id: 'aquarium_2');
         final aquarium3 = createTestAquarium(id: 'aquarium_3');
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([aquarium1, aquarium2, aquarium3]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([aquarium1, aquarium2, aquarium3]);
 
         final result = aquariumDs.getAquariumCount();
 
@@ -259,8 +270,9 @@ void main() {
       test('should not count non-AquariumModel values', () {
         final aquarium = createTestAquarium();
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([aquarium, 'invalid', 123]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([aquarium, 'invalid', 123]);
 
         final result = aquariumDs.getAquariumCount();
 
@@ -270,15 +282,22 @@ void main() {
 
     group('getAquariumCountByUserId', () {
       test('should return count of aquariums for specific user', () {
-        final aquarium1 =
-            createTestAquarium(id: 'aquarium_1', userId: 'user_1');
-        final aquarium2 =
-            createTestAquarium(id: 'aquarium_2', userId: 'user_1');
-        final aquarium3 =
-            createTestAquarium(id: 'aquarium_3', userId: 'user_2');
+        final aquarium1 = createTestAquarium(
+          id: 'aquarium_1',
+          userId: 'user_1',
+        );
+        final aquarium2 = createTestAquarium(
+          id: 'aquarium_2',
+          userId: 'user_1',
+        );
+        final aquarium3 = createTestAquarium(
+          id: 'aquarium_3',
+          userId: 'user_2',
+        );
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([aquarium1, aquarium2, aquarium3]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([aquarium1, aquarium2, aquarium3]);
 
         final result = aquariumDs.getAquariumCountByUserId('user_1');
 
@@ -307,8 +326,9 @@ void main() {
           createdAt: DateTime(2025, 6, 15, 12, 0),
         );
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([newAquarium, oldAquarium]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([newAquarium, oldAquarium]);
 
         final result = aquariumDs.getFirstAquariumByUserId('user_1');
 
@@ -329,8 +349,9 @@ void main() {
         final legacyAquarium = createTestAquarium(id: 'default');
         final normalAquarium = createTestAquarium(id: 'uuid-123');
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([legacyAquarium, normalAquarium]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([legacyAquarium, normalAquarium]);
 
         final result = aquariumDs.findLegacyAquariums();
 
@@ -342,8 +363,9 @@ void main() {
         final emptyIdAquarium = createTestAquarium(id: '');
         final normalAquarium = createTestAquarium(id: 'uuid-123');
 
-        when(() => mockAquariumBox.values)
-            .thenReturn([emptyIdAquarium, normalAquarium]);
+        when(
+          () => mockAquariumBox.values,
+        ).thenReturn([emptyIdAquarium, normalAquarium]);
 
         final result = aquariumDs.findLegacyAquariums();
 
@@ -380,11 +402,15 @@ void main() {
         final aquarium2 = createTestAquarium(id: 'aquarium_2');
         final aquarium3 = createTestAquarium(id: 'aquarium_3');
 
-        when(() => mockAquariumBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
-        await aquariumDs
-            .saveMultipleAquariums([aquarium1, aquarium2, aquarium3]);
+        await aquariumDs.saveMultipleAquariums([
+          aquarium1,
+          aquarium2,
+          aquarium3,
+        ]);
 
         verify(() => mockAquariumBox.put('aquarium_1', aquarium1)).called(1);
         verify(() => mockAquariumBox.put('aquarium_2', aquarium2)).called(1);
@@ -405,12 +431,17 @@ void main() {
         final newAquarium2 = createTestAquarium(id: 'new_2');
 
         when(() => mockAquariumBox.values).thenReturn([existingAquarium]);
-        when(() => mockAquariumBox.delete(any<dynamic>()))
-            .thenAnswer((_) async {});
-        when(() => mockAquariumBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
-        await aquariumDs.replaceAllForUser('user_1', [newAquarium1, newAquarium2]);
+        await aquariumDs.replaceAllForUser('user_1', [
+          newAquarium1,
+          newAquarium2,
+        ]);
 
         verify(() => mockAquariumBox.delete('existing_1')).called(1);
         verify(() => mockAquariumBox.put('new_1', newAquarium1)).called(1);
@@ -421,8 +452,9 @@ void main() {
         final newAquarium = createTestAquarium(id: 'new_1');
 
         when(() => mockAquariumBox.values).thenReturn([]);
-        when(() => mockAquariumBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAquariumBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await aquariumDs.replaceAllForUser('user_1', [newAquarium]);
 

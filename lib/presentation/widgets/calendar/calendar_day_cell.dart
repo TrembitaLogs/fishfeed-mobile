@@ -75,41 +75,38 @@ class CalendarDayCell extends StatelessWidget {
         label: _buildSemanticLabel(l10n),
         button: true,
         child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          margin: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            color: _getBackgroundColor(colorScheme),
-            borderRadius: BorderRadius.circular(8),
-            border: isToday && !isSelected
-                ? Border.all(
-                    color: colorScheme.primary,
-                    width: 1.5,
-                  )
-                : null,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${day.day}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: _getTextColor(colorScheme),
-                  fontWeight: isSelected || isToday
-                      ? FontWeight.w600
-                      : FontWeight.normal,
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            margin: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: _getBackgroundColor(colorScheme),
+              borderRadius: BorderRadius.circular(8),
+              border: isToday && !isSelected
+                  ? Border.all(color: colorScheme.primary, width: 1.5)
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${day.day}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: _getTextColor(colorScheme),
+                    fontWeight: isSelected || isToday
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              _StatusDot(
-                status: status,
-                isVisible: status != DayFeedingStatus.noData,
-              ),
-            ],
+                const SizedBox(height: 2),
+                _StatusDot(
+                  status: status,
+                  isVisible: status != DayFeedingStatus.noData,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -143,10 +140,7 @@ class CalendarDayCell extends StatelessWidget {
 
 /// Colored dot indicator for feeding status.
 class _StatusDot extends StatelessWidget {
-  const _StatusDot({
-    required this.status,
-    required this.isVisible,
-  });
+  const _StatusDot({required this.status, required this.isVisible});
 
   final DayFeedingStatus status;
   final bool isVisible;
@@ -162,10 +156,7 @@ class _StatusDot extends StatelessWidget {
     return Container(
       width: 6,
       height: 6,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

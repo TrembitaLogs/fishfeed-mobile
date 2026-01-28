@@ -63,7 +63,9 @@ class RegisterUseCase {
       passwordErrors.add('Password is required');
     } else {
       if (params.password.length < minPasswordLength) {
-        passwordErrors.add('Password must be at least $minPasswordLength characters');
+        passwordErrors.add(
+          'Password must be at least $minPasswordLength characters',
+        );
       }
       if (!_hasUppercase(params.password)) {
         passwordErrors.add('Password must contain an uppercase letter');

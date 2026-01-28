@@ -18,11 +18,11 @@ class FamilyState {
 
   /// Initial empty state.
   const FamilyState.initial()
-      : invites = const [],
-        members = const [],
-        isLoading = false,
-        error = null,
-        lastCreatedInvite = null;
+    : invites = const [],
+      members = const [],
+      isLoading = false,
+      error = null,
+      lastCreatedInvite = null;
 
   /// Active invitations for the aquarium.
   final List<FamilyInvite> invites;
@@ -54,8 +54,9 @@ class FamilyState {
       members: members ?? this.members,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
-      lastCreatedInvite:
-          clearLastInvite ? null : (lastCreatedInvite ?? this.lastCreatedInvite),
+      lastCreatedInvite: clearLastInvite
+          ? null
+          : (lastCreatedInvite ?? this.lastCreatedInvite),
     );
   }
 
@@ -80,20 +81,19 @@ class FamilyState {
 
   @override
   int get hashCode => Object.hash(
-        Object.hashAll(invites),
-        Object.hashAll(members),
-        isLoading,
-        error,
-        lastCreatedInvite,
-      );
+    Object.hashAll(invites),
+    Object.hashAll(members),
+    isLoading,
+    error,
+    lastCreatedInvite,
+  );
 }
 
 /// Notifier for managing family sharing state.
 class FamilyNotifier extends StateNotifier<FamilyState> {
-  FamilyNotifier({
-    required FamilyRepository repository,
-  })  : _repository = repository,
-        super(const FamilyState.initial());
+  FamilyNotifier({required FamilyRepository repository})
+    : _repository = repository,
+      super(const FamilyState.initial());
 
   final FamilyRepository _repository;
 
@@ -133,7 +133,11 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 
   /// Creates a new family invitation.
   Future<void> createInvite(String aquariumId) async {
-    state = state.copyWith(isLoading: true, clearError: true, clearLastInvite: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearLastInvite: true,
+    );
 
     final result = await _repository.createInvite(aquariumId: aquariumId);
 
@@ -222,10 +226,10 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 /// Provider for [FamilyNotifier].
 final familyNotifierProvider =
     StateNotifierProvider<FamilyNotifier, FamilyState>((ref) {
-  final repository = ref.watch(familyRepositoryProvider);
+      final repository = ref.watch(familyRepositoryProvider);
 
-  return FamilyNotifier(repository: repository);
-});
+      return FamilyNotifier(repository: repository);
+    });
 
 /// Provider for family state.
 final familyStateProvider = Provider<FamilyState>((ref) {

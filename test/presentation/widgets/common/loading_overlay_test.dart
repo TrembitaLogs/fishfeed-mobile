@@ -8,10 +8,7 @@ void main() {
     testWidgets('shows child when isLoading is false', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: LoadingOverlay(
-            isLoading: false,
-            child: Text('Content'),
-          ),
+          home: LoadingOverlay(isLoading: false, child: Text('Content')),
         ),
       );
 
@@ -19,14 +16,12 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('shows overlay with loading indicator when isLoading is true',
-        (tester) async {
+    testWidgets('shows overlay with loading indicator when isLoading is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: LoadingOverlay(
-            isLoading: true,
-            child: Text('Content'),
-          ),
+          home: LoadingOverlay(isLoading: true, child: Text('Content')),
         ),
       );
 
@@ -48,7 +43,9 @@ void main() {
       expect(find.text('Loading...'), findsOneWidget);
     });
 
-    testWidgets('does not show message when isLoading is false', (tester) async {
+    testWidgets('does not show message when isLoading is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: LoadingOverlay(

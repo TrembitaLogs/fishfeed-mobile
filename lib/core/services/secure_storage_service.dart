@@ -19,7 +19,7 @@ abstract final class SecureStorageKeys {
 /// using platform-specific secure storage mechanisms.
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -86,10 +86,7 @@ class SecureStorageService {
         value: userIdentifier,
       ),
       if (email != null)
-        _storage.write(
-          key: SecureStorageKeys.appleUserEmail,
-          value: email,
-        ),
+        _storage.write(key: SecureStorageKeys.appleUserEmail, value: email),
       if (givenName != null)
         _storage.write(
           key: SecureStorageKeys.appleUserGivenName,
@@ -105,16 +102,19 @@ class SecureStorageService {
 
   /// Retrieves stored Apple user info.
   Future<AppleUserInfo?> getAppleUserInfo() async {
-    final userIdentifier =
-        await _storage.read(key: SecureStorageKeys.appleUserIdentifier);
+    final userIdentifier = await _storage.read(
+      key: SecureStorageKeys.appleUserIdentifier,
+    );
 
     if (userIdentifier == null) return null;
 
     final email = await _storage.read(key: SecureStorageKeys.appleUserEmail);
-    final givenName =
-        await _storage.read(key: SecureStorageKeys.appleUserGivenName);
-    final familyName =
-        await _storage.read(key: SecureStorageKeys.appleUserFamilyName);
+    final givenName = await _storage.read(
+      key: SecureStorageKeys.appleUserGivenName,
+    );
+    final familyName = await _storage.read(
+      key: SecureStorageKeys.appleUserFamilyName,
+    );
 
     return AppleUserInfo(
       userIdentifier: userIdentifier,

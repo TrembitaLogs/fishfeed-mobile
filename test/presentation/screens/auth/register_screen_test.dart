@@ -19,7 +19,8 @@ import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
 
-import '../../../helpers/test_helpers.dart' show createMockAquariumRemoteDataSource;
+import '../../../helpers/test_helpers.dart'
+    show createMockAquariumRemoteDataSource;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -62,8 +63,9 @@ void main() {
         authRepositoryProvider.overrideWithValue(mockAuthRepository),
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-        aquariumRemoteDataSourceProvider
-            .overrideWithValue(createMockAquariumRemoteDataSource()),
+        aquariumRemoteDataSourceProvider.overrideWithValue(
+          createMockAquariumRemoteDataSource(),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -160,8 +162,9 @@ void main() {
         expect(find.text('Weak'), findsOneWidget);
       });
 
-      testWidgets('shows medium indicator for moderate password',
-          (tester) async {
+      testWidgets('shows medium indicator for moderate password', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -314,8 +317,9 @@ void main() {
         expect(find.text('Passwords do not match'), findsOneWidget);
       });
 
-      testWidgets('shows error when ToS checkbox is not checked',
-          (tester) async {
+      testWidgets('shows error when ToS checkbox is not checked', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -433,7 +437,7 @@ void main() {
           () => mockAuthRepository.register(
             email: 'test@example.com',
             password: 'Password1',
-                      ),
+          ),
         ).thenAnswer((_) async => Right(testUser));
 
         await tester.pumpWidget(buildTestWidget());
@@ -466,17 +470,18 @@ void main() {
           () => mockAuthRepository.register(
             email: 'test@example.com',
             password: 'Password1',
-                      ),
+          ),
         ).called(1);
       });
 
-      testWidgets('shows loading indicator during registration',
-          (tester) async {
+      testWidgets('shows loading indicator during registration', (
+        tester,
+      ) async {
         when(
           () => mockAuthRepository.register(
             email: any(named: 'email'),
             password: any(named: 'password'),
-                      ),
+          ),
         ).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 100));
           return Right(testUser);
@@ -520,7 +525,7 @@ void main() {
           () => mockAuthRepository.register(
             email: any(named: 'email'),
             password: any(named: 'password'),
-                      ),
+          ),
         ).thenAnswer(
           (_) async => const Left(
             AuthenticationFailure(message: 'Email already in use'),
@@ -585,8 +590,7 @@ void main() {
         expect(find.byIcon(Icons.visibility_off_outlined), findsNothing);
       });
 
-      testWidgets('confirm password visibility is independent',
-          (tester) async {
+      testWidgets('confirm password visibility is independent', (tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -601,13 +605,14 @@ void main() {
     });
 
     group('button states', () {
-      testWidgets('create account button is disabled during loading',
-          (tester) async {
+      testWidgets('create account button is disabled during loading', (
+        tester,
+      ) async {
         when(
           () => mockAuthRepository.register(
             email: any(named: 'email'),
             password: any(named: 'password'),
-                      ),
+          ),
         ).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 500));
           return Right(testUser);
@@ -664,14 +669,11 @@ class _GlobalAuthErrorListenerForTest extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AuthenticationState>(
-      authNotifierProvider,
-      (previous, next) {
-        if (next.error != null && previous?.error != next.error) {
-          context.showAuthError(next.error!);
-        }
-      },
-    );
+    ref.listen<AuthenticationState>(authNotifierProvider, (previous, next) {
+      if (next.error != null && previous?.error != next.error) {
+        context.showAuthError(next.error!);
+      }
+    });
 
     return child;
   }

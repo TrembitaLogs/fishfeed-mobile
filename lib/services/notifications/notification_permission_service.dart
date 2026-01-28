@@ -11,7 +11,8 @@ const String _permissionDeclinedKey = 'notification_permission_declined';
 const String _permissionDeclinedAtKey = 'notification_permission_declined_at';
 
 /// Key for storing the count of times user declined permission.
-const String _permissionDeclineCountKey = 'notification_permission_decline_count';
+const String _permissionDeclineCountKey =
+    'notification_permission_decline_count';
 
 /// Result of a permission check operation.
 enum NotificationPermissionStatus {
@@ -143,8 +144,10 @@ class NotificationPermissionService {
     await prefs.setInt(_permissionDeclineCountKey, currentCount + 1);
 
     if (kDebugMode) {
-      print('NotificationPermissionService: Permission declined recorded '
-          '(count: ${currentCount + 1})');
+      print(
+        'NotificationPermissionService: Permission declined recorded '
+        '(count: ${currentCount + 1})',
+      );
     }
   }
 
@@ -160,7 +163,9 @@ class NotificationPermissionService {
     // Keep the decline count for analytics
 
     if (kDebugMode) {
-      print('NotificationPermissionService: Permission declined status cleared');
+      print(
+        'NotificationPermissionService: Permission declined status cleared',
+      );
     }
   }
 

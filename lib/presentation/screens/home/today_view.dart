@@ -205,7 +205,8 @@ class _FeedingsList extends ConsumerWidget {
         // Calculate stagger delay for this item
         final animationIndex = (index - nonAquariumOffset).clamp(0, 15);
         final staggerDelay = Duration(
-          milliseconds: animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
+          milliseconds:
+              animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
         );
 
         // Aquarium section
@@ -240,47 +241,47 @@ class _FeedingsList extends ConsumerWidget {
 /// Helper class for building mixed list with headers and items.
 class _ListItem {
   const _ListItem.bannerAd()
-      : aquarium = null,
-        aquariumFeedings = null,
-        isBannerAd = true,
-        isUpsellCard = false,
-        isAquariumSection = false,
-        isAddAquariumButton = false,
-        isEmptyMessage = false;
+    : aquarium = null,
+      aquariumFeedings = null,
+      isBannerAd = true,
+      isUpsellCard = false,
+      isAquariumSection = false,
+      isAddAquariumButton = false,
+      isEmptyMessage = false;
 
   const _ListItem.upsellCard()
-      : aquarium = null,
-        aquariumFeedings = null,
-        isBannerAd = false,
-        isUpsellCard = true,
-        isAquariumSection = false,
-        isAddAquariumButton = false,
-        isEmptyMessage = false;
+    : aquarium = null,
+      aquariumFeedings = null,
+      isBannerAd = false,
+      isUpsellCard = true,
+      isAquariumSection = false,
+      isAddAquariumButton = false,
+      isEmptyMessage = false;
 
   const _ListItem.aquariumSection(this.aquarium, this.aquariumFeedings)
-      : isBannerAd = false,
-        isUpsellCard = false,
-        isAquariumSection = true,
-        isAddAquariumButton = false,
-        isEmptyMessage = false;
+    : isBannerAd = false,
+      isUpsellCard = false,
+      isAquariumSection = true,
+      isAddAquariumButton = false,
+      isEmptyMessage = false;
 
   const _ListItem.addAquariumButton()
-      : aquarium = null,
-        aquariumFeedings = null,
-        isBannerAd = false,
-        isUpsellCard = false,
-        isAquariumSection = false,
-        isAddAquariumButton = true,
-        isEmptyMessage = false;
+    : aquarium = null,
+      aquariumFeedings = null,
+      isBannerAd = false,
+      isUpsellCard = false,
+      isAquariumSection = false,
+      isAddAquariumButton = true,
+      isEmptyMessage = false;
 
   const _ListItem.emptyMessage()
-      : aquarium = null,
-        aquariumFeedings = null,
-        isBannerAd = false,
-        isUpsellCard = false,
-        isAquariumSection = false,
-        isAddAquariumButton = false,
-        isEmptyMessage = true;
+    : aquarium = null,
+      aquariumFeedings = null,
+      isBannerAd = false,
+      isUpsellCard = false,
+      isAquariumSection = false,
+      isAddAquariumButton = false,
+      isEmptyMessage = true;
 
   final Aquarium? aquarium;
   final List<ScheduledFeeding>? aquariumFeedings;

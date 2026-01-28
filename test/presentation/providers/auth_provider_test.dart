@@ -262,9 +262,9 @@ void main() {
       });
 
       test('should handle cancellation', () async {
-        when(() => mockGoogleAuthService.signIn()).thenThrow(
-          const GoogleAuthException(GoogleAuthErrorCode.cancelled),
-        );
+        when(
+          () => mockGoogleAuthService.signIn(),
+        ).thenThrow(const GoogleAuthException(GoogleAuthErrorCode.cancelled));
 
         await authNotifier.loginWithGoogle();
 
@@ -307,9 +307,9 @@ void main() {
       });
 
       test('should handle not available', () async {
-        when(() => mockAppleAuthService.signIn()).thenThrow(
-          const AppleAuthException(AppleAuthErrorCode.notAvailable),
-        );
+        when(
+          () => mockAppleAuthService.signIn(),
+        ).thenThrow(const AppleAuthException(AppleAuthErrorCode.notAvailable));
 
         await authNotifier.loginWithApple();
 
@@ -335,10 +335,10 @@ void main() {
         expect(authNotifier.state.isAuthenticated, true);
 
         // Then logout
-        when(() => mockRepository.logout())
-            .thenAnswer((_) async => const Right(unit));
-        when(() => mockGoogleAuthService.signOut())
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(unit));
+        when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {});
 
         await authNotifier.logout();
 
@@ -350,10 +350,10 @@ void main() {
         var logoutCalled = false;
         authNotifier.onLogout = () => logoutCalled = true;
 
-        when(() => mockRepository.logout())
-            .thenAnswer((_) async => const Right(unit));
-        when(() => mockGoogleAuthService.signOut())
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(unit));
+        when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {});
 
         await authNotifier.logout();
 
@@ -363,10 +363,12 @@ void main() {
 
     group('initialize', () {
       test('should restore authenticated state from local storage', () async {
-        when(() => mockRepository.isAuthenticated())
-            .thenAnswer((_) async => true);
-        when(() => mockRepository.getCurrentUser())
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () => mockRepository.isAuthenticated(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepository.getCurrentUser(),
+        ).thenAnswer((_) async => Right(testUser));
 
         await authNotifier.initialize();
 
@@ -375,8 +377,9 @@ void main() {
       });
 
       test('should remain unauthenticated when no tokens', () async {
-        when(() => mockRepository.isAuthenticated())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.isAuthenticated(),
+        ).thenAnswer((_) async => false);
 
         await authNotifier.initialize();
 
@@ -384,10 +387,12 @@ void main() {
       });
 
       test('should remain unauthenticated when no cached user', () async {
-        when(() => mockRepository.isAuthenticated())
-            .thenAnswer((_) async => true);
-        when(() => mockRepository.getCurrentUser())
-            .thenAnswer((_) async => const Left(CacheFailure()));
+        when(
+          () => mockRepository.isAuthenticated(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepository.getCurrentUser(),
+        ).thenAnswer((_) async => const Left(CacheFailure()));
 
         await authNotifier.initialize();
 
@@ -426,10 +431,7 @@ void main() {
           ),
         ).thenAnswer((_) async => const Left(AuthenticationFailure()));
 
-        await authNotifier.login(
-          email: 'test@example.com',
-          password: 'wrong',
-        );
+        await authNotifier.login(email: 'test@example.com', password: 'wrong');
 
         expect(authNotifier.state.error, isNotNull);
 
@@ -442,14 +444,18 @@ void main() {
 
   group('Riverpod providers', () {
     test('authNotifierProvider should create AuthNotifier', () {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -460,14 +466,18 @@ void main() {
     });
 
     test('authStateProvider should return current state', () {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -479,14 +489,18 @@ void main() {
     });
 
     test('currentUserProvider should return null when not authenticated', () {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -497,14 +511,18 @@ void main() {
     });
 
     test('isAuthenticatedProvider should return false initially', () {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -517,14 +535,18 @@ void main() {
 
   group('AuthStateListenable', () {
     test('should provide isLoggedIn based on auth state', () {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -535,14 +557,18 @@ void main() {
     });
 
     test('should notify listeners on state change', () async {
-      when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+      when(
+        () => mockAquariumRemoteDs.getAquariums(),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
         ],
       );
       addTearDown(container.dispose);

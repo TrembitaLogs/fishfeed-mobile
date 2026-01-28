@@ -94,13 +94,13 @@ class _ConfidenceIndicatorState extends State<ConfidenceIndicator>
       vsync: this,
     );
 
-    _progressAnimation = Tween<double>(
-      begin: 0,
-      end: widget.confidence,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOutCubic,
-    ));
+    _progressAnimation = Tween<double>(begin: 0, end: widget.confidence)
+        .animate(
+          CurvedAnimation(
+            parent: _progressController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     // Pulse animation
     _pulseController = AnimationController(
@@ -108,13 +108,9 @@ class _ConfidenceIndicatorState extends State<ConfidenceIndicator>
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     // Start animations
     _progressController.forward();
@@ -137,13 +133,16 @@ class _ConfidenceIndicatorState extends State<ConfidenceIndicator>
   void didUpdateWidget(ConfidenceIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.confidence != widget.confidence) {
-      _progressAnimation = Tween<double>(
-        begin: _progressAnimation.value,
-        end: widget.confidence,
-      ).animate(CurvedAnimation(
-        parent: _progressController,
-        curve: Curves.easeOutCubic,
-      ));
+      _progressAnimation =
+          Tween<double>(
+            begin: _progressAnimation.value,
+            end: widget.confidence,
+          ).animate(
+            CurvedAnimation(
+              parent: _progressController,
+              curve: Curves.easeOutCubic,
+            ),
+          );
       _progressController
         ..reset()
         ..forward();

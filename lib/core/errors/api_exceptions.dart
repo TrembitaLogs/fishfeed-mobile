@@ -7,11 +7,7 @@ import 'package:equatable/equatable.dart';
 /// All API exceptions extend this class and carry an optional [message],
 /// [statusCode], and the original [originalException].
 sealed class ApiException extends Equatable implements Exception {
-  const ApiException({
-    this.message,
-    this.statusCode,
-    this.originalException,
-  });
+  const ApiException({this.message, this.statusCode, this.originalException});
 
   /// Human-readable error message.
   final String? message;
@@ -51,10 +47,7 @@ class NetworkException extends ApiException {
       _ => 'No internet connection',
     };
 
-    return NetworkException(
-      message: message,
-      originalException: exception,
-    );
+    return NetworkException(message: message, originalException: exception);
   }
 }
 

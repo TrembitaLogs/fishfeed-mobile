@@ -12,7 +12,8 @@ part of 'feeding_event_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 FeedingEventDto _$FeedingEventDtoFromJson(Map<String, dynamic> json) {
   return _FeedingEventDto.fromJson(json);
@@ -54,23 +55,25 @@ mixin _$FeedingEventDto {
 /// @nodoc
 abstract class $FeedingEventDtoCopyWith<$Res> {
   factory $FeedingEventDtoCopyWith(
-          FeedingEventDto value, $Res Function(FeedingEventDto) then) =
-      _$FeedingEventDtoCopyWithImpl<$Res, FeedingEventDto>;
+    FeedingEventDto value,
+    $Res Function(FeedingEventDto) then,
+  ) = _$FeedingEventDtoCopyWithImpl<$Res, FeedingEventDto>;
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'schedule_id') String? scheduleId,
-      @JsonKey(name: 'fish_id') String? fishId,
-      @JsonKey(name: 'species_id') String? speciesId,
-      @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
-      String status,
-      @JsonKey(name: 'completed_at') DateTime? completedAt,
-      @JsonKey(name: 'completed_by') String? completedBy,
-      @JsonKey(name: 'completed_by_name') String? completedByName,
-      @JsonKey(name: 'completed_by_avatar') String? completedByAvatar,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'schedule_id') String? scheduleId,
+    @JsonKey(name: 'fish_id') String? fishId,
+    @JsonKey(name: 'species_id') String? speciesId,
+    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    String status,
+    @JsonKey(name: 'completed_at') DateTime? completedAt,
+    @JsonKey(name: 'completed_by') String? completedBy,
+    @JsonKey(name: 'completed_by_name') String? completedByName,
+    @JsonKey(name: 'completed_by_avatar') String? completedByAvatar,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
@@ -100,85 +103,90 @@ class _$FeedingEventDtoCopyWithImpl<$Res, $Val extends FeedingEventDto>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      scheduleId: freezed == scheduleId
-          ? _value.scheduleId
-          : scheduleId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      fishId: freezed == fishId
-          ? _value.fishId
-          : fishId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      speciesId: freezed == speciesId
-          ? _value.speciesId
-          : speciesId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      scheduledAt: null == scheduledAt
-          ? _value.scheduledAt
-          : scheduledAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedBy: freezed == completedBy
-          ? _value.completedBy
-          : completedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      completedByName: freezed == completedByName
-          ? _value.completedByName
-          : completedByName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      completedByAvatar: freezed == completedByAvatar
-          ? _value.completedByAvatar
-          : completedByAvatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            aquariumId: null == aquariumId
+                ? _value.aquariumId
+                : aquariumId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            scheduleId: freezed == scheduleId
+                ? _value.scheduleId
+                : scheduleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            fishId: freezed == fishId
+                ? _value.fishId
+                : fishId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            speciesId: freezed == speciesId
+                ? _value.speciesId
+                : speciesId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            scheduledAt: null == scheduledAt
+                ? _value.scheduledAt
+                : scheduledAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String,
+            completedAt: freezed == completedAt
+                ? _value.completedAt
+                : completedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            completedBy: freezed == completedBy
+                ? _value.completedBy
+                : completedBy // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            completedByName: freezed == completedByName
+                ? _value.completedByName
+                : completedByName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            completedByAvatar: freezed == completedByAvatar
+                ? _value.completedByAvatar
+                : completedByAvatar // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            updatedAt: freezed == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FeedingEventDtoImplCopyWith<$Res>
     implements $FeedingEventDtoCopyWith<$Res> {
-  factory _$$FeedingEventDtoImplCopyWith(_$FeedingEventDtoImpl value,
-          $Res Function(_$FeedingEventDtoImpl) then) =
-      __$$FeedingEventDtoImplCopyWithImpl<$Res>;
+  factory _$$FeedingEventDtoImplCopyWith(
+    _$FeedingEventDtoImpl value,
+    $Res Function(_$FeedingEventDtoImpl) then,
+  ) = __$$FeedingEventDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'schedule_id') String? scheduleId,
-      @JsonKey(name: 'fish_id') String? fishId,
-      @JsonKey(name: 'species_id') String? speciesId,
-      @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
-      String status,
-      @JsonKey(name: 'completed_at') DateTime? completedAt,
-      @JsonKey(name: 'completed_by') String? completedBy,
-      @JsonKey(name: 'completed_by_name') String? completedByName,
-      @JsonKey(name: 'completed_by_avatar') String? completedByAvatar,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'schedule_id') String? scheduleId,
+    @JsonKey(name: 'fish_id') String? fishId,
+    @JsonKey(name: 'species_id') String? speciesId,
+    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    String status,
+    @JsonKey(name: 'completed_at') DateTime? completedAt,
+    @JsonKey(name: 'completed_by') String? completedBy,
+    @JsonKey(name: 'completed_by_name') String? completedByName,
+    @JsonKey(name: 'completed_by_avatar') String? completedByAvatar,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+  });
 }
 
 /// @nodoc
@@ -186,8 +194,9 @@ class __$$FeedingEventDtoImplCopyWithImpl<$Res>
     extends _$FeedingEventDtoCopyWithImpl<$Res, _$FeedingEventDtoImpl>
     implements _$$FeedingEventDtoImplCopyWith<$Res> {
   __$$FeedingEventDtoImplCopyWithImpl(
-      _$FeedingEventDtoImpl _value, $Res Function(_$FeedingEventDtoImpl) _then)
-      : super(_value, _then);
+    _$FeedingEventDtoImpl _value,
+    $Res Function(_$FeedingEventDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -206,81 +215,83 @@ class __$$FeedingEventDtoImplCopyWithImpl<$Res>
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
-    return _then(_$FeedingEventDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      scheduleId: freezed == scheduleId
-          ? _value.scheduleId
-          : scheduleId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      fishId: freezed == fishId
-          ? _value.fishId
-          : fishId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      speciesId: freezed == speciesId
-          ? _value.speciesId
-          : speciesId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      scheduledAt: null == scheduledAt
-          ? _value.scheduledAt
-          : scheduledAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedBy: freezed == completedBy
-          ? _value.completedBy
-          : completedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      completedByName: freezed == completedByName
-          ? _value.completedByName
-          : completedByName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      completedByAvatar: freezed == completedByAvatar
-          ? _value.completedByAvatar
-          : completedByAvatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
+    return _then(
+      _$FeedingEventDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        aquariumId: null == aquariumId
+            ? _value.aquariumId
+            : aquariumId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        scheduleId: freezed == scheduleId
+            ? _value.scheduleId
+            : scheduleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        fishId: freezed == fishId
+            ? _value.fishId
+            : fishId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        speciesId: freezed == speciesId
+            ? _value.speciesId
+            : speciesId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        scheduledAt: null == scheduledAt
+            ? _value.scheduledAt
+            : scheduledAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String,
+        completedAt: freezed == completedAt
+            ? _value.completedAt
+            : completedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        completedBy: freezed == completedBy
+            ? _value.completedBy
+            : completedBy // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        completedByName: freezed == completedByName
+            ? _value.completedByName
+            : completedByName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        completedByAvatar: freezed == completedByAvatar
+            ? _value.completedByAvatar
+            : completedByAvatar // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        updatedAt: freezed == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FeedingEventDtoImpl extends _FeedingEventDto {
-  const _$FeedingEventDtoImpl(
-      {required this.id,
-      @JsonKey(name: 'aquarium_id') required this.aquariumId,
-      @JsonKey(name: 'schedule_id') this.scheduleId,
-      @JsonKey(name: 'fish_id') this.fishId,
-      @JsonKey(name: 'species_id') this.speciesId,
-      @JsonKey(name: 'scheduled_at') required this.scheduledAt,
-      required this.status,
-      @JsonKey(name: 'completed_at') this.completedAt,
-      @JsonKey(name: 'completed_by') this.completedBy,
-      @JsonKey(name: 'completed_by_name') this.completedByName,
-      @JsonKey(name: 'completed_by_avatar') this.completedByAvatar,
-      @JsonKey(name: 'created_at') this.createdAt,
-      @JsonKey(name: 'updated_at') this.updatedAt})
-      : super._();
+  const _$FeedingEventDtoImpl({
+    required this.id,
+    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    @JsonKey(name: 'schedule_id') this.scheduleId,
+    @JsonKey(name: 'fish_id') this.fishId,
+    @JsonKey(name: 'species_id') this.speciesId,
+    @JsonKey(name: 'scheduled_at') required this.scheduledAt,
+    required this.status,
+    @JsonKey(name: 'completed_at') this.completedAt,
+    @JsonKey(name: 'completed_by') this.completedBy,
+    @JsonKey(name: 'completed_by_name') this.completedByName,
+    @JsonKey(name: 'completed_by_avatar') this.completedByAvatar,
+    @JsonKey(name: 'created_at') this.createdAt,
+    @JsonKey(name: 'updated_at') this.updatedAt,
+  }) : super._();
 
   factory _$FeedingEventDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedingEventDtoImplFromJson(json);
@@ -361,52 +372,53 @@ class _$FeedingEventDtoImpl extends _FeedingEventDto {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      aquariumId,
-      scheduleId,
-      fishId,
-      speciesId,
-      scheduledAt,
-      status,
-      completedAt,
-      completedBy,
-      completedByName,
-      completedByAvatar,
-      createdAt,
-      updatedAt);
+    runtimeType,
+    id,
+    aquariumId,
+    scheduleId,
+    fishId,
+    speciesId,
+    scheduledAt,
+    status,
+    completedAt,
+    completedBy,
+    completedByName,
+    completedByAvatar,
+    createdAt,
+    updatedAt,
+  );
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$FeedingEventDtoImplCopyWith<_$FeedingEventDtoImpl> get copyWith =>
       __$$FeedingEventDtoImplCopyWithImpl<_$FeedingEventDtoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedingEventDtoImplToJson(
-      this,
-    );
+    return _$$FeedingEventDtoImplToJson(this);
   }
 }
 
 abstract class _FeedingEventDto extends FeedingEventDto {
-  const factory _FeedingEventDto(
-          {required final String id,
-          @JsonKey(name: 'aquarium_id') required final String aquariumId,
-          @JsonKey(name: 'schedule_id') final String? scheduleId,
-          @JsonKey(name: 'fish_id') final String? fishId,
-          @JsonKey(name: 'species_id') final String? speciesId,
-          @JsonKey(name: 'scheduled_at') required final DateTime scheduledAt,
-          required final String status,
-          @JsonKey(name: 'completed_at') final DateTime? completedAt,
-          @JsonKey(name: 'completed_by') final String? completedBy,
-          @JsonKey(name: 'completed_by_name') final String? completedByName,
-          @JsonKey(name: 'completed_by_avatar') final String? completedByAvatar,
-          @JsonKey(name: 'created_at') final DateTime? createdAt,
-          @JsonKey(name: 'updated_at') final DateTime? updatedAt}) =
-      _$FeedingEventDtoImpl;
+  const factory _FeedingEventDto({
+    required final String id,
+    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    @JsonKey(name: 'schedule_id') final String? scheduleId,
+    @JsonKey(name: 'fish_id') final String? fishId,
+    @JsonKey(name: 'species_id') final String? speciesId,
+    @JsonKey(name: 'scheduled_at') required final DateTime scheduledAt,
+    required final String status,
+    @JsonKey(name: 'completed_at') final DateTime? completedAt,
+    @JsonKey(name: 'completed_by') final String? completedBy,
+    @JsonKey(name: 'completed_by_name') final String? completedByName,
+    @JsonKey(name: 'completed_by_avatar') final String? completedByAvatar,
+    @JsonKey(name: 'created_at') final DateTime? createdAt,
+    @JsonKey(name: 'updated_at') final DateTime? updatedAt,
+  }) = _$FeedingEventDtoImpl;
   const _FeedingEventDto._() : super._();
 
   factory _FeedingEventDto.fromJson(Map<String, dynamic> json) =

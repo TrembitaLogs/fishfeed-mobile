@@ -17,18 +17,12 @@ void main() {
     AppTheme.useDefaultFonts = false;
   });
 
-  Widget buildTestWidget(
-    Widget child, {
-    List<Override>? overrides,
-  }) {
+  Widget buildTestWidget(Widget child, {List<Override>? overrides}) {
     return ProviderScope(
       overrides: overrides ?? [],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
-        home: Scaffold(
-          backgroundColor: Colors.black,
-          body: child,
-        ),
+        home: Scaffold(backgroundColor: Colors.black, body: child),
       ),
     );
   }
@@ -36,11 +30,7 @@ void main() {
   group('CameraControls', () {
     testWidgets('renders all control buttons', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraControls(
-            onCapture: () {},
-          ),
-        ),
+        buildTestWidget(CameraControls(onCapture: () {})),
       );
 
       // Flash button (flash_off icon by default)
@@ -53,14 +43,14 @@ void main() {
       expect(find.bySemanticsLabel('Take photo'), findsOneWidget);
     });
 
-    testWidgets('calls onCapture when capture button is tapped', (tester) async {
+    testWidgets('calls onCapture when capture button is tapped', (
+      tester,
+    ) async {
       var captureCount = 0;
 
       await tester.pumpWidget(
         buildTestWidget(
-          CameraControls(
-            onCapture: () => captureCount++,
-          ),
+          CameraControls(onCapture: () => captureCount++),
           overrides: [
             cameraProvider.overrideWith(
               (ref) => CameraNotifier()..setInitialized(true),
@@ -82,10 +72,7 @@ void main() {
 
       await tester.pumpWidget(
         buildTestWidget(
-          CameraControls(
-            onCapture: () => captureCount++,
-            isEnabled: false,
-          ),
+          CameraControls(onCapture: () => captureCount++, isEnabled: false),
         ),
       );
 
@@ -96,13 +83,11 @@ void main() {
       expect(captureCount, 0);
     });
 
-    testWidgets('toggles flash mode when flash button is tapped', (tester) async {
+    testWidgets('toggles flash mode when flash button is tapped', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraControls(
-            onCapture: () {},
-          ),
-        ),
+        buildTestWidget(CameraControls(onCapture: () {})),
       );
 
       // Initially flash_off
@@ -142,9 +127,7 @@ void main() {
                 capturedRef = ref;
                 return Scaffold(
                   backgroundColor: Colors.black,
-                  body: CameraControls(
-                    onCapture: () {},
-                  ),
+                  body: CameraControls(onCapture: () {}),
                 );
               },
             ),
@@ -170,12 +153,12 @@ void main() {
       expect(capturedRef.read(cameraProvider).isUsingFrontCamera, isFalse);
     });
 
-    testWidgets('disables flash button when using front camera', (tester) async {
+    testWidgets('disables flash button when using front camera', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
-          CameraControls(
-            onCapture: () {},
-          ),
+          CameraControls(onCapture: () {}),
           overrides: [
             cameraProvider.overrideWith(
               (ref) => CameraNotifier()..setUsingFrontCamera(true),
@@ -190,10 +173,7 @@ void main() {
 
       // Verify the IconButton is disabled by checking its onPressed
       final iconButton = tester.widget<IconButton>(
-        find.ancestor(
-          of: flashButton,
-          matching: find.byType(IconButton),
-        ),
+        find.ancestor(of: flashButton, matching: find.byType(IconButton)),
       );
       expect(iconButton.onPressed, isNull);
     });
@@ -201,9 +181,7 @@ void main() {
     testWidgets('shows loading indicator when capturing', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          CameraControls(
-            onCapture: () {},
-          ),
+          CameraControls(onCapture: () {}),
           overrides: [
             cameraProvider.overrideWith(
               (ref) => CameraNotifier()
@@ -220,13 +198,7 @@ void main() {
 
   group('CameraTopBar', () {
     testWidgets('renders close button', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(CameraTopBar(onClose: () {})));
 
       expect(find.byIcon(Icons.close), findsOneWidget);
     });
@@ -235,11 +207,7 @@ void main() {
       var closeCalled = false;
 
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () => closeCalled = true,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () => closeCalled = true)),
       );
 
       await tester.tap(find.byIcon(Icons.close));
@@ -248,26 +216,18 @@ void main() {
 
     testWidgets('shows scans remaining badge when provided', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: 3,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: 3)),
       );
 
       expect(find.text('3 scans left'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
 
-    testWidgets('hides scans badge when scansRemaining is null', (tester) async {
+    testWidgets('hides scans badge when scansRemaining is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: null,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: null)),
       );
 
       expect(find.text('scans left'), findsNothing);
@@ -277,47 +237,27 @@ void main() {
     testWidgets('shows correct scans remaining values', (tester) async {
       // Test 0 scans - shows "No scans left"
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: 0,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: 0)),
       );
       expect(find.text('No scans left'), findsOneWidget);
 
       // Test 1 scan - shows "1 scan left" (singular)
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: 1,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: 1)),
       );
       await tester.pumpAndSettle();
       expect(find.text('1 scan left'), findsOneWidget);
 
       // Test 5 scans - shows "5 scans left"
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: 5,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: 5)),
       );
       await tester.pumpAndSettle();
       expect(find.text('5 scans left'), findsOneWidget);
 
       // Test 10 scans - shows "10 scans left"
       await tester.pumpWidget(
-        buildTestWidget(
-          CameraTopBar(
-            onClose: () {},
-            scansRemaining: 10,
-          ),
-        ),
+        buildTestWidget(CameraTopBar(onClose: () {}, scansRemaining: 10)),
       );
       await tester.pumpAndSettle();
       expect(find.text('10 scans left'), findsOneWidget);

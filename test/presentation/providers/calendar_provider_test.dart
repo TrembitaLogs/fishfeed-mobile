@@ -84,7 +84,10 @@ void main() {
         final initialState = container.read(calendarProvider);
 
         // Select the same day
-        notifier.onDaySelected(initialState.selectedDay, initialState.focusedDay);
+        notifier.onDaySelected(
+          initialState.selectedDay,
+          initialState.focusedDay,
+        );
 
         final newState = container.read(calendarProvider);
         // State should be the same instance if no change occurred
@@ -94,7 +97,11 @@ void main() {
       test('allows selecting different day in same month', () {
         final notifier = container.read(calendarProvider.notifier);
         final now = DateTime.now();
-        final differentDay = DateTime(now.year, now.month, now.day == 15 ? 16 : 15);
+        final differentDay = DateTime(
+          now.year,
+          now.month,
+          now.day == 15 ? 16 : 15,
+        );
 
         notifier.onDaySelected(differentDay, differentDay);
 
@@ -165,10 +172,7 @@ void main() {
         final now = DateTime.now();
 
         // First change to a different date
-        notifier.onDaySelected(
-          DateTime(2025, 3, 15),
-          DateTime(2025, 3, 15),
-        );
+        notifier.onDaySelected(DateTime(2025, 3, 15), DateTime(2025, 3, 15));
 
         // Then go to today
         notifier.goToToday();

@@ -16,9 +16,7 @@ void main() {
     teardownTestFonts();
   });
 
-  Widget buildTestWidget({
-    SettingsState? initialSettings,
-  }) {
+  Widget buildTestWidget({SettingsState? initialSettings}) {
     final settings = initialSettings ?? const SettingsState.initial();
     return wrapForTesting(
       child: const NotificationSettingsScreen(),
@@ -39,7 +37,9 @@ void main() {
 
         expect(find.text('Enable Notifications'), findsOneWidget);
         expect(
-            find.text('Receive feeding reminders and alerts'), findsOneWidget);
+          find.text('Receive feeding reminders and alerts'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('master toggle is on by default', (tester) async {
@@ -52,13 +52,14 @@ void main() {
         expect(switchWidget.value, isTrue);
       });
 
-      testWidgets('shows disabled message when master toggle is off',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: false,
+      testWidgets('shows disabled message when master toggle is off', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(notificationsEnabled: false),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('All notifications are disabled'), findsOneWidget);
@@ -92,7 +93,9 @@ void main() {
 
         expect(find.text('Feeding Reminders'), findsOneWidget);
         expect(
-            find.text('Get notified when it\'s time to feed'), findsOneWidget);
+          find.text('Get notified when it\'s time to feed'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('renders streak alerts toggle', (tester) async {
@@ -101,7 +104,9 @@ void main() {
 
         expect(find.text('Streak Alerts'), findsOneWidget);
         expect(
-            find.text('Warnings when your streak is at risk'), findsOneWidget);
+          find.text('Warnings when your streak is at risk'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('renders weekly summary toggle', (tester) async {
@@ -112,13 +117,14 @@ void main() {
         expect(find.text('Weekly feeding activity overview'), findsOneWidget);
       });
 
-      testWidgets('individual toggles are disabled when master is off',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: false,
+      testWidgets('individual toggles are disabled when master is off', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(notificationsEnabled: false),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Find all SwitchListTiles (master + 3 individual + quiet hours = 5)
@@ -129,8 +135,11 @@ void main() {
         for (final switchWidget in switches) {
           if (switchIndex > 0 && switchIndex < 4) {
             // Individual notification toggles should be disabled
-            expect(switchWidget.onChanged, isNull,
-                reason: 'Switch at index $switchIndex should be disabled');
+            expect(
+              switchWidget.onChanged,
+              isNull,
+              reason: 'Switch at index $switchIndex should be disabled',
+            );
           }
           switchIndex++;
         }
@@ -146,7 +155,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // The toggle should have changed
-        final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
+        final switches = tester
+            .widgetList<Switch>(find.byType(Switch))
+            .toList();
         expect(switches[1].value, isFalse);
       });
     });
@@ -164,8 +175,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Enable Quiet Hours'), findsOneWidget);
-        expect(find.text('Mute notifications during specified hours'),
-            findsOneWidget);
+        expect(
+          find.text('Mute notifications during specified hours'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('quiet hours toggle is off by default', (tester) async {
@@ -173,13 +186,16 @@ void main() {
         await tester.pumpAndSettle();
 
         // Find the quiet hours toggle (5th SwitchListTile - after master + 3 individual)
-        final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
+        final switches = tester
+            .widgetList<Switch>(find.byType(Switch))
+            .toList();
         // Master (0), Feeding (1), Streak (2), Weekly (3), Quiet Hours (4)
         expect(switches[4].value, isFalse);
       });
 
-      testWidgets('time pickers not visible when quiet hours disabled',
-          (tester) async {
+      testWidgets('time pickers not visible when quiet hours disabled', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -187,15 +203,18 @@ void main() {
         expect(find.text('To'), findsNothing);
       });
 
-      testWidgets('time pickers visible when quiet hours enabled',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: true,
-            quietHoursStart: 22 * 60, // 22:00
-            quietHoursEnd: 8 * 60, // 08:00
+      testWidgets('time pickers visible when quiet hours enabled', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(
+              notificationsEnabled: true,
+              quietHoursStart: 22 * 60, // 22:00
+              quietHoursEnd: 8 * 60, // 08:00
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('From'), findsOneWidget);
@@ -204,8 +223,9 @@ void main() {
         expect(find.text('08:00'), findsOneWidget);
       });
 
-      testWidgets('enabling quiet hours shows time pickers with defaults',
-          (tester) async {
+      testWidgets('enabling quiet hours shows time pickers with defaults', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -221,30 +241,36 @@ void main() {
         expect(find.text('08:00'), findsOneWidget);
       });
 
-      testWidgets('quiet hours section disabled when master toggle off',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: false,
+      testWidgets('quiet hours section disabled when master toggle off', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(notificationsEnabled: false),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Find quiet hours toggle switch
-        final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
+        final switches = tester
+            .widgetList<Switch>(find.byType(Switch))
+            .toList();
         // Master (0), Feeding (1), Streak (2), Weekly (3), Quiet Hours (4)
         expect(switches[4].onChanged, isNull);
       });
 
-      testWidgets('tapping time picker button shows time picker dialog',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: true,
-            quietHoursStart: 22 * 60,
-            quietHoursEnd: 8 * 60,
+      testWidgets('tapping time picker button shows time picker dialog', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(
+              notificationsEnabled: true,
+              quietHoursStart: 22 * 60,
+              quietHoursEnd: 8 * 60,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Tap the "From" time picker button
@@ -263,15 +289,17 @@ void main() {
 
         expect(
           find.text(
-              'Notification preferences are saved locally and will be synced with your account when online.'),
+            'Notification preferences are saved locally and will be synced with your account when online.',
+          ),
           findsOneWidget,
         );
       });
     });
 
     group('icons', () {
-      testWidgets('shows notifications_active icon when enabled',
-          (tester) async {
+      testWidgets('shows notifications_active icon when enabled', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -279,11 +307,11 @@ void main() {
       });
 
       testWidgets('shows notifications_off icon when disabled', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          initialSettings: const SettingsState(
-            notificationsEnabled: false,
+        await tester.pumpWidget(
+          buildTestWidget(
+            initialSettings: const SettingsState(notificationsEnabled: false),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.notifications_off), findsOneWidget);

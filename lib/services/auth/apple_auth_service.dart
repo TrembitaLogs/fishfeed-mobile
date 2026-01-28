@@ -7,7 +7,6 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'package:fishfeed/core/services/secure_storage_service.dart';
 
-
 /// Exception thrown when Apple Sign-In fails.
 class AppleAuthException implements Exception {
   const AppleAuthException(this.code, [this.message]);
@@ -99,8 +98,8 @@ class AppleAuthService {
   AppleAuthService({
     SecureStorageService? storageService,
     @visibleForTesting bool? isAvailableOverride,
-  })  : _storageService = storageService,
-        _isAvailableOverride = isAvailableOverride;
+  }) : _storageService = storageService,
+       _isAvailableOverride = isAvailableOverride;
 
   final SecureStorageService? _storageService;
   final bool? _isAvailableOverride;
@@ -193,8 +192,7 @@ class AppleAuthService {
         );
       }
 
-      debugPrint(
-          'AppleAuthService: Sign-in successful for $userIdentifier');
+      debugPrint('AppleAuthService: Sign-in successful for $userIdentifier');
 
       return AppleSignInResult(
         identityToken: identityToken,
@@ -216,35 +214,25 @@ class AppleAuthService {
             e.message,
           );
         case AuthorizationErrorCode.invalidResponse:
-          throw AppleAuthException(
-            AppleAuthErrorCode.tokenError,
-            e.message,
-          );
+          throw AppleAuthException(AppleAuthErrorCode.tokenError, e.message);
         case AuthorizationErrorCode.notHandled:
-          throw AppleAuthException(
-            AppleAuthErrorCode.unknown,
-            e.message,
-          );
+          throw AppleAuthException(AppleAuthErrorCode.unknown, e.message);
         case AuthorizationErrorCode.notInteractive:
           throw const AppleAuthException(
             AppleAuthErrorCode.authorizationFailed,
             'Non-interactive authorization is not supported',
           );
         case AuthorizationErrorCode.credentialExport:
-          throw AppleAuthException(
-            AppleAuthErrorCode.unknown,
-            e.message,
-          );
+          throw AppleAuthException(AppleAuthErrorCode.unknown, e.message);
         case AuthorizationErrorCode.credentialImport:
         case AuthorizationErrorCode.matchedExcludedCredential:
         case AuthorizationErrorCode.unknown:
-          throw AppleAuthException(
-            AppleAuthErrorCode.unknown,
-            e.message,
-          );
+          throw AppleAuthException(AppleAuthErrorCode.unknown, e.message);
       }
     } on PlatformException catch (e) {
-      debugPrint('AppleAuthService: PlatformException - ${e.code}: ${e.message}');
+      debugPrint(
+        'AppleAuthService: PlatformException - ${e.code}: ${e.message}',
+      );
 
       if (e.code == 'ERROR_CANCELED') {
         throw const AppleAuthException(AppleAuthErrorCode.cancelled);
@@ -258,10 +246,7 @@ class AppleAuthService {
       rethrow;
     } catch (e) {
       debugPrint('AppleAuthService: Unknown error - $e');
-      throw AppleAuthException(
-        AppleAuthErrorCode.unknown,
-        e.toString(),
-      );
+      throw AppleAuthException(AppleAuthErrorCode.unknown, e.toString());
     }
   }
 

@@ -12,10 +12,7 @@ import 'package:fishfeed/services/sync/sync_service.dart';
 /// Used when automatic conflict resolution cannot determine the correct version
 /// (e.g., when timestamps are very close but data differs).
 class ConflictResolutionDialog extends ConsumerWidget {
-  const ConflictResolutionDialog({
-    required this.conflict,
-    super.key,
-  });
+  const ConflictResolutionDialog({required this.conflict, super.key});
 
   /// The conflict to resolve.
   final SyncConflict<Map<String, dynamic>> conflict;
@@ -207,9 +204,11 @@ class _ConflictFieldsList extends StatelessWidget {
     // Convert snake_case to Title Case
     return field
         .split('_')
-        .map((word) => word.isNotEmpty
-            ? '${word[0].toUpperCase()}${word.substring(1)}'
-            : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
         .join(' ');
   }
 }
@@ -247,15 +246,15 @@ class _VersionCard extends StatelessWidget {
         color: isDeleted
             ? theme.colorScheme.errorContainer.withValues(alpha: 0.3)
             : isLocal
-                ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
-                : theme.colorScheme.surfaceContainerHighest,
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isDeleted
               ? theme.colorScheme.error.withValues(alpha: 0.5)
               : isLocal
-                  ? theme.colorScheme.primary.withValues(alpha: 0.5)
-                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+              ? theme.colorScheme.primary.withValues(alpha: 0.5)
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -267,14 +266,14 @@ class _VersionCard extends StatelessWidget {
                 isDeleted
                     ? Icons.delete_rounded
                     : isLocal
-                        ? Icons.phone_android_rounded
-                        : Icons.cloud_rounded,
+                    ? Icons.phone_android_rounded
+                    : Icons.cloud_rounded,
                 size: 16,
                 color: isDeleted
                     ? theme.colorScheme.error
                     : isLocal
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurfaceVariant,
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 6),
               Expanded(
@@ -285,8 +284,8 @@ class _VersionCard extends StatelessWidget {
                     color: isDeleted
                         ? theme.colorScheme.error
                         : isLocal
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface,
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -315,11 +314,7 @@ class _VersionCard extends StatelessWidget {
               final value = data[field];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: _FieldRow(
-                  field: field,
-                  value: value,
-                  theme: theme,
-                ),
+                child: _FieldRow(field: field, value: value, theme: theme),
               );
             }),
           ],
@@ -370,9 +365,11 @@ class _FieldRow extends StatelessWidget {
   String _formatFieldName(String field) {
     return field
         .split('_')
-        .map((word) => word.isNotEmpty
-            ? '${word[0].toUpperCase()}${word.substring(1)}'
-            : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
         .join(' ');
   }
 
@@ -393,10 +390,7 @@ class _FieldRow extends StatelessWidget {
 /// This widget should be placed high in the widget tree to listen for
 /// conflicts and show dialogs as needed.
 class ConflictResolutionListener extends ConsumerWidget {
-  const ConflictResolutionListener({
-    required this.child,
-    super.key,
-  });
+  const ConflictResolutionListener({required this.child, super.key});
 
   final Widget child;
 
@@ -442,16 +436,16 @@ class ConflictResolutionListener extends ConsumerWidget {
 /// Provider for the next pending conflict that needs resolution.
 final pendingConflictProvider =
     StreamProvider<SyncConflict<Map<String, dynamic>>?>((ref) {
-  final syncService = ref.watch(syncServiceProvider);
-  return syncService.conflictStream.map((conflict) => conflict);
-});
+      final syncService = ref.watch(syncServiceProvider);
+      return syncService.conflictStream.map((conflict) => conflict);
+    });
 
 /// Provider for the list of all pending conflicts.
 final pendingConflictsProvider =
     Provider<List<SyncConflict<Map<String, dynamic>>>>((ref) {
-  final syncService = ref.watch(syncServiceProvider);
-  return syncService.pendingConflicts;
-});
+      final syncService = ref.watch(syncServiceProvider);
+      return syncService.pendingConflicts;
+    });
 
 /// Provider for whether there are unresolved conflicts.
 final hasUnresolvedConflictsProvider = Provider<bool>((ref) {

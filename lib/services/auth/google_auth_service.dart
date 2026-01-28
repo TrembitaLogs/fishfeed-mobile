@@ -14,7 +14,8 @@ class GoogleAuthException implements Exception {
   final String? message;
 
   @override
-  String toString() => 'GoogleAuthException($code${message != null ? ': $message' : ''})';
+  String toString() =>
+      'GoogleAuthException($code${message != null ? ': $message' : ''})';
 }
 
 /// Error codes for Google Sign-In failures.
@@ -75,10 +76,8 @@ class GoogleSignInResult {
 /// ```
 class GoogleAuthService {
   GoogleAuthService({GoogleSignIn? googleSignIn})
-      : _googleSignIn = googleSignIn ??
-            GoogleSignIn(
-              scopes: ['email', 'profile'],
-            );
+    : _googleSignIn =
+          googleSignIn ?? GoogleSignIn(scopes: ['email', 'profile']);
 
   final GoogleSignIn _googleSignIn;
 
@@ -118,17 +117,16 @@ class GoogleAuthService {
         photoUrl: account.photoUrl,
       );
     } on PlatformException catch (e) {
-      debugPrint('GoogleAuthService: PlatformException - ${e.code}: ${e.message}');
+      debugPrint(
+        'GoogleAuthService: PlatformException - ${e.code}: ${e.message}',
+      );
 
       if (e.code == 'sign_in_canceled') {
         throw const GoogleAuthException(GoogleAuthErrorCode.cancelled);
       }
 
       if (e.code == 'network_error') {
-        throw GoogleAuthException(
-          GoogleAuthErrorCode.networkError,
-          e.message,
-        );
+        throw GoogleAuthException(GoogleAuthErrorCode.networkError, e.message);
       }
 
       if (e.code == 'sign_in_failed' &&
@@ -147,10 +145,7 @@ class GoogleAuthService {
       rethrow;
     } catch (e) {
       debugPrint('GoogleAuthService: Unknown error - $e');
-      throw GoogleAuthException(
-        GoogleAuthErrorCode.unknown,
-        e.toString(),
-      );
+      throw GoogleAuthException(GoogleAuthErrorCode.unknown, e.toString());
     }
   }
 
@@ -174,7 +169,9 @@ class GoogleAuthService {
         return null;
       }
 
-      debugPrint('GoogleAuthService: Silent sign-in successful for ${account.email}');
+      debugPrint(
+        'GoogleAuthService: Silent sign-in successful for ${account.email}',
+      );
 
       return GoogleSignInResult(
         idToken: idToken,
@@ -216,10 +213,7 @@ class GoogleAuthService {
     } catch (e) {
       if (e is GoogleAuthException) rethrow;
 
-      throw GoogleAuthException(
-        GoogleAuthErrorCode.tokenError,
-        e.toString(),
-      );
+      throw GoogleAuthException(GoogleAuthErrorCode.tokenError, e.toString());
     }
   }
 

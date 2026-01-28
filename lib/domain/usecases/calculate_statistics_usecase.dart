@@ -9,9 +9,7 @@ import 'package:fishfeed/domain/entities/user_statistics.dart';
 
 /// Parameters for [CalculateStatisticsUseCase].
 class CalculateStatisticsParams {
-  const CalculateStatisticsParams({
-    required this.userId,
-  });
+  const CalculateStatisticsParams({required this.userId});
 
   /// The ID of the user to calculate statistics for.
   final String userId;
@@ -28,8 +26,8 @@ class CalculateStatisticsUseCase {
   CalculateStatisticsUseCase({
     required FeedingLocalDataSource feedingDataSource,
     required UserProgressLocalDataSource userProgressDataSource,
-  })  : _feedingDataSource = feedingDataSource,
-        _userProgressDataSource = userProgressDataSource;
+  }) : _feedingDataSource = feedingDataSource,
+       _userProgressDataSource = userProgressDataSource;
 
   final FeedingLocalDataSource _feedingDataSource;
   final UserProgressLocalDataSource _userProgressDataSource;
@@ -59,7 +57,9 @@ class CalculateStatisticsUseCase {
       );
 
       // Get user progress for level/XP info
-      final progress = _userProgressDataSource.getProgressByUserId(params.userId);
+      final progress = _userProgressDataSource.getProgressByUserId(
+        params.userId,
+      );
       final totalXp = progress?.totalXp ?? 0;
       final currentLevel = LevelConstants.getLevelForXp(totalXp);
       final levelProgress = LevelConstants.getXpProgress(totalXp);
@@ -74,17 +74,19 @@ class CalculateStatisticsUseCase {
           ? nextLevel.minXp - currentLevel.minXp
           : 0;
 
-      return Right(UserStatistics(
-        onTimePercentage: onTimePercentage,
-        totalFeedings: totalFeedings,
-        daysWithApp: daysWithApp,
-        currentLevel: currentLevel,
-        totalXp: totalXp,
-        xpInCurrentLevel: xpInCurrentLevel,
-        xpForCurrentLevel: xpForCurrentLevel,
-        levelProgress: levelProgress,
-        isMaxLevel: isMaxLevel,
-      ));
+      return Right(
+        UserStatistics(
+          onTimePercentage: onTimePercentage,
+          totalFeedings: totalFeedings,
+          daysWithApp: daysWithApp,
+          currentLevel: currentLevel,
+          totalXp: totalXp,
+          xpInCurrentLevel: xpInCurrentLevel,
+          xpForCurrentLevel: xpForCurrentLevel,
+          levelProgress: levelProgress,
+          isMaxLevel: isMaxLevel,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to calculate statistics: $e'));
     }

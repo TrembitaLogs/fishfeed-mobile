@@ -13,14 +13,16 @@ class TestAdUnitIds {
 
   // iOS Test Ad Unit IDs
   static const String iosBanner = 'ca-app-pub-3940256099942544/2435281174';
-  static const String iosInterstitial = 'ca-app-pub-3940256099942544/4411468910';
+  static const String iosInterstitial =
+      'ca-app-pub-3940256099942544/4411468910';
   static const String iosRewarded = 'ca-app-pub-3940256099942544/1712485313';
 
   // Android Test Ad Unit IDs
   static const String androidBanner = 'ca-app-pub-3940256099942544/9214589741';
   static const String androidInterstitial =
       'ca-app-pub-3940256099942544/1033173712';
-  static const String androidRewarded = 'ca-app-pub-3940256099942544/5224354917';
+  static const String androidRewarded =
+      'ca-app-pub-3940256099942544/5224354917';
 }
 
 /// Production Ad Unit IDs.
@@ -31,14 +33,16 @@ class AdUnitIds {
   // TODO: Replace with actual production Ad Unit IDs from AdMob dashboard
   // iOS Production Ad Unit IDs
   static const String iosBanner = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
-  static const String iosInterstitial = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+  static const String iosInterstitial =
+      'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
   static const String iosRewarded = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
 
   // Android Production Ad Unit IDs
   static const String androidBanner = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
   static const String androidInterstitial =
       'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
-  static const String androidRewarded = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+  static const String androidRewarded =
+      'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
 }
 
 /// Callback type for when user earns a reward from rewarded ad.
@@ -114,10 +118,7 @@ class AdService {
       _isInitialized = true;
 
       // Pre-load interstitial and rewarded ads
-      await Future.wait([
-        _loadInterstitialAd(),
-        _loadRewardedAd(),
-      ]);
+      await Future.wait([_loadInterstitialAd(), _loadRewardedAd()]);
 
       if (kDebugMode) {
         print('AdService: Initialized successfully');
@@ -309,7 +310,9 @@ class AdService {
     _feedingCounter++;
 
     if (kDebugMode) {
-      print('AdService: Feeding count: $_feedingCounter/$feedingsBeforeInterstitial');
+      print(
+        'AdService: Feeding count: $_feedingCounter/$feedingsBeforeInterstitial',
+      );
     }
 
     if (_feedingCounter >= feedingsBeforeInterstitial) {
@@ -438,7 +441,9 @@ class AdService {
       await _rewardedAd!.show(
         onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
           if (kDebugMode) {
-            print('AdService: User earned reward: ${reward.amount} ${reward.type}');
+            print(
+              'AdService: User earned reward: ${reward.amount} ${reward.type}',
+            );
           }
           onRewardEarned(reward);
         },

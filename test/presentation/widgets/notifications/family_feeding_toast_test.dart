@@ -29,9 +29,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
@@ -43,9 +41,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
@@ -57,9 +53,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
@@ -71,9 +65,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
@@ -85,16 +77,16 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
       expect(find.byIcon(Icons.person), findsOneWidget);
     });
 
-    testWidgets('displays dismiss button when callback provided', (tester) async {
+    testWidgets('displays dismiss button when callback provided', (
+      tester,
+    ) async {
       final event = createTestEvent();
       var dismissCalled = false;
 
@@ -115,14 +107,14 @@ void main() {
       expect(dismissCalled, isTrue);
     });
 
-    testWidgets('does not display dismiss button when no callback', (tester) async {
+    testWidgets('does not display dismiss button when no callback', (
+      tester,
+    ) async {
       final event = createTestEvent();
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 
@@ -134,9 +126,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: FamilyFeedingToast(event: event),
-          ),
+          home: Scaffold(body: FamilyFeedingToast(event: event)),
         ),
       );
 

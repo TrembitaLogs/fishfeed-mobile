@@ -124,8 +124,14 @@ void main() {
     test('has all expected values', () {
       expect(AppLifecycleEvent.values, contains(AppLifecycleEvent.resumed));
       expect(AppLifecycleEvent.values, contains(AppLifecycleEvent.paused));
-      expect(AppLifecycleEvent.values, contains(AppLifecycleEvent.midnightCrossed));
-      expect(AppLifecycleEvent.values, contains(AppLifecycleEvent.dstTransition));
+      expect(
+        AppLifecycleEvent.values,
+        contains(AppLifecycleEvent.midnightCrossed),
+      );
+      expect(
+        AppLifecycleEvent.values,
+        contains(AppLifecycleEvent.dstTransition),
+      );
     });
   });
 }

@@ -23,10 +23,7 @@ void main() {
       theme: AppTheme.lightTheme,
       home: Scaffold(
         body: Center(
-          child: PremiumChip(
-            size: size,
-            showIcon: showIcon,
-          ),
+          child: PremiumChip(size: size, showIcon: showIcon),
         ),
       ),
     );

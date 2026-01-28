@@ -261,10 +261,10 @@ void main() {
       await HiveBoxes.feedingEvents.put(event2.id, event2);
       await HiveBoxes.feedingEvents.put(event3.id, event3);
 
-      final allEvents =
-          HiveBoxes.feedingEvents.values.cast<FeedingEventModel>().toList();
-      final unsyncedEvents =
-          allEvents.where((event) => !event.synced).toList();
+      final allEvents = HiveBoxes.feedingEvents.values
+          .cast<FeedingEventModel>()
+          .toList();
+      final unsyncedEvents = allEvents.where((event) => !event.synced).toList();
 
       expect(allEvents.length, 3);
       expect(unsyncedEvents.length, 2);

@@ -44,9 +44,7 @@ class NotificationPermissionDialog extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -117,9 +115,9 @@ class NotificationPermissionDialog extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(
-                  NotificationPermissionDialogResult.enable,
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop(NotificationPermissionDialogResult.enable),
                 child: Text(l10n.notificationPermissionEnable),
               ),
             ),
@@ -130,9 +128,9 @@ class NotificationPermissionDialog extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: TextButton(
-                onPressed: () => Navigator.of(context).pop(
-                  NotificationPermissionDialogResult.later,
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop(NotificationPermissionDialogResult.later),
                 child: Text(l10n.notificationPermissionLater),
               ),
             ),

@@ -110,11 +110,7 @@ class _StatisticsSectionContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _LevelCard(
-                    level: statistics.currentLevel,
-                  ),
-                ),
+                Expanded(child: _LevelCard(level: statistics.currentLevel)),
               ],
             ),
             const SizedBox(height: 16),
@@ -240,11 +236,7 @@ class _StatCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+          Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
@@ -297,11 +289,7 @@ class _LevelCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.shield,
-            color: color,
-            size: 24,
-          ),
+          Icon(Icons.shield, color: color, size: 24),
           const SizedBox(height: 8),
           Text(
             _getLocalizedLevelName(level, l10n),
@@ -441,9 +429,10 @@ class _StatisticsSectionShimmerState extends State<_StatisticsSectionShimmer>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
-    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

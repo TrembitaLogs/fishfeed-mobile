@@ -38,9 +38,7 @@ void main() {
     );
   }
 
-  List<Achievement> createTestAchievements({
-    int unlockedCount = 2,
-  }) {
+  List<Achievement> createTestAchievements({int unlockedCount = 2}) {
     const types = AchievementType.values;
     return types.asMap().entries.map((entry) {
       final index = entry.key;
@@ -55,9 +53,7 @@ void main() {
     }).toList();
   }
 
-  Widget buildTestWidget({
-    required AchievementsState achievementsState,
-  }) {
+  Widget buildTestWidget({required AchievementsState achievementsState}) {
     return ProviderScope(
       overrides: [
         achievementsProvider.overrideWith(
@@ -83,30 +79,36 @@ void main() {
   group('AchievementsGallery', () {
     group('Display', () {
       testWidgets('displays section title', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(
-            achievements: createTestAchievements(),
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(
+              achievements: createTestAchievements(),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Achievements'), findsOneWidget);
       });
 
       testWidgets('displays unlocked/total counter', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(
-            achievements: createTestAchievements(unlockedCount: 3),
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(
+              achievements: createTestAchievements(unlockedCount: 3),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('3/${AchievementType.values.length}'), findsOneWidget);
       });
 
       testWidgets('displays correct number of tiles', (tester) async {
         final achievements = createTestAchievements();
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.byType(GridView), findsOneWidget);
       });
@@ -119,9 +121,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         // Achievement.fromType uses Ukrainian titles (data.titleUk)
         expect(find.text(achievements[0].title), findsOneWidget);
@@ -136,9 +140,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.text('???'), findsOneWidget);
       });
@@ -152,15 +158,18 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.byIcon(Icons.lock), findsOneWidget);
       });
 
-      testWidgets('does not display lock icon for unlocked achievement',
-          (tester) async {
+      testWidgets('does not display lock icon for unlocked achievement', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.firstFeeding,
@@ -168,15 +177,18 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.byIcon(Icons.lock), findsNothing);
       });
 
-      testWidgets('displays correct icon for each achievement type',
-          (tester) async {
+      testWidgets('displays correct icon for each achievement type', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.firstFeeding,
@@ -188,9 +200,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.byIcon(Icons.celebration), findsOneWidget);
         expect(find.byIcon(Icons.local_fire_department), findsOneWidget);
@@ -199,17 +213,21 @@ void main() {
 
     group('Loading State', () {
       testWidgets('shows loading indicator when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(isLoading: true),
+          ),
+        );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
       testWidgets('does not show grid when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(isLoading: true),
+          ),
+        );
 
         expect(find.byType(GridView), findsNothing);
       });
@@ -217,31 +235,33 @@ void main() {
 
     group('Error State', () {
       testWidgets('shows error message when error occurs', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(
-            error: 'Failed to load achievements',
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(
+              error: 'Failed to load achievements',
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Failed to load achievements'), findsOneWidget);
       });
 
       testWidgets('shows error icon when error occurs', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(
-            error: 'Error',
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(error: 'Error'),
           ),
-        ));
+        );
 
         expect(find.byIcon(Icons.error_outline), findsOneWidget);
       });
 
       testWidgets('shows retry button when error occurs', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(
-            error: 'Error',
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(error: 'Error'),
           ),
-        ));
+        );
 
         expect(find.text('Retry'), findsOneWidget);
       });
@@ -256,9 +276,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -267,8 +289,9 @@ void main() {
         expect(find.text(achievements[0].title), findsWidgets);
       });
 
-      testWidgets('modal shows share button for unlocked achievement',
-          (tester) async {
+      testWidgets('modal shows share button for unlocked achievement', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.firstFeeding,
@@ -276,9 +299,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -286,8 +311,9 @@ void main() {
         expect(find.text('Share'), findsOneWidget);
       });
 
-      testWidgets('modal shows XP reward for unlocked achievement',
-          (tester) async {
+      testWidgets('modal shows XP reward for unlocked achievement', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.streak7,
@@ -295,9 +321,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -316,22 +344,22 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
 
         // Achievement.fromType uses Ukrainian descriptions (data.descriptionUk)
-        expect(
-          find.text(achievements[0].description!),
-          findsOneWidget,
-        );
+        expect(find.text(achievements[0].description!), findsOneWidget);
       });
 
-      testWidgets('modal does not show share button for locked achievement',
-          (tester) async {
+      testWidgets('modal does not show share button for locked achievement', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.streak100,
@@ -340,9 +368,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -350,8 +380,9 @@ void main() {
         expect(find.text('Share'), findsNothing);
       });
 
-      testWidgets('modal shows progress bar for achievement with progress',
-          (tester) async {
+      testWidgets('modal shows progress bar for achievement with progress', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.feedings100,
@@ -360,9 +391,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -380,9 +413,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pumpAndSettle();
@@ -401,8 +436,9 @@ void main() {
     });
 
     group('Locked vs Unlocked Visual States', () {
-      testWidgets('unlocked achievement has colored background',
-          (tester) async {
+      testWidgets('unlocked achievement has colored background', (
+        tester,
+      ) async {
         final achievements = [
           createTestAchievement(
             type: AchievementType.firstFeeding,
@@ -410,9 +446,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         // Just verify it renders without errors (uses Ukrainian title)
         expect(find.text(achievements[0].title), findsOneWidget);
@@ -427,9 +465,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         // Verify the emoji_events icon is present (streak100 uses it)
         expect(find.byIcon(Icons.emoji_events), findsOneWidget);
@@ -441,9 +481,11 @@ void main() {
       testWidgets('shows 0/N when no achievements unlocked', (tester) async {
         final achievements = createTestAchievements(unlockedCount: 0);
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.text('0/${achievements.length}'), findsOneWidget);
       });
@@ -452,9 +494,11 @@ void main() {
         final total = AchievementType.values.length;
         final achievements = createTestAchievements(unlockedCount: total);
 
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: AchievementsState(achievements: achievements),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: AchievementsState(achievements: achievements),
+          ),
+        );
 
         expect(find.text('$total/$total'), findsOneWidget);
       });
@@ -462,9 +506,11 @@ void main() {
 
     group('Empty State', () {
       testWidgets('handles empty achievements list gracefully', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          achievementsState: const AchievementsState(achievements: []),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            achievementsState: const AchievementsState(achievements: []),
+          ),
+        );
 
         expect(find.text('Achievements'), findsOneWidget);
         expect(find.text('0/0'), findsOneWidget);
@@ -476,10 +522,7 @@ void main() {
 /// Test-only AchievementsNotifier that returns a fixed state.
 class _TestAchievementsNotifier extends AchievementsNotifier {
   _TestAchievementsNotifier(this._initialState)
-      : super(
-          achievementUseCase: _MockAchievementUseCase(),
-          ref: _MockRef(),
-        );
+    : super(achievementUseCase: _MockAchievementUseCase(), ref: _MockRef());
 
   final AchievementsState _initialState;
 

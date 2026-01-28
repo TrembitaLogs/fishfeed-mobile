@@ -21,8 +21,8 @@ class FamilyRepositoryImpl implements FamilyRepository {
   FamilyRepositoryImpl({
     required ApiClient apiClient,
     required String? currentUserId,
-  })  : _apiClient = apiClient,
-        _currentUserId = currentUserId;
+  }) : _apiClient = apiClient,
+       _currentUserId = currentUserId;
 
   // ignore: unused_field - will be used when backend API is ready
   final ApiClient _apiClient;
@@ -48,7 +48,8 @@ class FamilyRepositoryImpl implements FamilyRepository {
       // Mock implementation
       if (_currentUserId == null) {
         return const Left(
-            AuthenticationFailure(message: 'User not authenticated'));
+          AuthenticationFailure(message: 'User not authenticated'),
+        );
       }
 
       final now = DateTime.now();
@@ -100,9 +101,7 @@ class FamilyRepositoryImpl implements FamilyRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> cancelInvite({
-    required String inviteId,
-  }) async {
+  Future<Either<Failure, Unit>> cancelInvite({required String inviteId}) async {
     try {
       // TODO: Replace with actual API call when backend is ready
       // await _apiClient.dio.delete('/family/invites/$inviteId');
@@ -158,21 +157,21 @@ class FamilyRepositoryImpl implements FamilyRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> removeMember({
-    required String memberId,
-  }) async {
+  Future<Either<Failure, Unit>> removeMember({required String memberId}) async {
     try {
       // TODO: Replace with actual API call when backend is ready
       // await _apiClient.dio.delete('/family/members/$memberId');
 
       // Mock implementation
       for (final members in _mockMembers.values) {
-        final memberIndex =
-            members.indexWhere((member) => member.id == memberId);
+        final memberIndex = members.indexWhere(
+          (member) => member.id == memberId,
+        );
         if (memberIndex != -1) {
           if (members[memberIndex].isOwner) {
             return const Left(
-                ValidationFailure(message: 'Cannot remove the owner'));
+              ValidationFailure(message: 'Cannot remove the owner'),
+            );
           }
           members.removeAt(memberIndex);
         }
@@ -202,7 +201,8 @@ class FamilyRepositoryImpl implements FamilyRepository {
       // Mock implementation
       if (_currentUserId == null) {
         return const Left(
-            AuthenticationFailure(message: 'User not authenticated'));
+          AuthenticationFailure(message: 'User not authenticated'),
+        );
       }
 
       // Find the invite
@@ -211,9 +211,9 @@ class FamilyRepositoryImpl implements FamilyRepository {
 
       for (final entry in _mockInvites.entries) {
         final invite = entry.value.cast<FamilyInvite?>().firstWhere(
-              (i) => i?.inviteCode == inviteCode && i!.isValid,
-              orElse: () => null,
-            );
+          (i) => i?.inviteCode == inviteCode && i!.isValid,
+          orElse: () => null,
+        );
         if (invite != null) {
           foundInvite = invite;
           aquariumId = entry.key;
@@ -222,8 +222,9 @@ class FamilyRepositoryImpl implements FamilyRepository {
       }
 
       if (foundInvite == null || aquariumId == null) {
-        return const Left(ValidationFailure(
-            message: 'Invalid or expired invite code'));
+        return const Left(
+          ValidationFailure(message: 'Invalid or expired invite code'),
+        );
       }
 
       // Create new member
@@ -239,8 +240,9 @@ class FamilyRepositoryImpl implements FamilyRepository {
       _mockMembers[aquariumId]!.add(member);
 
       // Update invite status
-      final inviteIndex =
-          _mockInvites[aquariumId]!.indexWhere((i) => i.id == foundInvite!.id);
+      final inviteIndex = _mockInvites[aquariumId]!.indexWhere(
+        (i) => i.id == foundInvite!.id,
+      );
       if (inviteIndex != -1) {
         _mockInvites[aquariumId]![inviteIndex] = foundInvite.copyWith(
           status: FamilyInviteStatus.accepted,
@@ -271,17 +273,21 @@ class FamilyRepositoryImpl implements FamilyRepository {
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() =>
-        const AuthenticationFailure(message: 'Authentication required'),
-      ValidationException(:final message, :final errors) =>
-        ValidationFailure(message: message, errors: errors),
-      ForbiddenException() =>
-        const AuthenticationFailure(message: 'Access denied'),
-      NotFoundException() =>
-        const ServerFailure(message: 'Resource not found'),
+      UnauthorizedException() => const AuthenticationFailure(
+        message: 'Authentication required',
+      ),
+      ValidationException(:final message, :final errors) => ValidationFailure(
+        message: message,
+        errors: errors,
+      ),
+      ForbiddenException() => const AuthenticationFailure(
+        message: 'Access denied',
+      ),
+      NotFoundException() => const ServerFailure(message: 'Resource not found'),
       ServerException() => const ServerFailure(),
-      UnknownApiException(:final message) =>
-        UnexpectedFailure(message: message),
+      UnknownApiException(:final message) => UnexpectedFailure(
+        message: message,
+      ),
     };
   }
 }

@@ -115,15 +115,15 @@ class SyncConflict<T> extends Equatable {
 
   @override
   List<Object?> get props => [
-        entityId,
-        entityType,
-        localUpdatedAt,
-        serverUpdatedAt,
-        resolution,
-        conflictType,
-        conflictFields,
-        serverDeletedAt,
-      ];
+    entityId,
+    entityType,
+    localUpdatedAt,
+    serverUpdatedAt,
+    resolution,
+    conflictType,
+    conflictFields,
+    serverDeletedAt,
+  ];
 }
 
 /// Service for resolving conflicts between local and server data.
@@ -153,9 +153,7 @@ class SyncConflict<T> extends Equatable {
 /// }
 /// ```
 class ConflictResolver {
-  ConflictResolver({
-    this.criticalThreshold = const Duration(seconds: 5),
-  });
+  ConflictResolver({this.criticalThreshold = const Duration(seconds: 5)});
 
   /// Time threshold below which conflicts with data differences
   /// are considered critical and require manual resolution.
@@ -208,10 +206,12 @@ class ConflictResolver {
     required Map<String, dynamic> serverEvent,
     required String entityId,
   }) {
-    final localUpdatedAt = _parseDateTime(localEvent['updated_at']) ??
+    final localUpdatedAt =
+        _parseDateTime(localEvent['updated_at']) ??
         _parseDateTime(localEvent['created_at']) ??
         DateTime.now();
-    final serverUpdatedAt = _parseDateTime(serverEvent['updated_at']) ??
+    final serverUpdatedAt =
+        _parseDateTime(serverEvent['updated_at']) ??
         _parseDateTime(serverEvent['created_at']) ??
         DateTime.now();
 

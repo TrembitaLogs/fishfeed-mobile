@@ -15,7 +15,7 @@ const _publicPaths = [
 /// Authorization header to all requests except authentication endpoints.
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({required SecureStorageService secureStorageService})
-      : _secureStorageService = secureStorageService;
+    : _secureStorageService = secureStorageService;
 
   final SecureStorageService _secureStorageService;
 

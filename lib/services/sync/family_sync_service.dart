@@ -12,10 +12,11 @@ import 'package:fishfeed/services/notifications/notification_service.dart';
 /// [aquariumId] - The aquarium to fetch feedings for.
 /// [since] - Fetch events created/updated after this timestamp.
 /// Returns list of feeding events or throws on error.
-typedef FetchRemoteFeedingsCallback = Future<List<FeedingEvent>> Function({
-  required String aquariumId,
-  required DateTime since,
-});
+typedef FetchRemoteFeedingsCallback =
+    Future<List<FeedingEvent>> Function({
+      required String aquariumId,
+      required DateTime since,
+    });
 
 /// Callback type for handling new feeding events from other family members.
 ///
@@ -81,13 +82,14 @@ class FamilySyncService with WidgetsBindingObserver {
     FamilySyncConfig config = const FamilySyncConfig(),
     Connectivity? connectivity,
     NotificationService? notificationService,
-  })  : _currentUserId = currentUserId,
-        _fetchRemoteFeedings = fetchRemoteFeedings,
-        _onFamilyFeeding = onFamilyFeeding,
-        _showToast = showToast,
-        _config = config,
-        _connectivity = connectivity ?? Connectivity(),
-        _notificationService = notificationService ?? NotificationService.instance;
+  }) : _currentUserId = currentUserId,
+       _fetchRemoteFeedings = fetchRemoteFeedings,
+       _onFamilyFeeding = onFamilyFeeding,
+       _showToast = showToast,
+       _config = config,
+       _connectivity = connectivity ?? Connectivity(),
+       _notificationService =
+           notificationService ?? NotificationService.instance;
 
   final String _currentUserId;
   final FetchRemoteFeedingsCallback _fetchRemoteFeedings;
@@ -178,7 +180,9 @@ class FamilySyncService with WidgetsBindingObserver {
     _updateConnectivityStatus(results);
 
     if (kDebugMode) {
-      debugPrint('FamilySyncService: Connectivity changed - online: $_isOnline');
+      debugPrint(
+        'FamilySyncService: Connectivity changed - online: $_isOnline',
+      );
     }
 
     // Resume polling when connection restored
@@ -193,7 +197,8 @@ class FamilySyncService with WidgetsBindingObserver {
   }
 
   void _updateConnectivityStatus(List<ConnectivityResult> results) {
-    _isOnline = results.isNotEmpty && !results.contains(ConnectivityResult.none);
+    _isOnline =
+        results.isNotEmpty && !results.contains(ConnectivityResult.none);
   }
 
   // ============ Polling Control ============
@@ -282,7 +287,9 @@ class FamilySyncService with WidgetsBindingObserver {
     try {
       final events = await _fetchRemoteFeedings(
         aquariumId: _activeAquariumId!,
-        since: _lastSyncTime ?? DateTime.now().subtract(const Duration(minutes: 5)),
+        since:
+            _lastSyncTime ??
+            DateTime.now().subtract(const Duration(minutes: 5)),
       );
 
       _consecutiveFailures = 0;
@@ -293,13 +300,17 @@ class FamilySyncService with WidgetsBindingObserver {
       _consecutiveFailures++;
 
       if (kDebugMode) {
-        debugPrint('FamilySyncService: Fetch failed ($_consecutiveFailures): $e');
+        debugPrint(
+          'FamilySyncService: Fetch failed ($_consecutiveFailures): $e',
+        );
       }
 
       // Stop polling after max retries
       if (_consecutiveFailures >= _config.maxRetries) {
         if (kDebugMode) {
-          debugPrint('FamilySyncService: Max retries reached, stopping polling');
+          debugPrint(
+            'FamilySyncService: Max retries reached, stopping polling',
+          );
         }
         _pausePolling();
 
@@ -340,7 +351,9 @@ class FamilySyncService with WidgetsBindingObserver {
 
   Future<void> _handleFamilyFeeding(FeedingEvent event) async {
     if (kDebugMode) {
-      debugPrint('FamilySyncService: Processing family feeding from ${event.completedByName}');
+      debugPrint(
+        'FamilySyncService: Processing family feeding from ${event.completedByName}',
+      );
     }
 
     // 1. Cancel any pending local notification for this feeding
@@ -354,10 +367,9 @@ class FamilySyncService with WidgetsBindingObserver {
     await _onFamilyFeeding(event);
 
     // 4. Emit event for listeners
-    _eventController.add(FamilyFeedingEvent(
-      event: event,
-      timestamp: DateTime.now(),
-    ));
+    _eventController.add(
+      FamilyFeedingEvent(event: event, timestamp: DateTime.now()),
+    );
   }
 
   Future<void> _cancelNotificationForFeeding(FeedingEvent event) async {
@@ -367,7 +379,9 @@ class FamilySyncService with WidgetsBindingObserver {
     final notificationEventId = eventIdHash.abs() % 100000;
 
     if (kDebugMode) {
-      debugPrint('FamilySyncService: Cancelling notification for event $notificationEventId');
+      debugPrint(
+        'FamilySyncService: Cancelling notification for event $notificationEventId',
+      );
     }
 
     await _notificationService.cancelScheduledNotification(notificationEventId);
@@ -432,7 +446,9 @@ class FamilySyncService with WidgetsBindingObserver {
     Duration conflictWindow = const Duration(minutes: 5),
   }) {
     for (final existing in existingEvents) {
-      final timeDiff = newEvent.feedingTime.difference(existing.feedingTime).abs();
+      final timeDiff = newEvent.feedingTime
+          .difference(existing.feedingTime)
+          .abs();
       if (timeDiff <= conflictWindow) {
         return true;
       }
@@ -462,10 +478,7 @@ class FamilySyncService with WidgetsBindingObserver {
 
 /// Event wrapper for family feeding notifications.
 class FamilyFeedingEvent {
-  const FamilyFeedingEvent({
-    required this.event,
-    required this.timestamp,
-  });
+  const FamilyFeedingEvent({required this.event, required this.timestamp});
 
   /// The feeding event from a family member.
   final FeedingEvent event;

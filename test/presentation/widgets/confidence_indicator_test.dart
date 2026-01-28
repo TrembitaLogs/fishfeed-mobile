@@ -18,9 +18,7 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
@@ -48,10 +46,7 @@ void main() {
     testWidgets('renders with given confidence value', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.85,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.85, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -62,14 +57,12 @@ void main() {
       expect(find.text('confidence'), findsOneWidget);
     });
 
-    testWidgets('displays percentage correctly for high confidence',
-        (tester) async {
+    testWidgets('displays percentage correctly for high confidence', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.85,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.85, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -77,14 +70,12 @@ void main() {
       expect(find.text('85%'), findsOneWidget);
     });
 
-    testWidgets('displays percentage correctly for medium confidence',
-        (tester) async {
+    testWidgets('displays percentage correctly for medium confidence', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.65,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.65, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -92,14 +83,12 @@ void main() {
       expect(find.text('65%'), findsOneWidget);
     });
 
-    testWidgets('displays percentage correctly for low confidence',
-        (tester) async {
+    testWidgets('displays percentage correctly for low confidence', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.35,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.35, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -120,9 +109,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final sizedBox = tester.widget<SizedBox>(
-        find.byType(SizedBox).first,
-      );
+      final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
       expect(sizedBox.width, testSize);
       expect(sizedBox.height, testSize);
     });
@@ -130,10 +117,7 @@ void main() {
     testWidgets('uses green color for high confidence', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.85,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.85, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -159,10 +143,7 @@ void main() {
     testWidgets('uses amber color for medium confidence', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.65,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.65, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -188,10 +169,7 @@ void main() {
     testWidgets('uses red color for low confidence', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.35,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.35, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -238,10 +216,7 @@ void main() {
     testWidgets('updates when confidence changes', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.5,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.5, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -251,10 +226,7 @@ void main() {
       // Rebuild with new confidence
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.9,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.9, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -265,10 +237,7 @@ void main() {
     testWidgets('shows pulse animation when enabled', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.85,
-            showPulse: true,
-          ),
+          const ConfidenceIndicator(confidence: 0.85, showPulse: true),
         ),
       );
 
@@ -286,10 +255,7 @@ void main() {
     testWidgets('handles zero confidence', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 0.0,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 0.0, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -300,10 +266,7 @@ void main() {
     testWidgets('handles full confidence', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
-          const ConfidenceIndicator(
-            confidence: 1.0,
-            showPulse: false,
-          ),
+          const ConfidenceIndicator(confidence: 1.0, showPulse: false),
         ),
       );
       await tester.pumpAndSettle();

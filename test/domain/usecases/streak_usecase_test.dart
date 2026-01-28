@@ -11,7 +11,8 @@ import 'package:fishfeed/domain/usecases/streak_usecase.dart';
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock implements FeedingLocalDataSource {}
+class MockFeedingLocalDataSource extends Mock
+    implements FeedingLocalDataSource {}
 
 class MockBox extends Mock implements Box<dynamic> {}
 
@@ -73,7 +74,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure.toString(), contains('User ID is required')),
+        (failure) =>
+            expect(failure.toString(), contains('User ID is required')),
         (_) => fail('Should return failure'),
       );
     });
@@ -88,52 +90,53 @@ void main() {
 
       final updatedStreak = createTestStreak(currentStreak: 6);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => createTestStreak(currentStreak: 5));
-      when(() => mockStreakDs.incrementStreak('user_1', any()))
-          .thenAnswer((_) async => updatedStreak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => createTestStreak(currentStreak: 5));
+      when(
+        () => mockStreakDs.incrementStreak('user_1', any()),
+      ).thenAnswer((_) async => updatedStreak);
 
       final result = await useCase.checkAndUpdateStreak(params);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.wasIncremented, isTrue);
-          expect(updateResult.wasReset, isFalse);
-          expect(updateResult.freezeUsed, isFalse);
-          expect(updateResult.streak.currentStreak, 6);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.wasIncremented, isTrue);
+        expect(updateResult.wasReset, isFalse);
+        expect(updateResult.freezeUsed, isFalse);
+        expect(updateResult.streak.currentStreak, 6);
+      });
     });
 
-    test('should not increment streak when not all feedings completed', () async {
-      const params = CheckAndUpdateStreakParams(
-        userId: 'user_1',
-        aquariumId: 'aquarium_1',
-        totalScheduledFeedings: 3,
-        completedFeedings: 2,
-      );
+    test(
+      'should not increment streak when not all feedings completed',
+      () async {
+        const params = CheckAndUpdateStreakParams(
+          userId: 'user_1',
+          aquariumId: 'aquarium_1',
+          totalScheduledFeedings: 3,
+          completedFeedings: 2,
+        );
 
-      final existingStreak = createTestStreak(currentStreak: 5);
+        final existingStreak = createTestStreak(currentStreak: 5);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => existingStreak);
-      when(() => mockStreakDs.getStreakByUserId('user_1'))
-          .thenReturn(existingStreak);
+        when(
+          () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+        ).thenAnswer((_) async => existingStreak);
+        when(
+          () => mockStreakDs.getStreakByUserId('user_1'),
+        ).thenReturn(existingStreak);
 
-      final result = await useCase.checkAndUpdateStreak(params);
+        final result = await useCase.checkAndUpdateStreak(params);
 
-      expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Should return success'), (updateResult) {
           expect(updateResult.wasIncremented, isFalse);
           expect(updateResult.streak.currentStreak, 5);
-        },
-      );
-      verifyNever(() => mockStreakDs.incrementStreak(any(), any()));
-    });
+        });
+        verifyNever(() => mockStreakDs.incrementStreak(any(), any()));
+      },
+    );
 
     test('should create new streak when none exists', () async {
       const params = CheckAndUpdateStreakParams(
@@ -143,21 +146,19 @@ void main() {
         completedFeedings: 2,
       );
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => null);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
       when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
       final result = await useCase.checkAndUpdateStreak(params);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.wasIncremented, isFalse);
-          expect(updateResult.streak.currentStreak, 0);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.wasIncremented, isFalse);
+        expect(updateResult.streak.currentStreak, 0);
+      });
     });
   });
 
@@ -183,12 +184,15 @@ void main() {
         frozenDays: [missedDate],
       );
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => beforeStreak);
-      when(() => mockStreakDs.getStreakByUserId('user_1'))
-          .thenReturn(beforeStreak);
-      when(() => mockStreakDs.handleMissedDay('user_1', missedDate))
-          .thenAnswer((_) async => afterStreak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => beforeStreak);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_1'),
+      ).thenReturn(beforeStreak);
+      when(
+        () => mockStreakDs.handleMissedDay('user_1', missedDate),
+      ).thenAnswer((_) async => afterStreak);
 
       final result = await useCase.handleMissedDay(
         userId: 'user_1',
@@ -196,14 +200,11 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.freezeUsed, isTrue);
-          expect(updateResult.wasReset, isFalse);
-          expect(updateResult.streak.currentStreak, 5);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.freezeUsed, isTrue);
+        expect(updateResult.wasReset, isFalse);
+        expect(updateResult.streak.currentStreak, 5);
+      });
     });
 
     test('should reset streak when no freeze available', () async {
@@ -217,12 +218,15 @@ void main() {
         freezeAvailable: 0,
       );
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => beforeStreak);
-      when(() => mockStreakDs.getStreakByUserId('user_1'))
-          .thenReturn(beforeStreak);
-      when(() => mockStreakDs.handleMissedDay('user_1', missedDate))
-          .thenAnswer((_) async => afterStreak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => beforeStreak);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_1'),
+      ).thenReturn(beforeStreak);
+      when(
+        () => mockStreakDs.handleMissedDay('user_1', missedDate),
+      ).thenAnswer((_) async => afterStreak);
 
       final result = await useCase.handleMissedDay(
         userId: 'user_1',
@@ -230,14 +234,11 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.freezeUsed, isFalse);
-          expect(updateResult.wasReset, isTrue);
-          expect(updateResult.streak.currentStreak, 0);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.freezeUsed, isFalse);
+        expect(updateResult.wasReset, isTrue);
+        expect(updateResult.streak.currentStreak, 0);
+      });
     });
   });
 
@@ -258,8 +259,9 @@ void main() {
         frozenDays: [freezeDate],
       );
 
-      when(() => mockStreakDs.useFreeze('user_1', freezeDate))
-          .thenAnswer((_) async => updatedStreak);
+      when(
+        () => mockStreakDs.useFreeze('user_1', freezeDate),
+      ).thenAnswer((_) async => updatedStreak);
 
       final result = await useCase.useFreeze(
         userId: 'user_1',
@@ -267,20 +269,18 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (streak) {
-          expect(streak.freezeAvailable, 1);
-          expect(streak.frozenDays.length, 1);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (streak) {
+        expect(streak.freezeAvailable, 1);
+        expect(streak.frozenDays.length, 1);
+      });
     });
 
     test('should return error when no freeze available', () async {
       final freezeDate = DateTime(2025, 6, 16);
 
-      when(() => mockStreakDs.useFreeze('user_1', freezeDate))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStreakDs.useFreeze('user_1', freezeDate),
+      ).thenAnswer((_) async => null);
 
       final result = await useCase.useFreeze(
         userId: 'user_1',
@@ -423,8 +423,9 @@ void main() {
     test('should return existing streak', () async {
       final streak = createTestStreak(currentStreak: 7);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => streak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => streak);
 
       final result = await useCase.getStreak('user_1');
 
@@ -436,20 +437,18 @@ void main() {
     });
 
     test('should create new streak when none exists', () async {
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => null);
       when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
       final result = await useCase.getStreak('user_1');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (s) {
-          expect(s.currentStreak, 0);
-          expect(s.userId, 'user_1');
-        },
-      );
+      result.fold((_) => fail('Should return success'), (s) {
+        expect(s.currentStreak, 0);
+        expect(s.userId, 'user_1');
+      });
     });
   });
 
@@ -466,24 +465,23 @@ void main() {
         frozenDays: [],
       );
 
-      when(() => mockStreakDs.resetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => resetStreak);
+      when(
+        () => mockStreakDs.resetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => resetStreak);
 
       final result = await useCase.resetMonthlyFreeze('user_1');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (s) {
-          expect(s.freezeAvailable, kDefaultFreezePerMonth);
-          expect(s.frozenDays, isEmpty);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (s) {
+        expect(s.freezeAvailable, kDefaultFreezePerMonth);
+        expect(s.frozenDays, isEmpty);
+      });
     });
 
     test('should return error when no streak exists', () async {
-      when(() => mockStreakDs.resetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockStreakDs.resetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => null);
 
       final result = await useCase.resetMonthlyFreeze('user_1');
 
@@ -501,32 +499,30 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('should return true when streak is active with freeze available',
-        () async {
-      final streak = createTestStreak(
-        currentStreak: 5,
-        freezeAvailable: 2,
-      );
+    test(
+      'should return true when streak is active with freeze available',
+      () async {
+        final streak = createTestStreak(currentStreak: 5, freezeAvailable: 2);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => streak);
+        when(
+          () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+        ).thenAnswer((_) async => streak);
 
-      final result = await useCase.isStreakAtRisk(
-        userId: 'user_1',
-        currentlyAllFed: false,
-      );
+        final result = await useCase.isStreakAtRisk(
+          userId: 'user_1',
+          currentlyAllFed: false,
+        );
 
-      expect(result, isTrue);
-    });
+        expect(result, isTrue);
+      },
+    );
 
     test('should return false when streak is zero', () async {
-      final streak = createTestStreak(
-        currentStreak: 0,
-        freezeAvailable: 2,
-      );
+      final streak = createTestStreak(currentStreak: 0, freezeAvailable: 2);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => streak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => streak);
 
       final result = await useCase.isStreakAtRisk(
         userId: 'user_1',
@@ -537,13 +533,11 @@ void main() {
     });
 
     test('should return false when no freeze available', () async {
-      final streak = createTestStreak(
-        currentStreak: 5,
-        freezeAvailable: 0,
-      );
+      final streak = createTestStreak(currentStreak: 5, freezeAvailable: 0);
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => streak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenAnswer((_) async => streak);
 
       final result = await useCase.isStreakAtRisk(
         userId: 'user_1',
@@ -554,8 +548,9 @@ void main() {
     });
 
     test('should return false when streak fetch fails', () async {
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenThrow(Exception('Database error'));
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('user_1'),
+      ).thenThrow(Exception('Database error'));
 
       final result = await useCase.isStreakAtRisk(
         userId: 'user_1',
@@ -597,21 +592,20 @@ void main() {
         streakStartDate: DateTime.now(),
       );
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('new_user'))
-          .thenAnswer((_) async => null);
-      when(() => mockStreakDs.incrementStreak('new_user', any()))
-          .thenAnswer((_) async => newStreak);
+      when(
+        () => mockStreakDs.checkAndResetMonthlyFreeze('new_user'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockStreakDs.incrementStreak('new_user', any()),
+      ).thenAnswer((_) async => newStreak);
 
       final result = await useCase.checkAndUpdateStreak(params);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.wasIncremented, isTrue);
-          expect(updateResult.streak.currentStreak, 1);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.wasIncremented, isTrue);
+        expect(updateResult.streak.currentStreak, 1);
+      });
     });
 
     test('should update best streak when current exceeds it', () async {
@@ -627,21 +621,20 @@ void main() {
         longestStreak: 11,
       );
 
-      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1'))
-          .thenAnswer((_) async => createTestStreak(currentStreak: 10, longestStreak: 10));
-      when(() => mockStreakDs.incrementStreak('user_1', any()))
-          .thenAnswer((_) async => updatedStreak);
+      when(() => mockStreakDs.checkAndResetMonthlyFreeze('user_1')).thenAnswer(
+        (_) async => createTestStreak(currentStreak: 10, longestStreak: 10),
+      );
+      when(
+        () => mockStreakDs.incrementStreak('user_1', any()),
+      ).thenAnswer((_) async => updatedStreak);
 
       final result = await useCase.checkAndUpdateStreak(params);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updateResult) {
-          expect(updateResult.streak.currentStreak, 11);
-          expect(updateResult.streak.longestStreak, 11);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updateResult) {
+        expect(updateResult.streak.currentStreak, 11);
+        expect(updateResult.streak.longestStreak, 11);
+      });
     });
   });
 }

@@ -95,9 +95,9 @@ class MarkFeedingUseCase {
     required FeedingLocalDataSource feedingDataSource,
     required StreakLocalDataSource streakDataSource,
     required SyncQueueDataSource syncQueueDataSource,
-  })  : _feedingDataSource = feedingDataSource,
-        _streakDataSource = streakDataSource,
-        _syncQueueDataSource = syncQueueDataSource;
+  }) : _feedingDataSource = feedingDataSource,
+       _streakDataSource = streakDataSource,
+       _syncQueueDataSource = syncQueueDataSource;
 
   final FeedingLocalDataSource _feedingDataSource;
   final StreakLocalDataSource _streakDataSource;
@@ -175,18 +175,18 @@ class MarkFeedingUseCase {
         final existingStreak = _streakDataSource.getStreakByUserId(
           params.userId,
         );
-        updatedStreak = existingStreak?.toEntity() ??
-            Streak(
-              id: 'streak_${params.userId}',
-              userId: params.userId,
-            );
+        updatedStreak =
+            existingStreak?.toEntity() ??
+            Streak(id: 'streak_${params.userId}', userId: params.userId);
       }
 
-      return Right(MarkFeedingResult(
-        feedingEvent: feedingEvent,
-        updatedStreak: updatedStreak,
-        wasCreated: wasCreated,
-      ));
+      return Right(
+        MarkFeedingResult(
+          feedingEvent: feedingEvent,
+          updatedStreak: updatedStreak,
+          wasCreated: wasCreated,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to mark feeding: $e'));
     }

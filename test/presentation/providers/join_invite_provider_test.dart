@@ -29,9 +29,7 @@ void main() {
   setUp(() {
     mockRepository = MockFamilyRepository();
     container = ProviderContainer(
-      overrides: [
-        familyRepositoryProvider.overrideWithValue(mockRepository),
-      ],
+      overrides: [familyRepositoryProvider.overrideWithValue(mockRepository)],
     );
   });
 
@@ -52,8 +50,10 @@ void main() {
       test('transitions to loading state when called', () async {
         final completer = Completer<Either<Failure, FamilyMember>>();
 
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) => completer.future);
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) => completer.future);
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
@@ -71,8 +71,9 @@ void main() {
       });
 
       test('transitions to success state on valid invite', () async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'VALID123'))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'VALID123'),
+        ).thenAnswer((_) async => Right(testMember));
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
@@ -84,10 +85,13 @@ void main() {
       });
 
       test('transitions to error state on invalid invite', () async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'INVALID1'))
-            .thenAnswer((_) async => const Left(
-                  ValidationFailure(message: 'Invalid or expired invite code'),
-                ));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'INVALID1'),
+        ).thenAnswer(
+          (_) async => const Left(
+            ValidationFailure(message: 'Invalid or expired invite code'),
+          ),
+        );
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
@@ -95,14 +99,20 @@ void main() {
 
         final state = container.read(joinInviteNotifierProvider);
         expect(state, isA<JoinInviteError>());
-        expect((state as JoinInviteError).message, 'Invalid or expired invite code');
+        expect(
+          (state as JoinInviteError).message,
+          'Invalid or expired invite code',
+        );
       });
 
       test('transitions to error state on authentication failure', () async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'TEST1234'))
-            .thenAnswer((_) async => const Left(
-                  AuthenticationFailure(message: 'User not authenticated'),
-                ));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'TEST1234'),
+        ).thenAnswer(
+          (_) async => const Left(
+            AuthenticationFailure(message: 'User not authenticated'),
+          ),
+        );
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
@@ -114,29 +124,40 @@ void main() {
       });
 
       test('calls repository with correct invite code', () async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'MYCODE12'))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'MYCODE12'),
+        ).thenAnswer((_) async => Right(testMember));
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
         await notifier.acceptInvite('MYCODE12');
 
-        verify(() => mockRepository.acceptInvite(inviteCode: 'MYCODE12')).called(1);
+        verify(
+          () => mockRepository.acceptInvite(inviteCode: 'MYCODE12'),
+        ).called(1);
       });
     });
 
     group('reset', () {
       test('resets state to initial', () async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => Right(testMember));
 
         final notifier = container.read(joinInviteNotifierProvider.notifier);
 
         await notifier.acceptInvite('TEST1234');
-        expect(container.read(joinInviteNotifierProvider), isA<JoinInviteSuccess>());
+        expect(
+          container.read(joinInviteNotifierProvider),
+          isA<JoinInviteSuccess>(),
+        );
 
         notifier.reset();
-        expect(container.read(joinInviteNotifierProvider), isA<JoinInviteInitial>());
+        expect(
+          container.read(joinInviteNotifierProvider),
+          isA<JoinInviteInitial>(),
+        );
       });
     });
   });
@@ -181,17 +202,13 @@ void main() {
     });
 
     test('requiresAuth returns true for authentication failures', () {
-      const error = JoinInviteError(
-        failure: AuthenticationFailure(),
-      );
+      const error = JoinInviteError(failure: AuthenticationFailure());
 
       expect(error.requiresAuth, isTrue);
     });
 
     test('requiresAuth returns false for other failures', () {
-      const error = JoinInviteError(
-        failure: ValidationFailure(),
-      );
+      const error = JoinInviteError(failure: ValidationFailure());
 
       expect(error.requiresAuth, isFalse);
     });

@@ -1,20 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 /// Food type for fish species.
-enum FoodType {
-  flakes,
-  pellets,
-  live,
-  frozen,
-  mixed,
-}
+enum FoodType { flakes, pellets, live, frozen, mixed }
 
 /// Portion size hint for feeding.
-enum PortionHint {
-  small,
-  medium,
-  large,
-}
+enum PortionHint { small, medium, large }
 
 /// Domain entity representing a fish species.
 ///
@@ -93,15 +83,15 @@ class Species extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        imageAsset,
-        imageUrl,
-        feedingFrequency,
-        foodType,
-        portionHint,
-        defaultPortionGrams,
-        optimalTemperature,
-        careLevel,
-      ];
+    id,
+    name,
+    imageAsset,
+    imageUrl,
+    feedingFrequency,
+    foodType,
+    portionHint,
+    defaultPortionGrams,
+    optimalTemperature,
+    careLevel,
+  ];
 }

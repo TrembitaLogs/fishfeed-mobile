@@ -40,7 +40,7 @@ abstract class ConnectivityChecker {
 /// Default implementation using connectivity_plus.
 class DefaultConnectivityChecker implements ConnectivityChecker {
   DefaultConnectivityChecker({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity();
+    : _connectivity = connectivity ?? Connectivity();
 
   final Connectivity _connectivity;
 
@@ -76,10 +76,10 @@ class RetryInterceptor extends Interceptor {
     RetryConfig? config,
     ConnectivityChecker? connectivityChecker,
     this.retryMutatingRequests = false,
-  })  : _dio = dio,
-        _config = config ?? const RetryConfig(),
-        _connectivityChecker =
-            connectivityChecker ?? DefaultConnectivityChecker();
+  }) : _dio = dio,
+       _config = config ?? const RetryConfig(),
+       _connectivityChecker =
+           connectivityChecker ?? DefaultConnectivityChecker();
 
   final Dio _dio;
   final RetryConfig _config;
@@ -186,7 +186,8 @@ class RetryInterceptor extends Interceptor {
   ///
   /// Delays: 1s, 2s, 4s (with default config)
   Duration _calculateDelay(int retryCount) {
-    final delay = _config.initialDelay *
+    final delay =
+        _config.initialDelay *
         _pow(_config.backoffMultiplier, retryCount).toInt();
 
     return delay > _config.maxDelay ? _config.maxDelay : delay;

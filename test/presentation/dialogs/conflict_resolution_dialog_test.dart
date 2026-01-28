@@ -31,16 +31,25 @@ void main() {
   setUp(() {
     mockSyncService = MockSyncService();
     stateController = StreamController<SyncState>.broadcast();
-    conflictController = StreamController<SyncConflict<Map<String, dynamic>>>.broadcast();
+    conflictController =
+        StreamController<SyncConflict<Map<String, dynamic>>>.broadcast();
 
     // Default mock setup
-    when(() => mockSyncService.stateStream).thenAnswer((_) => stateController.stream);
-    when(() => mockSyncService.conflictStream).thenAnswer((_) => conflictController.stream);
+    when(
+      () => mockSyncService.stateStream,
+    ).thenAnswer((_) => stateController.stream);
+    when(
+      () => mockSyncService.conflictStream,
+    ).thenAnswer((_) => conflictController.stream);
     when(() => mockSyncService.currentState).thenReturn(SyncState.idle);
     when(() => mockSyncService.pendingConflicts).thenReturn([]);
     when(() => mockSyncService.hasUnresolvedConflicts).thenReturn(false);
-    when(() => mockSyncService.resolveConflictWithLocal(any())).thenAnswer((_) async => true);
-    when(() => mockSyncService.resolveConflictWithServer(any())).thenAnswer((_) async => true);
+    when(
+      () => mockSyncService.resolveConflictWithLocal(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockSyncService.resolveConflictWithServer(any()),
+    ).thenAnswer((_) async => true);
   });
 
   tearDown(() {
@@ -110,9 +119,7 @@ void main() {
     required SyncConflict<Map<String, dynamic>> conflict,
   }) {
     return ProviderScope(
-      overrides: [
-        syncServiceProvider.overrideWithValue(mockSyncService),
-      ],
+      overrides: [syncServiceProvider.overrideWithValue(mockSyncService)],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -148,15 +155,15 @@ void main() {
 
       expect(find.text('Sync Conflict'), findsOneWidget);
       expect(
-        find.text('This item was modified on another device. Choose which version to keep.'),
+        find.text(
+          'This item was modified on another device. Choose which version to keep.',
+        ),
         findsOneWidget,
       );
     });
 
     testWidgets('displays conflicting fields', (tester) async {
-      final conflict = createTestConflict(
-        conflictFields: ['amount', 'notes'],
-      );
+      final conflict = createTestConflict(conflictFields: ['amount', 'notes']);
       await tester.pumpWidget(buildTestWidget(conflict: conflict));
       await tester.pumpAndSettle();
 
@@ -203,7 +210,9 @@ void main() {
       await tester.tap(find.text('Keep mine'));
       await tester.pumpAndSettle();
 
-      verify(() => mockSyncService.resolveConflictWithLocal('conflict-local')).called(1);
+      verify(
+        () => mockSyncService.resolveConflictWithLocal('conflict-local'),
+      ).called(1);
       expect(find.byType(AlertDialog), findsNothing);
     });
 
@@ -218,11 +227,15 @@ void main() {
       await tester.tap(find.text('Use server'));
       await tester.pumpAndSettle();
 
-      verify(() => mockSyncService.resolveConflictWithServer('conflict-server')).called(1);
+      verify(
+        () => mockSyncService.resolveConflictWithServer('conflict-server'),
+      ).called(1);
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('dialog cannot be dismissed by tapping outside', (tester) async {
+    testWidgets('dialog cannot be dismissed by tapping outside', (
+      tester,
+    ) async {
       final conflict = createTestConflict();
       await tester.pumpWidget(buildTestWidget(conflict: conflict));
       await tester.pumpAndSettle();
@@ -271,9 +284,7 @@ void main() {
       when(() => mockSyncService.hasUnresolvedConflicts).thenReturn(false);
 
       final container = ProviderContainer(
-        overrides: [
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
+        overrides: [syncServiceProvider.overrideWithValue(mockSyncService)],
       );
 
       final hasConflicts = container.read(hasUnresolvedConflictsProvider);
@@ -286,9 +297,7 @@ void main() {
       when(() => mockSyncService.pendingConflicts).thenReturn([]);
 
       final container = ProviderContainer(
-        overrides: [
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
+        overrides: [syncServiceProvider.overrideWithValue(mockSyncService)],
       );
 
       final conflicts = container.read(pendingConflictsProvider);
@@ -297,25 +306,27 @@ void main() {
       container.dispose();
     });
 
-    test('hasUnresolvedConflictsProvider returns true when conflicts exist', () {
-      when(() => mockSyncService.hasUnresolvedConflicts).thenReturn(true);
+    test(
+      'hasUnresolvedConflictsProvider returns true when conflicts exist',
+      () {
+        when(() => mockSyncService.hasUnresolvedConflicts).thenReturn(true);
 
-      final container = ProviderContainer(
-        overrides: [
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
-      );
+        final container = ProviderContainer(
+          overrides: [syncServiceProvider.overrideWithValue(mockSyncService)],
+        );
 
-      final hasConflicts = container.read(hasUnresolvedConflictsProvider);
-      expect(hasConflicts, isTrue);
+        final hasConflicts = container.read(hasUnresolvedConflictsProvider);
+        expect(hasConflicts, isTrue);
 
-      container.dispose();
-    });
+        container.dispose();
+      },
+    );
   });
 
   group('Deletion Conflict', () {
-    testWidgets('displays deletion conflict title and description',
-        (tester) async {
+    testWidgets('displays deletion conflict title and description', (
+      tester,
+    ) async {
       final conflict = createDeletionConflict();
       await tester.pumpWidget(buildTestWidget(conflict: conflict));
       await tester.pumpAndSettle();
@@ -332,8 +343,9 @@ void main() {
       );
     });
 
-    testWidgets('displays delete icon instead of sync problem icon',
-        (tester) async {
+    testWidgets('displays delete icon instead of sync problem icon', (
+      tester,
+    ) async {
       final conflict = createDeletionConflict();
       await tester.pumpWidget(buildTestWidget(conflict: conflict));
       await tester.pumpAndSettle();
@@ -370,8 +382,9 @@ void main() {
       expect(find.byIcon(Icons.delete_rounded), findsOneWidget);
     });
 
-    testWidgets('does not show conflict fields for deletion conflict',
-        (tester) async {
+    testWidgets('does not show conflict fields for deletion conflict', (
+      tester,
+    ) async {
       final conflict = createDeletionConflict();
       await tester.pumpWidget(buildTestWidget(conflict: conflict));
       await tester.pumpAndSettle();
@@ -393,8 +406,9 @@ void main() {
       await tester.tap(find.text('Restore'));
       await tester.pumpAndSettle();
 
-      verify(() => mockSyncService.resolveConflictWithLocal('deletion-restore'))
-          .called(1);
+      verify(
+        () => mockSyncService.resolveConflictWithLocal('deletion-restore'),
+      ).called(1);
       expect(find.byType(AlertDialog), findsNothing);
     });
 
@@ -424,10 +438,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find text that starts with "Deleted on"
-      expect(
-        find.textContaining('Deleted on'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Deleted on'), findsOneWidget);
     });
   });
 }

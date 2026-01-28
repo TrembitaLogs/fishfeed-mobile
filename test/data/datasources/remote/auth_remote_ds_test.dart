@@ -97,10 +97,7 @@ void main() {
         verify(
           () => mockDio.post<Map<String, dynamic>>(
             '/auth/register',
-            data: {
-              'email': 'test@example.com',
-              'password': 'password123',
-            },
+            data: {'email': 'test@example.com', 'password': 'password123'},
           ),
         ).called(1);
       });
@@ -180,10 +177,7 @@ void main() {
         verify(
           () => mockDio.post<Map<String, dynamic>>(
             '/auth/login',
-            data: {
-              'email': 'test@example.com',
-              'password': 'password123',
-            },
+            data: {'email': 'test@example.com', 'password': 'password123'},
           ),
         ).called(1);
       });
@@ -261,10 +255,7 @@ void main() {
         verify(
           () => mockDio.post<Map<String, dynamic>>(
             '/auth/oauth',
-            data: {
-              'provider': 'google',
-              'id_token': 'google-id-token-123',
-            },
+            data: {'provider': 'google', 'id_token': 'google-id-token-123'},
           ),
         ).called(1);
       });
@@ -420,15 +411,10 @@ void main() {
     group('logout', () {
       test('should call POST /auth/logout with refresh token', () async {
         when(
-          () => mockDio.post<void>(
-            any(),
-            data: any(named: 'data'),
-          ),
+          () => mockDio.post<void>(any(), data: any(named: 'data')),
         ).thenAnswer(
-          (_) async => Response(
-            statusCode: 200,
-            requestOptions: RequestOptions(),
-          ),
+          (_) async =>
+              Response(statusCode: 200, requestOptions: RequestOptions()),
         );
 
         await dataSource.logout(refreshToken: 'refresh-token-to-invalidate');
@@ -443,15 +429,10 @@ void main() {
 
       test('should complete without error on success', () async {
         when(
-          () => mockDio.post<void>(
-            any(),
-            data: any(named: 'data'),
-          ),
+          () => mockDio.post<void>(any(), data: any(named: 'data')),
         ).thenAnswer(
-          (_) async => Response(
-            statusCode: 200,
-            requestOptions: RequestOptions(),
-          ),
+          (_) async =>
+              Response(statusCode: 200, requestOptions: RequestOptions()),
         );
 
         await expectLater(
@@ -462,10 +443,7 @@ void main() {
 
       test('should throw DioException on server error', () async {
         when(
-          () => mockDio.post<void>(
-            any(),
-            data: any(named: 'data'),
-          ),
+          () => mockDio.post<void>(any(), data: any(named: 'data')),
         ).thenThrow(
           DioException(
             requestOptions: RequestOptions(),

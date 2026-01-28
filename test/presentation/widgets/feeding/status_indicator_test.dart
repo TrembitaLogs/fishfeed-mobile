@@ -86,7 +86,10 @@ void main() {
     group('Static Helper Methods', () {
       test('getStatusColor returns correct colors', () {
         expect(StatusIndicator.getStatusColor(FeedingStatus.fed), Colors.green);
-        expect(StatusIndicator.getStatusColor(FeedingStatus.missed), Colors.red);
+        expect(
+          StatusIndicator.getStatusColor(FeedingStatus.missed),
+          Colors.red,
+        );
         expect(
           StatusIndicator.getStatusColor(FeedingStatus.pending),
           Colors.amber.shade700,
@@ -95,14 +98,19 @@ void main() {
 
       test('getStatusIcon returns correct icons', () {
         expect(StatusIndicator.getStatusIcon(FeedingStatus.fed), Icons.check);
-        expect(StatusIndicator.getStatusIcon(FeedingStatus.missed), Icons.close);
+        expect(
+          StatusIndicator.getStatusIcon(FeedingStatus.missed),
+          Icons.close,
+        );
         expect(
           StatusIndicator.getStatusIcon(FeedingStatus.pending),
           Icons.schedule,
         );
       });
 
-      testWidgets('getPositiveMessage returns positive framing messages', (tester) async {
+      testWidgets('getPositiveMessage returns positive framing messages', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(status: FeedingStatus.fed));
         await tester.pumpAndSettle();
 
@@ -127,10 +135,12 @@ void main() {
 
     group('Size Variants', () {
       testWidgets('small size renders smaller dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          size: StatusIndicatorSize.small,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: FeedingStatus.fed,
+            size: StatusIndicatorSize.small,
+          ),
+        );
 
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
@@ -141,10 +151,12 @@ void main() {
       });
 
       testWidgets('medium size renders default dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          size: StatusIndicatorSize.medium,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: FeedingStatus.fed,
+            size: StatusIndicatorSize.medium,
+          ),
+        );
 
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
@@ -155,10 +167,12 @@ void main() {
       });
 
       testWidgets('large size renders larger dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          size: StatusIndicatorSize.large,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: FeedingStatus.fed,
+            size: StatusIndicatorSize.large,
+          ),
+        );
 
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
@@ -169,20 +183,24 @@ void main() {
       });
 
       testWidgets('small size has smaller icon', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          size: StatusIndicatorSize.small,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: FeedingStatus.fed,
+            size: StatusIndicatorSize.small,
+          ),
+        );
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.check));
         expect(icon.size, equals(18));
       });
 
       testWidgets('large size has larger icon', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          size: StatusIndicatorSize.large,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: FeedingStatus.fed,
+            size: StatusIndicatorSize.large,
+          ),
+        );
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.check));
         expect(icon.size, equals(32));
@@ -191,39 +209,39 @@ void main() {
 
     group('Tooltip', () {
       testWidgets('shows tooltip when enabled', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          showTooltip: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(status: FeedingStatus.fed, showTooltip: true),
+        );
 
         expect(find.byType(Tooltip), findsOneWidget);
       });
 
       testWidgets('hides tooltip when disabled', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          showTooltip: false,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(status: FeedingStatus.fed, showTooltip: false),
+        );
 
         expect(find.byType(Tooltip), findsNothing);
       });
 
-      testWidgets('tooltip has positive message for fed status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.fed,
-          showTooltip: true,
-        ));
+      testWidgets('tooltip has positive message for fed status', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(status: FeedingStatus.fed, showTooltip: true),
+        );
         await tester.pumpAndSettle();
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
         expect(tooltip.message, equals('Great job!'));
       });
 
-      testWidgets('tooltip has positive message for missed status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.missed,
-          showTooltip: true,
-        ));
+      testWidgets('tooltip has positive message for missed status', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(status: FeedingStatus.missed, showTooltip: true),
+        );
         await tester.pumpAndSettle();
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
@@ -231,10 +249,9 @@ void main() {
       });
 
       testWidgets('tooltip has message for pending status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          status: FeedingStatus.pending,
-          showTooltip: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(status: FeedingStatus.pending, showTooltip: true),
+        );
         await tester.pumpAndSettle();
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
@@ -249,7 +266,9 @@ void main() {
         expect(find.byType(AnimatedContainer), findsOneWidget);
       });
 
-      testWidgets('contains AnimatedSwitcher for icon transitions', (tester) async {
+      testWidgets('contains AnimatedSwitcher for icon transitions', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(status: FeedingStatus.fed));
 
         expect(find.byType(AnimatedSwitcher), findsOneWidget);

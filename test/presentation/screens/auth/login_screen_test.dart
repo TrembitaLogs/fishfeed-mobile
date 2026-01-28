@@ -23,7 +23,8 @@ import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:hive/hive.dart';
 import 'dart:io';
 
-import '../../../helpers/test_helpers.dart' show createMockAquariumRemoteDataSource;
+import '../../../helpers/test_helpers.dart'
+    show createMockAquariumRemoteDataSource;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -75,8 +76,9 @@ void main() {
         authRepositoryProvider.overrideWithValue(mockAuthRepository),
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-        aquariumRemoteDataSourceProvider
-            .overrideWithValue(createMockAquariumRemoteDataSource()),
+        aquariumRemoteDataSourceProvider.overrideWithValue(
+          createMockAquariumRemoteDataSource(),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -338,9 +340,8 @@ void main() {
             password: any(named: 'password'),
           ),
         ).thenAnswer(
-          (_) async => const Left(
-            AuthenticationFailure(message: 'Invalid credentials'),
-          ),
+          (_) async =>
+              const Left(AuthenticationFailure(message: 'Invalid credentials')),
         );
 
         await tester.pumpWidget(buildTestWidget());
@@ -661,14 +662,11 @@ class _GlobalAuthErrorListenerForTest extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AuthenticationState>(
-      authNotifierProvider,
-      (previous, next) {
-        if (next.error != null && previous?.error != next.error) {
-          context.showAuthError(next.error!);
-        }
-      },
-    );
+    ref.listen<AuthenticationState>(authNotifierProvider, (previous, next) {
+      if (next.error != null && previous?.error != next.error) {
+        context.showAuthError(next.error!);
+      }
+    });
 
     return child;
   }

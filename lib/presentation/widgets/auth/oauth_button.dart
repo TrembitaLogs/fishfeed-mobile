@@ -50,9 +50,7 @@ class OAuthButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: _getBorderColor(isDark),
-        ),
+        border: Border.all(color: _getBorderColor(isDark)),
         color: _getBackgroundColor(isDark),
       ),
       child: Material(
@@ -99,18 +97,11 @@ class OAuthButton extends StatelessWidget {
           'assets/icons/google_logo.png',
           width: 20,
           height: 20,
-          errorBuilder: (context, error, stackTrace) => Icon(
-            Icons.g_mobiledata,
-            size: 20,
-            color: _getTextColor(isDark),
-          ),
+          errorBuilder: (context, error, stackTrace) =>
+              Icon(Icons.g_mobiledata, size: 20, color: _getTextColor(isDark)),
         );
       case OAuthProvider.apple:
-        return Icon(
-          Icons.apple,
-          size: 20,
-          color: _getTextColor(isDark),
-        );
+        return Icon(Icons.apple, size: 20, color: _getTextColor(isDark));
     }
   }
 

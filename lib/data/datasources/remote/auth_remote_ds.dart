@@ -53,16 +53,12 @@ abstract interface class AuthRemoteDataSource {
   ///
   /// Returns [TokenPairDto] with new access and refresh tokens.
   /// Throws [DioException] on network or server errors.
-  Future<TokenPairDto> refreshToken({
-    required String refreshToken,
-  });
+  Future<TokenPairDto> refreshToken({required String refreshToken});
 
   /// Logs out the user by invalidating the refresh token.
   ///
   /// Throws [DioException] on network or server errors.
-  Future<void> logout({
-    required String refreshToken,
-  });
+  Future<void> logout({required String refreshToken});
 }
 
 /// Implementation of [AuthRemoteDataSource] using Dio HTTP client.
@@ -78,10 +74,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       AuthEndpoints.register,
-      data: {
-        'email': email,
-        'password': password,
-      },
+      data: {'email': email, 'password': password},
     );
 
     return AuthResponseDto.fromJson(response.data!);
@@ -94,10 +87,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       AuthEndpoints.login,
-      data: {
-        'email': email,
-        'password': password,
-      },
+      data: {'email': email, 'password': password},
     );
 
     return AuthResponseDto.fromJson(response.data!);
@@ -110,41 +100,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       AuthEndpoints.oauth,
-      data: {
-        'provider': provider,
-        'id_token': idToken,
-      },
+      data: {'provider': provider, 'id_token': idToken},
     );
 
     return AuthResponseDto.fromJson(response.data!);
   }
 
   @override
-  Future<TokenPairDto> refreshToken({
-    required String refreshToken,
-  }) async {
+  Future<TokenPairDto> refreshToken({required String refreshToken}) async {
     final response = await _dio.post<Map<String, dynamic>>(
       AuthEndpoints.refresh,
-      data: {
-        'refresh_token': refreshToken,
-      },
-      options: Options(
-        headers: {'Authorization': null},
-      ),
+      data: {'refresh_token': refreshToken},
+      options: Options(headers: {'Authorization': null}),
     );
 
     return TokenPairDto.fromJson(response.data!);
   }
 
   @override
-  Future<void> logout({
-    required String refreshToken,
-  }) async {
+  Future<void> logout({required String refreshToken}) async {
     await _dio.post<void>(
       AuthEndpoints.logout,
-      data: {
-        'refresh_token': refreshToken,
-      },
+      data: {'refresh_token': refreshToken},
     );
   }
 }

@@ -25,10 +25,7 @@ void main() {
 
   group('StreakModel', () {
     test('should create StreakModel with required fields', () {
-      final model = StreakModel(
-        id: 'streak-123',
-        userId: 'user-456',
-      );
+      final model = StreakModel(id: 'streak-123', userId: 'user-456');
 
       expect(model.id, 'streak-123');
       expect(model.userId, 'user-456');
@@ -59,10 +56,7 @@ void main() {
     });
 
     test('default streak values should be zero', () {
-      final model = StreakModel(
-        id: 'new-user',
-        userId: 'user-new',
-      );
+      final model = StreakModel(id: 'new-user', userId: 'user-new');
 
       expect(model.currentStreak, 0);
       expect(model.longestStreak, 0);
@@ -134,10 +128,7 @@ void main() {
     });
 
     test('round-trip should preserve null optional fields', () {
-      const originalEntity = Streak(
-        id: 'minimal',
-        userId: 'user-minimal',
-      );
+      const originalEntity = Streak(id: 'minimal', userId: 'user-minimal');
 
       final model = StreakModel.fromEntity(originalEntity);
       final resultEntity = model.toEntity();

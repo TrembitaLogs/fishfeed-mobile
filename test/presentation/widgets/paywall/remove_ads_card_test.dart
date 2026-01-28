@@ -23,40 +23,27 @@ void main() {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        body: RemoveAdsCard(
-          price: price,
-          onTap: onTap,
-          isLoading: isLoading,
-        ),
+        body: RemoveAdsCard(price: price, onTap: onTap, isLoading: isLoading),
       ),
     );
   }
 
   group('RemoveAdsCard', () {
     testWidgets('renders title and subtitle', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () {},
-      ));
+      await tester.pumpWidget(buildTestWidget(price: '\$3.99', onTap: () {}));
 
       expect(find.text('Remove Ads'), findsOneWidget);
       expect(find.text('One-time purchase'), findsOneWidget);
     });
 
     testWidgets('renders price', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () {},
-      ));
+      await tester.pumpWidget(buildTestWidget(price: '\$3.99', onTap: () {}));
 
       expect(find.text('\$3.99'), findsOneWidget);
     });
 
     testWidgets('renders block icon', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () {},
-      ));
+      await tester.pumpWidget(buildTestWidget(price: '\$3.99', onTap: () {}));
 
       expect(find.byIcon(Icons.block), findsOneWidget);
     });
@@ -64,10 +51,9 @@ void main() {
     testWidgets('calls onTap when tapped', (tester) async {
       var tapped = false;
 
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () => tapped = true,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(price: '\$3.99', onTap: () => tapped = true),
+      );
 
       await tester.tap(find.byType(RemoveAdsCard));
       await tester.pump();
@@ -75,12 +61,12 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('shows loading indicator when isLoading is true', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () {},
-        isLoading: true,
-      ));
+    testWidgets('shows loading indicator when isLoading is true', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestWidget(price: '\$3.99', onTap: () {}, isLoading: true),
+      );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       // Price should not be visible when loading
@@ -90,11 +76,13 @@ void main() {
     testWidgets('does not call onTap when loading', (tester) async {
       var tapped = false;
 
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: () => tapped = true,
-        isLoading: true,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          price: '\$3.99',
+          onTap: () => tapped = true,
+          isLoading: true,
+        ),
+      );
 
       await tester.tap(find.byType(RemoveAdsCard));
       await tester.pump();
@@ -103,10 +91,7 @@ void main() {
     });
 
     testWidgets('does not throw when onTap is null', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        price: '\$3.99',
-        onTap: null,
-      ));
+      await tester.pumpWidget(buildTestWidget(price: '\$3.99', onTap: null));
 
       // Should not throw
       await tester.tap(find.byType(RemoveAdsCard));

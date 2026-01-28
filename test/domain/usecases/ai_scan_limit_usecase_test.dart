@@ -140,7 +140,9 @@ void main() {
     });
 
     test('should return true for premium users', () {
-      final user = createTestUser(subscriptionStatus: SubscriptionStatus.premium());
+      final user = createTestUser(
+        subscriptionStatus: SubscriptionStatus.premium(),
+      );
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
 
       final result = usecase.isPremiumUser();
@@ -149,7 +151,9 @@ void main() {
     });
 
     test('should return false for free users', () {
-      final user = createTestUser(subscriptionStatus: const SubscriptionStatus.free());
+      final user = createTestUser(
+        subscriptionStatus: const SubscriptionStatus.free(),
+      );
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
 
       final result = usecase.isPremiumUser();
@@ -159,18 +163,20 @@ void main() {
   });
 
   group('decrementScanCount', () {
-    test('should return AuthenticationFailure when no user is logged in',
-        () async {
-      when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
+    test(
+      'should return AuthenticationFailure when no user is logged in',
+      () async {
+        when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
 
-      final result = await usecase.decrementScanCount();
+        final result = await usecase.decrementScanCount();
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<AuthenticationFailure>()),
-        (_) => fail('Should return failure'),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<AuthenticationFailure>()),
+          (_) => fail('Should return failure'),
+        );
+      },
+    );
 
     test('should not decrement for premium users', () async {
       final user = createTestUser(
@@ -182,54 +188,48 @@ void main() {
       final result = await usecase.decrementScanCount();
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 5);
-          expect(updatedUser.subscriptionStatus, SubscriptionStatus.premium());
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 5);
+        expect(updatedUser.subscriptionStatus, SubscriptionStatus.premium());
+      });
       verifyNever(() => mockAuthLocalDs.updateUserLocally(any()));
     });
 
     test('should decrement scan count for free user', () async {
       final user = createTestUser(freeAiScansRemaining: 5);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.decrementScanCount();
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 4);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 4);
+      });
 
       final captured =
-          verify(() => mockAuthLocalDs.updateUserLocally(captureAny()))
-              .captured
-              .single as UserModel;
+          verify(
+                () => mockAuthLocalDs.updateUserLocally(captureAny()),
+              ).captured.single
+              as UserModel;
       expect(captured.freeAiScansRemaining, 4);
     });
 
     test('should decrement from 1 to 0', () async {
       final user = createTestUser(freeAiScansRemaining: 1);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.decrementScanCount();
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 0);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 0);
+      });
     });
 
     test('should not go below 0', () async {
@@ -239,12 +239,9 @@ void main() {
       final result = await usecase.decrementScanCount();
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 0);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 0);
+      });
       verifyNever(() => mockAuthLocalDs.updateUserLocally(any()));
     });
 
@@ -254,8 +251,9 @@ void main() {
       // exceptions and returns CacheFailure.
       final user = createTestUser(freeAiScansRemaining: 5);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenThrow(Exception('Storage write failed'));
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenThrow(Exception('Storage write failed'));
 
       final result = await usecase.decrementScanCount();
 
@@ -269,8 +267,9 @@ void main() {
     test('should return CacheFailure when exception thrown', () async {
       final user = createTestUser(freeAiScansRemaining: 5);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenThrow(Exception('Storage error'));
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenThrow(Exception('Storage error'));
 
       final result = await usecase.decrementScanCount();
 
@@ -283,18 +282,20 @@ void main() {
   });
 
   group('resetScansForPremium', () {
-    test('should return AuthenticationFailure when no user is logged in',
-        () async {
-      when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
+    test(
+      'should return AuthenticationFailure when no user is logged in',
+      () async {
+        when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
 
-      final result = await usecase.resetScansForPremium();
+        final result = await usecase.resetScansForPremium();
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<AuthenticationFailure>()),
-        (_) => fail('Should return failure'),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<AuthenticationFailure>()),
+          (_) => fail('Should return failure'),
+        );
+      },
+    );
 
     test('should set user to premium status', () async {
       final user = createTestUser(
@@ -302,85 +303,79 @@ void main() {
         freeAiScansRemaining: 2,
       );
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.resetScansForPremium();
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.subscriptionStatus, SubscriptionStatus.premium());
-          expect(updatedUser.freeAiScansRemaining, kDefaultFreeAiScans);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.subscriptionStatus, SubscriptionStatus.premium());
+        expect(updatedUser.freeAiScansRemaining, kDefaultFreeAiScans);
+      });
     });
   });
 
   group('updateScanCount', () {
-    test('should return AuthenticationFailure when no user is logged in',
-        () async {
-      when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
+    test(
+      'should return AuthenticationFailure when no user is logged in',
+      () async {
+        when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
 
-      final result = await usecase.updateScanCount(5);
+        final result = await usecase.updateScanCount(5);
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<AuthenticationFailure>()),
-        (_) => fail('Should return failure'),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<AuthenticationFailure>()),
+          (_) => fail('Should return failure'),
+        );
+      },
+    );
 
     test('should update scan count to specific value', () async {
       final user = createTestUser(freeAiScansRemaining: 2);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.updateScanCount(4);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 4);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 4);
+      });
     });
 
     test('should clamp value to not exceed default', () async {
       final user = createTestUser(freeAiScansRemaining: 2);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.updateScanCount(10);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, kDefaultFreeAiScans);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, kDefaultFreeAiScans);
+      });
     });
 
     test('should clamp value to not go below 0', () async {
       final user = createTestUser(freeAiScansRemaining: 2);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.updateScanCount(-5);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (updatedUser) {
-          expect(updatedUser.freeAiScansRemaining, 0);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (updatedUser) {
+        expect(updatedUser.freeAiScansRemaining, 0);
+      });
     });
   });
 
@@ -396,8 +391,9 @@ void main() {
     test('should handle decrement from 5 to 4', () async {
       final user = createTestUser(freeAiScansRemaining: 5);
       when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAuthLocalDs.updateUserLocally(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockAuthLocalDs.updateUserLocally(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await usecase.decrementScanCount();
 

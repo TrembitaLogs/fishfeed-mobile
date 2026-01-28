@@ -18,9 +18,8 @@ const int kDefaultFreeAiScans = 5;
 /// - Decrementing scan count after successful scan
 /// - Resetting scans for premium users
 class AiScanLimitUsecase {
-  AiScanLimitUsecase({
-    required AuthLocalDataSource authLocalDataSource,
-  }) : _authLocalDataSource = authLocalDataSource;
+  AiScanLimitUsecase({required AuthLocalDataSource authLocalDataSource})
+    : _authLocalDataSource = authLocalDataSource;
 
   final AuthLocalDataSource _authLocalDataSource;
 
@@ -74,9 +73,7 @@ class AiScanLimitUsecase {
     final userModel = _authLocalDataSource.getCurrentUser();
 
     if (userModel == null) {
-      return const Left(AuthenticationFailure(
-        message: 'No user logged in',
-      ));
+      return const Left(AuthenticationFailure(message: 'No user logged in'));
     }
 
     // Premium users don't consume free scans
@@ -106,9 +103,7 @@ class AiScanLimitUsecase {
       await _authLocalDataSource.updateUserLocally(updatedModel);
       return Right(updatedModel.toEntity());
     } catch (e) {
-      return Left(CacheFailure(
-        message: 'Failed to save scan count: $e',
-      ));
+      return Left(CacheFailure(message: 'Failed to save scan count: $e'));
     }
   }
 
@@ -123,9 +118,7 @@ class AiScanLimitUsecase {
     final userModel = _authLocalDataSource.getCurrentUser();
 
     if (userModel == null) {
-      return const Left(AuthenticationFailure(
-        message: 'No user logged in',
-      ));
+      return const Left(AuthenticationFailure(message: 'No user logged in'));
     }
 
     final updatedModel = UserModel(
@@ -135,7 +128,8 @@ class AiScanLimitUsecase {
       avatarUrl: userModel.avatarUrl,
       createdAt: userModel.createdAt,
       subscriptionStatus: SubscriptionStatus.premium(),
-      freeAiScansRemaining: kDefaultFreeAiScans, // Reset to default (not used for premium)
+      freeAiScansRemaining:
+          kDefaultFreeAiScans, // Reset to default (not used for premium)
       settings: userModel.settings,
     );
 
@@ -143,9 +137,7 @@ class AiScanLimitUsecase {
       await _authLocalDataSource.updateUserLocally(updatedModel);
       return Right(updatedModel.toEntity());
     } catch (e) {
-      return Left(CacheFailure(
-        message: 'Failed to save premium status: $e',
-      ));
+      return Left(CacheFailure(message: 'Failed to save premium status: $e'));
     }
   }
 
@@ -159,9 +151,7 @@ class AiScanLimitUsecase {
     final userModel = _authLocalDataSource.getCurrentUser();
 
     if (userModel == null) {
-      return const Left(AuthenticationFailure(
-        message: 'No user logged in',
-      ));
+      return const Left(AuthenticationFailure(message: 'No user logged in'));
     }
 
     final updatedModel = UserModel(
@@ -179,9 +169,7 @@ class AiScanLimitUsecase {
       await _authLocalDataSource.updateUserLocally(updatedModel);
       return Right(updatedModel.toEntity());
     } catch (e) {
-      return Left(CacheFailure(
-        message: 'Failed to save scan count: $e',
-      ));
+      return Left(CacheFailure(message: 'Failed to save scan count: $e'));
     }
   }
 }

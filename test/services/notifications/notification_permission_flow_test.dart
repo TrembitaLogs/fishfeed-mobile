@@ -71,7 +71,9 @@ void main() {
 
         expect(timestamp, isNotNull);
         expect(
-          timestamp!.isAfter(beforeDecline.subtract(const Duration(seconds: 1))),
+          timestamp!.isAfter(
+            beforeDecline.subtract(const Duration(seconds: 1)),
+          ),
           isTrue,
         );
         expect(
@@ -152,13 +154,16 @@ void main() {
     });
 
     group('fallback mode determination', () {
-      test('shouldUseFallbackMode returns false when no decline recorded',
-          () async {
-        // Without mocking permission_handler, we can only test the decline-based logic
-        // In real app, this also checks system permission
-        final hasDeclined = await permissionService.hasUserDeclinedPermission();
-        expect(hasDeclined, isFalse);
-      });
+      test(
+        'shouldUseFallbackMode returns false when no decline recorded',
+        () async {
+          // Without mocking permission_handler, we can only test the decline-based logic
+          // In real app, this also checks system permission
+          final hasDeclined = await permissionService
+              .hasUserDeclinedPermission();
+          expect(hasDeclined, isFalse);
+        },
+      );
 
       test('user decline is recorded correctly', () async {
         await permissionService.recordPermissionDeclined();

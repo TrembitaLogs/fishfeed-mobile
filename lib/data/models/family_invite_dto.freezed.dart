@@ -12,7 +12,8 @@ part of 'family_invite_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 FamilyInviteDto _$FamilyInviteDtoFromJson(Map<String, dynamic> json) {
   return _FamilyInviteDto.fromJson(json);
@@ -46,19 +47,21 @@ mixin _$FamilyInviteDto {
 /// @nodoc
 abstract class $FamilyInviteDtoCopyWith<$Res> {
   factory $FamilyInviteDtoCopyWith(
-          FamilyInviteDto value, $Res Function(FamilyInviteDto) then) =
-      _$FamilyInviteDtoCopyWithImpl<$Res, FamilyInviteDto>;
+    FamilyInviteDto value,
+    $Res Function(FamilyInviteDto) then,
+  ) = _$FamilyInviteDtoCopyWithImpl<$Res, FamilyInviteDto>;
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'invite_code') String inviteCode,
-      @JsonKey(name: 'created_by') String createdBy,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'expires_at') DateTime expiresAt,
-      String status,
-      @JsonKey(name: 'accepted_by') String? acceptedBy,
-      @JsonKey(name: 'accepted_at') DateTime? acceptedAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'invite_code') String inviteCode,
+    @JsonKey(name: 'created_by') String createdBy,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'expires_at') DateTime expiresAt,
+    String status,
+    @JsonKey(name: 'accepted_by') String? acceptedBy,
+    @JsonKey(name: 'accepted_at') DateTime? acceptedAt,
+  });
 }
 
 /// @nodoc
@@ -84,65 +87,70 @@ class _$FamilyInviteDtoCopyWithImpl<$Res, $Val extends FamilyInviteDto>
     Object? acceptedBy = freezed,
     Object? acceptedAt = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      inviteCode: null == inviteCode
-          ? _value.inviteCode
-          : inviteCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdBy: null == createdBy
-          ? _value.createdBy
-          : createdBy // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      expiresAt: null == expiresAt
-          ? _value.expiresAt
-          : expiresAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-      acceptedBy: freezed == acceptedBy
-          ? _value.acceptedBy
-          : acceptedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      acceptedAt: freezed == acceptedAt
-          ? _value.acceptedAt
-          : acceptedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            aquariumId: null == aquariumId
+                ? _value.aquariumId
+                : aquariumId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            inviteCode: null == inviteCode
+                ? _value.inviteCode
+                : inviteCode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            createdBy: null == createdBy
+                ? _value.createdBy
+                : createdBy // ignore: cast_nullable_to_non_nullable
+                      as String,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            expiresAt: null == expiresAt
+                ? _value.expiresAt
+                : expiresAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String,
+            acceptedBy: freezed == acceptedBy
+                ? _value.acceptedBy
+                : acceptedBy // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            acceptedAt: freezed == acceptedAt
+                ? _value.acceptedAt
+                : acceptedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FamilyInviteDtoImplCopyWith<$Res>
     implements $FamilyInviteDtoCopyWith<$Res> {
-  factory _$$FamilyInviteDtoImplCopyWith(_$FamilyInviteDtoImpl value,
-          $Res Function(_$FamilyInviteDtoImpl) then) =
-      __$$FamilyInviteDtoImplCopyWithImpl<$Res>;
+  factory _$$FamilyInviteDtoImplCopyWith(
+    _$FamilyInviteDtoImpl value,
+    $Res Function(_$FamilyInviteDtoImpl) then,
+  ) = __$$FamilyInviteDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'invite_code') String inviteCode,
-      @JsonKey(name: 'created_by') String createdBy,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'expires_at') DateTime expiresAt,
-      String status,
-      @JsonKey(name: 'accepted_by') String? acceptedBy,
-      @JsonKey(name: 'accepted_at') DateTime? acceptedAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'invite_code') String inviteCode,
+    @JsonKey(name: 'created_by') String createdBy,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'expires_at') DateTime expiresAt,
+    String status,
+    @JsonKey(name: 'accepted_by') String? acceptedBy,
+    @JsonKey(name: 'accepted_at') DateTime? acceptedAt,
+  });
 }
 
 /// @nodoc
@@ -150,8 +158,9 @@ class __$$FamilyInviteDtoImplCopyWithImpl<$Res>
     extends _$FamilyInviteDtoCopyWithImpl<$Res, _$FamilyInviteDtoImpl>
     implements _$$FamilyInviteDtoImplCopyWith<$Res> {
   __$$FamilyInviteDtoImplCopyWithImpl(
-      _$FamilyInviteDtoImpl _value, $Res Function(_$FamilyInviteDtoImpl) _then)
-      : super(_value, _then);
+    _$FamilyInviteDtoImpl _value,
+    $Res Function(_$FamilyInviteDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -166,61 +175,63 @@ class __$$FamilyInviteDtoImplCopyWithImpl<$Res>
     Object? acceptedBy = freezed,
     Object? acceptedAt = freezed,
   }) {
-    return _then(_$FamilyInviteDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      inviteCode: null == inviteCode
-          ? _value.inviteCode
-          : inviteCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdBy: null == createdBy
-          ? _value.createdBy
-          : createdBy // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      expiresAt: null == expiresAt
-          ? _value.expiresAt
-          : expiresAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-      acceptedBy: freezed == acceptedBy
-          ? _value.acceptedBy
-          : acceptedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      acceptedAt: freezed == acceptedAt
-          ? _value.acceptedAt
-          : acceptedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
+    return _then(
+      _$FamilyInviteDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        aquariumId: null == aquariumId
+            ? _value.aquariumId
+            : aquariumId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        inviteCode: null == inviteCode
+            ? _value.inviteCode
+            : inviteCode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdBy: null == createdBy
+            ? _value.createdBy
+            : createdBy // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        expiresAt: null == expiresAt
+            ? _value.expiresAt
+            : expiresAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String,
+        acceptedBy: freezed == acceptedBy
+            ? _value.acceptedBy
+            : acceptedBy // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        acceptedAt: freezed == acceptedAt
+            ? _value.acceptedAt
+            : acceptedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
-  const _$FamilyInviteDtoImpl(
-      {required this.id,
-      @JsonKey(name: 'aquarium_id') required this.aquariumId,
-      @JsonKey(name: 'invite_code') required this.inviteCode,
-      @JsonKey(name: 'created_by') required this.createdBy,
-      @JsonKey(name: 'created_at') required this.createdAt,
-      @JsonKey(name: 'expires_at') required this.expiresAt,
-      this.status = 'pending',
-      @JsonKey(name: 'accepted_by') this.acceptedBy,
-      @JsonKey(name: 'accepted_at') this.acceptedAt})
-      : super._();
+  const _$FamilyInviteDtoImpl({
+    required this.id,
+    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    @JsonKey(name: 'invite_code') required this.inviteCode,
+    @JsonKey(name: 'created_by') required this.createdBy,
+    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'expires_at') required this.expiresAt,
+    this.status = 'pending',
+    @JsonKey(name: 'accepted_by') this.acceptedBy,
+    @JsonKey(name: 'accepted_at') this.acceptedAt,
+  }) : super._();
 
   factory _$FamilyInviteDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FamilyInviteDtoImplFromJson(json);
@@ -282,36 +293,46 @@ class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, aquariumId, inviteCode,
-      createdBy, createdAt, expiresAt, status, acceptedBy, acceptedAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    aquariumId,
+    inviteCode,
+    createdBy,
+    createdAt,
+    expiresAt,
+    status,
+    acceptedBy,
+    acceptedAt,
+  );
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$FamilyInviteDtoImplCopyWith<_$FamilyInviteDtoImpl> get copyWith =>
       __$$FamilyInviteDtoImplCopyWithImpl<_$FamilyInviteDtoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FamilyInviteDtoImplToJson(
-      this,
-    );
+    return _$$FamilyInviteDtoImplToJson(this);
   }
 }
 
 abstract class _FamilyInviteDto extends FamilyInviteDto {
-  const factory _FamilyInviteDto(
-          {required final String id,
-          @JsonKey(name: 'aquarium_id') required final String aquariumId,
-          @JsonKey(name: 'invite_code') required final String inviteCode,
-          @JsonKey(name: 'created_by') required final String createdBy,
-          @JsonKey(name: 'created_at') required final DateTime createdAt,
-          @JsonKey(name: 'expires_at') required final DateTime expiresAt,
-          final String status,
-          @JsonKey(name: 'accepted_by') final String? acceptedBy,
-          @JsonKey(name: 'accepted_at') final DateTime? acceptedAt}) =
-      _$FamilyInviteDtoImpl;
+  const factory _FamilyInviteDto({
+    required final String id,
+    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    @JsonKey(name: 'invite_code') required final String inviteCode,
+    @JsonKey(name: 'created_by') required final String createdBy,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'expires_at') required final DateTime expiresAt,
+    final String status,
+    @JsonKey(name: 'accepted_by') final String? acceptedBy,
+    @JsonKey(name: 'accepted_at') final DateTime? acceptedAt,
+  }) = _$FamilyInviteDtoImpl;
   const _FamilyInviteDto._() : super._();
 
   factory _FamilyInviteDto.fromJson(Map<String, dynamic> json) =

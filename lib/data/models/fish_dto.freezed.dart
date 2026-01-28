@@ -12,7 +12,8 @@ part of 'fish_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 FishDto _$FishDtoFromJson(Map<String, dynamic> json) {
   return _FishDto.fromJson(json);
@@ -43,14 +44,15 @@ abstract class $FishDtoCopyWith<$Res> {
   factory $FishDtoCopyWith(FishDto value, $Res Function(FishDto) then) =
       _$FishDtoCopyWithImpl<$Res, FishDto>;
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'species_id') String speciesId,
-      int quantity,
-      @JsonKey(name: 'custom_name') String? customName,
-      @JsonKey(name: 'added_via') String? addedVia,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'species_id') String speciesId,
+    int quantity,
+    @JsonKey(name: 'custom_name') String? customName,
+    @JsonKey(name: 'added_via') String? addedVia,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -74,54 +76,59 @@ class _$FishDtoCopyWithImpl<$Res, $Val extends FishDto>
     Object? addedVia = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      speciesId: null == speciesId
-          ? _value.speciesId
-          : speciesId // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantity: null == quantity
-          ? _value.quantity
-          : quantity // ignore: cast_nullable_to_non_nullable
-              as int,
-      customName: freezed == customName
-          ? _value.customName
-          : customName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      addedVia: freezed == addedVia
-          ? _value.addedVia
-          : addedVia // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            aquariumId: null == aquariumId
+                ? _value.aquariumId
+                : aquariumId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            speciesId: null == speciesId
+                ? _value.speciesId
+                : speciesId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            quantity: null == quantity
+                ? _value.quantity
+                : quantity // ignore: cast_nullable_to_non_nullable
+                      as int,
+            customName: freezed == customName
+                ? _value.customName
+                : customName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            addedVia: freezed == addedVia
+                ? _value.addedVia
+                : addedVia // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FishDtoImplCopyWith<$Res> implements $FishDtoCopyWith<$Res> {
   factory _$$FishDtoImplCopyWith(
-          _$FishDtoImpl value, $Res Function(_$FishDtoImpl) then) =
-      __$$FishDtoImplCopyWithImpl<$Res>;
+    _$FishDtoImpl value,
+    $Res Function(_$FishDtoImpl) then,
+  ) = __$$FishDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      @JsonKey(name: 'species_id') String speciesId,
-      int quantity,
-      @JsonKey(name: 'custom_name') String? customName,
-      @JsonKey(name: 'added_via') String? addedVia,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    @JsonKey(name: 'species_id') String speciesId,
+    int quantity,
+    @JsonKey(name: 'custom_name') String? customName,
+    @JsonKey(name: 'added_via') String? addedVia,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -129,8 +136,9 @@ class __$$FishDtoImplCopyWithImpl<$Res>
     extends _$FishDtoCopyWithImpl<$Res, _$FishDtoImpl>
     implements _$$FishDtoImplCopyWith<$Res> {
   __$$FishDtoImplCopyWithImpl(
-      _$FishDtoImpl _value, $Res Function(_$FishDtoImpl) _then)
-      : super(_value, _then);
+    _$FishDtoImpl _value,
+    $Res Function(_$FishDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -143,51 +151,53 @@ class __$$FishDtoImplCopyWithImpl<$Res>
     Object? addedVia = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_$FishDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      speciesId: null == speciesId
-          ? _value.speciesId
-          : speciesId // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantity: null == quantity
-          ? _value.quantity
-          : quantity // ignore: cast_nullable_to_non_nullable
-              as int,
-      customName: freezed == customName
-          ? _value.customName
-          : customName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      addedVia: freezed == addedVia
-          ? _value.addedVia
-          : addedVia // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
+    return _then(
+      _$FishDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        aquariumId: null == aquariumId
+            ? _value.aquariumId
+            : aquariumId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        speciesId: null == speciesId
+            ? _value.speciesId
+            : speciesId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        quantity: null == quantity
+            ? _value.quantity
+            : quantity // ignore: cast_nullable_to_non_nullable
+                  as int,
+        customName: freezed == customName
+            ? _value.customName
+            : customName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        addedVia: freezed == addedVia
+            ? _value.addedVia
+            : addedVia // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FishDtoImpl extends _FishDto {
-  const _$FishDtoImpl(
-      {required this.id,
-      @JsonKey(name: 'aquarium_id') required this.aquariumId,
-      @JsonKey(name: 'species_id') required this.speciesId,
-      required this.quantity,
-      @JsonKey(name: 'custom_name') this.customName,
-      @JsonKey(name: 'added_via') this.addedVia,
-      @JsonKey(name: 'created_at') required this.createdAt})
-      : super._();
+  const _$FishDtoImpl({
+    required this.id,
+    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    @JsonKey(name: 'species_id') required this.speciesId,
+    required this.quantity,
+    @JsonKey(name: 'custom_name') this.customName,
+    @JsonKey(name: 'added_via') this.addedVia,
+    @JsonKey(name: 'created_at') required this.createdAt,
+  }) : super._();
 
   factory _$FishDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FishDtoImplFromJson(json);
@@ -239,8 +249,16 @@ class _$FishDtoImpl extends _FishDto {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, aquariumId, speciesId,
-      quantity, customName, addedVia, createdAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    aquariumId,
+    speciesId,
+    quantity,
+    customName,
+    addedVia,
+    createdAt,
+  );
 
   @JsonKey(ignore: true)
   @override
@@ -250,22 +268,20 @@ class _$FishDtoImpl extends _FishDto {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FishDtoImplToJson(
-      this,
-    );
+    return _$$FishDtoImplToJson(this);
   }
 }
 
 abstract class _FishDto extends FishDto {
-  const factory _FishDto(
-          {required final String id,
-          @JsonKey(name: 'aquarium_id') required final String aquariumId,
-          @JsonKey(name: 'species_id') required final String speciesId,
-          required final int quantity,
-          @JsonKey(name: 'custom_name') final String? customName,
-          @JsonKey(name: 'added_via') final String? addedVia,
-          @JsonKey(name: 'created_at') required final DateTime createdAt}) =
-      _$FishDtoImpl;
+  const factory _FishDto({
+    required final String id,
+    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    @JsonKey(name: 'species_id') required final String speciesId,
+    required final int quantity,
+    @JsonKey(name: 'custom_name') final String? customName,
+    @JsonKey(name: 'added_via') final String? addedVia,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+  }) = _$FishDtoImpl;
   const _FishDto._() : super._();
 
   factory _FishDto.fromJson(Map<String, dynamic> json) = _$FishDtoImpl.fromJson;

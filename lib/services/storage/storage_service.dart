@@ -112,7 +112,10 @@ class StorageService {
     int size = 0;
     try {
       if (await dir.exists()) {
-        await for (final entity in dir.list(recursive: true, followLinks: false)) {
+        await for (final entity in dir.list(
+          recursive: true,
+          followLinks: false,
+        )) {
           if (entity is File) {
             try {
               size += await entity.length();
@@ -141,7 +144,9 @@ class StorageService {
       final sizeAfter = await _getDirectorySize(cacheDir);
       final freedMb = (sizeBefore - sizeAfter) / (1024 * 1024);
 
-      debugPrint('StorageService: Cleared ${freedMb.toStringAsFixed(1)} MB of cache');
+      debugPrint(
+        'StorageService: Cleared ${freedMb.toStringAsFixed(1)} MB of cache',
+      );
 
       return freedMb;
     } catch (e) {

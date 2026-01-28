@@ -15,10 +15,7 @@ enum OAuthProvider {
 
 /// Parameters for [OAuthLoginUseCase].
 class OAuthLoginParams {
-  const OAuthLoginParams({
-    required this.provider,
-    required this.idToken,
-  });
+  const OAuthLoginParams({required this.provider, required this.idToken});
 
   final OAuthProvider provider;
   final String idToken;

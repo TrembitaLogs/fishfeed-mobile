@@ -53,10 +53,7 @@ class StreakLocalDataSource {
     return _streaks.values
         .whereType<StreakModel>()
         .cast<StreakModel?>()
-        .firstWhere(
-          (streak) => streak?.userId == userId,
-          orElse: () => null,
-        );
+        .firstWhere((streak) => streak?.userId == userId, orElse: () => null);
   }
 
   /// Deletes a streak from local storage.
@@ -89,9 +86,16 @@ class StreakLocalDataSource {
   /// [feedingDate] - The date of the feeding that triggered the increment.
   /// Creates a new streak if one doesn't exist.
   /// Returns the updated streak.
-  Future<StreakModel> incrementStreak(String userId, DateTime feedingDate) async {
+  Future<StreakModel> incrementStreak(
+    String userId,
+    DateTime feedingDate,
+  ) async {
     var streak = getStreakByUserId(userId);
-    final today = DateTime(feedingDate.year, feedingDate.month, feedingDate.day);
+    final today = DateTime(
+      feedingDate.year,
+      feedingDate.month,
+      feedingDate.day,
+    );
 
     if (streak == null) {
       // Create new streak
@@ -240,10 +244,12 @@ class StreakLocalDataSource {
     );
 
     // Check if freeze was already used for this date
-    final alreadyFrozen = streak.frozenDays.any((d) =>
-        d.year == normalizedDate.year &&
-        d.month == normalizedDate.month &&
-        d.day == normalizedDate.day);
+    final alreadyFrozen = streak.frozenDays.any(
+      (d) =>
+          d.year == normalizedDate.year &&
+          d.month == normalizedDate.month &&
+          d.day == normalizedDate.day,
+    );
 
     if (alreadyFrozen) {
       return streak;
@@ -267,7 +273,10 @@ class StreakLocalDataSource {
   /// Otherwise, resets the current streak to 0.
   ///
   /// Returns the updated streak.
-  Future<StreakModel> handleMissedDay(String userId, DateTime missedDate) async {
+  Future<StreakModel> handleMissedDay(
+    String userId,
+    DateTime missedDate,
+  ) async {
     var streak = getStreakByUserId(userId);
 
     if (streak == null) {

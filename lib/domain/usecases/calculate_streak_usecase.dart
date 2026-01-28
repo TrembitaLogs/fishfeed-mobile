@@ -9,9 +9,7 @@ import 'package:fishfeed/domain/entities/streak.dart';
 
 /// Parameters for [CalculateStreakUseCase].
 class CalculateStreakParams {
-  const CalculateStreakParams({
-    required this.userId,
-  });
+  const CalculateStreakParams({required this.userId});
 
   /// ID of the user whose streak to calculate.
   final String userId;
@@ -46,8 +44,8 @@ class CalculateStreakUseCase {
   CalculateStreakUseCase({
     required StreakLocalDataSource streakDataSource,
     required FeedingLocalDataSource feedingDataSource,
-  })  : _streakDataSource = streakDataSource,
-        _feedingDataSource = feedingDataSource;
+  }) : _streakDataSource = streakDataSource,
+       _feedingDataSource = feedingDataSource;
 
   final StreakLocalDataSource _streakDataSource;
   final FeedingLocalDataSource _feedingDataSource;
@@ -59,7 +57,11 @@ class CalculateStreakUseCase {
     // Validate params
     if (params.userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -85,11 +87,13 @@ class CalculateStreakUseCase {
       final isActive = _streakDataSource.isStreakActive(params.userId);
       final daysUntilExpiry = _calculateDaysUntilExpiry(updatedStreak);
 
-      return Right(StreakCalculationResult(
-        streak: updatedStreak.toEntity(),
-        isActive: isActive,
-        daysUntilExpiry: daysUntilExpiry,
-      ));
+      return Right(
+        StreakCalculationResult(
+          streak: updatedStreak.toEntity(),
+          isActive: isActive,
+          daysUntilExpiry: daysUntilExpiry,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to calculate streak: $e'));
     }
@@ -106,7 +110,10 @@ class CalculateStreakUseCase {
     }
 
     // Use DateTimeUtils for proper timezone-aware day calculation
-    final difference = DateTimeUtils.daysBetween(lastFeedingDate, DateTime.now());
+    final difference = DateTimeUtils.daysBetween(
+      lastFeedingDate,
+      DateTime.now(),
+    );
 
     // If more than 1 day has passed, reset streak
     if (difference > 1 && streak.currentStreak > 0) {
@@ -143,9 +150,7 @@ class CalculateStreakUseCase {
   /// consecutive days of feeding.
   ///
   /// Uses [DateTimeUtils] for timezone-aware date operations.
-  Future<Either<Failure, Streak>> recalculateFromHistory(
-    String userId,
-  ) async {
+  Future<Either<Failure, Streak>> recalculateFromHistory(String userId) async {
     try {
       final allEvents = _feedingDataSource.getAllFeedingEvents();
 
@@ -187,7 +192,10 @@ class CalculateStreakUseCase {
       final mostRecentDate = sortedDates.first;
 
       // Check if streak is still active using timezone-aware comparison
-      final daysSinceLastFeeding = DateTimeUtils.daysBetween(mostRecentDate, DateTime.now());
+      final daysSinceLastFeeding = DateTimeUtils.daysBetween(
+        mostRecentDate,
+        DateTime.now(),
+      );
       if (daysSinceLastFeeding > 1) {
         // Streak is broken
         final existingStreak = _streakDataSource.getStreakByUserId(userId);
@@ -212,15 +220,16 @@ class CalculateStreakUseCase {
       }
 
       // Find streak start date
-      final streakStartDate =
-          mostRecentDate.subtract(Duration(days: currentStreak - 1));
+      final streakStartDate = mostRecentDate.subtract(
+        Duration(days: currentStreak - 1),
+      );
 
       // Get existing longest streak
       final existingStreak = _streakDataSource.getStreakByUserId(userId);
       final longestStreak = existingStreak != null
           ? (currentStreak > existingStreak.longestStreak
-              ? currentStreak
-              : existingStreak.longestStreak)
+                ? currentStreak
+                : existingStreak.longestStreak)
           : currentStreak;
 
       final streak = StreakModel(

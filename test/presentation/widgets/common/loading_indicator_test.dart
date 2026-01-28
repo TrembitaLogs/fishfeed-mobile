@@ -17,40 +17,26 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
   group('LoadingIndicator', () {
     testWidgets('renders CircularProgressIndicator', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(const LoadingIndicator()));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('renders without message by default', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(const LoadingIndicator()));
 
       expect(find.byType(Text), findsNothing);
     });
 
     testWidgets('renders with message when provided', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(
-            message: 'Loading data...',
-          ),
-        ),
+        buildTestWidget(const LoadingIndicator(message: 'Loading data...')),
       );
 
       expect(find.text('Loading data...'), findsOneWidget);
@@ -60,11 +46,7 @@ void main() {
       const customSize = 50.0;
 
       await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(
-            size: customSize,
-          ),
-        ),
+        buildTestWidget(const LoadingIndicator(size: customSize)),
       );
 
       final sizedBox = tester.widget<SizedBox>(
@@ -79,21 +61,13 @@ void main() {
     });
 
     testWidgets('is centered', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(const LoadingIndicator()));
 
       expect(find.byType(Center), findsOneWidget);
     });
 
     testWidgets('uses theme primary color', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          const LoadingIndicator(),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(const LoadingIndicator()));
 
       final indicator = tester.widget<CircularProgressIndicator>(
         find.byType(CircularProgressIndicator),

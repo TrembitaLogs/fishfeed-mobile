@@ -248,7 +248,10 @@ void main() {
 
         expect(exception.message, 'Validation error');
         expect(exception.statusCode, 422);
-        expect(exception.errors['email'], ['Invalid email format', 'Email already taken']);
+        expect(exception.errors['email'], [
+          'Invalid email format',
+          'Email already taken',
+        ]);
         expect(exception.errors['password'], ['Password too short']);
       });
 
@@ -260,9 +263,7 @@ void main() {
             statusCode: 400,
             data: {
               'message': 'Bad request',
-              'errors': {
-                'email': 'Invalid email',
-              },
+              'errors': {'email': 'Invalid email'},
             },
           ),
           requestOptions: RequestOptions(path: '/test'),
@@ -279,9 +280,7 @@ void main() {
           response: Response(
             requestOptions: RequestOptions(path: '/test'),
             statusCode: 400,
-            data: {
-              'message': 'Bad request',
-            },
+            data: {'message': 'Bad request'},
           ),
           requestOptions: RequestOptions(path: '/test'),
         );
@@ -312,15 +311,21 @@ void main() {
       test('should support equality with errors', () {
         const exception1 = ValidationException(
           message: 'error',
-          errors: {'field': ['message']},
+          errors: {
+            'field': ['message'],
+          },
         );
         const exception2 = ValidationException(
           message: 'error',
-          errors: {'field': ['message']},
+          errors: {
+            'field': ['message'],
+          },
         );
         const exception3 = ValidationException(
           message: 'error',
-          errors: {'field': ['different']},
+          errors: {
+            'field': ['different'],
+          },
         );
 
         expect(exception1, equals(exception2));

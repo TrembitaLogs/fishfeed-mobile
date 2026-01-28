@@ -33,7 +33,9 @@ class BenefitItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (iconColor ?? theme.colorScheme.primary).withValues(alpha: 0.1),
+              color: (iconColor ?? theme.colorScheme.primary).withValues(
+                alpha: 0.1,
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -51,11 +53,7 @@ class BenefitItem extends StatelessWidget {
               ),
             ),
           ),
-          Icon(
-            Icons.check_circle,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(Icons.check_circle, size: 20, color: theme.colorScheme.primary),
         ],
       ),
     );

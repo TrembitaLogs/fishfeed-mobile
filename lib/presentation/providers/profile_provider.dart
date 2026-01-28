@@ -20,10 +20,10 @@ class ProfileState {
 
   /// Initial profile state.
   const ProfileState.initial()
-      : isUpdatingNickname = false,
-        isUpdatingAvatar = false,
-        error = null,
-        nicknameError = null;
+    : isUpdatingNickname = false,
+      isUpdatingAvatar = false,
+      error = null,
+      nicknameError = null;
 
   /// Whether a nickname update is in progress.
   final bool isUpdatingNickname;
@@ -53,7 +53,9 @@ class ProfileState {
       isUpdatingNickname: isUpdatingNickname ?? this.isUpdatingNickname,
       isUpdatingAvatar: isUpdatingAvatar ?? this.isUpdatingAvatar,
       error: clearError ? null : (error ?? this.error),
-      nicknameError: clearNicknameError ? null : (nicknameError ?? this.nicknameError),
+      nicknameError: clearNicknameError
+          ? null
+          : (nicknameError ?? this.nicknameError),
     );
   }
 
@@ -68,12 +70,8 @@ class ProfileState {
   }
 
   @override
-  int get hashCode => Object.hash(
-        isUpdatingNickname,
-        isUpdatingAvatar,
-        error,
-        nicknameError,
-      );
+  int get hashCode =>
+      Object.hash(isUpdatingNickname, isUpdatingAvatar, error, nicknameError);
 }
 
 /// Notifier for managing profile state.
@@ -84,9 +82,9 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   ProfileNotifier({
     required UserRepository userRepository,
     required AuthNotifier authNotifier,
-  })  : _userRepository = userRepository,
-        _authNotifier = authNotifier,
-        super(const ProfileState.initial());
+  }) : _userRepository = userRepository,
+       _authNotifier = authNotifier,
+       super(const ProfileState.initial());
 
   final UserRepository _userRepository;
   final AuthNotifier _authNotifier;
@@ -112,7 +110,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
     if (trimmedNickname.length < minNicknameLength) {
       state = state.copyWith(
-        nicknameError: 'Nickname must be at least $minNicknameLength characters',
+        nicknameError:
+            'Nickname must be at least $minNicknameLength characters',
       );
       return false;
     }
@@ -136,10 +135,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isUpdatingNickname: false,
-          error: failure,
-        );
+        state = state.copyWith(isUpdatingNickname: false, error: failure);
         return false;
       },
       (user) {
@@ -154,21 +150,13 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   ///
   /// Uploads the image file and updates the auth state on success.
   Future<bool> updateAvatar(File avatarFile) async {
-    state = state.copyWith(
-      isUpdatingAvatar: true,
-      clearError: true,
-    );
+    state = state.copyWith(isUpdatingAvatar: true, clearError: true);
 
-    final result = await _userRepository.updateAvatar(
-      avatarFile: avatarFile,
-    );
+    final result = await _userRepository.updateAvatar(avatarFile: avatarFile);
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isUpdatingAvatar: false,
-          error: failure,
-        );
+        state = state.copyWith(isUpdatingAvatar: false, error: failure);
         return false;
       },
       (user) {
@@ -202,10 +190,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
   /// Clears any errors.
   void clearErrors() {
-    state = state.copyWith(
-      clearError: true,
-      clearNicknameError: true,
-    );
+    state = state.copyWith(clearError: true, clearNicknameError: true);
   }
 
   /// Clears the nickname validation error.
@@ -217,14 +202,14 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 /// Provider for [ProfileNotifier].
 final profileNotifierProvider =
     StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
-  final userRepository = ref.watch(userRepositoryProvider);
-  final authNotifier = ref.watch(authNotifierProvider.notifier);
+      final userRepository = ref.watch(userRepositoryProvider);
+      final authNotifier = ref.watch(authNotifierProvider.notifier);
 
-  return ProfileNotifier(
-    userRepository: userRepository,
-    authNotifier: authNotifier,
-  );
-});
+      return ProfileNotifier(
+        userRepository: userRepository,
+        authNotifier: authNotifier,
+      );
+    });
 
 /// Provider for profile loading state.
 final profileLoadingProvider = Provider<bool>((ref) {

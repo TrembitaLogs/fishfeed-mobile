@@ -145,7 +145,10 @@ class FeedingEventModel extends HiveObject {
 
   /// Current conflict status for this event.
   ConflictStatus get conflictStatus =>
-      ConflictStatus.values[conflictStatusValue.clamp(0, ConflictStatus.values.length - 1)];
+      ConflictStatus.values[conflictStatusValue.clamp(
+        0,
+        ConflictStatus.values.length - 1,
+      )];
 
   set conflictStatus(ConflictStatus value) => conflictStatusValue = value.index;
 

@@ -31,10 +31,7 @@ class AppCard extends StatelessWidget {
     final theme = Theme.of(context);
     final effectivePadding = padding ?? const EdgeInsets.all(16);
 
-    final cardContent = Padding(
-      padding: effectivePadding,
-      child: child,
-    );
+    final cardContent = Padding(padding: effectivePadding, child: child);
 
     if (onTap != null) {
       return Card(
@@ -47,10 +44,7 @@ class AppCard extends StatelessWidget {
       );
     }
 
-    return Card(
-      elevation: elevation,
-      child: cardContent,
-    );
+    return Card(elevation: elevation, child: cardContent);
   }
 
   BorderRadius? _getBorderRadius(ThemeData theme) {

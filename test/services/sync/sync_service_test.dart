@@ -89,8 +89,9 @@ void main() {
     mockConnectivity = MockConnectivity();
     connectivityController = StreamController<List<ConnectivityResult>>();
 
-    when(() => mockConnectivity.onConnectivityChanged)
-        .thenAnswer((_) => connectivityController.stream);
+    when(
+      () => mockConnectivity.onConnectivityChanged,
+    ).thenAnswer((_) => connectivityController.stream);
     when(() => mockApiClient.dio).thenReturn(mockDio);
   });
 
@@ -121,19 +122,23 @@ void main() {
     when(() => mockAquariumDs.getUnsyncedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getModifiedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getDeletedAquariums()).thenReturn([]);
-    when(() => mockAquariumDs.markAsSynced(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => mockAquariumDs.applyServerUpdate(any()))
-        .thenAnswer((_) async {});
-    when(() => mockAquariumDs.deleteAquarium(any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockAquariumDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockAquariumDs.applyServerUpdate(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockAquariumDs.deleteAquarium(any()),
+    ).thenAnswer((_) async => true);
 
     // Fish mocks
     when(() => mockFishDs.getUnsyncedFish()).thenReturn([]);
     when(() => mockFishDs.getModifiedFish()).thenReturn([]);
     when(() => mockFishDs.getDeletedFish()).thenReturn([]);
-    when(() => mockFishDs.markAsSynced(any(), any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockFishDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async => true);
     when(() => mockFishDs.applyServerUpdate(any())).thenAnswer((_) async {});
     when(() => mockFishDs.deleteFish(any())).thenAnswer((_) async => true);
 
@@ -147,10 +152,12 @@ void main() {
 
     // Schedule mocks
     when(() => mockScheduleDs.getUnsyncedSchedules()).thenReturn([]);
-    when(() => mockScheduleDs.markAsSynced(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => mockScheduleDs.applyServerUpdate(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockScheduleDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduleDs.applyServerUpdate(any()),
+    ).thenAnswer((_) async {});
   }
 
   group('SyncConfig', () {
@@ -249,14 +256,16 @@ void main() {
   group('SyncService connectivity', () {
     test('should detect online status on startListening', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            data: <String, dynamic>{},
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{},
+        ),
+      );
 
       final service = createSyncService();
       await service.startListening();
@@ -282,21 +291,24 @@ void main() {
 
     test('should trigger sync when connectivity restored', () async {
       setupDefaultMocks(isOnline: false);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            data: <String, dynamic>{},
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{},
+        ),
+      );
 
       final service = createSyncService();
       await service.startListening();
 
       // Simulate connectivity restored
-      when(() => mockConnectivity.checkConnectivity())
-          .thenAnswer((_) async => [ConnectivityResult.wifi]);
+      when(
+        () => mockConnectivity.checkConnectivity(),
+      ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
       connectivityController.add([ConnectivityResult.wifi]);
 
@@ -321,10 +333,10 @@ void main() {
       setupDefaultMocks(isOnline: true);
 
       // Create a slow response to simulate processing
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async {
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         return Response(
           requestOptions: RequestOptions(path: '/sync'),
@@ -349,14 +361,16 @@ void main() {
 
     test('should update state to syncing during sync', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            data: <String, dynamic>{},
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{},
+        ),
+      );
 
       final service = createSyncService();
       final states = <SyncState>[];
@@ -370,15 +384,17 @@ void main() {
 
     test('should update state to success after successful sync', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            // Return null data to indicate simple success (no changes from server)
-            data: null,
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          // Return null data to indicate simple success (no changes from server)
+          data: null,
+        ),
+      );
 
       final service = createSyncService();
 
@@ -389,13 +405,15 @@ void main() {
 
     test('should update state to error after failed sync', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenThrow(DioException(
-        requestOptions: RequestOptions(path: '/sync'),
-        message: 'Network error',
-      ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/sync'),
+          message: 'Network error',
+        ),
+      );
 
       final service = createSyncService();
 
@@ -409,14 +427,16 @@ void main() {
   group('SyncService syncNow', () {
     test('should reset retry count and sync', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            data: <String, dynamic>{},
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{},
+        ),
+      );
 
       final service = createSyncService();
 
@@ -439,15 +459,17 @@ void main() {
   group('SyncService state stream', () {
     test('should emit state changes', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            // Return null data to indicate simple success
-            data: null,
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          // Return null data to indicate simple success
+          data: null,
+        ),
+      );
 
       final service = createSyncService();
       final states = <SyncState>[];
@@ -469,14 +491,16 @@ void main() {
   group('SyncService dispose', () {
     test('should clean up resources on dispose', () async {
       setupDefaultMocks(isOnline: true);
-      when(() => mockDio.post<Map<String, dynamic>>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/sync'),
-            statusCode: 200,
-            data: <String, dynamic>{},
-          ));
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{},
+        ),
+      );
 
       final service = createSyncService();
       await service.startListening();

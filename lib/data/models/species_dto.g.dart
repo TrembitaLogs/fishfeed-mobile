@@ -12,7 +12,8 @@ _$SpeciesDtoImpl _$$SpeciesDtoImplFromJson(Map<String, dynamic> json) =>
       commonName: json['common_name'] as String,
       scientificName: json['scientific_name'] as String?,
       imageUrl: json['image_url'] as String?,
-      foodTypes: (json['food_types'] as List<dynamic>?)
+      foodTypes:
+          (json['food_types'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -36,23 +37,23 @@ Map<String, dynamic> _$$SpeciesDtoImplToJson(_$SpeciesDtoImpl instance) =>
     };
 
 _$SpeciesListResponseDtoImpl _$$SpeciesListResponseDtoImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SpeciesListResponseDtoImpl(
-      items: (json['items'] as List<dynamic>)
-          .map((e) => SpeciesDto.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      total: (json['total'] as num).toInt(),
-      page: (json['page'] as num).toInt(),
-      perPage: (json['per_page'] as num).toInt(),
-      pages: (json['pages'] as num).toInt(),
-    );
+  Map<String, dynamic> json,
+) => _$SpeciesListResponseDtoImpl(
+  items: (json['items'] as List<dynamic>)
+      .map((e) => SpeciesDto.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  total: (json['total'] as num).toInt(),
+  page: (json['page'] as num).toInt(),
+  perPage: (json['per_page'] as num).toInt(),
+  pages: (json['pages'] as num).toInt(),
+);
 
 Map<String, dynamic> _$$SpeciesListResponseDtoImplToJson(
-        _$SpeciesListResponseDtoImpl instance) =>
-    <String, dynamic>{
-      'items': instance.items.map((e) => e.toJson()).toList(),
-      'total': instance.total,
-      'page': instance.page,
-      'per_page': instance.perPage,
-      'pages': instance.pages,
-    };
+  _$SpeciesListResponseDtoImpl instance,
+) => <String, dynamic>{
+  'items': instance.items.map((e) => e.toJson()).toList(),
+  'total': instance.total,
+  'page': instance.page,
+  'per_page': instance.perPage,
+  'pages': instance.pages,
+};

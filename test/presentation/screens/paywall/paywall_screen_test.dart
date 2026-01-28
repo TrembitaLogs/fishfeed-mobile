@@ -97,12 +97,15 @@ void main() {
 
     // Default service initialization
     when(() => mockPurchaseService.isInitialized).thenReturn(true);
-    when(() => mockPurchaseService.getSubscriptionStatus())
-        .thenReturn(const SubscriptionStatus.free());
+    when(
+      () => mockPurchaseService.getSubscriptionStatus(),
+    ).thenReturn(const SubscriptionStatus.free());
 
     // Default: remove ads package not available
-    when(() => mockPurchaseService.getRemoveAdsPackage())
-        .thenAnswer((_) async => const Left(ProductNotAvailableFailure(productId: 'remove_ads')));
+    when(() => mockPurchaseService.getRemoveAdsPackage()).thenAnswer(
+      (_) async =>
+          const Left(ProductNotAvailableFailure(productId: 'remove_ads')),
+    );
   });
 
   Widget buildTestWidget({
@@ -139,28 +142,33 @@ void main() {
 
   group('PaywallScreen', () {
     group('loading state', () {
-      testWidgets('screen starts in loading state with _isLoadingOfferings=true', (tester) async {
-        // Use a completer to control when the future completes
-        final completer = Completer<Either<Failure, Offerings>>();
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) => completer.future);
+      testWidgets(
+        'screen starts in loading state with _isLoadingOfferings=true',
+        (tester) async {
+          // Use a completer to control when the future completes
+          final completer = Completer<Either<Failure, Offerings>>();
+          when(
+            () => mockPurchaseService.getOfferings(),
+          ).thenAnswer((_) => completer.future);
 
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pump(); // Allow initState to run
+          await tester.pumpWidget(buildTestWidget());
+          await tester.pump(); // Allow initState to run
 
-        // Should show loading indicator
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+          // Should show loading indicator
+          expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-        // Complete the future to avoid pending timers
-        completer.complete(Right(mockOfferings));
-        await tester.pumpAndSettle();
-      });
+          // Complete the future to avoid pending timers
+          completer.complete(Right(mockOfferings));
+          await tester.pumpAndSettle();
+        },
+      );
     });
 
     group('content rendering', () {
       testWidgets('renders hero section with premium badge', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -170,8 +178,9 @@ void main() {
       });
 
       testWidgets('renders all premium benefits', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -184,8 +193,9 @@ void main() {
       });
 
       testWidgets('renders trial banner', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -194,8 +204,9 @@ void main() {
       });
 
       testWidgets('renders product options', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -206,8 +217,9 @@ void main() {
       });
 
       testWidgets('renders CTA button', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -216,8 +228,9 @@ void main() {
       });
 
       testWidgets('renders restore purchases link', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -239,9 +252,12 @@ void main() {
     });
 
     group('error state', () {
-      testWidgets('shows error message when offerings fail to load', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => const Left(PurchaseFailure(message: 'Network error')));
+      testWidgets('shows error message when offerings fail to load', (
+        tester,
+      ) async {
+        when(() => mockPurchaseService.getOfferings()).thenAnswer(
+          (_) async => const Left(PurchaseFailure(message: 'Network error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -249,9 +265,12 @@ void main() {
         expect(find.text('Network error'), findsOneWidget);
       });
 
-      testWidgets('shows fallback products when offerings fail', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => const Left(PurchaseFailure(message: 'Error')));
+      testWidgets('shows fallback products when offerings fail', (
+        tester,
+      ) async {
+        when(() => mockPurchaseService.getOfferings()).thenAnswer(
+          (_) async => const Left(PurchaseFailure(message: 'Error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -263,8 +282,9 @@ void main() {
 
     group('navigation', () {
       testWidgets('close button pops the screen', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -279,8 +299,9 @@ void main() {
 
     group('product selection', () {
       testWidgets('product cards are rendered and tappable', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -298,12 +319,16 @@ void main() {
         // Setup with premium entitlement so pop succeeds
         final mockEntitlements = <String, dynamic>{'premium': {}};
         when(() => mockEntitlementInfos.active).thenReturn({});
-        when(() => mockCustomerInfo.entitlements).thenReturn(mockEntitlementInfos);
+        when(
+          () => mockCustomerInfo.entitlements,
+        ).thenReturn(mockEntitlementInfos);
 
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.purchasePackage(any()))
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.purchasePackage(any()),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -329,10 +354,12 @@ void main() {
 
     group('restore purchases', () {
       testWidgets('calls restore purchases on tap', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.restorePurchases())
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.restorePurchases(),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -352,11 +379,15 @@ void main() {
         verify(() => mockPurchaseService.restorePurchases()).called(1);
       });
 
-      testWidgets('shows no purchases message when restore finds nothing', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.restorePurchases())
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+      testWidgets('shows no purchases message when restore finds nothing', (
+        tester,
+      ) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.restorePurchases(),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -379,10 +410,13 @@ void main() {
 
     group('app bar', () {
       testWidgets('has correct title', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => const Left(ProductNotAvailableFailure(productId: 'remove_ads')));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(() => mockPurchaseService.getRemoveAdsPackage()).thenAnswer(
+          (_) async =>
+              const Left(ProductNotAvailableFailure(productId: 'remove_ads')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -391,10 +425,13 @@ void main() {
       });
 
       testWidgets('has close button', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => const Left(ProductNotAvailableFailure(productId: 'remove_ads')));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(() => mockPurchaseService.getRemoveAdsPackage()).thenAnswer(
+          (_) async =>
+              const Left(ProductNotAvailableFailure(productId: 'remove_ads')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -411,21 +448,31 @@ void main() {
         mockRemoveAdsPackage = MockPackage();
         mockRemoveAdsProduct = MockStoreProduct();
 
-        when(() => mockRemoveAdsProduct.identifier).thenReturn('remove_ads_forever');
+        when(
+          () => mockRemoveAdsProduct.identifier,
+        ).thenReturn('remove_ads_forever');
         when(() => mockRemoveAdsProduct.title).thenReturn('Remove Ads');
         when(() => mockRemoveAdsProduct.priceString).thenReturn('\$3.99');
         when(() => mockRemoveAdsProduct.price).thenReturn(3.99);
         when(() => mockRemoveAdsProduct.currencyCode).thenReturn('USD');
 
-        when(() => mockRemoveAdsPackage.storeProduct).thenReturn(mockRemoveAdsProduct);
-        when(() => mockRemoveAdsPackage.packageType).thenReturn(PackageType.lifetime);
+        when(
+          () => mockRemoveAdsPackage.storeProduct,
+        ).thenReturn(mockRemoveAdsProduct);
+        when(
+          () => mockRemoveAdsPackage.packageType,
+        ).thenReturn(PackageType.lifetime);
       });
 
-      testWidgets('shows remove ads section when package is available', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => Right(mockRemoveAdsPackage));
+      testWidgets('shows remove ads section when package is available', (
+        tester,
+      ) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getRemoveAdsPackage(),
+        ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -443,26 +490,37 @@ void main() {
         expect(find.text('or'), findsOneWidget);
       });
 
-      testWidgets('does not show remove ads section when package is not available', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => const Left(ProductNotAvailableFailure(productId: 'remove_ads')));
+      testWidgets(
+        'does not show remove ads section when package is not available',
+        (tester) async {
+          when(
+            () => mockPurchaseService.getOfferings(),
+          ).thenAnswer((_) async => Right(mockOfferings));
+          when(() => mockPurchaseService.getRemoveAdsPackage()).thenAnswer(
+            (_) async =>
+                const Left(ProductNotAvailableFailure(productId: 'remove_ads')),
+          );
 
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestWidget());
+          await tester.pumpAndSettle();
 
-        // The 'or' divider should not be present
-        expect(find.text('or'), findsNothing);
-      });
+          // The 'or' divider should not be present
+          expect(find.text('or'), findsNothing);
+        },
+      );
 
-      testWidgets('calls purchasePackage when remove ads card is tapped', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => Right(mockRemoveAdsPackage));
-        when(() => mockPurchaseService.purchasePackage(mockRemoveAdsPackage))
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+      testWidgets('calls purchasePackage when remove ads card is tapped', (
+        tester,
+      ) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getRemoveAdsPackage(),
+        ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+        when(
+          () => mockPurchaseService.purchasePackage(mockRemoveAdsPackage),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -480,16 +538,23 @@ void main() {
         await tester.tap(find.text('\$3.99').last);
         await tester.pump();
 
-        verify(() => mockPurchaseService.purchasePackage(mockRemoveAdsPackage)).called(1);
+        verify(
+          () => mockPurchaseService.purchasePackage(mockRemoveAdsPackage),
+        ).called(1);
       });
 
-      testWidgets('shows success message after purchasing remove ads', (tester) async {
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => Right(mockRemoveAdsPackage));
-        when(() => mockPurchaseService.purchasePackage(mockRemoveAdsPackage))
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+      testWidgets('shows success message after purchasing remove ads', (
+        tester,
+      ) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getRemoveAdsPackage(),
+        ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+        when(
+          () => mockPurchaseService.purchasePackage(mockRemoveAdsPackage),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -512,18 +577,24 @@ void main() {
     });
 
     group('restore purchases with remove_ads', () {
-      testWidgets('shows success when restore finds remove_ads entitlement', (tester) async {
+      testWidgets('shows success when restore finds remove_ads entitlement', (
+        tester,
+      ) async {
         final mockRemoveAdsEntitlement = MockEntitlementInfo();
-        when(() => mockEntitlementInfos.active).thenReturn({
-          'remove_ads': mockRemoveAdsEntitlement,
-        });
+        when(
+          () => mockEntitlementInfos.active,
+        ).thenReturn({'remove_ads': mockRemoveAdsEntitlement});
 
-        when(() => mockPurchaseService.getOfferings())
-            .thenAnswer((_) async => Right(mockOfferings));
-        when(() => mockPurchaseService.getRemoveAdsPackage())
-            .thenAnswer((_) async => const Left(ProductNotAvailableFailure(productId: 'remove_ads')));
-        when(() => mockPurchaseService.restorePurchases())
-            .thenAnswer((_) async => Right(mockCustomerInfo));
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(() => mockPurchaseService.getRemoveAdsPackage()).thenAnswer(
+          (_) async =>
+              const Left(ProductNotAvailableFailure(productId: 'remove_ads')),
+        );
+        when(
+          () => mockPurchaseService.restorePurchases(),
+        ).thenAnswer((_) async => Right(mockCustomerInfo));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();

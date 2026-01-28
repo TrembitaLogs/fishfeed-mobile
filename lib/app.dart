@@ -103,15 +103,12 @@ class _GlobalAuthErrorListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AuthenticationState>(
-      authNotifierProvider,
-      (previous, next) {
-        // Show error snackbar when an error occurs
-        if (next.error != null && previous?.error != next.error) {
-          context.showAuthError(next.error!);
-        }
-      },
-    );
+    ref.listen<AuthenticationState>(authNotifierProvider, (previous, next) {
+      // Show error snackbar when an error occurs
+      if (next.error != null && previous?.error != next.error) {
+        context.showAuthError(next.error!);
+      }
+    });
 
     return _PushTokenSyncListener(child: child);
   }
@@ -189,7 +186,9 @@ class _LifecycleListener extends ConsumerWidget {
         if (event.event == AppLifecycleEvent.midnightCrossed ||
             event.event == AppLifecycleEvent.dstTransition) {
           // Trigger UI refresh for streak-related components
-          debugPrint('Lifecycle event: ${event.event} - may need streak refresh');
+          debugPrint(
+            'Lifecycle event: ${event.event} - may need streak refresh',
+          );
         }
       });
     });

@@ -100,17 +100,17 @@ class Streak extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        currentStreak,
-        longestStreak,
-        lastFeedingDate,
-        streakStartDate,
-        freezeAvailable,
-        frozenDays,
-        lastFreezeResetDate,
-        synced,
-        updatedAt,
-        serverUpdatedAt,
-      ];
+    id,
+    userId,
+    currentStreak,
+    longestStreak,
+    lastFeedingDate,
+    streakStartDate,
+    freezeAvailable,
+    frozenDays,
+    lastFreezeResetDate,
+    synced,
+    updatedAt,
+    serverUpdatedAt,
+  ];
 }

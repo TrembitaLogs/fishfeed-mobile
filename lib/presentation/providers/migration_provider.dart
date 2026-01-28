@@ -118,5 +118,5 @@ class MigrationNotifier extends StateNotifier<MigrationState> {
 /// ```
 final migrationStateProvider =
     StateNotifierProvider<MigrationNotifier, MigrationState>((ref) {
-  return MigrationNotifier(ref.watch(migrationServiceProvider));
-});
+      return MigrationNotifier(ref.watch(migrationServiceProvider));
+    });

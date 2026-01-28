@@ -21,10 +21,10 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     required Dio dio,
     LogoutCallback? onLogout,
     String refreshEndpoint = '/auth/refresh',
-  })  : _secureStorageService = secureStorageService,
-        _dio = dio,
-        _onLogout = onLogout,
-        _refreshEndpoint = refreshEndpoint;
+  }) : _secureStorageService = secureStorageService,
+       _dio = dio,
+       _onLogout = onLogout,
+       _refreshEndpoint = refreshEndpoint;
 
   final SecureStorageService _secureStorageService;
   final Dio _dio;
@@ -103,9 +103,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       final response = await _dio.post<Map<String, dynamic>>(
         _refreshEndpoint,
         data: {'refresh_token': refreshToken},
-        options: Options(
-          headers: {'Authorization': null},
-        ),
+        options: Options(headers: {'Authorization': null}),
       );
 
       if (response.statusCode == 200 && response.data != null) {

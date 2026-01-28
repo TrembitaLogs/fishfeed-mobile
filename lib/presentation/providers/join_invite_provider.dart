@@ -39,7 +39,8 @@ class JoinInviteError extends JoinInviteState {
   String get message {
     return switch (failure) {
       ValidationFailure(:final message) => message ?? 'Validation failed',
-      AuthenticationFailure(:final message) => message ?? 'Authentication required',
+      AuthenticationFailure(:final message) =>
+        message ?? 'Authentication required',
       _ => 'Failed to accept invitation. Please try again.',
     };
   }
@@ -47,7 +48,10 @@ class JoinInviteError extends JoinInviteState {
   /// Whether the error indicates an invalid or expired code.
   bool get isInvalidCode =>
       failure is ValidationFailure &&
-      ((failure as ValidationFailure).message?.toLowerCase().contains('invalid') ?? false);
+      ((failure as ValidationFailure).message?.toLowerCase().contains(
+            'invalid',
+          ) ??
+          false);
 
   /// Whether the error indicates user is not authenticated.
   bool get requiresAuth => failure is AuthenticationFailure;
@@ -55,10 +59,9 @@ class JoinInviteError extends JoinInviteState {
 
 /// Notifier for managing join invite state.
 class JoinInviteNotifier extends StateNotifier<JoinInviteState> {
-  JoinInviteNotifier({
-    required FamilyRepository repository,
-  })  : _repository = repository,
-        super(const JoinInviteInitial());
+  JoinInviteNotifier({required FamilyRepository repository})
+    : _repository = repository,
+      super(const JoinInviteInitial());
 
   final FamilyRepository _repository;
 
@@ -82,9 +85,10 @@ class JoinInviteNotifier extends StateNotifier<JoinInviteState> {
 
 /// Provider for [JoinInviteNotifier].
 final joinInviteNotifierProvider =
-    StateNotifierProvider.autoDispose<JoinInviteNotifier, JoinInviteState>(
-        (ref) {
-  final repository = ref.watch(familyRepositoryProvider);
+    StateNotifierProvider.autoDispose<JoinInviteNotifier, JoinInviteState>((
+      ref,
+    ) {
+      final repository = ref.watch(familyRepositoryProvider);
 
-  return JoinInviteNotifier(repository: repository);
-});
+      return JoinInviteNotifier(repository: repository);
+    });

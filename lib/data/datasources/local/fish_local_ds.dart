@@ -56,9 +56,9 @@ class FishLocalDataSource {
   /// Excludes soft-deleted fish (those with deletedAt != null).
   /// Deduplicates by ID in case of Hive file issues.
   List<FishModel> getFishByAquariumId(String aquariumId) {
-    final allFish = _fish.values
-        .whereType<FishModel>()
-        .where((f) => f.aquariumId == aquariumId && f.deletedAt == null);
+    final allFish = _fish.values.whereType<FishModel>().where(
+      (f) => f.aquariumId == aquariumId && f.deletedAt == null,
+    );
 
     // Deduplicate by ID, keeping the most recent version
     final fishMap = <String, FishModel>{};
@@ -154,11 +154,13 @@ class FishLocalDataSource {
   List<FishModel> getModifiedFish() {
     return _fish.values
         .whereType<FishModel>()
-        .where((f) =>
-            !f.isDeleted &&
-            f.updatedAt != null &&
-            f.serverUpdatedAt != null &&
-            f.updatedAt!.isAfter(f.serverUpdatedAt!))
+        .where(
+          (f) =>
+              !f.isDeleted &&
+              f.updatedAt != null &&
+              f.serverUpdatedAt != null &&
+              f.updatedAt!.isAfter(f.serverUpdatedAt!),
+        )
         .toList();
   }
 
@@ -208,7 +210,10 @@ class FishLocalDataSource {
   ///
   /// [ids] - List of fish IDs.
   /// [serverTime] - The server timestamp to use.
-  Future<void> markMultipleAsSynced(List<String> ids, DateTime serverTime) async {
+  Future<void> markMultipleAsSynced(
+    List<String> ids,
+    DateTime serverTime,
+  ) async {
     for (final id in ids) {
       await markAsSynced(id, serverTime);
     }
@@ -258,7 +263,8 @@ class FishLocalDataSource {
         name: serverData['custom_name'] as String?,
         quantity: serverData['quantity'] as int? ?? 1,
         addedAt: serverData['created_at'] != null
-            ? DateTime.tryParse(serverData['created_at'] as String) ?? DateTime.now()
+            ? DateTime.tryParse(serverData['created_at'] as String) ??
+                  DateTime.now()
             : DateTime.now(),
         synced: true,
         serverUpdatedAt: serverUpdatedAt,
@@ -269,8 +275,9 @@ class FishLocalDataSource {
   }
 
   /// Checks if there are any unsynced fish.
-  bool get hasUnsyncedFish =>
-      _fish.values.whereType<FishModel>().any((f) => !f.isDeleted && f.needsSync);
+  bool get hasUnsyncedFish => _fish.values.whereType<FishModel>().any(
+    (f) => !f.isDeleted && f.needsSync,
+  );
 
   /// Permanently removes soft-deleted fish that have been synced.
   ///

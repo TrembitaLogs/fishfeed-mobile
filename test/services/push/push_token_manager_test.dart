@@ -39,8 +39,9 @@ void main() {
     mockFcmService = MockFcmService();
     tokenStreamController = StreamController<String>.broadcast();
 
-    when(() => mockFcmService.tokenStream)
-        .thenAnswer((_) => tokenStreamController.stream);
+    when(
+      () => mockFcmService.tokenStream,
+    ).thenAnswer((_) => tokenStreamController.stream);
 
     // Initialize HiveBoxes for each test
     if (!HiveBoxes.isInitialized) {
@@ -73,8 +74,9 @@ void main() {
 
   group('onAuthStateChanged - login', () {
     test('should register token when user becomes authenticated', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'test-fcm-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'test-fcm-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
@@ -110,8 +112,9 @@ void main() {
     });
 
     test('should not register token if already authenticated', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'test-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'test-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
@@ -138,16 +141,18 @@ void main() {
 
   group('onAuthStateChanged - logout', () {
     test('should unregister token and delete FCM token on logout', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'test-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'test-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
           platform: any(named: 'platform'),
         ),
       ).thenAnswer((_) async {});
-      when(() => mockPushRepository.unregisterToken())
-          .thenAnswer((_) async => const Right(unit));
+      when(
+        () => mockPushRepository.unregisterToken(),
+      ).thenAnswer((_) async => const Right(unit));
       when(() => mockFcmService.deleteToken()).thenAnswer((_) async {});
 
       manager.initialize();
@@ -175,8 +180,9 @@ void main() {
 
   group('token refresh handling', () {
     test('should re-register token when refreshed and authenticated', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'initial-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'initial-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
@@ -206,28 +212,32 @@ void main() {
       ).called(1);
     });
 
-    test('should not re-register token when refreshed but not authenticated', () async {
-      manager.initialize();
+    test(
+      'should not re-register token when refreshed but not authenticated',
+      () async {
+        manager.initialize();
 
-      // Simulate token refresh without login
-      tokenStreamController.add('refreshed-token');
+        // Simulate token refresh without login
+        tokenStreamController.add('refreshed-token');
 
-      // Allow async processing
-      await Future<void>.delayed(const Duration(milliseconds: 10));
+        // Allow async processing
+        await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      verifyNever(
-        () => mockPushRepository.registerTokenWithRetry(
-          token: any(named: 'token'),
-          platform: any(named: 'platform'),
-        ),
-      );
-    });
+        verifyNever(
+          () => mockPushRepository.registerTokenWithRetry(
+            token: any(named: 'token'),
+            platform: any(named: 'platform'),
+          ),
+        );
+      },
+    );
   });
 
   group('forceRegisterToken', () {
     test('should register token when authenticated', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'forced-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'forced-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
@@ -273,16 +283,18 @@ void main() {
 
   group('full integration flow', () {
     test('login -> token registered -> logout -> token unregistered', () async {
-      when(() => mockFcmService.getToken())
-          .thenAnswer((_) async => 'integration-token');
+      when(
+        () => mockFcmService.getToken(),
+      ).thenAnswer((_) async => 'integration-token');
       when(
         () => mockPushRepository.registerTokenWithRetry(
           token: any(named: 'token'),
           platform: any(named: 'platform'),
         ),
       ).thenAnswer((_) async {});
-      when(() => mockPushRepository.unregisterToken())
-          .thenAnswer((_) async => const Right(unit));
+      when(
+        () => mockPushRepository.unregisterToken(),
+      ).thenAnswer((_) async => const Right(unit));
       when(() => mockFcmService.deleteToken()).thenAnswer((_) async {});
 
       manager.initialize();

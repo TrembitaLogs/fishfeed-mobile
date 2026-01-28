@@ -12,7 +12,8 @@ part of 'auth_response_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 AuthResponseDto _$AuthResponseDtoFromJson(Map<String, dynamic> json) {
   return _AuthResponseDto.fromJson(json);
@@ -35,13 +36,15 @@ mixin _$AuthResponseDto {
 /// @nodoc
 abstract class $AuthResponseDtoCopyWith<$Res> {
   factory $AuthResponseDtoCopyWith(
-          AuthResponseDto value, $Res Function(AuthResponseDto) then) =
-      _$AuthResponseDtoCopyWithImpl<$Res, AuthResponseDto>;
+    AuthResponseDto value,
+    $Res Function(AuthResponseDto) then,
+  ) = _$AuthResponseDtoCopyWithImpl<$Res, AuthResponseDto>;
   @useResult
-  $Res call(
-      {UserDto user,
-      @JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken});
+  $Res call({
+    UserDto user,
+    @JsonKey(name: 'access_token') String accessToken,
+    @JsonKey(name: 'refresh_token') String refreshToken,
+  });
 
   $UserDtoCopyWith<$Res> get user;
 }
@@ -63,20 +66,23 @@ class _$AuthResponseDtoCopyWithImpl<$Res, $Val extends AuthResponseDto>
     Object? accessToken = null,
     Object? refreshToken = null,
   }) {
-    return _then(_value.copyWith(
-      user: null == user
-          ? _value.user
-          : user // ignore: cast_nullable_to_non_nullable
-              as UserDto,
-      accessToken: null == accessToken
-          ? _value.accessToken
-          : accessToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      refreshToken: null == refreshToken
-          ? _value.refreshToken
-          : refreshToken // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            user: null == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                      as UserDto,
+            accessToken: null == accessToken
+                ? _value.accessToken
+                : accessToken // ignore: cast_nullable_to_non_nullable
+                      as String,
+            refreshToken: null == refreshToken
+                ? _value.refreshToken
+                : refreshToken // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 
   @override
@@ -91,15 +97,17 @@ class _$AuthResponseDtoCopyWithImpl<$Res, $Val extends AuthResponseDto>
 /// @nodoc
 abstract class _$$AuthResponseDtoImplCopyWith<$Res>
     implements $AuthResponseDtoCopyWith<$Res> {
-  factory _$$AuthResponseDtoImplCopyWith(_$AuthResponseDtoImpl value,
-          $Res Function(_$AuthResponseDtoImpl) then) =
-      __$$AuthResponseDtoImplCopyWithImpl<$Res>;
+  factory _$$AuthResponseDtoImplCopyWith(
+    _$AuthResponseDtoImpl value,
+    $Res Function(_$AuthResponseDtoImpl) then,
+  ) = __$$AuthResponseDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {UserDto user,
-      @JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken});
+  $Res call({
+    UserDto user,
+    @JsonKey(name: 'access_token') String accessToken,
+    @JsonKey(name: 'refresh_token') String refreshToken,
+  });
 
   @override
   $UserDtoCopyWith<$Res> get user;
@@ -110,8 +118,9 @@ class __$$AuthResponseDtoImplCopyWithImpl<$Res>
     extends _$AuthResponseDtoCopyWithImpl<$Res, _$AuthResponseDtoImpl>
     implements _$$AuthResponseDtoImplCopyWith<$Res> {
   __$$AuthResponseDtoImplCopyWithImpl(
-      _$AuthResponseDtoImpl _value, $Res Function(_$AuthResponseDtoImpl) _then)
-      : super(_value, _then);
+    _$AuthResponseDtoImpl _value,
+    $Res Function(_$AuthResponseDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -120,31 +129,33 @@ class __$$AuthResponseDtoImplCopyWithImpl<$Res>
     Object? accessToken = null,
     Object? refreshToken = null,
   }) {
-    return _then(_$AuthResponseDtoImpl(
-      user: null == user
-          ? _value.user
-          : user // ignore: cast_nullable_to_non_nullable
-              as UserDto,
-      accessToken: null == accessToken
-          ? _value.accessToken
-          : accessToken // ignore: cast_nullable_to_non_nullable
-              as String,
-      refreshToken: null == refreshToken
-          ? _value.refreshToken
-          : refreshToken // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$AuthResponseDtoImpl(
+        user: null == user
+            ? _value.user
+            : user // ignore: cast_nullable_to_non_nullable
+                  as UserDto,
+        accessToken: null == accessToken
+            ? _value.accessToken
+            : accessToken // ignore: cast_nullable_to_non_nullable
+                  as String,
+        refreshToken: null == refreshToken
+            ? _value.refreshToken
+            : refreshToken // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$AuthResponseDtoImpl extends _AuthResponseDto {
-  const _$AuthResponseDtoImpl(
-      {required this.user,
-      @JsonKey(name: 'access_token') required this.accessToken,
-      @JsonKey(name: 'refresh_token') required this.refreshToken})
-      : super._();
+  const _$AuthResponseDtoImpl({
+    required this.user,
+    @JsonKey(name: 'access_token') required this.accessToken,
+    @JsonKey(name: 'refresh_token') required this.refreshToken,
+  }) : super._();
 
   factory _$AuthResponseDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$AuthResponseDtoImplFromJson(json);
@@ -184,22 +195,22 @@ class _$AuthResponseDtoImpl extends _AuthResponseDto {
   @pragma('vm:prefer-inline')
   _$$AuthResponseDtoImplCopyWith<_$AuthResponseDtoImpl> get copyWith =>
       __$$AuthResponseDtoImplCopyWithImpl<_$AuthResponseDtoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AuthResponseDtoImplToJson(
-      this,
-    );
+    return _$$AuthResponseDtoImplToJson(this);
   }
 }
 
 abstract class _AuthResponseDto extends AuthResponseDto {
-  const factory _AuthResponseDto(
-          {required final UserDto user,
-          @JsonKey(name: 'access_token') required final String accessToken,
-          @JsonKey(name: 'refresh_token') required final String refreshToken}) =
-      _$AuthResponseDtoImpl;
+  const factory _AuthResponseDto({
+    required final UserDto user,
+    @JsonKey(name: 'access_token') required final String accessToken,
+    @JsonKey(name: 'refresh_token') required final String refreshToken,
+  }) = _$AuthResponseDtoImpl;
   const _AuthResponseDto._() : super._();
 
   factory _AuthResponseDto.fromJson(Map<String, dynamic> json) =

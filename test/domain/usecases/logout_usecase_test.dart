@@ -19,8 +19,9 @@ void main() {
 
   group('LogoutUseCase', () {
     test('should return unit on successful logout', () async {
-      when(() => mockRepository.logout())
-          .thenAnswer((_) async => const Right(unit));
+      when(
+        () => mockRepository.logout(),
+      ).thenAnswer((_) async => const Right(unit));
 
       final result = await useCase();
 
@@ -29,8 +30,9 @@ void main() {
     });
 
     test('should propagate repository failures', () async {
-      when(() => mockRepository.logout())
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.logout(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase();
 

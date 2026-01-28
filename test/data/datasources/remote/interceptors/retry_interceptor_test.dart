@@ -60,18 +60,16 @@ void main() {
         type: type,
         requestOptions: options,
         response: statusCode != null
-            ? Response(
-                requestOptions: options,
-                statusCode: statusCode,
-              )
+            ? Response(requestOptions: options, statusCode: statusCode)
             : null,
       );
     }
 
     group('should retry', () {
       test('on connectionTimeout', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -90,8 +88,9 @@ void main() {
       });
 
       test('on sendTimeout', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -110,8 +109,9 @@ void main() {
       });
 
       test('on receiveTimeout', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -129,8 +129,9 @@ void main() {
       });
 
       test('on connectionError', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -148,8 +149,9 @@ void main() {
       });
 
       test('on 500 status code', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -165,8 +167,9 @@ void main() {
       });
 
       test('on 502 status code', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -182,8 +185,9 @@ void main() {
       });
 
       test('on 503 status code', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -199,8 +203,9 @@ void main() {
       });
 
       test('on 504 status code', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -216,8 +221,9 @@ void main() {
       });
 
       test('on 429 (rate limit) status code', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -235,9 +241,7 @@ void main() {
 
     group('should not retry', () {
       test('on cancel', () async {
-        final dioException = createDioException(
-          type: DioExceptionType.cancel,
-        );
+        final dioException = createDioException(type: DioExceptionType.cancel);
 
         await retryInterceptor.onError(dioException, mockHandler);
 
@@ -336,8 +340,9 @@ void main() {
       });
 
       test('when no connectivity', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => false);
 
         final dioException = createDioException(
           type: DioExceptionType.connectionTimeout,
@@ -366,8 +371,9 @@ void main() {
       });
 
       test('should retry POST when retryMutatingRequests is true', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -388,8 +394,9 @@ void main() {
 
     group('max retries', () {
       test('should stop after max retries reached', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
 
         final dioException = createDioException(
           type: DioExceptionType.connectionTimeout,
@@ -403,8 +410,9 @@ void main() {
       });
 
       test('should increment retry count on each attempt', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
         when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: '/test'),
@@ -427,8 +435,9 @@ void main() {
 
     group('retry failure handling', () {
       test('should pass error to handler when retry fails', () async {
-        when(() => mockConnectivityChecker.hasConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityChecker.hasConnection(),
+        ).thenAnswer((_) async => true);
 
         final retryError = DioException(
           type: DioExceptionType.connectionTimeout,

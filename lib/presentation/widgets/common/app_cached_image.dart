@@ -89,10 +89,7 @@ class AppCachedImage extends StatelessWidget {
     }
 
     if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
+      return ClipRRect(borderRadius: borderRadius!, child: image);
     }
 
     return image;
@@ -142,10 +139,8 @@ class AppCachedAvatar extends StatelessWidget {
       height: size,
       child: CachedNetworkImage(
         imageUrl: imageUrl!,
-        imageBuilder: (context, imageProvider) => CircleAvatar(
-          radius: radius,
-          backgroundImage: imageProvider,
-        ),
+        imageBuilder: (context, imageProvider) =>
+            CircleAvatar(radius: radius, backgroundImage: imageProvider),
         placeholder: (context, url) => Shimmer.fromColors(
           baseColor: theme.colorScheme.surfaceContainerLow,
           highlightColor: theme.colorScheme.surfaceContainerHigh,
@@ -247,11 +242,7 @@ class _ErrorPlaceholder extends StatelessWidget {
       height: height,
       color: backgroundColor,
       child: Center(
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: _calculateIconSize(),
-        ),
+        child: Icon(icon, color: iconColor, size: _calculateIconSize()),
       ),
     );
   }

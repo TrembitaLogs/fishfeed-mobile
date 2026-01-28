@@ -49,19 +49,19 @@ class QuantityStep extends ConsumerWidget {
                   quantity: selection.quantity,
                   onIncrement: selection.quantity < maxQuantity
                       ? () => ref
-                          .read(onboardingNotifierProvider.notifier)
-                          .updateQuantity(
-                            selection.species.id,
-                            selection.quantity + 1,
-                          )
+                            .read(onboardingNotifierProvider.notifier)
+                            .updateQuantity(
+                              selection.species.id,
+                              selection.quantity + 1,
+                            )
                       : null,
                   onDecrement: selection.quantity > 1
                       ? () => ref
-                          .read(onboardingNotifierProvider.notifier)
-                          .updateQuantity(
-                            selection.species.id,
-                            selection.quantity - 1,
-                          )
+                            .read(onboardingNotifierProvider.notifier)
+                            .updateQuantity(
+                              selection.species.id,
+                              selection.quantity - 1,
+                            )
                       : null,
                 );
               },
@@ -106,10 +106,7 @@ class _QuantityCard extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                speciesName,
-                style: theme.textTheme.titleMedium,
-              ),
+              child: Text(speciesName, style: theme.textTheme.titleMedium),
             ),
             _QuantitySelector(
               quantity: quantity,
@@ -145,10 +142,7 @@ class _QuantitySelector extends StatelessWidget {
           onPressed: onDecrement,
           icon: const Icon(Icons.remove),
           iconSize: 20,
-          constraints: const BoxConstraints(
-            minWidth: 36,
-            minHeight: 36,
-          ),
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
         ),
         SizedBox(
           width: 48,
@@ -164,10 +158,7 @@ class _QuantitySelector extends StatelessWidget {
           onPressed: onIncrement,
           icon: const Icon(Icons.add),
           iconSize: 20,
-          constraints: const BoxConstraints(
-            minWidth: 36,
-            minHeight: 36,
-          ),
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
         ),
       ],
     );

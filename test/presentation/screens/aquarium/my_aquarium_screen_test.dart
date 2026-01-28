@@ -22,11 +22,13 @@ class MockFishManagementNotifier extends StateNotifier<FishManagementState>
     bool isEmpty = false,
     bool hasError = false,
     String? error,
-  }) : super(FishManagementState(
-          userFish: fish ?? (isEmpty ? [] : _defaultTestFish),
-          isLoading: false,
-          error: hasError ? (error ?? 'Something went wrong') : null,
-        ));
+  }) : super(
+         FishManagementState(
+           userFish: fish ?? (isEmpty ? [] : _defaultTestFish),
+           isLoading: false,
+           error: hasError ? (error ?? 'Something went wrong') : null,
+         ),
+       );
 
   static final _defaultTestFish = [
     Fish(
@@ -51,8 +53,7 @@ class MockFishManagementNotifier extends StateNotifier<FishManagementState>
     int quantity = 1,
     String? name,
     String? aquariumId,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<bool> updateFish(Fish fish) async => true;
@@ -269,7 +270,9 @@ void main() {
         expect(find.text('Cancel'), findsOneWidget);
       });
 
-      testWidgets('confirmation dialog Cancel dismisses dialog', (tester) async {
+      testWidgets('confirmation dialog Cancel dismisses dialog', (
+        tester,
+      ) async {
         final fishList = [_createFish('1', 'guppy', 5)];
 
         await tester.pumpWidget(buildTestWidget(fish: fishList));
@@ -357,11 +360,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Find the list and perform pull to refresh
-        await tester.fling(
-          find.byType(ListView),
-          const Offset(0, 300),
-          1000,
-        );
+        await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
         await tester.pumpAndSettle();
 
         // Verify screen still works

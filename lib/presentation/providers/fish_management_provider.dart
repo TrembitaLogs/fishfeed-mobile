@@ -76,11 +76,11 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
     required AquariumLocalDataSource aquariumDataSource,
     required Ref ref,
     String? selectedAquariumId,
-  })  : _fishDataSource = fishDataSource,
-        _aquariumDataSource = aquariumDataSource,
-        _ref = ref,
-        _selectedAquariumId = selectedAquariumId,
-        super(const FishManagementState()) {
+  }) : _fishDataSource = fishDataSource,
+       _aquariumDataSource = aquariumDataSource,
+       _ref = ref,
+       _selectedAquariumId = selectedAquariumId,
+       super(const FishManagementState()) {
     loadUserFish();
   }
 
@@ -120,20 +120,14 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
     try {
       final aquariumId = _currentAquariumId;
       if (aquariumId == null) {
-        state = state.copyWith(
-          userFish: [],
-          isLoading: false,
-        );
+        state = state.copyWith(userFish: [], isLoading: false);
         return;
       }
 
       final fishModels = _fishDataSource.getFishByAquariumId(aquariumId);
       final fish = fishModels.map((m) => m.toEntity()).toList();
 
-      state = state.copyWith(
-        userFish: fish,
-        isLoading: false,
-      );
+      state = state.copyWith(userFish: fish, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -168,7 +162,9 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       // Check if fish of this species already exists in the aquarium
       final existingFish = state.userFish
-          .where((f) => f.aquariumId == targetAquariumId && f.speciesId == speciesId)
+          .where(
+            (f) => f.aquariumId == targetAquariumId && f.speciesId == speciesId,
+          )
           .firstOrNull;
 
       Fish fish;
@@ -213,9 +209,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
         await _fishDataSource.saveFish(model);
 
         // Update state
-        state = state.copyWith(
-          userFish: [...state.userFish, fish],
-        );
+        state = state.copyWith(userFish: [...state.userFish, fish]);
       }
 
       // Track analytics
@@ -369,17 +363,17 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 /// ```
 final fishManagementProvider =
     StateNotifierProvider<FishManagementNotifier, FishManagementState>((ref) {
-  final fishDs = ref.watch(fishLocalDataSourceProvider);
-  final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
-  final selectedAquariumId = ref.watch(selectedAquariumIdProvider);
+      final fishDs = ref.watch(fishLocalDataSourceProvider);
+      final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
+      final selectedAquariumId = ref.watch(selectedAquariumIdProvider);
 
-  return FishManagementNotifier(
-    fishDataSource: fishDs,
-    aquariumDataSource: aquariumDs,
-    ref: ref,
-    selectedAquariumId: selectedAquariumId,
-  );
-});
+      return FishManagementNotifier(
+        fishDataSource: fishDs,
+        aquariumDataSource: aquariumDs,
+        ref: ref,
+        selectedAquariumId: selectedAquariumId,
+      );
+    });
 
 /// Provider for user's fish list.
 ///
@@ -417,8 +411,10 @@ final isAquariumEmptyProvider = Provider<bool>((ref) {
 /// Loads fish directly from local storage for a specific aquarium.
 /// Useful for screens that need fish for a different aquarium than selected.
 /// Includes deduplication to handle potential Hive file corruption.
-final fishByAquariumIdProvider =
-    Provider.family<List<Fish>, String>((ref, aquariumId) {
+final fishByAquariumIdProvider = Provider.family<List<Fish>, String>((
+  ref,
+  aquariumId,
+) {
   final fishDs = ref.watch(fishLocalDataSourceProvider);
   final fishModels = fishDs.getFishByAquariumId(aquariumId);
 
@@ -448,8 +444,10 @@ final fishByIdProvider = Provider.family<Fish?, String>((ref, fishId) {
 /// Uses soft delete + sync to properly delete fish and feeding events.
 /// Works regardless of which aquarium is selected.
 /// Returns true on success, false on failure.
-final deleteFishByIdProvider =
-    FutureProvider.family<bool, String>((ref, fishId) async {
+final deleteFishByIdProvider = FutureProvider.family<bool, String>((
+  ref,
+  fishId,
+) async {
   final fishDs = ref.watch(fishLocalDataSourceProvider);
   final syncService = ref.watch(syncServiceProvider);
 

@@ -56,10 +56,7 @@ void main() {
         isPremiumProvider.overrideWithValue(isPremium),
         userAquariumsProvider.overrideWith((ref) {
           return _MockUserAquariumsNotifier(
-            UserAquariumsState(
-              aquariums: mockAquariums,
-              isLoading: false,
-            ),
+            UserAquariumsState(aquariums: mockAquariums, isLoading: false),
           );
         }),
       ],
@@ -74,11 +71,12 @@ void main() {
 
   group('TodayView', () {
     group('Loading State', () {
-      testWidgets('displays shimmer loading when isLoading is true',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(isLoading: true),
-        ));
+      testWidgets('displays shimmer loading when isLoading is true', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(state: const TodayFeedingsState(isLoading: true)),
+        );
 
         // Should show shimmer placeholders (multiple cards with gradient boxes)
         // Shimmer shows 5 placeholder cards
@@ -87,29 +85,37 @@ void main() {
     });
 
     group('Empty State', () {
-      testWidgets('displays empty state when no feedings scheduled',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(feedings: [], isLoading: false),
-        ));
+      testWidgets('displays empty state when no feedings scheduled', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: const TodayFeedingsState(feedings: [], isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // TodayView shows aquarium sections with empty state message
         // When no feedings, AquariumSection shows "No feedings scheduled"
         // Multiple aquariums = multiple empty state messages
         expect(find.text('No feedings scheduled'), findsAtLeastNWidgets(1));
-        expect(find.byIcon(Icons.check_circle_outline), findsAtLeastNWidgets(1));
+        expect(
+          find.byIcon(Icons.check_circle_outline),
+          findsAtLeastNWidgets(1),
+        );
       });
     });
 
     group('Error State', () {
       testWidgets('displays error state with message', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(
-            isLoading: false,
-            error: 'Network error',
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: const TodayFeedingsState(
+              isLoading: false,
+              error: 'Network error',
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Uses localized strings and ErrorStateWidget
@@ -119,13 +125,17 @@ void main() {
         expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
       });
 
-      testWidgets('retry button with refresh icon is displayed', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(
-            isLoading: false,
-            error: 'Test error',
+      testWidgets('retry button with refresh icon is displayed', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: const TodayFeedingsState(
+              isLoading: false,
+              error: 'Test error',
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Verify button is present by checking for refresh icon and text
@@ -171,11 +181,14 @@ void main() {
         ),
       ];
 
-      testWidgets('displays feeding cards for each scheduled feeding',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-        ));
+      testWidgets('displays feeding cards for each scheduled feeding', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Should show all feeding names
@@ -184,10 +197,14 @@ void main() {
         expect(find.text('Goldfish'), findsOneWidget);
       });
 
-      testWidgets('displays aquarium names in section headers and cards', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-        ));
+      testWidgets('displays aquarium names in section headers and cards', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Aquarium names appear in:
@@ -200,9 +217,11 @@ void main() {
       });
 
       testWidgets('displays food types', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Flakes'), findsNWidgets(2));
@@ -210,9 +229,11 @@ void main() {
       });
 
       testWidgets('displays time for each feeding', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('08:00'), findsOneWidget);
@@ -220,11 +241,14 @@ void main() {
         expect(find.text('19:00'), findsOneWidget);
       });
 
-      testWidgets('displays status icons for different statuses',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-        ));
+      testWidgets('displays status icons for different statuses', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Fed status (StatusIndicator uses Icons.check)
@@ -240,8 +264,9 @@ void main() {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
-      testWidgets('displays aquarium section headers for each aquarium',
-          (tester) async {
+      testWidgets('displays aquarium section headers for each aquarium', (
+        tester,
+      ) async {
         final feedings = [
           ScheduledFeeding(
             id: '1',
@@ -253,9 +278,11 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: feedings, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: feedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Living Room Tank appears in header (1) + FeedingCard subtitle (1) = 2
@@ -264,8 +291,7 @@ void main() {
         expect(find.byIcon(Icons.water_drop_outlined), findsNWidgets(2));
       });
 
-      testWidgets('displays multiple aquarium sections',
-          (tester) async {
+      testWidgets('displays multiple aquarium sections', (tester) async {
         final multiAquariumFeedings = [
           ScheduledFeeding(
             id: '1',
@@ -285,9 +311,14 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: multiAquariumFeedings, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(
+              feedings: multiAquariumFeedings,
+              isLoading: false,
+            ),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Each aquarium name appears in header (1) + FeedingCard subtitle (1) = 2
@@ -295,8 +326,7 @@ void main() {
         expect(find.text('Bedroom Aquarium'), findsNWidgets(2));
       });
 
-      testWidgets('displays add aquarium button at the bottom',
-          (tester) async {
+      testWidgets('displays add aquarium button at the bottom', (tester) async {
         final feedings = [
           ScheduledFeeding(
             id: '1',
@@ -308,21 +338,26 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: feedings, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: feedings, isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Should show "Add Another Aquarium" button
         expect(find.text('Add Another Aquarium'), findsOneWidget);
       });
 
-      testWidgets('shows empty state message for aquarium with no feedings',
-          (tester) async {
+      testWidgets('shows empty state message for aquarium with no feedings', (
+        tester,
+      ) async {
         // Empty feedings list but aquariums exist
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(feedings: [], isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: const TodayFeedingsState(feedings: [], isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Empty state is shown when no feedings - AquariumSection shows this message
@@ -333,9 +368,11 @@ void main() {
 
     group('Pull to Refresh', () {
       testWidgets('RefreshIndicator is present', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          state: const TodayFeedingsState(feedings: [], isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: const TodayFeedingsState(feedings: [], isLoading: false),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(RefreshIndicator), findsOneWidget);
@@ -357,9 +394,14 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(buildTestWidget(
-          state: TodayFeedingsState(feedings: pendingFeeding, isLoading: false),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(
+              feedings: pendingFeeding,
+              isLoading: false,
+            ),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Find the card with InkWell

@@ -104,12 +104,13 @@ void main() {
   }
 
   group('FamilyScreen', () {
-
     testWidgets('displays aquarium name in app bar', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -118,26 +119,27 @@ void main() {
     });
 
     testWidgets('displays family mode header', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Family Mode'), findsOneWidget);
-      expect(
-        find.textContaining('Invite family members'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Invite family members'), findsOneWidget);
     });
 
     testWidgets('displays invite button', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -152,10 +154,12 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.reset());
 
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -170,10 +174,12 @@ void main() {
     });
 
     testWidgets('displays owner role label', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -182,10 +188,12 @@ void main() {
     });
 
     testWidgets('displays member role label', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testMember]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testMember]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -193,12 +201,15 @@ void main() {
       expect(find.text('Member'), findsOneWidget);
     });
 
-    testWidgets('displays active invitations section when invites exist',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testInvite]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+    testWidgets('displays active invitations section when invites exist', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testInvite]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -207,20 +218,20 @@ void main() {
       expect(find.text('ABC12345'), findsOneWidget);
     });
 
-    testWidgets('shows empty members message when only owner exists',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
+    testWidgets('shows empty members message when only owner exists', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('You are the only family member'),
-        findsOneWidget,
-      );
+      expect(find.text('You are the only family member'), findsOneWidget);
     });
 
     testWidgets('tapping invite button creates new invite', (tester) async {
@@ -229,12 +240,15 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.reset());
 
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
-      when(() => mockRepository.createInvite(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right(testInvite));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.createInvite(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right(testInvite));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -246,23 +260,28 @@ void main() {
       await tester.tap(inviteButtonText);
       await tester.pump();
 
-      verify(() => mockRepository.createInvite(aquariumId: aquariumId))
-          .called(1);
+      verify(
+        () => mockRepository.createInvite(aquariumId: aquariumId),
+      ).called(1);
     });
 
-    testWidgets('shows share bottom sheet after creating invite',
-        (tester) async {
+    testWidgets('shows share bottom sheet after creating invite', (
+      tester,
+    ) async {
       // Use a larger screen size to avoid overflow
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.reset());
 
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
-      when(() => mockRepository.createInvite(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right(testInvite));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.createInvite(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right(testInvite));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -278,31 +297,36 @@ void main() {
     });
 
     testWidgets(
-        'shows remove confirmation dialog for non-owner member (premium)',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+      'shows remove confirmation dialog for non-owner member (premium)',
+      (tester) async {
+        when(
+          () => mockRepository.getInvites(aquariumId: aquariumId),
+        ).thenAnswer((_) async => const Right([]));
+        when(
+          () => mockRepository.getMembers(aquariumId: aquariumId),
+        ).thenAnswer((_) async => Right([testOwner, testMember]));
 
-      await tester.pumpWidget(createTestWidget(user: premiumUser));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createTestWidget(user: premiumUser));
+        await tester.pumpAndSettle();
 
-      // Find and tap the remove button for the non-owner member
-      final removeButton = find.byIcon(Icons.remove_circle_outline);
-      expect(removeButton, findsOneWidget);
+        // Find and tap the remove button for the non-owner member
+        final removeButton = find.byIcon(Icons.remove_circle_outline);
+        expect(removeButton, findsOneWidget);
 
-      await tester.tap(removeButton);
-      await tester.pumpAndSettle();
+        await tester.tap(removeButton);
+        await tester.pumpAndSettle();
 
-      expect(find.text('Remove member?'), findsOneWidget);
-    });
+        expect(find.text('Remove member?'), findsOneWidget);
+      },
+    );
 
     testWidgets('does not show remove button for owner', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: premiumUser));
       await tester.pumpAndSettle();
@@ -312,10 +336,12 @@ void main() {
     });
 
     testWidgets('does not show remove button for free user', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();
@@ -326,13 +352,15 @@ void main() {
 
     testWidgets('can pull to refresh', (tester) async {
       int callCount = 0;
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async {
+      when(() => mockRepository.getInvites(aquariumId: aquariumId)).thenAnswer((
+        _,
+      ) async {
         callCount++;
         return const Right([]);
       });
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -350,12 +378,15 @@ void main() {
   });
 
   group('FamilyScreen - Tier Limits', () {
-    testWidgets('displays member limit indicator for free user',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+    testWidgets('displays member limit indicator for free user', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();
@@ -364,12 +395,15 @@ void main() {
       expect(find.textContaining('Members: 1 / 2'), findsOneWidget);
     });
 
-    testWidgets('does not display member limit indicator for premium user',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+    testWidgets('does not display member limit indicator for premium user', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: premiumUser));
       await tester.pumpAndSettle();
@@ -378,33 +412,36 @@ void main() {
       expect(find.textContaining('Members:'), findsNothing);
     });
 
-    testWidgets('shows upgrade prompt when free tier limit reached',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+    testWidgets('shows upgrade prompt when free tier limit reached', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();
 
       // Should show upgrade prompt
-      expect(
-        find.text('Free plan limit reached'),
-        findsOneWidget,
-      );
+      expect(find.text('Free plan limit reached'), findsOneWidget);
       // Button text uses l10n.goToPremium
       expect(find.text('Go to Premium'), findsOneWidget);
       // Should not show invite button
       expect(find.text('Invite family member'), findsNothing);
     });
 
-    testWidgets('shows invite button when premium user at free tier limit',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+    testWidgets('shows invite button when premium user at free tier limit', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget(user: premiumUser));
       await tester.pumpAndSettle();
@@ -412,18 +449,18 @@ void main() {
       // Premium users should still see invite button
       expect(find.text('Invite family member'), findsOneWidget);
       // Should not show upgrade prompt
-      expect(
-        find.text('Free plan limit reached'),
-        findsNothing,
-      );
+      expect(find.text('Free plan limit reached'), findsNothing);
     });
 
-    testWidgets('shows limit reached warning text when at max free tier',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+    testWidgets('shows limit reached warning text when at max free tier', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();
@@ -434,10 +471,12 @@ void main() {
 
   group('FamilyScreen - Member Card Details', () {
     testWidgets('displays join date in member card', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();
@@ -446,12 +485,15 @@ void main() {
       expect(find.textContaining('Joined:'), findsOneWidget);
     });
 
-    testWidgets('displays different join dates for multiple members',
-        (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner, testMember]));
+    testWidgets('displays different join dates for multiple members', (
+      tester,
+    ) async {
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner, testMember]));
 
       await tester.pumpWidget(createTestWidget(user: premiumUser));
       await tester.pumpAndSettle();
@@ -461,10 +503,12 @@ void main() {
     });
 
     testWidgets('shows feeding stats for premium users', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: premiumUser));
       await tester.pumpAndSettle();
@@ -475,10 +519,12 @@ void main() {
     });
 
     testWidgets('does not show feeding stats for free users', (tester) async {
-      when(() => mockRepository.getInvites(aquariumId: aquariumId))
-          .thenAnswer((_) async => const Right([]));
-      when(() => mockRepository.getMembers(aquariumId: aquariumId))
-          .thenAnswer((_) async => Right([testOwner]));
+      when(
+        () => mockRepository.getInvites(aquariumId: aquariumId),
+      ).thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getMembers(aquariumId: aquariumId),
+      ).thenAnswer((_) async => Right([testOwner]));
 
       await tester.pumpWidget(createTestWidget(user: freeUser));
       await tester.pumpAndSettle();

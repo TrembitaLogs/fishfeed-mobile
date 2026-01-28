@@ -77,10 +77,7 @@ class PremiumFeatureGuard extends ConsumerWidget {
             ),
           )
         else
-          Opacity(
-            opacity: 0.5,
-            child: contentToShow,
-          ),
+          Opacity(opacity: 0.5, child: contentToShow),
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -196,11 +193,7 @@ class LockedFeatureOverlay extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.lock_outline,
-              size: 16,
-              color: Colors.amber.shade800,
-            ),
+            Icon(Icons.lock_outline, size: 16, color: Colors.amber.shade800),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -229,9 +222,7 @@ class LockedFeatureOverlay extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

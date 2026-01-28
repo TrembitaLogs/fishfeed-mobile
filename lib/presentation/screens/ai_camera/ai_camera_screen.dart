@@ -99,7 +99,9 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
 
       await _setupController(camera);
     } catch (e) {
-      ref.read(cameraProvider.notifier).setError('Failed to initialize camera: $e');
+      ref
+          .read(cameraProvider.notifier)
+          .setError('Failed to initialize camera: $e');
     } finally {
       _isInitializing = false;
     }
@@ -130,7 +132,9 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
       ref.read(cameraProvider.notifier).setInitialized(true);
       setState(() {});
     } on CameraException catch (e) {
-      ref.read(cameraProvider.notifier).setError('Camera error: ${e.description}');
+      ref
+          .read(cameraProvider.notifier)
+          .setError('Camera error: ${e.description}');
     }
   }
 
@@ -170,11 +174,12 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
       if (!mounted) return;
 
       // Navigate to preview screen
-      final previewResult = await Navigator.of(context).push<PhotoPreviewResult>(
-        MaterialPageRoute(
-          builder: (context) => PhotoPreviewScreen(imagePath: image.path),
-        ),
-      );
+      final previewResult = await Navigator.of(context)
+          .push<PhotoPreviewResult>(
+            MaterialPageRoute(
+              builder: (context) => PhotoPreviewScreen(imagePath: image.path),
+            ),
+          );
 
       if (!mounted) return;
 
@@ -241,18 +246,19 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
         if (!mounted) return;
 
         // Navigate to result screen
-        final confirmResult = await Navigator.of(context).push<ScanConfirmResult>(
-          MaterialPageRoute(
-            builder: (context) => ScanResultScreen(
-              result: result,
-              imageBytes: imageBytes,
-              onEditRequested: () {
-                // TODO: Navigate to species selection screen (task 11.6)
-                // For now, just close and let user retry
-              },
-            ),
-          ),
-        );
+        final confirmResult = await Navigator.of(context)
+            .push<ScanConfirmResult>(
+              MaterialPageRoute(
+                builder: (context) => ScanResultScreen(
+                  result: result,
+                  imageBytes: imageBytes,
+                  onEditRequested: () {
+                    // TODO: Navigate to species selection screen (task 11.6)
+                    // For now, just close and let user retry
+                  },
+                ),
+              ),
+            );
 
         if (!mounted) return;
 
@@ -300,10 +306,7 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        action: SnackBarAction(
-          label: 'Retry',
-          onPressed: _onCapture,
-        ),
+        action: SnackBarAction(label: 'Retry', onPressed: _onCapture),
         backgroundColor: Colors.red.shade900,
       ),
     );
@@ -387,27 +390,27 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
     }
 
     // Listen for camera toggle to reinitialize
-    ref.listen<bool>(
-      cameraProvider.select((s) => s.isUsingFrontCamera),
-      (previous, next) {
-        if (previous != null && previous != next) {
-          _initializeCamera();
-        }
-      },
-    );
+    ref.listen<bool>(cameraProvider.select((s) => s.isUsingFrontCamera), (
+      previous,
+      next,
+    ) {
+      if (previous != null && previous != next) {
+        _initializeCamera();
+      }
+    });
 
     // Listen for flash mode changes to apply to controller
-    ref.listen<CameraFlashMode>(
-      cameraProvider.select((s) => s.flashMode),
-      (previous, next) async {
-        if (previous != null && previous != next) {
-          final controller = _controller;
-          if (controller != null && controller.value.isInitialized) {
-            await controller.setFlashMode(next.toFlashMode());
-          }
+    ref.listen<CameraFlashMode>(cameraProvider.select((s) => s.flashMode), (
+      previous,
+      next,
+    ) async {
+      if (previous != null && previous != next) {
+        final controller = _controller;
+        if (controller != null && controller.value.isInitialized) {
+          await controller.setFlashMode(next.toFlashMode());
         }
-      },
-    );
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -440,8 +443,7 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
           ),
 
           // Error overlay
-          if (cameraState.hasError)
-            _buildErrorOverlay(cameraState.error!),
+          if (cameraState.hasError) _buildErrorOverlay(cameraState.error!),
         ],
       ),
     );
@@ -452,9 +454,7 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
 
     if (controller == null || !controller.value.isInitialized) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Colors.white,
-        ),
+        child: CircularProgressIndicator(color: Colors.white),
       );
     }
 
@@ -487,25 +487,21 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 64,
-              ),
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
               const SizedBox(height: 16),
               Text(
                 'Camera Error',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Text(
                 error,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(

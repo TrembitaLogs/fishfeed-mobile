@@ -12,7 +12,8 @@ part of 'family_member_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 FamilyMemberDto _$FamilyMemberDtoFromJson(Map<String, dynamic> json) {
   return _FamilyMemberDto.fromJson(json);
@@ -42,17 +43,19 @@ mixin _$FamilyMemberDto {
 /// @nodoc
 abstract class $FamilyMemberDtoCopyWith<$Res> {
   factory $FamilyMemberDtoCopyWith(
-          FamilyMemberDto value, $Res Function(FamilyMemberDto) then) =
-      _$FamilyMemberDtoCopyWithImpl<$Res, FamilyMemberDto>;
+    FamilyMemberDto value,
+    $Res Function(FamilyMemberDto) then,
+  ) = _$FamilyMemberDtoCopyWithImpl<$Res, FamilyMemberDto>;
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'user_id') String userId,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      String role,
-      @JsonKey(name: 'joined_at') DateTime joinedAt,
-      @JsonKey(name: 'display_name') String? displayName,
-      @JsonKey(name: 'avatar_url') String? avatarUrl});
+  $Res call({
+    String id,
+    @JsonKey(name: 'user_id') String userId,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String role,
+    @JsonKey(name: 'joined_at') DateTime joinedAt,
+    @JsonKey(name: 'display_name') String? displayName,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+  });
 }
 
 /// @nodoc
@@ -76,55 +79,60 @@ class _$FamilyMemberDtoCopyWithImpl<$Res, $Val extends FamilyMemberDto>
     Object? displayName = freezed,
     Object? avatarUrl = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      joinedAt: null == joinedAt
-          ? _value.joinedAt
-          : joinedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            aquariumId: null == aquariumId
+                ? _value.aquariumId
+                : aquariumId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            role: null == role
+                ? _value.role
+                : role // ignore: cast_nullable_to_non_nullable
+                      as String,
+            joinedAt: null == joinedAt
+                ? _value.joinedAt
+                : joinedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            displayName: freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatarUrl: freezed == avatarUrl
+                ? _value.avatarUrl
+                : avatarUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FamilyMemberDtoImplCopyWith<$Res>
     implements $FamilyMemberDtoCopyWith<$Res> {
-  factory _$$FamilyMemberDtoImplCopyWith(_$FamilyMemberDtoImpl value,
-          $Res Function(_$FamilyMemberDtoImpl) then) =
-      __$$FamilyMemberDtoImplCopyWithImpl<$Res>;
+  factory _$$FamilyMemberDtoImplCopyWith(
+    _$FamilyMemberDtoImpl value,
+    $Res Function(_$FamilyMemberDtoImpl) then,
+  ) = __$$FamilyMemberDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'user_id') String userId,
-      @JsonKey(name: 'aquarium_id') String aquariumId,
-      String role,
-      @JsonKey(name: 'joined_at') DateTime joinedAt,
-      @JsonKey(name: 'display_name') String? displayName,
-      @JsonKey(name: 'avatar_url') String? avatarUrl});
+  $Res call({
+    String id,
+    @JsonKey(name: 'user_id') String userId,
+    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String role,
+    @JsonKey(name: 'joined_at') DateTime joinedAt,
+    @JsonKey(name: 'display_name') String? displayName,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+  });
 }
 
 /// @nodoc
@@ -132,8 +140,9 @@ class __$$FamilyMemberDtoImplCopyWithImpl<$Res>
     extends _$FamilyMemberDtoCopyWithImpl<$Res, _$FamilyMemberDtoImpl>
     implements _$$FamilyMemberDtoImplCopyWith<$Res> {
   __$$FamilyMemberDtoImplCopyWithImpl(
-      _$FamilyMemberDtoImpl _value, $Res Function(_$FamilyMemberDtoImpl) _then)
-      : super(_value, _then);
+    _$FamilyMemberDtoImpl _value,
+    $Res Function(_$FamilyMemberDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -146,51 +155,53 @@ class __$$FamilyMemberDtoImplCopyWithImpl<$Res>
     Object? displayName = freezed,
     Object? avatarUrl = freezed,
   }) {
-    return _then(_$FamilyMemberDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      aquariumId: null == aquariumId
-          ? _value.aquariumId
-          : aquariumId // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      joinedAt: null == joinedAt
-          ? _value.joinedAt
-          : joinedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$FamilyMemberDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        aquariumId: null == aquariumId
+            ? _value.aquariumId
+            : aquariumId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        role: null == role
+            ? _value.role
+            : role // ignore: cast_nullable_to_non_nullable
+                  as String,
+        joinedAt: null == joinedAt
+            ? _value.joinedAt
+            : joinedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        displayName: freezed == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatarUrl: freezed == avatarUrl
+            ? _value.avatarUrl
+            : avatarUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FamilyMemberDtoImpl extends _FamilyMemberDto {
-  const _$FamilyMemberDtoImpl(
-      {required this.id,
-      @JsonKey(name: 'user_id') required this.userId,
-      @JsonKey(name: 'aquarium_id') required this.aquariumId,
-      this.role = 'member',
-      @JsonKey(name: 'joined_at') required this.joinedAt,
-      @JsonKey(name: 'display_name') this.displayName,
-      @JsonKey(name: 'avatar_url') this.avatarUrl})
-      : super._();
+  const _$FamilyMemberDtoImpl({
+    required this.id,
+    @JsonKey(name: 'user_id') required this.userId,
+    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    this.role = 'member',
+    @JsonKey(name: 'joined_at') required this.joinedAt,
+    @JsonKey(name: 'display_name') this.displayName,
+    @JsonKey(name: 'avatar_url') this.avatarUrl,
+  }) : super._();
 
   factory _$FamilyMemberDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FamilyMemberDtoImplFromJson(json);
@@ -241,34 +252,42 @@ class _$FamilyMemberDtoImpl extends _FamilyMemberDto {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, aquariumId, role,
-      joinedAt, displayName, avatarUrl);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    userId,
+    aquariumId,
+    role,
+    joinedAt,
+    displayName,
+    avatarUrl,
+  );
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$FamilyMemberDtoImplCopyWith<_$FamilyMemberDtoImpl> get copyWith =>
       __$$FamilyMemberDtoImplCopyWithImpl<_$FamilyMemberDtoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FamilyMemberDtoImplToJson(
-      this,
-    );
+    return _$$FamilyMemberDtoImplToJson(this);
   }
 }
 
 abstract class _FamilyMemberDto extends FamilyMemberDto {
-  const factory _FamilyMemberDto(
-          {required final String id,
-          @JsonKey(name: 'user_id') required final String userId,
-          @JsonKey(name: 'aquarium_id') required final String aquariumId,
-          final String role,
-          @JsonKey(name: 'joined_at') required final DateTime joinedAt,
-          @JsonKey(name: 'display_name') final String? displayName,
-          @JsonKey(name: 'avatar_url') final String? avatarUrl}) =
-      _$FamilyMemberDtoImpl;
+  const factory _FamilyMemberDto({
+    required final String id,
+    @JsonKey(name: 'user_id') required final String userId,
+    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    final String role,
+    @JsonKey(name: 'joined_at') required final DateTime joinedAt,
+    @JsonKey(name: 'display_name') final String? displayName,
+    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+  }) = _$FamilyMemberDtoImpl;
   const _FamilyMemberDto._() : super._();
 
   factory _FamilyMemberDto.fromJson(Map<String, dynamic> json) =

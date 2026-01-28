@@ -94,18 +94,22 @@ void main() {
   });
 
   group('Display Text Formatting', () {
-    test('getLastSyncDisplayText returns "Never" when no sync has occurred', () {
-      final service = BackgroundSyncService.instance;
-      // Without initialization, last sync should be null
-      final displayText = service.getLastSyncDisplayText();
+    test(
+      'getLastSyncDisplayText returns "Never" when no sync has occurred',
+      () {
+        final service = BackgroundSyncService.instance;
+        // Without initialization, last sync should be null
+        final displayText = service.getLastSyncDisplayText();
 
-      expect(displayText, 'Never');
-    });
+        expect(displayText, 'Never');
+      },
+    );
 
     test('should format minutes correctly', () async {
       // Test the formatting logic with a recent timestamp
-      final fiveMinutesAgo =
-          DateTime.now().subtract(const Duration(minutes: 5));
+      final fiveMinutesAgo = DateTime.now().subtract(
+        const Duration(minutes: 5),
+      );
       SharedPreferences.setMockInitialValues({
         'last_background_sync': fiveMinutesAgo.millisecondsSinceEpoch,
       });
@@ -116,7 +120,8 @@ void main() {
       expect(duration.inMinutes, lessThanOrEqualTo(6));
 
       final minutes = duration.inMinutes;
-      final expectedText = '$minutes ${minutes == 1 ? "minute" : "minutes"} ago';
+      final expectedText =
+          '$minutes ${minutes == 1 ? "minute" : "minutes"} ago';
 
       expect(expectedText, contains('minutes ago'));
     });
@@ -193,8 +198,9 @@ void main() {
 
   group('Time Since Last Sync', () {
     test('should calculate time since last sync correctly', () async {
-      final tenMinutesAgo =
-          DateTime.now().subtract(const Duration(minutes: 10));
+      final tenMinutesAgo = DateTime.now().subtract(
+        const Duration(minutes: 10),
+      );
       SharedPreferences.setMockInitialValues({
         'last_background_sync': tenMinutesAgo.millisecondsSinceEpoch,
       });

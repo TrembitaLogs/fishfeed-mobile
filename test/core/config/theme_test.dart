@@ -156,14 +156,13 @@ void main() {
     });
 
     group('widget integration', () {
-      testWidgets('lightTheme applies correctly to MaterialApp',
-          (WidgetTester tester) async {
+      testWidgets('lightTheme applies correctly to MaterialApp', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.lightTheme,
-            home: const Scaffold(
-              body: Text('Test'),
-            ),
+            home: const Scaffold(body: Text('Test')),
           ),
         );
 
@@ -174,14 +173,13 @@ void main() {
         expect(theme.colorScheme.primary, const Color(0xFF1565C0));
       });
 
-      testWidgets('darkTheme applies correctly to MaterialApp',
-          (WidgetTester tester) async {
+      testWidgets('darkTheme applies correctly to MaterialApp', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.darkTheme,
-            home: const Scaffold(
-              body: Text('Test'),
-            ),
+            home: const Scaffold(body: Text('Test')),
           ),
         );
 
@@ -192,16 +190,15 @@ void main() {
         expect(theme.colorScheme.primary, const Color(0xFF64B5F6));
       });
 
-      testWidgets('theme switching works correctly',
-          (WidgetTester tester) async {
+      testWidgets('theme switching works correctly', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.light,
-            home: const Scaffold(
-              body: Text('Test'),
-            ),
+            home: const Scaffold(body: Text('Test')),
           ),
         );
 
@@ -214,9 +211,7 @@ void main() {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.dark,
-            home: const Scaffold(
-              body: Text('Test'),
-            ),
+            home: const Scaffold(body: Text('Test')),
           ),
         );
         await tester.pumpAndSettle();

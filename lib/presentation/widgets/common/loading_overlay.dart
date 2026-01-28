@@ -35,10 +35,7 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Positioned.fill(
-            child: _LoadingOverlayContent(
-              message: message,
-              opacity: opacity,
-            ),
+            child: _LoadingOverlayContent(message: message, opacity: opacity),
           ),
       ],
     );
@@ -54,10 +51,8 @@ class LoadingOverlay extends StatelessWidget {
     double opacity = 0.5,
   }) {
     final overlayEntry = OverlayEntry(
-      builder: (context) => _LoadingOverlayContent(
-        message: message,
-        opacity: opacity,
-      ),
+      builder: (context) =>
+          _LoadingOverlayContent(message: message, opacity: opacity),
     );
 
     Overlay.of(context).insert(overlayEntry);
@@ -71,10 +66,7 @@ class LoadingOverlay extends StatelessWidget {
 }
 
 class _LoadingOverlayContent extends StatelessWidget {
-  const _LoadingOverlayContent({
-    this.message,
-    required this.opacity,
-  });
+  const _LoadingOverlayContent({this.message, required this.opacity});
 
   final String? message;
   final double opacity;

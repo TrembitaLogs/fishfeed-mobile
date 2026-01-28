@@ -145,24 +145,13 @@ enum PaywallSource {
 }
 
 /// Fish add method for analytics tracking.
-enum FishAddMethod {
-  manual,
-  aiCamera,
-}
+enum FishAddMethod { manual, aiCamera }
 
 /// Feed status for analytics tracking.
-enum FeedStatus {
-  fed,
-  missed,
-  skipped,
-}
+enum FeedStatus { fed, missed, skipped }
 
 /// Ad type for analytics tracking.
-enum AdType {
-  banner,
-  interstitial,
-  rewarded,
-}
+enum AdType { banner, interstitial, rewarded }
 
 /// Service for tracking analytics events with PostHog.
 ///
@@ -192,7 +181,9 @@ class AnalyticsService {
 
     if (apiKey == null || apiKey.isEmpty) {
       if (kDebugMode) {
-        debugPrint('[Analytics] PostHog API key not configured, skipping initialization');
+        debugPrint(
+          '[Analytics] PostHog API key not configured, skipping initialization',
+        );
       }
       return;
     }
@@ -257,7 +248,10 @@ class AnalyticsService {
     }
 
     // Environment
-    await _posthog.register('environment', kDebugMode ? 'development' : 'production');
+    await _posthog.register(
+      'environment',
+      kDebugMode ? 'development' : 'production',
+    );
   }
 
   /// Identifies user with their properties.
@@ -278,7 +272,8 @@ class AnalyticsService {
     final properties = <String, Object>{
       if (email != null) 'email': email,
       if (subscriptionStatus != null) 'subscription_status': subscriptionStatus,
-      if (freeAiScansRemaining != null) 'free_ai_scans_remaining': freeAiScansRemaining,
+      if (freeAiScansRemaining != null)
+        'free_ai_scans_remaining': freeAiScansRemaining,
       if (additionalProperties != null)
         for (final entry in additionalProperties.entries)
           if (entry.value != null) entry.key: entry.value as Object,
@@ -543,7 +538,8 @@ class AnalyticsService {
   }) {
     _capture(AnalyticsEvents.aiScanResult, {
       AnalyticsParams.success: success,
-      if (detectedSpeciesId != null) AnalyticsParams.detectedSpeciesId: detectedSpeciesId,
+      if (detectedSpeciesId != null)
+        AnalyticsParams.detectedSpeciesId: detectedSpeciesId,
       if (confidence != null) AnalyticsParams.confidence: confidence,
     });
   }
@@ -568,9 +564,7 @@ class AnalyticsService {
 
   /// Tracks AI scan failed.
   void trackAiScanFailed({required String reason}) {
-    _capture(AnalyticsEvents.aiScanFailed, {
-      AnalyticsParams.reason: reason,
-    });
+    _capture(AnalyticsEvents.aiScanFailed, {AnalyticsParams.reason: reason});
   }
 
   /// Tracks free scans remaining shown to user.
@@ -590,10 +584,7 @@ class AnalyticsService {
   }
 
   /// Tracks fish edited.
-  void trackFishEdited({
-    required String speciesId,
-    required int newQuantity,
-  }) {
+  void trackFishEdited({required String speciesId, required int newQuantity}) {
     _capture(AnalyticsEvents.fishEdited, {
       AnalyticsParams.speciesId: speciesId,
       AnalyticsParams.newQuantity: newQuantity,
@@ -655,7 +646,8 @@ class AnalyticsService {
   }) {
     _capture(AnalyticsEvents.paywallShown, {
       AnalyticsParams.paywallSource: source.name,
-      if (scansRemaining != null) AnalyticsParams.scansRemaining: scansRemaining,
+      if (scansRemaining != null)
+        AnalyticsParams.scansRemaining: scansRemaining,
       if (isPremium != null) AnalyticsParams.isPremium: isPremium,
     });
   }
@@ -682,9 +674,7 @@ class AnalyticsService {
 
   /// Tracks subscription renewed.
   void trackSubscriptionRenewed({required String plan}) {
-    _capture(AnalyticsEvents.subscriptionRenewed, {
-      AnalyticsParams.plan: plan,
-    });
+    _capture(AnalyticsEvents.subscriptionRenewed, {AnalyticsParams.plan: plan});
   }
 
   /// Tracks subscription canceled.
@@ -695,10 +685,7 @@ class AnalyticsService {
   }
 
   /// Tracks ad impression.
-  void trackAdImpression({
-    required AdType adType,
-    String? placement,
-  }) {
+  void trackAdImpression({required AdType adType, String? placement}) {
     _capture(AnalyticsEvents.adImpression, {
       AnalyticsParams.adType: adType.name,
       if (placement != null) AnalyticsParams.adPlacement: placement,
@@ -706,10 +693,7 @@ class AnalyticsService {
   }
 
   /// Tracks ad clicked.
-  void trackAdClicked({
-    required AdType adType,
-    String? placement,
-  }) {
+  void trackAdClicked({required AdType adType, String? placement}) {
     _capture(AnalyticsEvents.adClicked, {
       AnalyticsParams.adType: adType.name,
       if (placement != null) AnalyticsParams.adPlacement: placement,
@@ -717,10 +701,7 @@ class AnalyticsService {
   }
 
   /// Tracks remove ads purchase.
-  void trackRemoveAdsPurchase({
-    double? price,
-    String? currency,
-  }) {
+  void trackRemoveAdsPurchase({double? price, String? currency}) {
     _capture(AnalyticsEvents.removeAdsPurchase, {
       if (price != null) AnalyticsParams.price: price,
       if (currency != null) AnalyticsParams.currency: currency,
@@ -738,10 +719,7 @@ class AnalyticsService {
       return;
     }
 
-    _posthog.capture(
-      eventName: eventName,
-      properties: properties,
-    );
+    _posthog.capture(eventName: eventName, properties: properties);
 
     if (kDebugMode) {
       debugPrint('[Analytics] Event: $eventName ${properties ?? ''}');

@@ -26,11 +26,13 @@ import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 // Mocks
 // ============================================================================
 
-class MockFeedingLocalDataSource extends Mock implements FeedingLocalDataSource {}
+class MockFeedingLocalDataSource extends Mock
+    implements FeedingLocalDataSource {}
 
 class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
 
-class MockAquariumLocalDataSource extends Mock implements AquariumLocalDataSource {}
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
@@ -83,12 +85,21 @@ void main() {
 
       final state = TodayFeedingsState(
         feedings: [
-          _createFeeding('1', today.add(const Duration(hours: 8)),
-              FeedingStatus.fed),
-          _createFeeding('2', today.add(const Duration(hours: 12)),
-              FeedingStatus.fed),
-          _createFeeding('3', today.add(const Duration(hours: 18)),
-              FeedingStatus.pending),
+          _createFeeding(
+            '1',
+            today.add(const Duration(hours: 8)),
+            FeedingStatus.fed,
+          ),
+          _createFeeding(
+            '2',
+            today.add(const Duration(hours: 12)),
+            FeedingStatus.fed,
+          ),
+          _createFeeding(
+            '3',
+            today.add(const Duration(hours: 18)),
+            FeedingStatus.pending,
+          ),
         ],
       );
 
@@ -101,12 +112,21 @@ void main() {
 
       final state = TodayFeedingsState(
         feedings: [
-          _createFeeding('1', today.add(const Duration(hours: 8)),
-              FeedingStatus.fed),
-          _createFeeding('2', today.add(const Duration(hours: 12)),
-              FeedingStatus.pending),
-          _createFeeding('3', today.add(const Duration(hours: 18)),
-              FeedingStatus.pending),
+          _createFeeding(
+            '1',
+            today.add(const Duration(hours: 8)),
+            FeedingStatus.fed,
+          ),
+          _createFeeding(
+            '2',
+            today.add(const Duration(hours: 12)),
+            FeedingStatus.pending,
+          ),
+          _createFeeding(
+            '3',
+            today.add(const Duration(hours: 18)),
+            FeedingStatus.pending,
+          ),
         ],
       );
 
@@ -119,12 +139,21 @@ void main() {
 
       final state = TodayFeedingsState(
         feedings: [
-          _createFeeding('1', today.add(const Duration(hours: 8)),
-              FeedingStatus.fed),
-          _createFeeding('2', today.add(const Duration(hours: 12)),
-              FeedingStatus.missed),
-          _createFeeding('3', today.add(const Duration(hours: 18)),
-              FeedingStatus.missed),
+          _createFeeding(
+            '1',
+            today.add(const Duration(hours: 8)),
+            FeedingStatus.fed,
+          ),
+          _createFeeding(
+            '2',
+            today.add(const Duration(hours: 12)),
+            FeedingStatus.missed,
+          ),
+          _createFeeding(
+            '3',
+            today.add(const Duration(hours: 18)),
+            FeedingStatus.missed,
+          ),
         ],
       );
 
@@ -216,15 +245,17 @@ void main() {
       when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
 
       when(() => mockMarkFeedingUseCase(any())).thenAnswer((_) async {
-        return const Right(MarkFeedingResult(
-          updatedStreak: Streak(
-            id: 'streak_user_123',
-            userId: 'user_123',
-            currentStreak: 1,
-            longestStreak: 1,
+        return const Right(
+          MarkFeedingResult(
+            updatedStreak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 1,
+              longestStreak: 1,
+            ),
+            wasCreated: true,
           ),
-          wasCreated: true,
-        ));
+        );
       });
 
       container = ProviderContainer(
@@ -258,15 +289,17 @@ void main() {
       when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
 
       when(() => mockMarkFeedingUseCase(any())).thenAnswer((_) async {
-        return const Right(MarkFeedingResult(
-          updatedStreak: Streak(
-            id: 'streak_user_123',
-            userId: 'user_123',
-            currentStreak: 0,
-            longestStreak: 5,
+        return const Right(
+          MarkFeedingResult(
+            updatedStreak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 0,
+              longestStreak: 5,
+            ),
+            wasCreated: false,
           ),
-          wasCreated: false,
-        ));
+        );
       });
 
       container = ProviderContainer(
@@ -443,8 +476,9 @@ void main() {
         longestStreak: 10,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(streakModel);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(streakModel);
 
       container = ProviderContainer(
         overrides: [
@@ -497,10 +531,12 @@ void main() {
         longestStreak: 10,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(initialStreak);
-      when(() => mockStreakDs.incrementStreak('user_123', any()))
-          .thenAnswer((_) async => updatedStreak);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(initialStreak);
+      when(
+        () => mockStreakDs.incrementStreak('user_123', any()),
+      ).thenAnswer((_) async => updatedStreak);
 
       container = ProviderContainer(
         overrides: [
@@ -534,10 +570,12 @@ void main() {
         longestStreak: 10,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(initialStreak);
-      when(() => mockStreakDs.resetStreak('user_123'))
-          .thenAnswer((_) async => resetStreakModel);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(initialStreak);
+      when(
+        () => mockStreakDs.resetStreak('user_123'),
+      ).thenAnswer((_) async => resetStreakModel);
 
       container = ProviderContainer(
         overrides: [
@@ -568,8 +606,9 @@ void main() {
         longestStreak: 15,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(streakModel);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',
@@ -607,8 +646,9 @@ void main() {
         longestStreak: 10,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(streakModel);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',
@@ -644,8 +684,9 @@ void main() {
         longestStreak: 10,
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123'))
-          .thenReturn(streakModel);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_123'),
+      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',

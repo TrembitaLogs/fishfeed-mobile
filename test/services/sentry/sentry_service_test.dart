@@ -39,10 +39,7 @@ void main() {
       final service = SentryService.instance;
 
       // Should not throw even if not initialized
-      await expectLater(
-        service.captureMessage('Test message'),
-        completes,
-      );
+      await expectLater(service.captureMessage('Test message'), completes);
     });
 
     test('setUser does not throw when not initialized', () async {
@@ -59,10 +56,7 @@ void main() {
       final service = SentryService.instance;
 
       // Should not throw even if not initialized
-      await expectLater(
-        service.clearUser(),
-        completes,
-      );
+      await expectLater(service.clearUser(), completes);
     });
 
     test('addBreadcrumb does not throw when not initialized', () async {
@@ -70,10 +64,7 @@ void main() {
 
       // Should not throw even if not initialized
       await expectLater(
-        service.addBreadcrumb(
-          message: 'Test breadcrumb',
-          category: 'test',
-        ),
+        service.addBreadcrumb(message: 'Test breadcrumb', category: 'test'),
         completes,
       );
     });
@@ -82,10 +73,7 @@ void main() {
       final service = SentryService.instance;
 
       // Should not throw even if not initialized
-      await expectLater(
-        service.setTag('test-key', 'test-value'),
-        completes,
-      );
+      await expectLater(service.setTag('test-key', 'test-value'), completes);
     });
 
     test('setContext does not throw when not initialized', () async {

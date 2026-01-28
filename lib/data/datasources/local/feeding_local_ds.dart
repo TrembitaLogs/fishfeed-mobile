@@ -16,7 +16,7 @@ import 'package:fishfeed/data/models/feeding_event_model.dart';
 /// ```
 class FeedingLocalDataSource {
   FeedingLocalDataSource({Box<dynamic>? feedingEventsBox})
-      : _feedingEventsBox = feedingEventsBox;
+    : _feedingEventsBox = feedingEventsBox;
 
   final Box<dynamic>? _feedingEventsBox;
 
@@ -60,10 +60,12 @@ class FeedingLocalDataSource {
 
     final events = _feedingEvents.values
         .whereType<FeedingEventModel>()
-        .where((event) =>
-            !event.isDeleted &&
-            event.feedingTime.isAfter(startOfDay) &&
-            event.feedingTime.isBefore(endOfDay))
+        .where(
+          (event) =>
+              !event.isDeleted &&
+              event.feedingTime.isAfter(startOfDay) &&
+              event.feedingTime.isBefore(endOfDay),
+        )
         .toList();
 
     events.sort((a, b) => b.feedingTime.compareTo(a.feedingTime));
@@ -244,14 +246,16 @@ class FeedingLocalDataSource {
   bool hasEventForTime(String aquariumId, DateTime feedingTime) {
     return _feedingEvents.values
         .whereType<FeedingEventModel>()
-        .where((event) =>
-            !event.isDeleted &&
-            event.aquariumId == aquariumId &&
-            event.feedingTime.year == feedingTime.year &&
-            event.feedingTime.month == feedingTime.month &&
-            event.feedingTime.day == feedingTime.day &&
-            event.feedingTime.hour == feedingTime.hour &&
-            event.feedingTime.minute == feedingTime.minute)
+        .where(
+          (event) =>
+              !event.isDeleted &&
+              event.aquariumId == aquariumId &&
+              event.feedingTime.year == feedingTime.year &&
+              event.feedingTime.month == feedingTime.month &&
+              event.feedingTime.day == feedingTime.day &&
+              event.feedingTime.hour == feedingTime.hour &&
+              event.feedingTime.minute == feedingTime.minute,
+        )
         .isNotEmpty;
   }
 
@@ -260,17 +264,22 @@ class FeedingLocalDataSource {
   /// [aquariumId] - The ID of the aquarium.
   /// [feedingTime] - The exact feeding time to check.
   /// Returns list of events matching the aquarium and time.
-  List<FeedingEventModel> getEventsForTime(String aquariumId, DateTime feedingTime) {
+  List<FeedingEventModel> getEventsForTime(
+    String aquariumId,
+    DateTime feedingTime,
+  ) {
     return _feedingEvents.values
         .whereType<FeedingEventModel>()
-        .where((event) =>
-            !event.isDeleted &&
-            event.aquariumId == aquariumId &&
-            event.feedingTime.year == feedingTime.year &&
-            event.feedingTime.month == feedingTime.month &&
-            event.feedingTime.day == feedingTime.day &&
-            event.feedingTime.hour == feedingTime.hour &&
-            event.feedingTime.minute == feedingTime.minute)
+        .where(
+          (event) =>
+              !event.isDeleted &&
+              event.aquariumId == aquariumId &&
+              event.feedingTime.year == feedingTime.year &&
+              event.feedingTime.month == feedingTime.month &&
+              event.feedingTime.day == feedingTime.day &&
+              event.feedingTime.hour == feedingTime.hour &&
+              event.feedingTime.minute == feedingTime.minute,
+        )
         .toList();
   }
 
@@ -322,8 +331,11 @@ class FeedingLocalDataSource {
       }
 
       // Update existing event
-      if (serverData['feeding_time'] != null || serverData['scheduled_at'] != null) {
-        final timeStr = (serverData['feeding_time'] ?? serverData['scheduled_at']) as String?;
+      if (serverData['feeding_time'] != null ||
+          serverData['scheduled_at'] != null) {
+        final timeStr =
+            (serverData['feeding_time'] ?? serverData['scheduled_at'])
+                as String?;
         if (timeStr != null) {
           final parsedTime = DateTime.tryParse(timeStr);
           if (parsedTime != null) {
@@ -338,7 +350,8 @@ class FeedingLocalDataSource {
         existing.completedByName = serverData['completed_by_name'] as String?;
       }
       if (serverData['completed_by_avatar'] != null) {
-        existing.completedByAvatar = serverData['completed_by_avatar'] as String?;
+        existing.completedByAvatar =
+            serverData['completed_by_avatar'] as String?;
       }
       if (serverData['notes'] != null) {
         existing.notes = serverData['notes'] as String?;
@@ -352,7 +365,8 @@ class FeedingLocalDataSource {
       await existing.save();
     } else {
       // Create new event from server data
-      final feedingTimeStr = (serverData['feeding_time'] ?? serverData['scheduled_at']) as String?;
+      final feedingTimeStr =
+          (serverData['feeding_time'] ?? serverData['scheduled_at']) as String?;
       final feedingTime = feedingTimeStr != null
           ? DateTime.tryParse(feedingTimeStr) ?? DateTime.now()
           : DateTime.now();
@@ -365,7 +379,8 @@ class FeedingLocalDataSource {
         speciesId: serverData['species_id'] as String?,
         synced: true,
         createdAt: serverData['created_at'] != null
-            ? DateTime.tryParse(serverData['created_at'] as String) ?? DateTime.now()
+            ? DateTime.tryParse(serverData['created_at'] as String) ??
+                  DateTime.now()
             : DateTime.now(),
         completedBy: serverData['completed_by'] as String?,
         completedByName: serverData['completed_by_name'] as String?,

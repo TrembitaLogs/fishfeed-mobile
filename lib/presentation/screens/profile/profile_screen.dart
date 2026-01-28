@@ -100,11 +100,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final theme = Theme.of(context);
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     // Update nickname controller when user changes externally
@@ -209,12 +205,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (profileState.error != null)
                 _ErrorBanner(
                   error: profileState.error!,
-                  onDismiss: () => ref.read(profileNotifierProvider.notifier).clearErrors(),
+                  onDismiss: () =>
+                      ref.read(profileNotifierProvider.notifier).clearErrors(),
                 ),
 
               // Quick actions
               _QuickActionsSection(
-                onShareProfile: () => _shareProfile(user.displayName ?? user.email),
+                onShareProfile: () =>
+                    _shareProfile(user.displayName ?? user.email),
                 onViewPremium: _navigateToSubscription,
                 isPremium: user.subscriptionStatus.isPremium,
                 hasRemoveAds: user.subscriptionStatus.hasRemoveAds,
@@ -241,10 +239,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                l10n.choosePhoto,
-                style: theme.textTheme.titleMedium,
-              ),
+              Text(l10n.choosePhoto, style: theme.textTheme.titleMedium),
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
@@ -318,9 +313,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     // Cancel auto-save timer since we're saving now
     _autoSaveTimer?.cancel();
 
-    final success = await ref.read(profileNotifierProvider.notifier).updateNickname(
-          trimmedNickname,
-        );
+    final success = await ref
+        .read(profileNotifierProvider.notifier)
+        .updateNickname(trimmedNickname);
 
     if (success && mounted) {
       setState(() {
@@ -390,10 +385,7 @@ class _AvatarSection extends StatelessWidget {
                   backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   child: const CircularProgressIndicator(),
                 )
-              : AppCachedAvatar(
-                  imageUrl: avatarUrl,
-                  radius: 60,
-                ),
+              : AppCachedAvatar(imageUrl: avatarUrl, radius: 60),
         ),
         Positioned(
           right: 0,
@@ -452,7 +444,9 @@ class _NicknameSection extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                controller.text.isEmpty ? l10n.setYourNickname : controller.text,
+                controller.text.isEmpty
+                    ? l10n.setYourNickname
+                    : controller.text,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: controller.text.isEmpty
                       ? theme.colorScheme.onSurfaceVariant
@@ -511,10 +505,7 @@ class _NicknameSection extends StatelessWidget {
 
 /// Error banner for displaying profile errors.
 class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({
-    required this.error,
-    required this.onDismiss,
-  });
+  const _ErrorBanner({required this.error, required this.onDismiss});
 
   final Failure error;
   final VoidCallback onDismiss;
@@ -532,17 +523,12 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: theme.colorScheme.error,
-          ),
+          Icon(Icons.error_outline, color: theme.colorScheme.error),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               error.message ?? AppLocalizations.of(context)!.anErrorOccurred,
-              style: TextStyle(
-                color: theme.colorScheme.onErrorContainer,
-              ),
+              style: TextStyle(color: theme.colorScheme.onErrorContainer),
             ),
           ),
           IconButton(

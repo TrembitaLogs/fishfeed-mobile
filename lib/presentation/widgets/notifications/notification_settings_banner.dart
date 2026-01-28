@@ -110,8 +110,9 @@ class NotificationSettingsBanner extends StatelessWidget {
                   IconButton(
                     onPressed: onDismissed,
                     icon: const Icon(Icons.close, size: 20),
-                    color: theme.colorScheme.onSecondaryContainer
-                        .withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSecondaryContainer.withValues(
+                      alpha: 0.6,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 32,
@@ -136,10 +137,7 @@ class NotificationSettingsBanner extends StatelessWidget {
 ///
 /// Designed for use in lists or as a list tile in settings screens.
 class NotificationSettingsTile extends StatelessWidget {
-  const NotificationSettingsTile({
-    super.key,
-    this.onTap,
-  });
+  const NotificationSettingsTile({super.key, this.onTap});
 
   /// Callback when the tile is tapped.
   ///
@@ -168,10 +166,7 @@ class NotificationSettingsTile extends StatelessWidget {
       title: Text(l10n.notificationsSettingsTitle),
       subtitle: Text(
         l10n.notificationsSettingsDisabledHint,
-        style: TextStyle(
-          color: theme.colorScheme.error,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
       ),
       trailing: TextButton(
         onPressed: onTap ?? _openSettings,

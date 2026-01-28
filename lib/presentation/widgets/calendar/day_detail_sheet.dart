@@ -39,10 +39,7 @@ Future<void> showDayDetailSheet(BuildContext context, DateTime date) {
 /// - Empty state when no feedings exist
 /// - Swipe down to close
 class DayDetailSheet extends ConsumerWidget {
-  const DayDetailSheet({
-    super.key,
-    required this.date,
-  });
+  const DayDetailSheet({super.key, required this.date});
 
   /// The date to display details for.
   final DateTime date;
@@ -61,9 +58,7 @@ class DayDetailSheet extends ConsumerWidget {
         return Container(
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
@@ -251,7 +246,12 @@ class _DayDetailHeader extends StatelessWidget {
     return '$weekday, $month ${date.day}';
   }
 
-  String _getStatusText(DayFeedingStatus status, int completed, int total, AppLocalizations l10n) {
+  String _getStatusText(
+    DayFeedingStatus status,
+    int completed,
+    int total,
+    AppLocalizations l10n,
+  ) {
     if (status == DayFeedingStatus.noData || total == 0) {
       return l10n.noFeedingsScheduled;
     }
@@ -361,11 +361,7 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text(
               'Failed to load',
@@ -390,10 +386,7 @@ class _ErrorState extends StatelessWidget {
 
 /// List of feedings for the day.
 class _FeedingsList extends StatelessWidget {
-  const _FeedingsList({
-    required this.feedings,
-    required this.scrollController,
-  });
+  const _FeedingsList({required this.feedings, required this.scrollController});
 
   final List<ScheduledFeeding> feedings;
   final ScrollController scrollController;

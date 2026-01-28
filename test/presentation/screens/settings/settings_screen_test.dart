@@ -29,10 +29,7 @@ void main() {
     mockPurchaseService = MockPurchaseService();
   });
 
-  Widget buildTestWidget({
-    SubscriptionStatus? subscriptionStatus,
-    User? user,
-  }) {
+  Widget buildTestWidget({SubscriptionStatus? subscriptionStatus, User? user}) {
     return wrapForTesting(
       child: const SettingsScreen(),
       overrides: [
@@ -111,9 +108,9 @@ void main() {
 
     group('subscription section', () {
       testWidgets('shows free plan for non-premium user', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          subscriptionStatus: const SubscriptionStatus.free(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(subscriptionStatus: const SubscriptionStatus.free()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Free plan'), findsOneWidget);
@@ -121,12 +118,14 @@ void main() {
       });
 
       testWidgets('shows active subscription for premium user', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          subscriptionStatus: const SubscriptionStatus(
-            tier: SubscriptionTier.premium,
-            isTrialActive: false,
+        await tester.pumpWidget(
+          buildTestWidget(
+            subscriptionStatus: const SubscriptionStatus(
+              tier: SubscriptionTier.premium,
+              isTrialActive: false,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Active subscription'), findsOneWidget);
@@ -135,13 +134,15 @@ void main() {
 
       testWidgets('shows trial info for trial user', (tester) async {
         final expirationDate = DateTime.now().add(const Duration(days: 5));
-        await tester.pumpWidget(buildTestWidget(
-          subscriptionStatus: SubscriptionStatus(
-            tier: SubscriptionTier.premium,
-            isTrialActive: true,
-            expirationDate: expirationDate,
+        await tester.pumpWidget(
+          buildTestWidget(
+            subscriptionStatus: SubscriptionStatus(
+              tier: SubscriptionTier.premium,
+              isTrialActive: true,
+              expirationDate: expirationDate,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Trial ends in'), findsOneWidget);
@@ -176,9 +177,7 @@ void main() {
 
     group('account section', () {
       testWidgets('shows Profile tile with user email', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          user: testUser,
-        ));
+        await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 
         expect(find.text('Profile'), findsOneWidget);
@@ -203,8 +202,9 @@ void main() {
     });
 
     group('delete account dialog', () {
-      testWidgets('tapping Delete Account shows first confirmation dialog',
-          (tester) async {
+      testWidgets('tapping Delete Account shows first confirmation dialog', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -221,7 +221,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // First dialog should appear
-        expect(find.text('Delete Account'), findsNWidgets(2)); // Tile + dialog title
+        expect(
+          find.text('Delete Account'),
+          findsNWidgets(2),
+        ); // Tile + dialog title
         expect(
           find.textContaining('Are you sure you want to delete your account?'),
           findsOneWidget,
@@ -254,7 +257,9 @@ void main() {
         expect(find.text('Continue'), findsNothing);
       });
 
-      testWidgets('continuing shows second confirmation dialog', (tester) async {
+      testWidgets('continuing shows second confirmation dialog', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -331,8 +336,9 @@ void main() {
         expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
       });
 
-      testWidgets('second dialog lists data that will be deleted',
-          (tester) async {
+      testWidgets('second dialog lists data that will be deleted', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -458,7 +464,9 @@ void main() {
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
       });
 
-      testWidgets('App Version displays dynamic version after loading', (tester) async {
+      testWidgets('App Version displays dynamic version after loading', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 

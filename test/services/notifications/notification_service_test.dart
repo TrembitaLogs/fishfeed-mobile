@@ -58,17 +58,11 @@ void main() {
       });
 
       test('should have correct missed channel ID', () {
-        expect(
-          NotificationService.missedChannelId,
-          equals('missed_events'),
-        );
+        expect(NotificationService.missedChannelId, equals('missed_events'));
       });
 
       test('should have correct missed channel name', () {
-        expect(
-          NotificationService.missedChannelName,
-          equals('Missed Events'),
-        );
+        expect(NotificationService.missedChannelName, equals('Missed Events'));
       });
 
       test('should have correct missed channel description', () {
@@ -79,10 +73,7 @@ void main() {
       });
 
       test('should have correct confirm channel ID', () {
-        expect(
-          NotificationService.confirmChannelId,
-          equals('confirm_status'),
-        );
+        expect(NotificationService.confirmChannelId, equals('confirm_status'));
       });
 
       test('should have correct confirm channel name', () {
@@ -140,37 +131,49 @@ void main() {
 
     group('initialize', () {
       test('should initialize plugin with correct settings', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
 
-        verify(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).called(1);
+        verify(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).called(1);
         expect(service.isInitialized, isTrue);
       });
 
       test('should not reinitialize if already initialized', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         await service.initialize();
 
-        verify(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).called(1);
+        verify(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).called(1);
       });
     });
 
@@ -201,8 +204,9 @@ void main() {
           const PendingNotificationRequest(2, 'Title 2', 'Body 2', 'payload2'),
         ];
 
-        when(() => mockPlugin.pendingNotificationRequests())
-            .thenAnswer((_) async => pendingRequests);
+        when(
+          () => mockPlugin.pendingNotificationRequests(),
+        ).thenAnswer((_) async => pendingRequests);
 
         final result = await service.getPendingNotifications();
 
@@ -211,8 +215,9 @@ void main() {
       });
 
       test('should return empty list when no pending notifications', () async {
-        when(() => mockPlugin.pendingNotificationRequests())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockPlugin.pendingNotificationRequests(),
+        ).thenAnswer((_) async => []);
 
         final result = await service.getPendingNotifications();
 
@@ -220,38 +225,52 @@ void main() {
       });
     });
 
-
     group('requestPermissions', () {
       test('Android should request notifications permission', () async {
         final mockAndroidPlugin = MockAndroidFlutterLocalNotificationsPlugin();
 
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>())
-            .thenReturn(mockAndroidPlugin);
-        when(() => mockAndroidPlugin.requestNotificationsPermission())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroidPlugin);
+        when(
+          () => mockAndroidPlugin.requestNotificationsPermission(),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         final result = await service.requestAndroidPermissions();
 
         expect(result, isTrue);
-        verify(() => mockAndroidPlugin.requestNotificationsPermission())
-            .called(1);
+        verify(
+          () => mockAndroidPlugin.requestNotificationsPermission(),
+        ).called(1);
       });
 
       test('Android should return false if plugin not available', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()).thenReturn(null);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(null);
 
         await service.initialize();
         final result = await service.requestAndroidPermissions();
@@ -262,38 +281,56 @@ void main() {
       test('iOS should request all permissions', () async {
         final mockIOSPlugin = MockIOSFlutterLocalNotificationsPlugin();
 
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()).thenReturn(mockIOSPlugin);
-        when(() => mockIOSPlugin.requestPermissions(
-              alert: any(named: 'alert'),
-              badge: any(named: 'badge'),
-              sound: any(named: 'sound'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockIOSPlugin);
+        when(
+          () => mockIOSPlugin.requestPermissions(
+            alert: any(named: 'alert'),
+            badge: any(named: 'badge'),
+            sound: any(named: 'sound'),
+          ),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         final result = await service.requestIOSPermissions();
 
         expect(result, isTrue);
-        verify(() => mockIOSPlugin.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            )).called(1);
+        verify(
+          () => mockIOSPlugin.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          ),
+        ).called(1);
       });
 
       test('iOS should return false if plugin not available', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()).thenReturn(null);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(null);
 
         await service.initialize();
         final result = await service.requestIOSPermissions();
@@ -363,22 +400,28 @@ void main() {
 
     group('scheduleFeeding', () {
       test('should schedule feeding notification for future time', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
         await service.initialize();
         final futureTime = DateTime.now().add(const Duration(hours: 1));
@@ -389,25 +432,30 @@ void main() {
           eventId: 123,
         );
 
-        verify(() => mockPlugin.zonedSchedule(
-              1231, // eventId * 10 + 1
-              'Feeding time!',
-              'Time to feed Goldfish!',
-              any(),
-              any(),
-              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-              uiLocalNotificationDateInterpretation:
-                  UILocalNotificationDateInterpretation.absoluteTime,
-              payload: 'feeding_reminder_123',
-            )).called(1);
+        verify(
+          () => mockPlugin.zonedSchedule(
+            1231, // eventId * 10 + 1
+            'Feeding time!',
+            'Time to feed Goldfish!',
+            any(),
+            any(),
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            payload: 'feeding_reminder_123',
+          ),
+        ).called(1);
       });
 
       test('should not schedule feeding notification for past time', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         final pastTime = DateTime.now().subtract(const Duration(hours: 1));
@@ -418,38 +466,47 @@ void main() {
           eventId: 123,
         );
 
-        verifyNever(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            ));
+        verifyNever(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        );
       });
     });
 
     group('scheduleMissedReminder', () {
       test('should schedule missed notification for future time', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
         await service.initialize();
         final futureTime = DateTime.now().add(const Duration(hours: 1));
@@ -461,25 +518,30 @@ void main() {
         );
 
         expect(result, isTrue);
-        verify(() => mockPlugin.zonedSchedule(
-              4562, // eventId * 10 + 2
-              'Missed event',
-              'Missed event for Betta',
-              any(),
-              any(),
-              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-              uiLocalNotificationDateInterpretation:
-                  UILocalNotificationDateInterpretation.absoluteTime,
-              payload: 'missed_event_456',
-            )).called(1);
+        verify(
+          () => mockPlugin.zonedSchedule(
+            4562, // eventId * 10 + 2
+            'Missed event',
+            'Missed event for Betta',
+            any(),
+            any(),
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            payload: 'missed_event_456',
+          ),
+        ).called(1);
       });
 
       test('should return false for past time', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         final pastTime = DateTime.now().subtract(const Duration(hours: 1));
@@ -494,22 +556,28 @@ void main() {
       });
 
       test('should throttle missed notifications within 24 hours', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
         await service.initialize();
         final futureTime = DateTime.now().add(const Duration(hours: 1));
@@ -531,36 +599,45 @@ void main() {
         expect(result2, isFalse);
 
         // Only one zonedSchedule call should have been made
-        verify(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).called(1);
+        verify(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).called(1);
       });
 
       test('should allow missed notifications for different events', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
         await service.initialize();
         final futureTime = DateTime.now().add(const Duration(hours: 1));
@@ -581,49 +658,60 @@ void main() {
         );
         expect(result2, isTrue);
 
-        verify(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).called(2);
+        verify(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).called(2);
       });
     });
 
     group('scheduleConfirmationReminder', () {
-      test('should schedule confirmation notification for future time',
-          () async {
-        when(() => mockPlugin.initialize(
+      test(
+        'should schedule confirmation notification for future time',
+        () async {
+          when(
+            () => mockPlugin.initialize(
               any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
+              onDidReceiveNotificationResponse: any(
+                named: 'onDidReceiveNotificationResponse',
+              ),
+            ),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockPlugin.zonedSchedule(
               any(),
               any(),
               any(),
               any(),
               any(),
               androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
+              uiLocalNotificationDateInterpretation: any(
+                named: 'uiLocalNotificationDateInterpretation',
+              ),
               payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+            ),
+          ).thenAnswer((_) async {});
 
-        await service.initialize();
-        final futureTime = DateTime.now().add(const Duration(minutes: 15));
+          await service.initialize();
+          final futureTime = DateTime.now().add(const Duration(minutes: 15));
 
-        await service.scheduleConfirmationReminder(
-          time: futureTime,
-          eventId: 555,
-        );
+          await service.scheduleConfirmationReminder(
+            time: futureTime,
+            eventId: 555,
+          );
 
-        verify(() => mockPlugin.zonedSchedule(
+          verify(
+            () => mockPlugin.zonedSchedule(
               5553, // eventId * 10 + 3
               'Confirm status',
               'Confirm feeding status',
@@ -633,37 +721,47 @@ void main() {
               uiLocalNotificationDateInterpretation:
                   UILocalNotificationDateInterpretation.absoluteTime,
               payload: 'confirm_status_555',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
-      test('should not schedule confirmation notification for past time',
-          () async {
-        when(() => mockPlugin.initialize(
+      test(
+        'should not schedule confirmation notification for past time',
+        () async {
+          when(
+            () => mockPlugin.initialize(
               any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
+              onDidReceiveNotificationResponse: any(
+                named: 'onDidReceiveNotificationResponse',
+              ),
+            ),
+          ).thenAnswer((_) async => true);
 
-        await service.initialize();
-        final pastTime = DateTime.now().subtract(const Duration(minutes: 15));
+          await service.initialize();
+          final pastTime = DateTime.now().subtract(const Duration(minutes: 15));
 
-        await service.scheduleConfirmationReminder(
-          time: pastTime,
-          eventId: 555,
-        );
+          await service.scheduleConfirmationReminder(
+            time: pastTime,
+            eventId: 555,
+          );
 
-        verifyNever(() => mockPlugin.zonedSchedule(
+          verifyNever(
+            () => mockPlugin.zonedSchedule(
               any(),
               any(),
               any(),
               any(),
               any(),
               androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
+              uiLocalNotificationDateInterpretation: any(
+                named: 'uiLocalNotificationDateInterpretation',
+              ),
               payload: any(named: 'payload'),
-            ));
-      });
+            ),
+          );
+        },
+      );
     });
 
     group('cancelScheduledNotification', () {
@@ -683,22 +781,28 @@ void main() {
 
     group('throttle mechanism', () {
       test('clearAllThrottleRecords should clear all records', () async {
-        when(() => mockPlugin.initialize(
-              any(),
-              onDidReceiveNotificationResponse:
-                  any(named: 'onDidReceiveNotificationResponse'),
-            )).thenAnswer((_) async => true);
-        when(() => mockPlugin.zonedSchedule(
-              any(),
-              any(),
-              any(),
-              any(),
-              any(),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              uiLocalNotificationDateInterpretation:
-                  any(named: 'uiLocalNotificationDateInterpretation'),
-              payload: any(named: 'payload'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockPlugin.initialize(
+            any(),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPlugin.zonedSchedule(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            uiLocalNotificationDateInterpretation: any(
+              named: 'uiLocalNotificationDateInterpretation',
+            ),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
         await service.initialize();
         final futureTime = DateTime.now().add(const Duration(hours: 1));
@@ -745,8 +849,9 @@ class TestableNotificationService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -768,8 +873,10 @@ class TestableNotificationService {
   }
 
   Future<bool> requestAndroidPermissions() async {
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin == null) return false;
 
@@ -778,8 +885,10 @@ class TestableNotificationService {
   }
 
   Future<bool> requestIOSPermissions() async {
-    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final iosPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
 
     if (iosPlugin == null) return false;
 
@@ -902,8 +1011,9 @@ class TestableNotificationServiceV2 {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -1018,11 +1128,14 @@ class TestableNotificationServiceV2 {
   Future<void> cancelScheduledNotification(int eventId) async {
     await Future.wait([
       _plugin.cancel(
-          _generateNotificationId(NotificationType.feedingReminder, eventId)),
+        _generateNotificationId(NotificationType.feedingReminder, eventId),
+      ),
       _plugin.cancel(
-          _generateNotificationId(NotificationType.missedEvent, eventId)),
+        _generateNotificationId(NotificationType.missedEvent, eventId),
+      ),
       _plugin.cancel(
-          _generateNotificationId(NotificationType.confirmStatus, eventId)),
+        _generateNotificationId(NotificationType.confirmStatus, eventId),
+      ),
     ]);
 
     _clearThrottleRecords(eventId);
@@ -1041,65 +1154,65 @@ class TestableNotificationServiceV2 {
   NotificationDetails _getNotificationDetails(NotificationType type) {
     return switch (type) {
       NotificationType.feedingReminder => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            NotificationService.feedingChannelId,
-            NotificationService.feedingChannelName,
-            channelDescription: NotificationService.feedingChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+        android: AndroidNotificationDetails(
+          NotificationService.feedingChannelId,
+          NotificationService.feedingChannelName,
+          channelDescription: NotificationService.feedingChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
       NotificationType.missedEvent => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            NotificationService.missedChannelId,
-            NotificationService.missedChannelName,
-            channelDescription: NotificationService.missedChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+        android: AndroidNotificationDetails(
+          NotificationService.missedChannelId,
+          NotificationService.missedChannelName,
+          channelDescription: NotificationService.missedChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
       NotificationType.confirmStatus => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            NotificationService.confirmChannelId,
-            NotificationService.confirmChannelName,
-            channelDescription: NotificationService.confirmChannelDescription,
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: false,
-            presentSound: true,
-          ),
+        android: AndroidNotificationDetails(
+          NotificationService.confirmChannelId,
+          NotificationService.confirmChannelName,
+          channelDescription: NotificationService.confirmChannelDescription,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: false,
+          presentSound: true,
+        ),
+      ),
       NotificationType.freezeAvailable => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            NotificationService.freezeChannelId,
-            NotificationService.freezeChannelName,
-            channelDescription: NotificationService.freezeChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+        android: AndroidNotificationDetails(
+          NotificationService.freezeChannelId,
+          NotificationService.freezeChannelName,
+          channelDescription: NotificationService.freezeChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
     };
   }
 

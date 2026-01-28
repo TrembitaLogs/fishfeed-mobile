@@ -28,10 +28,7 @@ const _premiumBenefits = [
 /// - Free trial CTA
 /// - Restore purchases link
 class PaywallScreen extends ConsumerStatefulWidget {
-  const PaywallScreen({
-    super.key,
-    this.source = PaywallSource.settings,
-  });
+  const PaywallScreen({super.key, this.source = PaywallSource.settings});
 
   /// Source that triggered the paywall display.
   final PaywallSource source;
@@ -261,9 +258,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   void _showNoRestorableMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('No previous purchases found'),
-      ),
+      const SnackBar(content: Text('No previous purchases found')),
     );
   }
 
@@ -389,10 +384,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         ),
         const SizedBox(height: 12),
         ..._premiumBenefits.map(
-          (benefit) => BenefitItem(
-            icon: benefit.$1,
-            text: benefit.$2,
-          ),
+          (benefit) => BenefitItem(icon: benefit.$1, text: benefit.$2),
         ),
       ],
     );
@@ -508,18 +500,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: theme.colorScheme.error,
-            size: 20,
-          ),
+          Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               _errorMessage!,
-              style: TextStyle(
-                color: theme.colorScheme.onErrorContainer,
-              ),
+              style: TextStyle(color: theme.colorScheme.onErrorContainer),
             ),
           ),
           IconButton(
@@ -536,15 +522,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   Widget _buildCtaButton(ThemeData theme) {
     final isLoading = _isPurchasing || _isRestoring;
-    final hasSelection = _selectedPackage != null || _offerings?.current == null;
+    final hasSelection =
+        _selectedPackage != null || _offerings?.current == null;
 
     return FilledButton(
       onPressed: isLoading || !hasSelection ? null : _purchaseSelectedPackage,
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: _isPurchasing
           ? const SizedBox(
@@ -562,10 +547,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Start 7-Day Free Trial',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -639,9 +621,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 )
               : Text(
                   'Restore Purchases',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                  ),
+                  style: TextStyle(color: theme.colorScheme.primary),
                 ),
         ),
 
@@ -663,9 +643,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             ),
             Text(
               ' | ',
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
             ),
             TextButton(
               onPressed: () {

@@ -91,17 +91,17 @@ class Fish extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        aquariumId,
-        speciesId,
-        name,
-        quantity,
-        notes,
-        addedAt,
-        synced,
-        updatedAt,
-        serverUpdatedAt,
-        deletedAt,
-        conflictStatus,
-      ];
+    id,
+    aquariumId,
+    speciesId,
+    name,
+    quantity,
+    notes,
+    addedAt,
+    synced,
+    updatedAt,
+    serverUpdatedAt,
+    deletedAt,
+    conflictStatus,
+  ];
 }

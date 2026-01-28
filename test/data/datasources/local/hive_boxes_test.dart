@@ -80,9 +80,12 @@ void main() {
       expect(() => HiveBoxes.syncQueue, throwsStateError);
     });
 
-    test('accessing appPreferences box before init should throw StateError', () {
-      expect(() => HiveBoxes.appPreferences, throwsStateError);
-    });
+    test(
+      'accessing appPreferences box before init should throw StateError',
+      () {
+        expect(() => HiveBoxes.appPreferences, throwsStateError);
+      },
+    );
 
     test('getOnboardingCompleted before init should throw StateError', () {
       expect(() => HiveBoxes.getOnboardingCompleted(), throwsStateError);

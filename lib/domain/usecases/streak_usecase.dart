@@ -65,8 +65,8 @@ class StreakUseCase {
   StreakUseCase({
     required StreakLocalDataSource streakDataSource,
     required FeedingLocalDataSource feedingDataSource,
-  })  : _streakDataSource = streakDataSource,
-        _feedingDataSource = feedingDataSource;
+  }) : _streakDataSource = streakDataSource,
+       _feedingDataSource = feedingDataSource;
 
   final StreakLocalDataSource _streakDataSource;
   final FeedingLocalDataSource _feedingDataSource;
@@ -85,7 +85,11 @@ class StreakUseCase {
     // Validate params
     if (params.userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -106,12 +110,14 @@ class StreakUseCase {
           date,
         );
 
-        return Right(StreakUpdateResult(
-          streak: updatedStreak.toEntity(),
-          wasIncremented: true,
-          wasReset: false,
-          freezeUsed: false,
-        ));
+        return Right(
+          StreakUpdateResult(
+            streak: updatedStreak.toEntity(),
+            wasIncremented: true,
+            wasReset: false,
+            freezeUsed: false,
+          ),
+        );
       }
 
       // Not all feedings completed - check current streak status
@@ -126,20 +132,24 @@ class StreakUseCase {
         );
         await _streakDataSource.saveStreak(newStreak);
 
-        return Right(StreakUpdateResult(
-          streak: newStreak.toEntity(),
+        return Right(
+          StreakUpdateResult(
+            streak: newStreak.toEntity(),
+            wasIncremented: false,
+            wasReset: false,
+            freezeUsed: false,
+          ),
+        );
+      }
+
+      return Right(
+        StreakUpdateResult(
+          streak: currentStreak.toEntity(),
           wasIncremented: false,
           wasReset: false,
           freezeUsed: false,
-        ));
-      }
-
-      return Right(StreakUpdateResult(
-        streak: currentStreak.toEntity(),
-        wasIncremented: false,
-        wasReset: false,
-        freezeUsed: false,
-      ));
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to update streak: $e'));
     }
@@ -164,7 +174,11 @@ class StreakUseCase {
   }) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -182,22 +196,27 @@ class StreakUseCase {
         missedDate,
       );
 
-      final freezeUsed = hadStreak &&
+      final freezeUsed =
+          hadStreak &&
           hadFreeze &&
           updatedStreak.currentStreak > 0 &&
-          updatedStreak.frozenDays.any((d) =>
-              d.year == missedDate.year &&
-              d.month == missedDate.month &&
-              d.day == missedDate.day);
+          updatedStreak.frozenDays.any(
+            (d) =>
+                d.year == missedDate.year &&
+                d.month == missedDate.month &&
+                d.day == missedDate.day,
+          );
 
       final wasReset = hadStreak && updatedStreak.currentStreak == 0;
 
-      return Right(StreakUpdateResult(
-        streak: updatedStreak.toEntity(),
-        wasIncremented: false,
-        wasReset: wasReset,
-        freezeUsed: freezeUsed,
-      ));
+      return Right(
+        StreakUpdateResult(
+          streak: updatedStreak.toEntity(),
+          wasIncremented: false,
+          wasReset: wasReset,
+          freezeUsed: freezeUsed,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to handle missed day: $e'));
     }
@@ -216,7 +235,11 @@ class StreakUseCase {
   }) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -226,7 +249,9 @@ class StreakUseCase {
       if (result == null) {
         return const Left(
           ValidationFailure(
-            errors: {'freeze': ['No freeze days available']},
+            errors: {
+              'freeze': ['No freeze days available'],
+            },
           ),
         );
       }
@@ -267,8 +292,9 @@ class StreakUseCase {
     }
 
     final events = _feedingDataSource.getFeedingEventsByDate(date);
-    final aquariumEvents =
-        events.where((e) => e.aquariumId == aquariumId).length;
+    final aquariumEvents = events
+        .where((e) => e.aquariumId == aquariumId)
+        .length;
 
     return aquariumEvents >= scheduledCount;
   }
@@ -282,14 +308,17 @@ class StreakUseCase {
   Future<Either<Failure, Streak>> getStreak(String userId) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
     try {
       // Check and apply monthly freeze reset if needed
-      final streak =
-          await _streakDataSource.checkAndResetMonthlyFreeze(userId);
+      final streak = await _streakDataSource.checkAndResetMonthlyFreeze(userId);
 
       if (streak == null) {
         // Create default streak if none exists
@@ -318,7 +347,11 @@ class StreakUseCase {
   Future<Either<Failure, Streak>> resetMonthlyFreeze(String userId) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -326,9 +359,7 @@ class StreakUseCase {
       final result = await _streakDataSource.resetMonthlyFreeze(userId);
 
       if (result == null) {
-        return const Left(
-          CacheFailure(message: 'No streak found for user'),
-        );
+        return const Left(CacheFailure(message: 'No streak found for user'));
       }
 
       return Right(result.toEntity());
@@ -343,7 +374,9 @@ class StreakUseCase {
   ///
   /// Emits new values whenever the streak is updated.
   Stream<Streak?> watchStreak(String userId) {
-    return _streakDataSource.watchStreak(userId).map((model) => model?.toEntity());
+    return _streakDataSource
+        .watchStreak(userId)
+        .map((model) => model?.toEntity());
   }
 
   /// Checks if the streak is at risk of being lost today.
@@ -369,9 +402,7 @@ class StreakUseCase {
 
     return streakResult.fold(
       (_) => false,
-      (streak) =>
-          streak.currentStreak > 0 &&
-          streak.freezeAvailable > 0,
+      (streak) => streak.currentStreak > 0 && streak.freezeAvailable > 0,
     );
   }
 

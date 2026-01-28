@@ -133,7 +133,9 @@ class NotificationService {
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation(_getLocalTimeZone()));
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS notification categories with action buttons
     final darwinSettings = DarwinInitializationSettings(
@@ -210,7 +212,9 @@ class NotificationService {
 
     // Track push notification opened
     final notificationType = _extractNotificationTypeFromPayload(payload);
-    AnalyticsService.instance.trackPushOpened(notificationType: notificationType);
+    AnalyticsService.instance.trackPushOpened(
+      notificationType: notificationType,
+    );
 
     // Handle notification actions (Fed/Snooze buttons)
     if (actionId != null && actionId.isNotEmpty) {
@@ -223,7 +227,9 @@ class NotificationService {
     if (response.notificationResponseType ==
         NotificationResponseType.selectedNotification) {
       // Track app open from push
-      AnalyticsService.instance.trackAppOpenFromPush(notificationType: notificationType);
+      AnalyticsService.instance.trackAppOpenFromPush(
+        notificationType: notificationType,
+      );
       // Navigate to relevant screen based on payload
       // This will be handled by the app's navigation system
       if (kDebugMode) {
@@ -300,8 +306,10 @@ class NotificationService {
   }
 
   Future<bool> _requestAndroidPermissions() async {
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin == null) return false;
 
@@ -310,8 +318,10 @@ class NotificationService {
   }
 
   Future<bool> _requestIOSPermissions() async {
-    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final iosPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
 
     if (iosPlugin == null) return false;
 
@@ -353,8 +363,10 @@ class NotificationService {
     final isPermanentlyDenied = await permissionService.isPermanentlyDenied();
     if (isPermanentlyDenied) {
       if (kDebugMode) {
-        print('NotificationService: Permission permanently denied, '
-            'user needs to enable in settings');
+        print(
+          'NotificationService: Permission permanently denied, '
+          'user needs to enable in settings',
+        );
       }
       await permissionService.recordPermissionDeclined();
       return false;
@@ -687,10 +699,13 @@ class NotificationService {
     final scheduledTime = tz.TZDateTime.from(time, tz.local);
 
     // Use streak count as unique ID for this type of notification
-    final notificationId =
-        _generateNotificationId(NotificationType.freezeAvailable, streakCount);
+    final notificationId = _generateNotificationId(
+      NotificationType.freezeAvailable,
+      streakCount,
+    );
 
-    final defaultBody = 'You have $freezeCount freeze day${freezeCount > 1 ? 's' : ''} available to protect your $streakCount day streak!';
+    final defaultBody =
+        'You have $freezeCount freeze day${freezeCount > 1 ? 's' : ''} available to protect your $streakCount day streak!';
 
     await _plugin.zonedSchedule(
       notificationId,
@@ -721,11 +736,14 @@ class NotificationService {
   Future<void> cancelScheduledNotification(int eventId) async {
     await Future.wait([
       _plugin.cancel(
-          _generateNotificationId(NotificationType.feedingReminder, eventId)),
+        _generateNotificationId(NotificationType.feedingReminder, eventId),
+      ),
       _plugin.cancel(
-          _generateNotificationId(NotificationType.missedEvent, eventId)),
+        _generateNotificationId(NotificationType.missedEvent, eventId),
+      ),
       _plugin.cancel(
-          _generateNotificationId(NotificationType.confirmStatus, eventId)),
+        _generateNotificationId(NotificationType.confirmStatus, eventId),
+      ),
     ]);
 
     // Clear throttle records for this event
@@ -769,75 +787,75 @@ class NotificationService {
   NotificationDetails _getNotificationDetails(NotificationType type) {
     return switch (type) {
       NotificationType.feedingReminder => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            feedingChannelId,
-            feedingChannelName,
-            channelDescription: feedingChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            category: AndroidNotificationCategory.reminder,
-            actions: _feedingActions,
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            categoryIdentifier: feedingCategoryId,
-          ),
+        android: AndroidNotificationDetails(
+          feedingChannelId,
+          feedingChannelName,
+          channelDescription: feedingChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          category: AndroidNotificationCategory.reminder,
+          actions: _feedingActions,
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          categoryIdentifier: feedingCategoryId,
+        ),
+      ),
       NotificationType.missedEvent => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            missedChannelId,
-            missedChannelName,
-            channelDescription: missedChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            category: AndroidNotificationCategory.reminder,
-            actions: _feedingActions,
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            categoryIdentifier: feedingCategoryId,
-          ),
+        android: AndroidNotificationDetails(
+          missedChannelId,
+          missedChannelName,
+          channelDescription: missedChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          category: AndroidNotificationCategory.reminder,
+          actions: _feedingActions,
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          categoryIdentifier: feedingCategoryId,
+        ),
+      ),
       NotificationType.confirmStatus => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            confirmChannelId,
-            confirmChannelName,
-            channelDescription: confirmChannelDescription,
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-            category: AndroidNotificationCategory.reminder,
-            actions: _feedingActions,
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: false,
-            presentSound: true,
-            categoryIdentifier: feedingCategoryId,
-          ),
+        android: AndroidNotificationDetails(
+          confirmChannelId,
+          confirmChannelName,
+          channelDescription: confirmChannelDescription,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
+          category: AndroidNotificationCategory.reminder,
+          actions: _feedingActions,
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: false,
+          presentSound: true,
+          categoryIdentifier: feedingCategoryId,
+        ),
+      ),
       NotificationType.freezeAvailable => const NotificationDetails(
-          android: AndroidNotificationDetails(
-            freezeChannelId,
-            freezeChannelName,
-            channelDescription: freezeChannelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            category: AndroidNotificationCategory.reminder,
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+        android: AndroidNotificationDetails(
+          freezeChannelId,
+          freezeChannelName,
+          channelDescription: freezeChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          category: AndroidNotificationCategory.reminder,
         ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
     };
   }
 

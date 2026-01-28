@@ -47,19 +47,14 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isRight(), true);
-      result.fold(
-        (_) => fail('Should be Right'),
-        (scanResult) {
-          expect(scanResult.speciesId, 'species-123');
-          expect(scanResult.speciesName, 'Goldfish');
-          expect(scanResult.confidence, 0.85);
-        },
-      );
+      result.fold((_) => fail('Should be Right'), (scanResult) {
+        expect(scanResult.speciesId, 'species-123');
+        expect(scanResult.speciesName, 'Goldfish');
+        expect(scanResult.confidence, 0.85);
+      });
 
       verify(
-        () => mockRemoteDataSource.scanFishImage(
-          imageBytes: testImageBytes,
-        ),
+        () => mockRemoteDataSource.scanFishImage(imageBytes: testImageBytes),
       ).called(1);
     });
 
@@ -74,13 +69,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<NetworkFailure>());
-          expect(failure.message, 'Check your connection');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<NetworkFailure>());
+        expect(failure.message, 'Check your connection');
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return ServerFailure on ServerException', () async {
@@ -94,35 +86,33 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'Server error. Try again later');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'Server error. Try again later');
+      }, (_) => fail('Should be Left'));
     });
 
-    test('should return AuthenticationFailure on UnauthorizedException',
-        () async {
-      when(
-        () => mockRemoteDataSource.scanFishImage(
-          imageBytes: any(named: 'imageBytes'),
-          filename: any(named: 'filename'),
-        ),
-      ).thenThrow(const UnauthorizedException());
+    test(
+      'should return AuthenticationFailure on UnauthorizedException',
+      () async {
+        when(
+          () => mockRemoteDataSource.scanFishImage(
+            imageBytes: any(named: 'imageBytes'),
+            filename: any(named: 'filename'),
+          ),
+        ).thenThrow(const UnauthorizedException());
 
-      final result = await repository.scanFishImage(imageBytes: testImageBytes);
+        final result = await repository.scanFishImage(
+          imageBytes: testImageBytes,
+        );
 
-      expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
+        expect(result.isLeft(), true);
+        result.fold((failure) {
           expect(failure, isA<AuthenticationFailure>());
           expect(failure.message, 'Please log in to use AI scan');
-        },
-        (_) => fail('Should be Left'),
-      );
-    });
+        }, (_) => fail('Should be Left'));
+      },
+    );
 
     test('should return ValidationFailure on ValidationException', () async {
       when(
@@ -135,13 +125,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          expect(failure.message, 'Invalid image format');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        expect(failure.message, 'Invalid image format');
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return AuthenticationFailure on ForbiddenException', () async {
@@ -155,13 +142,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<AuthenticationFailure>());
-          expect(failure.message, 'AI scan not available for your account');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<AuthenticationFailure>());
+        expect(failure.message, 'AI scan not available for your account');
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return ServerFailure on NotFoundException', () async {
@@ -175,13 +159,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'AI scan service unavailable');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'AI scan service unavailable');
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return UnexpectedFailure on UnknownApiException', () async {
@@ -195,13 +176,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, 'Something went wrong');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<UnexpectedFailure>());
+        expect(failure.message, 'Something went wrong');
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return UnexpectedFailure on generic exception', () async {
@@ -215,13 +193,10 @@ void main() {
       final result = await repository.scanFishImage(imageBytes: testImageBytes);
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, 'Failed to analyze image');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<UnexpectedFailure>());
+        expect(failure.message, 'Failed to analyze image');
+      }, (_) => fail('Should be Left'));
     });
   });
 }

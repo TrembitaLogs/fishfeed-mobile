@@ -26,15 +26,16 @@ void main() {
       final mockAccount = MockGoogleSignInAccount();
       final mockAuth = MockGoogleSignInAuthentication();
 
-      when(() => mockGoogleSignIn.signIn())
-          .thenAnswer((_) async => mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
+      when(
+        () => mockGoogleSignIn.signIn(),
+      ).thenAnswer((_) async => mockAccount);
+      when(() => mockAccount.authentication).thenAnswer((_) async => mockAuth);
       when(() => mockAuth.idToken).thenReturn('test_id_token');
       when(() => mockAccount.email).thenReturn('test@example.com');
       when(() => mockAccount.displayName).thenReturn('Test User');
-      when(() => mockAccount.photoUrl)
-          .thenReturn('https://example.com/photo.jpg');
+      when(
+        () => mockAccount.photoUrl,
+      ).thenReturn('https://example.com/photo.jpg');
 
       final result = await googleAuthService.signIn();
 
@@ -45,166 +46,185 @@ void main() {
       verify(() => mockGoogleSignIn.signIn()).called(1);
     });
 
-    test('should throw GoogleAuthException with cancelled code when user cancels',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenAnswer((_) async => null);
+    test(
+      'should throw GoogleAuthException with cancelled code when user cancels',
+      () async {
+        when(() => mockGoogleSignIn.signIn()).thenAnswer((_) async => null);
 
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.cancelled,
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.cancelled,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'should throw GoogleAuthException with tokenError when idToken is null',
-        () async {
-      final mockAccount = MockGoogleSignInAccount();
-      final mockAuth = MockGoogleSignInAuthentication();
+      'should throw GoogleAuthException with tokenError when idToken is null',
+      () async {
+        final mockAccount = MockGoogleSignInAccount();
+        final mockAuth = MockGoogleSignInAuthentication();
 
-      when(() => mockGoogleSignIn.signIn())
-          .thenAnswer((_) async => mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
-      when(() => mockAuth.idToken).thenReturn(null);
+        when(
+          () => mockGoogleSignIn.signIn(),
+        ).thenAnswer((_) async => mockAccount);
+        when(
+          () => mockAccount.authentication,
+        ).thenAnswer((_) async => mockAuth);
+        when(() => mockAuth.idToken).thenReturn(null);
 
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.tokenError,
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.tokenError,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'should throw GoogleAuthException with cancelled code on sign_in_canceled PlatformException',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(
-        PlatformException(code: 'sign_in_canceled'),
-      );
+      'should throw GoogleAuthException with cancelled code on sign_in_canceled PlatformException',
+      () async {
+        when(
+          () => mockGoogleSignIn.signIn(),
+        ).thenThrow(PlatformException(code: 'sign_in_canceled'));
 
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.cancelled,
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.cancelled,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'should throw GoogleAuthException with networkError code on network_error PlatformException',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(
-        PlatformException(code: 'network_error', message: 'No internet'),
-      );
+      'should throw GoogleAuthException with networkError code on network_error PlatformException',
+      () async {
+        when(() => mockGoogleSignIn.signIn()).thenThrow(
+          PlatformException(code: 'network_error', message: 'No internet'),
+        );
 
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>()
-              .having((e) => e.code, 'code', GoogleAuthErrorCode.networkError)
-              .having((e) => e.message, 'message', 'No internet'),
-        ),
-      );
-    });
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>()
+                .having((e) => e.code, 'code', GoogleAuthErrorCode.networkError)
+                .having((e) => e.message, 'message', 'No internet'),
+          ),
+        );
+      },
+    );
 
     test(
-        'should throw GoogleAuthException with configurationError code on configuration error',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(
-        PlatformException(
-          code: 'sign_in_failed',
-          message: 'configuration error',
-        ),
-      );
-
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.configurationError,
+      'should throw GoogleAuthException with configurationError code on configuration error',
+      () async {
+        when(() => mockGoogleSignIn.signIn()).thenThrow(
+          PlatformException(
+            code: 'sign_in_failed',
+            message: 'configuration error',
           ),
-        ),
-      );
-    });
+        );
 
-    test('should throw GoogleAuthException with unknown code on other errors',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(
-        PlatformException(code: 'unknown_error', message: 'Something failed'),
-      );
-
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.unknown,
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.configurationError,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
-    test('should throw GoogleAuthException with unknown code on generic errors',
-        () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(Exception('Generic error'));
+    test(
+      'should throw GoogleAuthException with unknown code on other errors',
+      () async {
+        when(() => mockGoogleSignIn.signIn()).thenThrow(
+          PlatformException(code: 'unknown_error', message: 'Something failed'),
+        );
 
-      expect(
-        () => googleAuthService.signIn(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.unknown,
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.unknown,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
+
+    test(
+      'should throw GoogleAuthException with unknown code on generic errors',
+      () async {
+        when(
+          () => mockGoogleSignIn.signIn(),
+        ).thenThrow(Exception('Generic error'));
+
+        expect(
+          () => googleAuthService.signIn(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.unknown,
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('GoogleAuthService.signInSilently', () {
-    test('should return GoogleSignInResult on successful silent sign-in',
-        () async {
-      final mockAccount = MockGoogleSignInAccount();
-      final mockAuth = MockGoogleSignInAuthentication();
+    test(
+      'should return GoogleSignInResult on successful silent sign-in',
+      () async {
+        final mockAccount = MockGoogleSignInAccount();
+        final mockAuth = MockGoogleSignInAuthentication();
 
-      when(() => mockGoogleSignIn.signInSilently())
-          .thenAnswer((_) async => mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
-      when(() => mockAuth.idToken).thenReturn('test_id_token');
-      when(() => mockAccount.email).thenReturn('test@example.com');
-      when(() => mockAccount.displayName).thenReturn('Test User');
-      when(() => mockAccount.photoUrl).thenReturn(null);
+        when(
+          () => mockGoogleSignIn.signInSilently(),
+        ).thenAnswer((_) async => mockAccount);
+        when(
+          () => mockAccount.authentication,
+        ).thenAnswer((_) async => mockAuth);
+        when(() => mockAuth.idToken).thenReturn('test_id_token');
+        when(() => mockAccount.email).thenReturn('test@example.com');
+        when(() => mockAccount.displayName).thenReturn('Test User');
+        when(() => mockAccount.photoUrl).thenReturn(null);
 
-      final result = await googleAuthService.signInSilently();
+        final result = await googleAuthService.signInSilently();
 
-      expect(result, isNotNull);
-      expect(result!.idToken, 'test_id_token');
-      expect(result.email, 'test@example.com');
-      expect(result.displayName, 'Test User');
-      expect(result.photoUrl, isNull);
-    });
+        expect(result, isNotNull);
+        expect(result!.idToken, 'test_id_token');
+        expect(result.email, 'test@example.com');
+        expect(result.displayName, 'Test User');
+        expect(result.photoUrl, isNull);
+      },
+    );
 
     test('should return null when no account is signed in', () async {
-      when(() => mockGoogleSignIn.signInSilently())
-          .thenAnswer((_) async => null);
+      when(
+        () => mockGoogleSignIn.signInSilently(),
+      ).thenAnswer((_) async => null);
 
       final result = await googleAuthService.signInSilently();
 
@@ -215,10 +235,10 @@ void main() {
       final mockAccount = MockGoogleSignInAccount();
       final mockAuth = MockGoogleSignInAuthentication();
 
-      when(() => mockGoogleSignIn.signInSilently())
-          .thenAnswer((_) async => mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
+      when(
+        () => mockGoogleSignIn.signInSilently(),
+      ).thenAnswer((_) async => mockAccount);
+      when(() => mockAccount.authentication).thenAnswer((_) async => mockAuth);
       when(() => mockAuth.idToken).thenReturn(null);
 
       final result = await googleAuthService.signInSilently();
@@ -227,8 +247,9 @@ void main() {
     });
 
     test('should return null on exception', () async {
-      when(() => mockGoogleSignIn.signInSilently())
-          .thenThrow(Exception('Silent sign-in failed'));
+      when(
+        () => mockGoogleSignIn.signInSilently(),
+      ).thenThrow(Exception('Silent sign-in failed'));
 
       final result = await googleAuthService.signInSilently();
 
@@ -242,8 +263,7 @@ void main() {
       final mockAuth = MockGoogleSignInAuthentication();
 
       when(() => mockGoogleSignIn.currentUser).thenReturn(mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
+      when(() => mockAccount.authentication).thenAnswer((_) async => mockAuth);
       when(() => mockAuth.idToken).thenReturn('fresh_id_token');
 
       final token = await googleAuthService.getIdToken();
@@ -252,62 +272,68 @@ void main() {
     });
 
     test(
-        'should throw GoogleAuthException with tokenError when no user is signed in',
-        () async {
-      when(() => mockGoogleSignIn.currentUser).thenReturn(null);
+      'should throw GoogleAuthException with tokenError when no user is signed in',
+      () async {
+        when(() => mockGoogleSignIn.currentUser).thenReturn(null);
 
-      expect(
-        () => googleAuthService.getIdToken(),
-        throwsA(
-          isA<GoogleAuthException>()
-              .having((e) => e.code, 'code', GoogleAuthErrorCode.tokenError)
-              .having((e) => e.message, 'message', 'No user is signed in'),
-        ),
-      );
-    });
-
-    test('should throw GoogleAuthException with tokenError when idToken is null',
-        () async {
-      final mockAccount = MockGoogleSignInAccount();
-      final mockAuth = MockGoogleSignInAuthentication();
-
-      when(() => mockGoogleSignIn.currentUser).thenReturn(mockAccount);
-      when(() => mockAccount.authentication)
-          .thenAnswer((_) async => mockAuth);
-      when(() => mockAuth.idToken).thenReturn(null);
-
-      expect(
-        () => googleAuthService.getIdToken(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.tokenError,
+        expect(
+          () => googleAuthService.getIdToken(),
+          throwsA(
+            isA<GoogleAuthException>()
+                .having((e) => e.code, 'code', GoogleAuthErrorCode.tokenError)
+                .having((e) => e.message, 'message', 'No user is signed in'),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'should throw GoogleAuthException with tokenError on authentication failure',
-        () async {
-      final mockAccount = MockGoogleSignInAccount();
+      'should throw GoogleAuthException with tokenError when idToken is null',
+      () async {
+        final mockAccount = MockGoogleSignInAccount();
+        final mockAuth = MockGoogleSignInAuthentication();
 
-      when(() => mockGoogleSignIn.currentUser).thenReturn(mockAccount);
-      when(() => mockAccount.authentication)
-          .thenThrow(Exception('Auth failed'));
+        when(() => mockGoogleSignIn.currentUser).thenReturn(mockAccount);
+        when(
+          () => mockAccount.authentication,
+        ).thenAnswer((_) async => mockAuth);
+        when(() => mockAuth.idToken).thenReturn(null);
 
-      expect(
-        () => googleAuthService.getIdToken(),
-        throwsA(
-          isA<GoogleAuthException>().having(
-            (e) => e.code,
-            'code',
-            GoogleAuthErrorCode.tokenError,
+        expect(
+          () => googleAuthService.getIdToken(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.tokenError,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
+
+    test(
+      'should throw GoogleAuthException with tokenError on authentication failure',
+      () async {
+        final mockAccount = MockGoogleSignInAccount();
+
+        when(() => mockGoogleSignIn.currentUser).thenReturn(mockAccount);
+        when(
+          () => mockAccount.authentication,
+        ).thenThrow(Exception('Auth failed'));
+
+        expect(
+          () => googleAuthService.getIdToken(),
+          throwsA(
+            isA<GoogleAuthException>().having(
+              (e) => e.code,
+              'code',
+              GoogleAuthErrorCode.tokenError,
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('GoogleAuthService.signOut', () {
@@ -320,8 +346,9 @@ void main() {
     });
 
     test('should not throw on signOut error', () async {
-      when(() => mockGoogleSignIn.signOut())
-          .thenThrow(Exception('Sign-out failed'));
+      when(
+        () => mockGoogleSignIn.signOut(),
+      ).thenThrow(Exception('Sign-out failed'));
 
       // Should not throw
       await googleAuthService.signOut();
@@ -340,8 +367,9 @@ void main() {
     });
 
     test('should not throw on disconnect error', () async {
-      when(() => mockGoogleSignIn.disconnect())
-          .thenThrow(Exception('Disconnect failed'));
+      when(
+        () => mockGoogleSignIn.disconnect(),
+      ).thenThrow(Exception('Disconnect failed'));
 
       // Should not throw
       await googleAuthService.disconnect();
@@ -383,7 +411,10 @@ void main() {
   group('GoogleAuthException', () {
     test('toString should include code', () {
       const exception = GoogleAuthException(GoogleAuthErrorCode.cancelled);
-      expect(exception.toString(), 'GoogleAuthException(GoogleAuthErrorCode.cancelled)');
+      expect(
+        exception.toString(),
+        'GoogleAuthException(GoogleAuthErrorCode.cancelled)',
+      );
     });
 
     test('toString should include code and message', () {

@@ -16,21 +16,15 @@ import 'package:fishfeed/services/sentry/sentry_service.dart';
 final sentryUserSyncProvider = Provider<void>((ref) {
   final sentryService = ref.watch(sentryServiceProvider);
 
-  ref.listen<AuthenticationState>(
-    authNotifierProvider,
-    (previous, next) {
-      _syncUserContext(previous, next, sentryService);
-    },
-  );
+  ref.listen<AuthenticationState>(authNotifierProvider, (previous, next) {
+    _syncUserContext(previous, next, sentryService);
+  });
 
   // Initial sync on provider creation
   final currentState = ref.read(authNotifierProvider);
   if (currentState.isAuthenticated && currentState.user != null) {
     final user = currentState.user!;
-    sentryService.setUser(
-      userId: user.id,
-      email: user.email,
-    );
+    sentryService.setUser(userId: user.id, email: user.email);
   }
 });
 
@@ -46,10 +40,7 @@ void _syncUserContext(
   // User logged in
   if (!wasAuthenticated && isAuthenticated && next.user != null) {
     final user = next.user!;
-    sentryService.setUser(
-      userId: user.id,
-      email: user.email,
-    );
+    sentryService.setUser(userId: user.id, email: user.email);
     return;
   }
 
@@ -66,10 +57,7 @@ void _syncUserContext(
 
     if (previousUser?.id != currentUser.id ||
         previousUser?.email != currentUser.email) {
-      sentryService.setUser(
-        userId: currentUser.id,
-        email: currentUser.email,
-      );
+      sentryService.setUser(userId: currentUser.id, email: currentUser.email);
     }
   }
 }

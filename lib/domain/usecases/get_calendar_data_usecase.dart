@@ -9,10 +9,7 @@ import 'package:fishfeed/domain/entities/day_feeding_status.dart';
 
 /// Parameters for [GetCalendarDataUseCase].
 class GetCalendarDataParams {
-  const GetCalendarDataParams({
-    required this.year,
-    required this.month,
-  });
+  const GetCalendarDataParams({required this.year, required this.month});
 
   /// Year to get data for.
   final int year;
@@ -30,9 +27,8 @@ class GetCalendarDataParams {
 /// Returns [Right(CalendarMonthData)] on success.
 /// Returns [Left(Failure)] on error.
 class GetCalendarDataUseCase {
-  GetCalendarDataUseCase({
-    required FeedingLocalDataSource feedingDataSource,
-  }) : _feedingDataSource = feedingDataSource;
+  GetCalendarDataUseCase({required FeedingLocalDataSource feedingDataSource})
+    : _feedingDataSource = feedingDataSource;
 
   final FeedingLocalDataSource _feedingDataSource;
 
@@ -58,9 +54,11 @@ class GetCalendarDataUseCase {
       int totalMissedFeedings = 0;
 
       // Process each day of the month
-      for (var day = firstDayOfMonth;
-          !day.isAfter(lastDayOfMonth);
-          day = day.add(const Duration(days: 1))) {
+      for (
+        var day = firstDayOfMonth;
+        !day.isAfter(lastDayOfMonth);
+        day = day.add(const Duration(days: 1))
+      ) {
         final normalizedDay = DateTime(day.year, day.month, day.day);
 
         // Skip future days
@@ -88,12 +86,14 @@ class GetCalendarDataUseCase {
         currentStreak: streakInfo.currentStreak,
       );
 
-      return Right(CalendarMonthData(
-        year: params.year,
-        month: params.month,
-        days: days,
-        stats: stats,
-      ));
+      return Right(
+        CalendarMonthData(
+          year: params.year,
+          month: params.month,
+          days: days,
+          stats: stats,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to get calendar data: $e'));
     }
@@ -208,10 +208,7 @@ class GetCalendarDataUseCase {
 
 /// Internal class to hold streak calculation results.
 class _StreakInfo {
-  const _StreakInfo({
-    required this.longestStreak,
-    required this.currentStreak,
-  });
+  const _StreakInfo({required this.longestStreak, required this.currentStreak});
 
   final int longestStreak;
   final int currentStreak;

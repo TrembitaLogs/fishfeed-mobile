@@ -20,7 +20,10 @@ void main() {
         final dto = TokenPairDto.fromJson(testJson);
 
         expect(dto.accessToken, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access');
-        expect(dto.refreshToken, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh');
+        expect(
+          dto.refreshToken,
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh',
+        );
         expect(dto.expiresIn, 3600);
       });
 

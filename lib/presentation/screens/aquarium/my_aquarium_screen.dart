@@ -33,9 +33,7 @@ class _MyAquariumScreenState extends ConsumerState<MyAquariumScreen> {
     final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.myAquarium),
-      ),
+      appBar: AppBar(title: Text(l.myAquarium)),
       body: _buildBody(fishState),
       floatingActionButton: FloatingActionButton(
         onPressed: _addFish,
@@ -47,9 +45,7 @@ class _MyAquariumScreenState extends ConsumerState<MyAquariumScreen> {
 
   Widget _buildBody(FishManagementState fishState) {
     if (fishState.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (fishState.hasError) {
@@ -151,11 +147,7 @@ class _FishListItem extends ConsumerWidget {
           color: theme.colorScheme.onPrimaryContainer,
         ),
       ),
-      title: Text(
-        displayName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: Text(displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         'x${fish.quantity}',
         style: theme.textTheme.bodySmall?.copyWith(
@@ -163,10 +155,7 @@ class _FishListItem extends ConsumerWidget {
         ),
       ),
       trailing: PopupMenuButton<_FishAction>(
-        icon: Icon(
-          Icons.more_vert,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurfaceVariant),
         onSelected: (action) => _handleAction(context, ref, action),
         itemBuilder: (context) => [
           PopupMenuItem(
@@ -183,10 +172,7 @@ class _FishListItem extends ConsumerWidget {
             value: _FishAction.delete,
             child: Row(
               children: [
-                Icon(
-                  Icons.delete_outlined,
-                  color: theme.colorScheme.error,
-                ),
+                Icon(Icons.delete_outlined, color: theme.colorScheme.error),
                 const SizedBox(width: 12),
                 Text(
                   l.delete,
@@ -243,12 +229,13 @@ class _FishListItem extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final success =
-          await ref.read(fishManagementProvider.notifier).deleteFish(fish.id);
+      final success = await ref
+          .read(fishManagementProvider.notifier)
+          .deleteFish(fish.id);
       if (success && context.mounted) {
-        ref.read(analyticsServiceProvider).trackFishDeleted(
-              speciesId: fish.speciesId,
-            );
+        ref
+            .read(analyticsServiceProvider)
+            .trackFishDeleted(speciesId: fish.speciesId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l.fishDeletedSuccessfully),
@@ -261,16 +248,10 @@ class _FishListItem extends ConsumerWidget {
 }
 
 /// Actions available for fish items.
-enum _FishAction {
-  edit,
-  delete,
-}
+enum _FishAction { edit, delete }
 
 /// Choice for adding fish method.
-enum _AddFishChoice {
-  aiCamera,
-  manual,
-}
+enum _AddFishChoice { aiCamera, manual }
 
 /// Empty state when no fish in aquarium.
 class _EmptyStateWidget extends StatelessWidget {
@@ -324,10 +305,7 @@ class _EmptyStateWidget extends StatelessWidget {
 
 /// Error state with retry button.
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -343,16 +321,9 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: theme.colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
-            Text(
-              l.errorStateServerTitle,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l.errorStateServerTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
               message,

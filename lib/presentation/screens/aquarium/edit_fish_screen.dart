@@ -14,10 +14,7 @@ import 'package:fishfeed/services/analytics/analytics_service.dart';
 /// Allows users to modify the quantity of a fish.
 /// Changes are persisted via [FishManagementProvider].
 class EditFishScreen extends ConsumerStatefulWidget {
-  const EditFishScreen({
-    super.key,
-    required this.fishId,
-  });
+  const EditFishScreen({super.key, required this.fishId});
 
   /// The ID of the fish to edit.
   final String fishId;
@@ -92,7 +89,9 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
       });
 
       if (success) {
-        ref.read(analyticsServiceProvider).trackFishEdited(
+        ref
+            .read(analyticsServiceProvider)
+            .trackFishEdited(
               speciesId: _fish!.speciesId,
               newQuantity: _quantity,
             );
@@ -105,11 +104,9 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
   void _showErrorSnackBar() {
     final l = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l.failedToSaveChanges),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l.failedToSaveChanges)));
   }
 
   void _cancel() {
@@ -124,9 +121,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
     if (fish == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(l.editFish),
-        ),
+        appBar: AppBar(title: Text(l.editFish)),
         body: const _FishNotFoundState(),
       );
     }
@@ -135,9 +130,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
     final species = SpeciesData.findById(fish.speciesId);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.editFish),
-      ),
+      appBar: AppBar(title: Text(l.editFish)),
       body: SafeArea(
         child: Column(
           children: [
@@ -154,10 +147,12 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
                     const SizedBox(height: 32),
                     _QuantityField(
                       quantity: _quantity,
-                      onIncrement:
-                          _quantity < maxQuantity ? _incrementQuantity : null,
-                      onDecrement:
-                          _quantity > minQuantity ? _decrementQuantity : null,
+                      onIncrement: _quantity < maxQuantity
+                          ? _incrementQuantity
+                          : null,
+                      onDecrement: _quantity > minQuantity
+                          ? _decrementQuantity
+                          : null,
                     ),
                   ],
                 ),
@@ -177,10 +172,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
 /// Header displaying the fish species and custom name.
 class _FishHeader extends StatelessWidget {
-  const _FishHeader({
-    required this.speciesName,
-    this.customName,
-  });
+  const _FishHeader({required this.speciesName, this.customName});
 
   final String speciesName;
   final String? customName;
@@ -273,10 +265,7 @@ class _QuantityField extends StatelessWidget {
               onPressed: onDecrement,
               icon: const Icon(Icons.remove),
               iconSize: 24,
-              constraints: const BoxConstraints(
-                minWidth: 48,
-                minHeight: 48,
-              ),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
             SizedBox(
               width: 80,
@@ -292,10 +281,7 @@ class _QuantityField extends StatelessWidget {
               onPressed: onIncrement,
               icon: const Icon(Icons.add),
               iconSize: 24,
-              constraints: const BoxConstraints(
-                minWidth: 48,
-                minHeight: 48,
-              ),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
           ],
         ),
@@ -350,9 +336,7 @@ class _ActionButtons extends StatelessWidget {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Text(l.save),
               ),
@@ -379,16 +363,9 @@ class _FishNotFoundState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: theme.colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
-            Text(
-              l.fishNotFound,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l.fishNotFound, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
               l.fishNotFoundDescription,

@@ -43,7 +43,8 @@ class TodayFeedingsState {
   bool get hasError => error != null;
 
   /// Whether feedings list is empty.
-  bool get isEmpty => feedings.isEmpty && !isLoading && !isRefreshing && !hasError;
+  bool get isEmpty =>
+      feedings.isEmpty && !isLoading && !isRefreshing && !hasError;
 
   /// Count of completed feedings.
   int get completedCount =>
@@ -84,13 +85,13 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     required StreakLocalDataSource streakDataSource,
     required MarkFeedingUseCase markFeedingUseCase,
     required Ref ref,
-  })  : _feedingDataSource = feedingDataSource,
-        _fishDataSource = fishDataSource,
-        _aquariumDataSource = aquariumDataSource,
-        _streakDataSource = streakDataSource,
-        _markFeedingUseCase = markFeedingUseCase,
-        _ref = ref,
-        super(const TodayFeedingsState()) {
+  }) : _feedingDataSource = feedingDataSource,
+       _fishDataSource = fishDataSource,
+       _aquariumDataSource = aquariumDataSource,
+       _streakDataSource = streakDataSource,
+       _markFeedingUseCase = markFeedingUseCase,
+       _ref = ref,
+       super(const TodayFeedingsState()) {
     loadFeedings();
   }
 
@@ -131,16 +132,16 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
       // Generate mock schedule for now
       // In production, this would come from user's fish/species data
-      final mockFeedings =
-          _generateTodaySchedule(today, completedEventsMap, now);
+      final mockFeedings = _generateTodaySchedule(
+        today,
+        completedEventsMap,
+        now,
+      );
 
       // Sort by scheduled time
       mockFeedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
 
-      state = state.copyWith(
-        feedings: mockFeedings,
-        isLoading: false,
-      );
+      state = state.copyWith(feedings: mockFeedings, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -186,7 +187,8 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
       String? fishId;
       if (fish != null) {
         // Event linked to specific fish - use fish's custom name or species name
-        speciesName = fish.name ?? _ref.read(speciesNameByIdProvider(fish.speciesId));
+        speciesName =
+            fish.name ?? _ref.read(speciesNameByIdProvider(fish.speciesId));
         fishId = fish.id;
       } else if (event.speciesId != null && event.speciesId!.isNotEmpty) {
         // No fish linked, but we have species_id from server
@@ -318,7 +320,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
     // Update existing feeding event in Hive with completion info
     // feedingId is localId from UI, so search by localId
-    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(feedingId);
+    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(
+      feedingId,
+    );
     if (existingEvent != null) {
       existingEvent.completedBy = userId;
       existingEvent.completedByName = user?.displayName;
@@ -355,17 +359,19 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     }
 
     // Fallback: create new event via MarkFeedingUseCase if no existing event
-    final result = await _markFeedingUseCase(MarkFeedingParams(
-      scheduledFeedingId: feedingId,
-      newStatus: FeedingStatus.fed,
-      userId: userId,
-      aquariumId: feeding.aquariumId,
-      fishId: feeding.fishId,
-      amount: feeding.portionGrams,
-      foodType: feeding.foodType,
-      userDisplayName: user?.displayName,
-      userAvatarUrl: user?.avatarUrl,
-    ));
+    final result = await _markFeedingUseCase(
+      MarkFeedingParams(
+        scheduledFeedingId: feedingId,
+        newStatus: FeedingStatus.fed,
+        userId: userId,
+        aquariumId: feeding.aquariumId,
+        fishId: feeding.fishId,
+        amount: feeding.portionGrams,
+        foodType: feeding.foodType,
+        userDisplayName: user?.displayName,
+        userAvatarUrl: user?.avatarUrl,
+      ),
+    );
 
     result.fold(
       (failure) {
@@ -415,7 +421,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
     // Update existing feeding event in Hive - clear completion info
     // feedingId is localId from UI, so search by localId
-    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(feedingId);
+    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(
+      feedingId,
+    );
     if (existingEvent != null) {
       // Clear completion info to revert status to pending
       existingEvent.completedBy = null;
@@ -456,13 +464,15 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     }
 
     // Fallback: use MarkFeedingUseCase if no existing event
-    final result = await _markFeedingUseCase(MarkFeedingParams(
-      scheduledFeedingId: feedingId,
-      newStatus: FeedingStatus.missed,
-      userId: userId,
-      aquariumId: feeding.aquariumId,
-      fishId: feeding.fishId,
-    ));
+    final result = await _markFeedingUseCase(
+      MarkFeedingParams(
+        scheduledFeedingId: feedingId,
+        newStatus: FeedingStatus.missed,
+        userId: userId,
+        aquariumId: feeding.aquariumId,
+        fishId: feeding.fishId,
+      ),
+    );
 
     result.fold(
       (failure) {
@@ -530,27 +540,28 @@ final markFeedingUseCaseProvider = Provider<MarkFeedingUseCase>((ref) {
 /// Provider for today's feedings state.
 final todayFeedingsProvider =
     StateNotifierProvider<TodayFeedingsNotifier, TodayFeedingsState>((ref) {
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-  final fishDs = ref.watch(fishLocalDataSourceProvider);
-  final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
-  final streakDs = ref.watch(streakLocalDataSourceProvider);
-  final markFeedingUseCase = ref.watch(markFeedingUseCaseProvider);
+      final feedingDs = ref.watch(feedingLocalDataSourceProvider);
+      final fishDs = ref.watch(fishLocalDataSourceProvider);
+      final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
+      final streakDs = ref.watch(streakLocalDataSourceProvider);
+      final markFeedingUseCase = ref.watch(markFeedingUseCaseProvider);
 
-  return TodayFeedingsNotifier(
-    feedingDataSource: feedingDs,
-    fishDataSource: fishDs,
-    aquariumDataSource: aquariumDs,
-    streakDataSource: streakDs,
-    markFeedingUseCase: markFeedingUseCase,
-    ref: ref,
-  );
-});
+      return TodayFeedingsNotifier(
+        feedingDataSource: feedingDs,
+        fishDataSource: fishDs,
+        aquariumDataSource: aquariumDs,
+        streakDataSource: streakDs,
+        markFeedingUseCase: markFeedingUseCase,
+        ref: ref,
+      );
+    });
 
 /// Provider for grouped feedings by time period.
 ///
 /// Returns a map with keys: 'morning', 'afternoon', 'evening'.
-final groupedFeedingsProvider =
-    Provider<Map<String, List<ScheduledFeeding>>>((ref) {
+final groupedFeedingsProvider = Provider<Map<String, List<ScheduledFeeding>>>((
+  ref,
+) {
   final state = ref.watch(todayFeedingsProvider);
   final feedings = state.feedings;
 
@@ -577,28 +588,28 @@ final groupedFeedingsProvider =
 /// ```
 final aquariumFeedingsProvider =
     Provider.family<List<ScheduledFeeding>, String>((ref, aquariumId) {
-  final state = ref.watch(todayFeedingsProvider);
-  return state.feedings
-      .where((feeding) => feeding.aquariumId == aquariumId)
-      .toList();
-});
+      final state = ref.watch(todayFeedingsProvider);
+      return state.feedings
+          .where((feeding) => feeding.aquariumId == aquariumId)
+          .toList();
+    });
 
 /// Provider for grouped feedings by aquarium ID.
 ///
 /// Returns a map with aquarium IDs as keys and list of feedings as values.
 final feedingsGroupedByAquariumProvider =
     Provider<Map<String, List<ScheduledFeeding>>>((ref) {
-  final state = ref.watch(todayFeedingsProvider);
-  final feedings = state.feedings;
+      final state = ref.watch(todayFeedingsProvider);
+      final feedings = state.feedings;
 
-  final grouped = <String, List<ScheduledFeeding>>{};
+      final grouped = <String, List<ScheduledFeeding>>{};
 
-  for (final feeding in feedings) {
-    grouped.putIfAbsent(feeding.aquariumId, () => []).add(feeding);
-  }
+      for (final feeding in feedings) {
+        grouped.putIfAbsent(feeding.aquariumId, () => []).add(feeding);
+      }
 
-  return grouped;
-});
+      return grouped;
+    });
 
 // ============================================================================
 // Current Streak Provider
@@ -606,11 +617,7 @@ final feedingsGroupedByAquariumProvider =
 
 /// State for current streak.
 class StreakState {
-  const StreakState({
-    this.streak,
-    this.isLoading = false,
-    this.error,
-  });
+  const StreakState({this.streak, this.isLoading = false, this.error});
 
   /// Current streak data.
   final Streak? streak;
@@ -651,9 +658,9 @@ class StreakNotifier extends StateNotifier<StreakState> {
   StreakNotifier({
     required StreakLocalDataSource streakDataSource,
     required Ref ref,
-  })  : _streakDataSource = streakDataSource,
-        _ref = ref,
-        super(const StreakState()) {
+  }) : _streakDataSource = streakDataSource,
+       _ref = ref,
+       super(const StreakState()) {
     loadStreak();
   }
 
@@ -717,7 +724,9 @@ class StreakNotifier extends StateNotifier<StreakState> {
       if (previousStreak == 0 && newStreak > 0) {
         AnalyticsService.instance.trackStreakStarted();
       } else if (newStreak > previousStreak) {
-        AnalyticsService.instance.trackStreakIncremented(streakCount: newStreak);
+        AnalyticsService.instance.trackStreakIncremented(
+          streakCount: newStreak,
+        );
       }
     } catch (e) {
       state = state.copyWith(error: 'Failed to increment streak: $e');
@@ -739,7 +748,9 @@ class StreakNotifier extends StateNotifier<StreakState> {
 
       // Track streak broken if there was an active streak
       if (previousStreak > 0) {
-        AnalyticsService.instance.trackStreakBroken(previousStreak: previousStreak);
+        AnalyticsService.instance.trackStreakBroken(
+          previousStreak: previousStreak,
+        );
       }
     } catch (e) {
       state = state.copyWith(error: 'Failed to reset streak: $e');
@@ -750,13 +761,10 @@ class StreakNotifier extends StateNotifier<StreakState> {
 /// Provider for current streak state.
 final currentStreakProvider =
     StateNotifierProvider<StreakNotifier, StreakState>((ref) {
-  final streakDs = ref.watch(streakLocalDataSourceProvider);
+      final streakDs = ref.watch(streakLocalDataSourceProvider);
 
-  return StreakNotifier(
-    streakDataSource: streakDs,
-    ref: ref,
-  );
-});
+      return StreakNotifier(streakDataSource: streakDs, ref: ref);
+    });
 
 /// Provider for just the current streak count.
 ///

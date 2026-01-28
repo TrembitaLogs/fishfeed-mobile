@@ -16,8 +16,7 @@ class MockNotificationSettings extends Mock implements NotificationSettings {}
 
 class FakeNotificationSettings extends Fake implements NotificationSettings {
   @override
-  AuthorizationStatus get authorizationStatus =>
-      AuthorizationStatus.authorized;
+  AuthorizationStatus get authorizationStatus => AuthorizationStatus.authorized;
 }
 
 void main() {
@@ -38,7 +37,8 @@ void main() {
     setUp(() {
       mockMessaging = MockFirebaseMessaging();
       onMessageController = StreamController<RemoteMessage>.broadcast();
-      onMessageOpenedAppController = StreamController<RemoteMessage>.broadcast();
+      onMessageOpenedAppController =
+          StreamController<RemoteMessage>.broadcast();
       onTokenRefreshController = StreamController<String>.broadcast();
 
       service = TestableFcmService(
@@ -59,47 +59,55 @@ void main() {
     group('requestPermission', () {
       test('should request permissions and return status', () async {
         final mockSettings = MockNotificationSettings();
-        when(() => mockSettings.authorizationStatus)
-            .thenReturn(AuthorizationStatus.authorized);
+        when(
+          () => mockSettings.authorizationStatus,
+        ).thenReturn(AuthorizationStatus.authorized);
 
-        when(() => mockMessaging.requestPermission(
-              alert: any(named: 'alert'),
-              announcement: any(named: 'announcement'),
-              badge: any(named: 'badge'),
-              carPlay: any(named: 'carPlay'),
-              criticalAlert: any(named: 'criticalAlert'),
-              provisional: any(named: 'provisional'),
-              sound: any(named: 'sound'),
-            )).thenAnswer((_) async => mockSettings);
+        when(
+          () => mockMessaging.requestPermission(
+            alert: any(named: 'alert'),
+            announcement: any(named: 'announcement'),
+            badge: any(named: 'badge'),
+            carPlay: any(named: 'carPlay'),
+            criticalAlert: any(named: 'criticalAlert'),
+            provisional: any(named: 'provisional'),
+            sound: any(named: 'sound'),
+          ),
+        ).thenAnswer((_) async => mockSettings);
 
         final result = await service.requestPermission();
 
         expect(result, AuthorizationStatus.authorized);
-        verify(() => mockMessaging.requestPermission(
-              alert: true,
-              announcement: false,
-              badge: true,
-              carPlay: false,
-              criticalAlert: false,
-              provisional: false,
-              sound: true,
-            )).called(1);
+        verify(
+          () => mockMessaging.requestPermission(
+            alert: true,
+            announcement: false,
+            badge: true,
+            carPlay: false,
+            criticalAlert: false,
+            provisional: false,
+            sound: true,
+          ),
+        ).called(1);
       });
 
       test('should return denied status when permission denied', () async {
         final mockSettings = MockNotificationSettings();
-        when(() => mockSettings.authorizationStatus)
-            .thenReturn(AuthorizationStatus.denied);
+        when(
+          () => mockSettings.authorizationStatus,
+        ).thenReturn(AuthorizationStatus.denied);
 
-        when(() => mockMessaging.requestPermission(
-              alert: any(named: 'alert'),
-              announcement: any(named: 'announcement'),
-              badge: any(named: 'badge'),
-              carPlay: any(named: 'carPlay'),
-              criticalAlert: any(named: 'criticalAlert'),
-              provisional: any(named: 'provisional'),
-              sound: any(named: 'sound'),
-            )).thenAnswer((_) async => mockSettings);
+        when(
+          () => mockMessaging.requestPermission(
+            alert: any(named: 'alert'),
+            announcement: any(named: 'announcement'),
+            badge: any(named: 'badge'),
+            carPlay: any(named: 'carPlay'),
+            criticalAlert: any(named: 'criticalAlert'),
+            provisional: any(named: 'provisional'),
+            sound: any(named: 'sound'),
+          ),
+        ).thenAnswer((_) async => mockSettings);
 
         final result = await service.requestPermission();
 
@@ -109,8 +117,9 @@ void main() {
 
     group('getToken', () {
       test('should return token when available', () async {
-        when(() => mockMessaging.getToken())
-            .thenAnswer((_) async => 'test_fcm_token_123');
+        when(
+          () => mockMessaging.getToken(),
+        ).thenAnswer((_) async => 'test_fcm_token_123');
 
         final token = await service.getToken();
 
@@ -127,8 +136,9 @@ void main() {
       });
 
       test('should handle error gracefully', () async {
-        when(() => mockMessaging.getToken())
-            .thenThrow(Exception('Token fetch failed'));
+        when(
+          () => mockMessaging.getToken(),
+        ).thenThrow(Exception('Token fetch failed'));
 
         final token = await service.getToken();
 
@@ -147,8 +157,9 @@ void main() {
       });
 
       test('should handle delete error gracefully', () async {
-        when(() => mockMessaging.deleteToken())
-            .thenThrow(Exception('Delete failed'));
+        when(
+          () => mockMessaging.deleteToken(),
+        ).thenThrow(Exception('Delete failed'));
 
         // Should not throw
         await service.deleteToken();
@@ -159,57 +170,67 @@ void main() {
 
     group('subscribeToTopic', () {
       test('should subscribe to topic', () async {
-        when(() => mockMessaging.subscribeToTopic(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockMessaging.subscribeToTopic(any()),
+        ).thenAnswer((_) async {});
 
         await service.subscribeToTopic('feeding_reminders');
 
-        verify(() => mockMessaging.subscribeToTopic('feeding_reminders'))
-            .called(1);
+        verify(
+          () => mockMessaging.subscribeToTopic('feeding_reminders'),
+        ).called(1);
       });
 
       test('should handle subscribe error gracefully', () async {
-        when(() => mockMessaging.subscribeToTopic(any()))
-            .thenThrow(Exception('Subscribe failed'));
+        when(
+          () => mockMessaging.subscribeToTopic(any()),
+        ).thenThrow(Exception('Subscribe failed'));
 
         // Should not throw
         await service.subscribeToTopic('feeding_reminders');
 
-        verify(() => mockMessaging.subscribeToTopic('feeding_reminders'))
-            .called(1);
+        verify(
+          () => mockMessaging.subscribeToTopic('feeding_reminders'),
+        ).called(1);
       });
     });
 
     group('unsubscribeFromTopic', () {
       test('should unsubscribe from topic', () async {
-        when(() => mockMessaging.unsubscribeFromTopic(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockMessaging.unsubscribeFromTopic(any()),
+        ).thenAnswer((_) async {});
 
         await service.unsubscribeFromTopic('feeding_reminders');
 
-        verify(() => mockMessaging.unsubscribeFromTopic('feeding_reminders'))
-            .called(1);
+        verify(
+          () => mockMessaging.unsubscribeFromTopic('feeding_reminders'),
+        ).called(1);
       });
 
       test('should handle unsubscribe error gracefully', () async {
-        when(() => mockMessaging.unsubscribeFromTopic(any()))
-            .thenThrow(Exception('Unsubscribe failed'));
+        when(
+          () => mockMessaging.unsubscribeFromTopic(any()),
+        ).thenThrow(Exception('Unsubscribe failed'));
 
         // Should not throw
         await service.unsubscribeFromTopic('feeding_reminders');
 
-        verify(() => mockMessaging.unsubscribeFromTopic('feeding_reminders'))
-            .called(1);
+        verify(
+          () => mockMessaging.unsubscribeFromTopic('feeding_reminders'),
+        ).called(1);
       });
     });
 
     group('getPermissionStatus', () {
       test('should return current permission status', () async {
         final mockSettings = MockNotificationSettings();
-        when(() => mockSettings.authorizationStatus)
-            .thenReturn(AuthorizationStatus.authorized);
-        when(() => mockMessaging.getNotificationSettings())
-            .thenAnswer((_) async => mockSettings);
+        when(
+          () => mockSettings.authorizationStatus,
+        ).thenReturn(AuthorizationStatus.authorized);
+        when(
+          () => mockMessaging.getNotificationSettings(),
+        ).thenAnswer((_) async => mockSettings);
 
         final status = await service.getPermissionStatus();
 
@@ -361,10 +382,10 @@ class TestableFcmService {
     required Stream<RemoteMessage> onMessageStream,
     required Stream<RemoteMessage> onMessageOpenedAppStream,
     required Stream<String> onTokenRefreshStream,
-  })  : _messaging = messaging,
-        _onMessageStream = onMessageStream,
-        _onMessageOpenedAppStream = onMessageOpenedAppStream,
-        _onTokenRefreshStream = onTokenRefreshStream {
+  }) : _messaging = messaging,
+       _onMessageStream = onMessageStream,
+       _onMessageOpenedAppStream = onMessageOpenedAppStream,
+       _onTokenRefreshStream = onTokenRefreshStream {
     _setupListeners();
   }
 

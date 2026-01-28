@@ -79,7 +79,13 @@ class _SyncStatusIndicatorState extends ConsumerState<SyncStatusIndicator>
           children: [
             _buildIcon(syncState, isOffline, theme),
             const SizedBox(width: 6),
-            _buildLabel(syncState, isOffline, syncService.lastSyncTime, l10n, theme),
+            _buildLabel(
+              syncState,
+              isOffline,
+              syncService.lastSyncTime,
+              l10n,
+              theme,
+            ),
           ],
         ),
       ),
@@ -268,15 +274,13 @@ class SyncStatusState {
 /// Provider for combined sync status.
 final syncStatusProvider = Provider<SyncStatusState>((ref) {
   final syncService = ref.watch(syncServiceProvider);
-  final isOnline = ref.watch(isOnlineProvider).maybeWhen(
-        data: (value) => value,
-        orElse: () => true,
-      );
+  final isOnline = ref
+      .watch(isOnlineProvider)
+      .maybeWhen(data: (value) => value, orElse: () => true);
 
-  final syncState = ref.watch(syncStateProvider).maybeWhen(
-        data: (state) => state,
-        orElse: () => SyncState.idle,
-      );
+  final syncState = ref
+      .watch(syncStateProvider)
+      .maybeWhen(data: (state) => state, orElse: () => SyncState.idle);
 
   return SyncStatusState(
     syncState: syncState,

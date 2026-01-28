@@ -15,17 +15,11 @@ void main() {
     AppTheme.useDefaultFonts = false;
   });
 
-  Widget buildTestWidget({
-    int trialDays = 7,
-    bool isCompact = false,
-  }) {
+  Widget buildTestWidget({int trialDays = 7, bool isCompact = false}) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        body: TrialBanner(
-          trialDays: trialDays,
-          isCompact: isCompact,
-        ),
+        body: TrialBanner(trialDays: trialDays, isCompact: isCompact),
       ),
     );
   }
@@ -41,7 +35,10 @@ void main() {
       testWidgets('renders description text', (tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.text('Try all premium features. Cancel anytime.'), findsOneWidget);
+        expect(
+          find.text('Try all premium features. Cancel anytime.'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('renders gift icon', (tester) async {
@@ -73,10 +70,15 @@ void main() {
         expect(find.text('7-day free trial'), findsOneWidget);
       });
 
-      testWidgets('does not show full description in compact mode', (tester) async {
+      testWidgets('does not show full description in compact mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isCompact: true));
 
-        expect(find.text('Try all premium features. Cancel anytime.'), findsNothing);
+        expect(
+          find.text('Try all premium features. Cancel anytime.'),
+          findsNothing,
+        );
       });
 
       testWidgets('renders gift icon in compact mode', (tester) async {
@@ -86,10 +88,9 @@ void main() {
       });
 
       testWidgets('respects custom trial days in compact mode', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          trialDays: 14,
-          isCompact: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(trialDays: 14, isCompact: true),
+        );
 
         expect(find.text('14-day free trial'), findsOneWidget);
         expect(find.text('7-day free trial'), findsNothing);

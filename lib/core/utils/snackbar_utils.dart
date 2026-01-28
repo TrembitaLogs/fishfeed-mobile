@@ -21,10 +21,7 @@ class SnackbarUtils {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: colorScheme.onError),
-        ),
+        content: Text(message, style: TextStyle(color: colorScheme.onError)),
         backgroundColor: colorScheme.error,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
@@ -54,10 +51,7 @@ class SnackbarUtils {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: onSuccessColor),
-        ),
+        content: Text(message, style: const TextStyle(color: onSuccessColor)),
         backgroundColor: successColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -87,10 +81,7 @@ class SnackbarUtils {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: colorScheme.onPrimary),
-        ),
+        content: Text(message, style: TextStyle(color: colorScheme.onPrimary)),
         backgroundColor: colorScheme.primary,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),

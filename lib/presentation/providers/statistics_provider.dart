@@ -8,11 +8,7 @@ import 'package:fishfeed/presentation/providers/auth_provider.dart';
 
 /// State for user statistics.
 class StatisticsState {
-  const StatisticsState({
-    this.statistics,
-    this.isLoading = false,
-    this.error,
-  });
+  const StatisticsState({this.statistics, this.isLoading = false, this.error});
 
   /// The calculated statistics.
   final UserStatistics? statistics;
@@ -50,9 +46,9 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
   StatisticsNotifier({
     required CalculateStatisticsUseCase calculateStatisticsUseCase,
     required String? userId,
-  })  : _calculateStatisticsUseCase = calculateStatisticsUseCase,
-        _userId = userId,
-        super(const StatisticsState()) {
+  }) : _calculateStatisticsUseCase = calculateStatisticsUseCase,
+       _userId = userId,
+       super(const StatisticsState()) {
     // Load statistics on initialization if user is logged in
     if (_userId != null) {
       loadStatistics();
@@ -65,10 +61,7 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
   /// Loads user statistics from local data sources.
   Future<void> loadStatistics() async {
     if (_userId == null) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'User not logged in',
-      );
+      state = state.copyWith(isLoading: false, error: 'User not logged in');
       return;
     }
 
@@ -80,16 +73,10 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (statistics) {
-        state = state.copyWith(
-          statistics: statistics,
-          isLoading: false,
-        );
+        state = state.copyWith(statistics: statistics, isLoading: false);
       },
     );
   }
@@ -101,15 +88,16 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
 }
 
 /// Provider for [CalculateStatisticsUseCase].
-final calculateStatisticsUseCaseProvider =
-    Provider<CalculateStatisticsUseCase>((ref) {
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-  final userProgressDs = ref.watch(userProgressLocalDataSourceProvider);
-  return CalculateStatisticsUseCase(
-    feedingDataSource: feedingDs,
-    userProgressDataSource: userProgressDs,
-  );
-});
+final calculateStatisticsUseCaseProvider = Provider<CalculateStatisticsUseCase>(
+  (ref) {
+    final feedingDs = ref.watch(feedingLocalDataSourceProvider);
+    final userProgressDs = ref.watch(userProgressLocalDataSourceProvider);
+    return CalculateStatisticsUseCase(
+      feedingDataSource: feedingDs,
+      userProgressDataSource: userProgressDs,
+    );
+  },
+);
 
 /// Provider for user statistics state and notifier.
 ///
@@ -125,10 +113,10 @@ final calculateStatisticsUseCaseProvider =
 /// ```
 final statisticsProvider =
     StateNotifierProvider<StatisticsNotifier, StatisticsState>((ref) {
-  final useCase = ref.watch(calculateStatisticsUseCaseProvider);
-  final user = ref.watch(currentUserProvider);
-  return StatisticsNotifier(
-    calculateStatisticsUseCase: useCase,
-    userId: user?.id,
-  );
-});
+      final useCase = ref.watch(calculateStatisticsUseCaseProvider);
+      final user = ref.watch(currentUserProvider);
+      return StatisticsNotifier(
+        calculateStatisticsUseCase: useCase,
+        userId: user?.id,
+      );
+    });

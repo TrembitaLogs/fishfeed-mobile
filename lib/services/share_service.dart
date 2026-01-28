@@ -27,10 +27,7 @@ enum ShareStatus {
 
 /// Result of a share operation with optional error details.
 class ShareOperationResult {
-  const ShareOperationResult({
-    required this.status,
-    this.errorMessage,
-  });
+  const ShareOperationResult({required this.status, this.errorMessage});
 
   final ShareStatus status;
   final String? errorMessage;
@@ -45,9 +42,8 @@ class ShareOperationResult {
 /// - Sharing simple text for streak milestones
 /// - Platform-specific share sheet handling
 class ShareService {
-  ShareService({
-    ScreenshotController? screenshotController,
-  }) : _screenshotController = screenshotController ?? ScreenshotController();
+  ShareService({ScreenshotController? screenshotController})
+    : _screenshotController = screenshotController ?? ScreenshotController();
 
   final ScreenshotController _screenshotController;
 
@@ -103,9 +99,7 @@ class ShareService {
         // Ignore cleanup errors
       }
 
-      return ShareOperationResult(
-        status: _mapShareResult(result.status),
-      );
+      return ShareOperationResult(status: _mapShareResult(result.status));
     } catch (e) {
       return ShareOperationResult(
         status: ShareStatus.error,
@@ -175,9 +169,7 @@ class ShareService {
         // Ignore cleanup errors
       }
 
-      return ShareOperationResult(
-        status: _mapShareResult(result.status),
-      );
+      return ShareOperationResult(status: _mapShareResult(result.status));
     } catch (e) {
       return ShareOperationResult(
         status: ShareStatus.error,
@@ -191,14 +183,9 @@ class ShareService {
   /// Useful for sharing streak milestones or quick updates.
   Future<ShareOperationResult> shareText(String text) async {
     try {
-      final result = await Share.share(
-        text,
-        subject: 'FishFeed',
-      );
+      final result = await Share.share(text, subject: 'FishFeed');
 
-      return ShareOperationResult(
-        status: _mapShareResult(result.status),
-      );
+      return ShareOperationResult(status: _mapShareResult(result.status));
     } catch (e) {
       return ShareOperationResult(
         status: ShareStatus.error,

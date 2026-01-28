@@ -49,10 +49,10 @@ class SyncTriggerService {
     required AppLifecycleService lifecycleService,
     required ConnectivityService connectivityService,
     SyncTriggerConfig config = const SyncTriggerConfig(),
-  })  : _syncService = syncService,
-        _lifecycleService = lifecycleService,
-        _connectivityService = connectivityService,
-        _config = config;
+  }) : _syncService = syncService,
+       _lifecycleService = lifecycleService,
+       _connectivityService = connectivityService,
+       _config = config;
 
   final SyncService _syncService;
   final AppLifecycleService _lifecycleService;
@@ -196,7 +196,9 @@ class SyncTriggerService {
     try {
       final syncedCount = await _syncService.syncAll();
       _lastAutoSyncTime = DateTime.now();
-      debugPrint('SyncTriggerService: Sync completed, $syncedCount items synced');
+      debugPrint(
+        'SyncTriggerService: Sync completed, $syncedCount items synced',
+      );
     } catch (e) {
       debugPrint('SyncTriggerService: Sync failed: $e');
     } finally {

@@ -49,9 +49,7 @@ void main() {
     });
 
     testWidgets('renders subtitle when provided', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        subtitle: 'Most Flexible',
-      ));
+      await tester.pumpWidget(buildTestWidget(subtitle: 'Most Flexible'));
 
       expect(find.text('Most Flexible'), findsOneWidget);
     });
@@ -63,9 +61,7 @@ void main() {
     });
 
     testWidgets('renders badge when provided', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        badge: 'Best Value',
-      ));
+      await tester.pumpWidget(buildTestWidget(badge: 'Best Value'));
 
       expect(find.text('Best Value'), findsOneWidget);
     });
@@ -77,9 +73,7 @@ void main() {
     });
 
     testWidgets('renders savings when provided', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        savings: 'Save 37%',
-      ));
+      await tester.pumpWidget(buildTestWidget(savings: 'Save 37%'));
 
       expect(find.text('Save 37%'), findsOneWidget);
     });
@@ -106,9 +100,7 @@ void main() {
     testWidgets('calls onTap when tapped', (tester) async {
       var tapped = false;
 
-      await tester.pumpWidget(buildTestWidget(
-        onTap: () => tapped = true,
-      ));
+      await tester.pumpWidget(buildTestWidget(onTap: () => tapped = true));
 
       await tester.tap(find.byType(ProductCard));
       await tester.pumpAndSettle();
@@ -117,14 +109,16 @@ void main() {
     });
 
     testWidgets('renders annual product with all options', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        title: 'Annual',
-        price: '\$29.99/year',
-        subtitle: '\$2.50/month',
-        badge: 'Best Value',
-        savings: 'Save 37%',
-        isSelected: true,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          title: 'Annual',
+          price: '\$29.99/year',
+          subtitle: '\$2.50/month',
+          badge: 'Best Value',
+          savings: 'Save 37%',
+          isSelected: true,
+        ),
+      );
 
       expect(find.text('Annual'), findsOneWidget);
       expect(find.text('\$29.99/year'), findsOneWidget);

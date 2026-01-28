@@ -15,9 +15,14 @@ class UserDto with _$UserDto {
     @JsonKey(name: 'display_name') String? displayName,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'subscription_status') @Default('free') String subscriptionStatus,
-    @JsonKey(name: 'free_ai_scans_remaining') @Default(5) int freeAiScansRemaining,
+    @JsonKey(name: 'subscription_status')
+    @Default('free')
+    String subscriptionStatus,
+    @JsonKey(name: 'free_ai_scans_remaining')
+    @Default(5)
+    int freeAiScansRemaining,
   }) = _UserDto;
 
-  factory UserDto.fromJson(Map<String, dynamic> json) => _$UserDtoFromJson(json);
+  factory UserDto.fromJson(Map<String, dynamic> json) =>
+      _$UserDtoFromJson(json);
 }

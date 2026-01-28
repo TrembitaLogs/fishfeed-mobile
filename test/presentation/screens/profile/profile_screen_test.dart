@@ -103,9 +103,8 @@ void main() {
         ),
         GoRoute(
           path: '/paywall',
-          builder: (context, state) => const Scaffold(
-            body: Center(child: Text('Paywall Screen')),
-          ),
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Paywall Screen'))),
         ),
       ],
     );
@@ -132,7 +131,9 @@ void main() {
         }),
         currentUserProvider.overrideWithValue(effectiveUser),
         // Override subscription status for PremiumBadge widget
-        subscriptionStatusProvider.overrideWithValue(effectiveUser.subscriptionStatus),
+        subscriptionStatusProvider.overrideWithValue(
+          effectiveUser.subscriptionStatus,
+        ),
       ],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
@@ -172,7 +173,9 @@ void main() {
         expect(find.text('View Premium'), findsOneWidget);
       });
 
-      testWidgets('shows avatar placeholder when no avatar URL', (tester) async {
+      testWidgets('shows avatar placeholder when no avatar URL', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -180,7 +183,9 @@ void main() {
         expect(find.byIcon(Icons.person), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('shows set nickname prompt when no display name', (tester) async {
+      testWidgets('shows set nickname prompt when no display name', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(user: userWithoutNickname));
         await tester.pumpAndSettle();
 
@@ -217,7 +222,9 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('text field is pre-populated with current nickname', (tester) async {
+      testWidgets('text field is pre-populated with current nickname', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -233,7 +240,9 @@ void main() {
         expect(textFieldWidget.controller?.text, 'Test User');
       });
 
-      testWidgets('shows checkmark button when nickname changed', (tester) async {
+      testWidgets('shows checkmark button when nickname changed', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -252,35 +261,47 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('shows validation error for short nickname on checkmark tap',
-          (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer((_) async => Right(testUser));
+      testWidgets(
+        'shows validation error for short nickname on checkmark tap',
+        (tester) async {
+          when(
+            () => mockUserRepository.updateDisplayName(
+              displayName: any(named: 'displayName'),
+            ),
+          ).thenAnswer((_) async => Right(testUser));
 
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestWidget());
+          await tester.pumpAndSettle();
 
-        // Enter edit mode
-        await tester.tap(find.byIcon(Icons.edit));
-        await tester.pumpAndSettle();
+          // Enter edit mode
+          await tester.tap(find.byIcon(Icons.edit));
+          await tester.pumpAndSettle();
 
-        // Clear and enter short nickname
-        await tester.enterText(find.byType(TextFormField), 'ab');
-        await tester.pumpAndSettle();
+          // Clear and enter short nickname
+          await tester.enterText(find.byType(TextFormField), 'ab');
+          await tester.pumpAndSettle();
 
-        // Tap checkmark
-        await tester.tap(find.byIcon(Icons.check));
-        await tester.pumpAndSettle();
+          // Tap checkmark
+          await tester.tap(find.byIcon(Icons.check));
+          await tester.pumpAndSettle();
 
-        // Should show validation error
-        expect(find.text('Nickname must be at least 3 characters'), findsOneWidget);
-      });
+          // Should show validation error
+          expect(
+            find.text('Nickname must be at least 3 characters'),
+            findsOneWidget,
+          );
+        },
+      );
 
-      testWidgets('calls repository on valid save via checkmark', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(displayName: 'NewNickname'))
-            .thenAnswer(
-                (_) async => Right(testUser.copyWith(displayName: 'NewNickname')));
+      testWidgets('calls repository on valid save via checkmark', (
+        tester,
+      ) async {
+        when(
+          () =>
+              mockUserRepository.updateDisplayName(displayName: 'NewNickname'),
+        ).thenAnswer(
+          (_) async => Right(testUser.copyWith(displayName: 'NewNickname')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -297,15 +318,20 @@ void main() {
         await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
-        verify(() => mockUserRepository.updateDisplayName(displayName: 'NewNickname'))
-            .called(1);
+        verify(
+          () =>
+              mockUserRepository.updateDisplayName(displayName: 'NewNickname'),
+        ).called(1);
       });
 
       testWidgets('shows success snackbar on successful save', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer(
-                (_) async => Right(testUser.copyWith(displayName: 'NewNickname')));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer(
+          (_) async => Right(testUser.copyWith(displayName: 'NewNickname')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -327,9 +353,11 @@ void main() {
       });
 
       testWidgets('shows loading indicator during save', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer((_) async {
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 100));
           return Right(testUser);
         });
@@ -356,10 +384,13 @@ void main() {
       });
 
       testWidgets('auto-saves after 2 seconds of inactivity', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer(
-                (_) async => Right(testUser.copyWith(displayName: 'AutoSaved')));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer(
+          (_) async => Right(testUser.copyWith(displayName: 'AutoSaved')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -377,8 +408,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should have called the repository
-        verify(() => mockUserRepository.updateDisplayName(displayName: 'AutoSaved'))
-            .called(1);
+        verify(
+          () => mockUserRepository.updateDisplayName(displayName: 'AutoSaved'),
+        ).called(1);
       });
     });
 
@@ -462,14 +494,18 @@ void main() {
         expect(find.byIcon(Icons.share), findsOneWidget);
       });
 
-      testWidgets('View Premium button is visible for free user', (tester) async {
+      testWidgets('View Premium button is visible for free user', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
         expect(find.text('View Premium'), findsOneWidget);
       });
 
-      testWidgets('View Premium button is hidden for premium user', (tester) async {
+      testWidgets('View Premium button is hidden for premium user', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(user: premiumUser));
         await tester.pumpAndSettle();
 
@@ -496,10 +532,13 @@ void main() {
 
     group('error handling', () {
       testWidgets('shows error banner on update failure', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer(
-                (_) async => const Left(ServerFailure(message: 'Server error')));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer(
+          (_) async => const Left(ServerFailure(message: 'Server error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
@@ -522,10 +561,13 @@ void main() {
       });
 
       testWidgets('error banner can be dismissed', (tester) async {
-        when(() => mockUserRepository.updateDisplayName(
-                displayName: any(named: 'displayName')))
-            .thenAnswer(
-                (_) async => const Left(ServerFailure(message: 'Server error')));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer(
+          (_) async => const Left(ServerFailure(message: 'Server error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();

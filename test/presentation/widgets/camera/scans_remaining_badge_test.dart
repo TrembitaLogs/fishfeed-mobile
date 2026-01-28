@@ -28,9 +28,7 @@ void main() {
   group('ScansRemainingBadge', () {
     testWidgets('renders correctly with 5 scans', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 5),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 5)),
       );
 
       expect(find.text('5 scans left'), findsOneWidget);
@@ -39,9 +37,7 @@ void main() {
 
     testWidgets('renders correctly with 3 scans', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 3),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 3)),
       );
 
       expect(find.text('3 scans left'), findsOneWidget);
@@ -49,9 +45,7 @@ void main() {
 
     testWidgets('shows singular "scan" for 1 remaining', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 1),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 1)),
       );
 
       expect(find.text('1 scan left'), findsOneWidget);
@@ -59,9 +53,7 @@ void main() {
 
     testWidgets('shows "No scans left" for 0 remaining', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 0),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 0)),
       );
 
       expect(find.text('No scans left'), findsOneWidget);
@@ -69,9 +61,7 @@ void main() {
 
     testWidgets('is hidden for unlimited scans (-1)', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: -1),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: -1)),
       );
 
       expect(find.byType(ScansRemainingBadge), findsOneWidget);
@@ -82,9 +72,7 @@ void main() {
 
     testWidgets('shows warning icon for 2 scans remaining', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 2),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 2)),
       );
 
       expect(find.text('2 scans left'), findsOneWidget);
@@ -93,9 +81,7 @@ void main() {
 
     testWidgets('shows warning icon for 1 scan remaining', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 1),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 1)),
       );
 
       expect(find.byIcon(Icons.info_outline), findsOneWidget);
@@ -103,9 +89,7 @@ void main() {
 
     testWidgets('shows warning icon for 0 scans remaining', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 0),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 0)),
       );
 
       expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
@@ -113,9 +97,7 @@ void main() {
 
     testWidgets('shows normal icon for 3+ scans', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 3),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 3)),
       );
 
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
@@ -123,18 +105,14 @@ void main() {
 
     testWidgets('animates when count changes', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 5),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 5)),
       );
 
       expect(find.text('5 scans left'), findsOneWidget);
 
       // Rebuild with new count
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 4),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 4)),
       );
 
       // Pump through animation
@@ -147,17 +125,13 @@ void main() {
 
     testWidgets('handles transition from normal to warning', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 3),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 3)),
       );
 
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
 
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 2),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 2)),
       );
 
       // Complete animation
@@ -169,17 +143,13 @@ void main() {
 
     testWidgets('handles transition from warning to critical', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 1),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 1)),
       );
 
       expect(find.byIcon(Icons.info_outline), findsOneWidget);
 
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 0),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 0)),
       );
 
       // Complete animation
@@ -193,9 +163,7 @@ void main() {
   group('ScansRemainingBadge edge cases', () {
     testWidgets('handles large numbers', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 99),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 99)),
       );
 
       expect(find.text('99 scans left'), findsOneWidget);
@@ -203,9 +171,7 @@ void main() {
 
     testWidgets('does not animate on first build', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const ScansRemainingBadge(scansRemaining: 5),
-        ),
+        buildTestWidget(const ScansRemainingBadge(scansRemaining: 5)),
       );
 
       // Should not see animation scale effects on first build

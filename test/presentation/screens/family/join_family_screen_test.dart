@@ -86,8 +86,10 @@ void main() {
     group('loading state', () {
       testWidgets('shows loading indicator initially', (tester) async {
         final completer = Completer<Either<Failure, FamilyMember>>();
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) => completer.future);
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -103,8 +105,10 @@ void main() {
 
       testWidgets('shows loading message', (tester) async {
         final completer = Completer<Either<Failure, FamilyMember>>();
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) => completer.future);
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -123,8 +127,9 @@ void main() {
 
     group('success state', () {
       testWidgets('shows success message on valid invite', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'VALID123'))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'VALID123'),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget(inviteCode: 'VALID123'));
         // Pump to trigger the post-frame callback
@@ -143,8 +148,10 @@ void main() {
       });
 
       testWidgets('shows success check icon', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -157,8 +164,10 @@ void main() {
       });
 
       testWidgets('shows redirect message', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -173,10 +182,13 @@ void main() {
 
     group('error state', () {
       testWidgets('shows error message on invalid code', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'INVALID1'))
-            .thenAnswer((_) async => const Left(
-                  ValidationFailure(message: 'Invalid or expired invite code'),
-                ));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'INVALID1'),
+        ).thenAnswer(
+          (_) async => const Left(
+            ValidationFailure(message: 'Invalid or expired invite code'),
+          ),
+        );
 
         await tester.pumpWidget(buildTestWidget(inviteCode: 'INVALID1'));
         await tester.pump();
@@ -187,10 +199,12 @@ void main() {
       });
 
       testWidgets('shows error icon for validation error', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => const Left(
-                  ValidationFailure(message: 'Test error'),
-                ));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer(
+          (_) async => const Left(ValidationFailure(message: 'Test error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -200,10 +214,12 @@ void main() {
       });
 
       testWidgets('shows home button on validation error', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => const Left(
-                  ValidationFailure(message: 'Test error'),
-                ));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer(
+          (_) async => const Left(ValidationFailure(message: 'Test error')),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -214,30 +230,31 @@ void main() {
       });
 
       testWidgets('shows auth required message for auth error', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => const Left(
-                  AuthenticationFailure(message: 'User not authenticated'),
-                ));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer(
+          (_) async => const Left(
+            AuthenticationFailure(message: 'User not authenticated'),
+          ),
+        );
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
         await tester.pump();
 
         expect(find.text('Login required'), findsOneWidget);
-        expect(
-          find.text('Log in to accept the invitation'),
-          findsOneWidget,
-        );
+        expect(find.text('Log in to accept the invitation'), findsOneWidget);
 
         // Pump through the 1-second auth redirect delay to clear the timer
         await tester.pump(const Duration(seconds: 2));
       });
 
       testWidgets('shows lock icon for auth error', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => const Left(
-                  AuthenticationFailure(),
-                ));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => const Left(AuthenticationFailure()));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -250,10 +267,10 @@ void main() {
       });
 
       testWidgets('shows login button for auth error', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => const Left(
-                  AuthenticationFailure(),
-                ));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => const Left(AuthenticationFailure()));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -269,22 +286,27 @@ void main() {
 
     group('invite code handling', () {
       testWidgets('calls repository with correct invite code', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: 'MYCODE12'))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () => mockRepository.acceptInvite(inviteCode: 'MYCODE12'),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget(inviteCode: 'MYCODE12'));
         await tester.pump();
         await tester.pump();
 
-        verify(() => mockRepository.acceptInvite(inviteCode: 'MYCODE12')).called(1);
+        verify(
+          () => mockRepository.acceptInvite(inviteCode: 'MYCODE12'),
+        ).called(1);
 
         // Pump through the redirect delay to clear the timer
         await tester.pump(const Duration(seconds: 3));
       });
 
       testWidgets('only calls accept invite once', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();
@@ -294,8 +316,10 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        verify(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .called(1);
+        verify(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).called(1);
 
         // Pump through the redirect delay to clear the timer
         await tester.pump(const Duration(seconds: 3));
@@ -304,8 +328,10 @@ void main() {
 
     group('UI elements', () {
       testWidgets('has proper styling', (tester) async {
-        when(() => mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')))
-            .thenAnswer((_) async => Right(testMember));
+        when(
+          () =>
+              mockRepository.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async => Right(testMember));
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump();

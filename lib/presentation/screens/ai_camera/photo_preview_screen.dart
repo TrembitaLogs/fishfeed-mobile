@@ -107,12 +107,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
           _buildImagePreview(),
 
           // Top bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _buildTopBar(),
-          ),
+          Positioned(top: 0, left: 0, right: 0, child: _buildTopBar()),
 
           // Bottom controls
           Positioned(
@@ -147,11 +142,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.broken_image,
-                color: Colors.white54,
-                size: 64,
-              ),
+              Icon(Icons.broken_image, color: Colors.white54, size: 64),
               SizedBox(height: 16),
               Text(
                 'Failed to load image',
@@ -171,10 +162,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.6),
-            Colors.transparent,
-          ],
+          colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
         ),
       ),
       child: SafeArea(
@@ -186,16 +174,11 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
               color: Colors.white,
               iconSize: 28,
               onPressed: _onRetake,
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black38,
-              ),
+              style: IconButton.styleFrom(backgroundColor: Colors.black38),
             ),
             const Spacer(),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(16),
@@ -203,11 +186,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.preview,
-                    color: Colors.white70,
-                    size: 16,
-                  ),
+                  Icon(Icons.preview, color: Colors.white70, size: 16),
                   SizedBox(width: 4),
                   Text(
                     'Preview',
@@ -233,10 +212,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withValues(alpha: 0.8),
-          ],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
         ),
       ),
       child: SafeArea(
@@ -270,8 +246,9 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : const Icon(Icons.check),
@@ -305,10 +282,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
             SizedBox(height: 16),
             Text(
               'Preparing image...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -327,11 +301,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.error_outline, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

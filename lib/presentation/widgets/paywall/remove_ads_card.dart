@@ -30,7 +30,9 @@ class RemoveAdsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.5,
+          ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.5),

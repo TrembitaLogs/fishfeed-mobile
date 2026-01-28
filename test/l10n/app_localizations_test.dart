@@ -85,8 +85,9 @@ void main() {
       expect(localizations!.home, 'Startseite');
     });
 
-    testWidgets('displays correct English text in widget',
-        (WidgetTester tester) async {
+    testWidgets('displays correct English text in widget', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('en'),
@@ -119,8 +120,9 @@ void main() {
       expect(find.text('Log In'), findsOneWidget);
     });
 
-    testWidgets('displays correct German text in widget',
-        (WidgetTester tester) async {
+    testWidgets('displays correct German text in widget', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('de'),
@@ -169,8 +171,9 @@ void main() {
   });
 
   group('AppLocalizations - all strings', () {
-    testWidgets('English locale has all expected strings',
-        (WidgetTester tester) async {
+    testWidgets('English locale has all expected strings', (
+      WidgetTester tester,
+    ) async {
       late AppLocalizations? localizations;
 
       await tester.pumpWidget(
@@ -206,8 +209,9 @@ void main() {
       expect(localizations!.systemMode, 'System');
     });
 
-    testWidgets('German locale has all expected strings',
-        (WidgetTester tester) async {
+    testWidgets('German locale has all expected strings', (
+      WidgetTester tester,
+    ) async {
       late AppLocalizations? localizations;
 
       await tester.pumpWidget(

@@ -23,8 +23,6 @@ class AuthResponseDto with _$AuthResponseDto {
       _$AuthResponseDtoFromJson(json);
 
   /// Returns tokens as TokenPairDto for compatibility.
-  TokenPairDto get tokens => TokenPairDto(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      );
+  TokenPairDto get tokens =>
+      TokenPairDto(accessToken: accessToken, refreshToken: refreshToken);
 }

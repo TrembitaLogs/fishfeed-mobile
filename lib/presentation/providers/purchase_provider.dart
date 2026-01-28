@@ -60,7 +60,9 @@ final customerInfoStreamProvider = StreamProvider<CustomerInfo>((ref) {
 ///   error: (e, s) => Text('Error: $e'),
 /// );
 /// ```
-final subscriptionStatusStreamProvider = StreamProvider<SubscriptionStatus>((ref) {
+final subscriptionStatusStreamProvider = StreamProvider<SubscriptionStatus>((
+  ref,
+) {
   final purchaseService = ref.watch(purchaseServiceProvider);
   return purchaseService.subscriptionStatusStream;
 });
@@ -99,7 +101,9 @@ final subscriptionStatusProvider = Provider<SubscriptionStatus>((ref) {
 /// // Or use with FutureProvider refresh
 /// ref.invalidate(syncSubscriptionStatusProvider);
 /// ```
-final syncSubscriptionStatusProvider = FutureProvider<SubscriptionStatus>((ref) async {
+final syncSubscriptionStatusProvider = FutureProvider<SubscriptionStatus>((
+  ref,
+) async {
   final purchaseService = ref.watch(purchaseServiceProvider);
   return purchaseService.syncSubscriptionStatus();
 });

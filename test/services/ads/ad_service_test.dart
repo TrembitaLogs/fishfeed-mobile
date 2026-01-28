@@ -86,24 +86,29 @@ void main() {
         expect(service.feedingCounter, initialCount + 1);
       });
 
-      test('should reset counter after threshold and return false when no ad ready',
-          () async {
-        final service = AdService.instance;
-        service.resetFeedingCounter();
+      test(
+        'should reset counter after threshold and return false when no ad ready',
+        () async {
+          final service = AdService.instance;
+          service.resetFeedingCounter();
 
-        // Increment to threshold - 1
-        for (var i = 0; i < AdService.feedingsBeforeInterstitial - 1; i++) {
-          await service.onFeedingCompleted();
-        }
+          // Increment to threshold - 1
+          for (var i = 0; i < AdService.feedingsBeforeInterstitial - 1; i++) {
+            await service.onFeedingCompleted();
+          }
 
-        expect(service.feedingCounter, AdService.feedingsBeforeInterstitial - 1);
+          expect(
+            service.feedingCounter,
+            AdService.feedingsBeforeInterstitial - 1,
+          );
 
-        // This should trigger the ad (but return false since no ad loaded)
-        final result = await service.onFeedingCompleted();
+          // This should trigger the ad (but return false since no ad loaded)
+          final result = await service.onFeedingCompleted();
 
-        expect(result, isFalse); // No ad loaded
-        expect(service.feedingCounter, 0); // Counter should be reset
-      });
+          expect(result, isFalse); // No ad loaded
+          expect(service.feedingCounter, 0); // Counter should be reset
+        },
+      );
     });
 
     group('resetFeedingCounter', () {
@@ -209,26 +214,47 @@ void main() {
       expect(TestAdUnitIds.androidRewarded, isNotEmpty);
     });
 
-    test('iOS test ad unit IDs should start with ca-app-pub-3940256099942544', () {
-      expect(TestAdUnitIds.iosBanner.startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-      expect(TestAdUnitIds.iosInterstitial.startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-      expect(TestAdUnitIds.iosRewarded.startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-    });
+    test(
+      'iOS test ad unit IDs should start with ca-app-pub-3940256099942544',
+      () {
+        expect(
+          TestAdUnitIds.iosBanner.startsWith('ca-app-pub-3940256099942544'),
+          isTrue,
+        );
+        expect(
+          TestAdUnitIds.iosInterstitial.startsWith(
+            'ca-app-pub-3940256099942544',
+          ),
+          isTrue,
+        );
+        expect(
+          TestAdUnitIds.iosRewarded.startsWith('ca-app-pub-3940256099942544'),
+          isTrue,
+        );
+      },
+    );
 
-    test('Android test ad unit IDs should start with ca-app-pub-3940256099942544',
-        () {
-      expect(TestAdUnitIds.androidBanner.startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-      expect(
-          TestAdUnitIds.androidInterstitial
-              .startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-      expect(TestAdUnitIds.androidRewarded.startsWith('ca-app-pub-3940256099942544'),
-          isTrue);
-    });
+    test(
+      'Android test ad unit IDs should start with ca-app-pub-3940256099942544',
+      () {
+        expect(
+          TestAdUnitIds.androidBanner.startsWith('ca-app-pub-3940256099942544'),
+          isTrue,
+        );
+        expect(
+          TestAdUnitIds.androidInterstitial.startsWith(
+            'ca-app-pub-3940256099942544',
+          ),
+          isTrue,
+        );
+        expect(
+          TestAdUnitIds.androidRewarded.startsWith(
+            'ca-app-pub-3940256099942544',
+          ),
+          isTrue,
+        );
+      },
+    );
   });
 
   group('AdUnitIds', () {

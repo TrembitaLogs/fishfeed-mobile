@@ -43,13 +43,15 @@ class MockAppleAuthService extends Mock implements AppleAuthService {}
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
     implements CalendarDataNotifier {
   MockCalendarDataNotifier()
-      : super(CalendarDataState(
+    : super(
+        CalendarDataState(
           monthData: CalendarMonthData.empty(
             DateTime.now().year,
             DateTime.now().month,
           ),
           isLoading: false,
-        ));
+        ),
+      );
 
   @override
   Future<void> loadMonth(int year, int month) async {}
@@ -65,7 +67,7 @@ class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     implements UserAquariumsNotifier {
   MockUserAquariumsNotifier()
-      : super(UserAquariumsState(aquariums: _defaultAquariums));
+    : super(UserAquariumsState(aquariums: _defaultAquariums));
 
   static final _defaultAquariums = [
     Aquarium(
@@ -85,8 +87,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     required String name,
     WaterType? waterType,
     double? capacity,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<Aquarium?> updateAquarium({
@@ -95,8 +96,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     WaterType? waterType,
     double? capacity,
     String? imageUrl,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<bool> deleteAquarium(String aquariumId) async => true;
@@ -121,7 +121,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
 class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
     implements TodayFeedingsNotifier {
   MockTodayFeedingsNotifier()
-      : super(const TodayFeedingsState(feedings: [], isLoading: false));
+    : super(const TodayFeedingsState(feedings: [], isLoading: false));
 
   @override
   Future<void> loadFeedings() async {}
@@ -228,11 +228,16 @@ void main() {
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
           // Mock aquarium remote data source for authNotifierProvider
-          aquariumRemoteDataSourceProvider
-              .overrideWithValue(createMockAquariumRemoteDataSource()),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            createMockAquariumRemoteDataSource(),
+          ),
           // Mock calendar and feeding providers to prevent infinite rebuild loops
-          calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),
-          todayFeedingsProvider.overrideWith((ref) => MockTodayFeedingsNotifier()),
+          calendarDataProvider.overrideWith(
+            (ref) => MockCalendarDataNotifier(),
+          ),
+          todayFeedingsProvider.overrideWith(
+            (ref) => MockTodayFeedingsNotifier(),
+          ),
           // Provide a test user for ProfileScreen
           currentUserProvider.overrideWithValue(testUser),
           // Mock SyncService to prevent conflicts with ConflictResolutionListener
@@ -242,7 +247,9 @@ void main() {
             yield SyncState.idle;
           }),
           // Mock user aquariums provider to avoid HiveBoxes dependency
-          userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
+          userAquariumsProvider.overrideWith(
+            (ref) => MockUserAquariumsNotifier(),
+          ),
         ],
         child: MaterialApp.router(
           theme: AppTheme.lightTheme,
@@ -254,8 +261,9 @@ void main() {
     }
 
     group('new user flow', () {
-      testWidgets('new user is redirected to onboarding after login',
-          (tester) async {
+      testWidgets('new user is redirected to onboarding after login', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestApp());
         await tester.pumpAndSettle();
 
@@ -275,33 +283,36 @@ void main() {
         expect(find.text('Create Your First Aquarium'), findsOneWidget);
       });
 
-      testWidgets('new user is redirected to home after completing onboarding',
-          (tester) async {
-        // Start as logged in but not onboarded
-        authState.login();
+      testWidgets(
+        'new user is redirected to home after completing onboarding',
+        (tester) async {
+          // Start as logged in but not onboarded
+          authState.login();
 
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
 
-        // Should be on /onboarding
-        expect(
-          router.routerDelegate.currentConfiguration.uri.path,
-          '/onboarding',
-        );
+          // Should be on /onboarding
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/onboarding',
+          );
 
-        // Complete onboarding
-        authState.completeOnboarding();
-        await tester.pumpAndSettle();
+          // Complete onboarding
+          authState.completeOnboarding();
+          await tester.pumpAndSettle();
 
-        // Should be on home
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/');
-        expect(find.text('Home'), findsOneWidget);
-      });
+          // Should be on home
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+          expect(find.text('Home'), findsOneWidget);
+        },
+      );
     });
 
     group('existing user flow', () {
-      testWidgets('existing user is redirected to home after login',
-          (tester) async {
+      testWidgets('existing user is redirected to home after login', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestApp());
         await tester.pumpAndSettle();
 
@@ -309,10 +320,7 @@ void main() {
         expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
 
         // Existing user logs in (already onboarded)
-        authState.setAuthState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        authState.setAuthState(isLoggedIn: true, hasCompletedOnboarding: true);
         await tester.pumpAndSettle();
 
         // Should be on home
@@ -322,8 +330,9 @@ void main() {
     });
 
     group('unauthenticated redirect', () {
-      testWidgets('unauthenticated user is redirected to login from home',
-          (tester) async {
+      testWidgets('unauthenticated user is redirected to login from home', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestApp());
         await tester.pumpAndSettle();
 
@@ -333,93 +342,94 @@ void main() {
       });
 
       testWidgets(
-          'unauthenticated user is redirected to login from protected routes',
-          (tester) async {
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+        'unauthenticated user is redirected to login from protected routes',
+        (tester) async {
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
 
-        // Try to navigate to calendar
-        router.go('/calendar');
-        await tester.pumpAndSettle();
+          // Try to navigate to calendar
+          router.go('/calendar');
+          await tester.pumpAndSettle();
 
-        // Should be redirected to /auth
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
+          // Should be redirected to /auth
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
 
-        // Try to navigate to profile
-        router.go('/profile');
-        await tester.pumpAndSettle();
+          // Try to navigate to profile
+          router.go('/profile');
+          await tester.pumpAndSettle();
 
-        // Should be redirected to /auth
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
-      });
+          // Should be redirected to /auth
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
+        },
+      );
     });
 
     group('authenticated redirect from auth routes', () {
       testWidgets(
-          'authenticated user with onboarding is redirected from auth to home',
-          (tester) async {
-        authState.setAuthState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        'authenticated user with onboarding is redirected from auth to home',
+        (tester) async {
+          authState.setAuthState(
+            isLoggedIn: true,
+            hasCompletedOnboarding: true,
+          );
 
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
 
-        // Try to go to /auth
-        router.go('/auth');
-        await tester.pumpAndSettle();
+          // Try to go to /auth
+          router.go('/auth');
+          await tester.pumpAndSettle();
 
-        // Should be redirected to home
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/');
-      });
-
-      testWidgets(
-          'authenticated user with onboarding is redirected from register to home',
-          (tester) async {
-        authState.setAuthState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
-
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
-
-        // Try to go to /auth/register
-        router.go('/auth/register');
-        await tester.pumpAndSettle();
-
-        // Should be redirected to home
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/');
-      });
+          // Should be redirected to home
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+        },
+      );
 
       testWidgets(
-          'authenticated user without onboarding is redirected from auth to onboarding',
-          (tester) async {
-        authState.login();
+        'authenticated user with onboarding is redirected from register to home',
+        (tester) async {
+          authState.setAuthState(
+            isLoggedIn: true,
+            hasCompletedOnboarding: true,
+          );
 
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
 
-        // Try to go to /auth
-        router.go('/auth');
-        await tester.pumpAndSettle();
+          // Try to go to /auth/register
+          router.go('/auth/register');
+          await tester.pumpAndSettle();
 
-        // Should be redirected to onboarding
-        expect(
-          router.routerDelegate.currentConfiguration.uri.path,
-          '/onboarding',
-        );
-      });
+          // Should be redirected to home
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+        },
+      );
+
+      testWidgets(
+        'authenticated user without onboarding is redirected from auth to onboarding',
+        (tester) async {
+          authState.login();
+
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
+
+          // Try to go to /auth
+          router.go('/auth');
+          await tester.pumpAndSettle();
+
+          // Should be redirected to onboarding
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/onboarding',
+          );
+        },
+      );
     });
 
     group('logout flow', () {
       testWidgets('user is redirected to login after logout', (tester) async {
         // Start logged in with onboarding
-        authState.setAuthState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        authState.setAuthState(isLoggedIn: true, hasCompletedOnboarding: true);
 
         await tester.pumpWidget(buildTestApp());
         await tester.pumpAndSettle();
@@ -444,13 +454,11 @@ void main() {
         expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
       });
 
-      testWidgets('protected routes are not accessible after logout',
-          (tester) async {
+      testWidgets('protected routes are not accessible after logout', (
+        tester,
+      ) async {
         // Start logged in
-        authState.setAuthState(
-          isLoggedIn: true,
-          hasCompletedOnboarding: true,
-        );
+        authState.setAuthState(isLoggedIn: true, hasCompletedOnboarding: true);
 
         await tester.pumpWidget(buildTestApp());
         await tester.pumpAndSettle();
@@ -495,36 +503,37 @@ void main() {
 
     group('onboarding completion', () {
       testWidgets(
-          'user stays on onboarding until completion then redirects to home',
-          (tester) async {
-        authState.login();
+        'user stays on onboarding until completion then redirects to home',
+        (tester) async {
+          authState.login();
 
-        await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(buildTestApp());
+          await tester.pumpAndSettle();
 
-        // Should be on onboarding
-        expect(
-          router.routerDelegate.currentConfiguration.uri.path,
-          '/onboarding',
-        );
+          // Should be on onboarding
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/onboarding',
+          );
 
-        // Try to navigate to home
-        router.go('/');
-        await tester.pumpAndSettle();
+          // Try to navigate to home
+          router.go('/');
+          await tester.pumpAndSettle();
 
-        // Should still be on onboarding
-        expect(
-          router.routerDelegate.currentConfiguration.uri.path,
-          '/onboarding',
-        );
+          // Should still be on onboarding
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/onboarding',
+          );
 
-        // Complete onboarding
-        authState.completeOnboarding();
-        await tester.pumpAndSettle();
+          // Complete onboarding
+          authState.completeOnboarding();
+          await tester.pumpAndSettle();
 
-        // Now should be on home
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/');
-      });
+          // Now should be on home
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+        },
+      );
     });
   });
 }

@@ -6,10 +6,7 @@ import 'package:fishfeed/domain/repositories/auth_repository.dart';
 
 /// Parameters for [LoginUseCase].
 class LoginParams {
-  const LoginParams({
-    required this.email,
-    required this.password,
-  });
+  const LoginParams({required this.email, required this.password});
 
   final String email;
   final String password;

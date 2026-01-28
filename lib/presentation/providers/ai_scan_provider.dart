@@ -38,10 +38,7 @@ class AiScanSuccess extends AiScanState {
 
 /// Scan failed with an error.
 class AiScanError extends AiScanState {
-  const AiScanError({
-    required this.message,
-    this.canRetry = true,
-  });
+  const AiScanError({required this.message, this.canRetry = true});
 
   /// Error message to display.
   final String message;
@@ -59,10 +56,9 @@ class AiScanError extends AiScanState {
 /// Handles the scan lifecycle: idle -> loading -> success/error.
 /// Supports retry functionality for failed scans.
 class AiScanNotifier extends StateNotifier<AiScanState> {
-  AiScanNotifier({
-    required AiScanRepository repository,
-  })  : _repository = repository,
-        super(const AiScanIdle());
+  AiScanNotifier({required AiScanRepository repository})
+    : _repository = repository,
+      super(const AiScanIdle());
 
   final AiScanRepository _repository;
 
@@ -157,7 +153,9 @@ class AiScanNotifier extends StateNotifier<AiScanState> {
 ///     return ErrorWidget(message: message, canRetry: canRetry);
 /// }
 /// ```
-final aiScanProvider = StateNotifierProvider<AiScanNotifier, AiScanState>((ref) {
+final aiScanProvider = StateNotifierProvider<AiScanNotifier, AiScanState>((
+  ref,
+) {
   final repository = ref.watch(aiScanRepositoryProvider);
   return AiScanNotifier(repository: repository);
 });

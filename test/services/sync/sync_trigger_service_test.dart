@@ -29,10 +29,12 @@ void main() {
     lifecycleController = StreamController<LifecycleEventData>.broadcast();
     connectivityController = StreamController<bool>.broadcast();
 
-    when(() => mockLifecycleService.eventStream)
-        .thenAnswer((_) => lifecycleController.stream);
-    when(() => mockConnectivityService.statusStream)
-        .thenAnswer((_) => connectivityController.stream);
+    when(
+      () => mockLifecycleService.eventStream,
+    ).thenAnswer((_) => lifecycleController.stream);
+    when(
+      () => mockConnectivityService.statusStream,
+    ).thenAnswer((_) => connectivityController.stream);
     when(() => mockConnectivityService.isOnline).thenReturn(true);
     when(() => mockSyncService.hasUnsyncedFeedings).thenReturn(true);
     when(() => mockSyncService.hasPendingOperations).thenReturn(false);
@@ -306,12 +308,15 @@ void main() {
       expect(triggerService.lastAutoSyncTime, isNull);
     });
 
-    test('remainingCooldown should return Duration.zero when not in cooldown', () {
-      triggerService = createTriggerService();
-      triggerService.initialize();
+    test(
+      'remainingCooldown should return Duration.zero when not in cooldown',
+      () {
+        triggerService = createTriggerService();
+        triggerService.initialize();
 
-      expect(triggerService.remainingCooldown, Duration.zero);
-    });
+        expect(triggerService.remainingCooldown, Duration.zero);
+      },
+    );
 
     test('resetCooldown should clear the cooldown', () async {
       triggerService = createTriggerService(
@@ -377,9 +382,7 @@ void main() {
       when(() => mockSyncService.syncAll()).thenAnswer((_) => completer.future);
 
       triggerService = createTriggerService(
-        config: const SyncTriggerConfig(
-          cooldownPeriod: Duration.zero,
-        ),
+        config: const SyncTriggerConfig(cooldownPeriod: Duration.zero),
       );
       triggerService.initialize();
 
@@ -435,35 +438,36 @@ void main() {
   });
 
   group('Nothing to Sync', () {
-    test('should still trigger sync on resume even with nothing to sync', () async {
-      // Note: SyncTriggerService always syncs on app resume to fetch server updates,
-      // regardless of local pending changes.
-      when(() => mockSyncService.hasUnsyncedFeedings).thenReturn(false);
-      when(() => mockSyncService.hasPendingOperations).thenReturn(false);
+    test(
+      'should still trigger sync on resume even with nothing to sync',
+      () async {
+        // Note: SyncTriggerService always syncs on app resume to fetch server updates,
+        // regardless of local pending changes.
+        when(() => mockSyncService.hasUnsyncedFeedings).thenReturn(false);
+        when(() => mockSyncService.hasPendingOperations).thenReturn(false);
 
-      triggerService = createTriggerService(
-        config: const SyncTriggerConfig(
-          resumeDebounce: Duration(milliseconds: 10),
-        ),
-      );
-      triggerService.initialize();
+        triggerService = createTriggerService(
+          config: const SyncTriggerConfig(
+            resumeDebounce: Duration(milliseconds: 10),
+          ),
+        );
+        triggerService.initialize();
 
-      lifecycleController.add(createResumedEvent());
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        lifecycleController.add(createResumedEvent());
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      // Sync is still triggered to fetch potential server updates
-      verify(() => mockSyncService.syncAll()).called(1);
+        // Sync is still triggered to fetch potential server updates
+        verify(() => mockSyncService.syncAll()).called(1);
 
-      triggerService.dispose();
-    });
+        triggerService.dispose();
+      },
+    );
   });
 
   group('Manual Sync (syncNow)', () {
     test('should trigger sync immediately bypassing cooldown', () async {
       triggerService = createTriggerService(
-        config: const SyncTriggerConfig(
-          cooldownPeriod: Duration(seconds: 60),
-        ),
+        config: const SyncTriggerConfig(cooldownPeriod: Duration(seconds: 60)),
       );
       triggerService.initialize();
 

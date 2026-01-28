@@ -15,13 +15,16 @@ void main() {
 
   setUp(() {
     mockConnectivity = MockConnectivity();
-    connectivityController = StreamController<List<ConnectivityResult>>.broadcast();
+    connectivityController =
+        StreamController<List<ConnectivityResult>>.broadcast();
 
-    when(() => mockConnectivity.checkConnectivity())
-        .thenAnswer((_) async => [ConnectivityResult.wifi]);
+    when(
+      () => mockConnectivity.checkConnectivity(),
+    ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
-    when(() => mockConnectivity.onConnectivityChanged)
-        .thenAnswer((_) => connectivityController.stream);
+    when(
+      () => mockConnectivity.onConnectivityChanged,
+    ).thenAnswer((_) => connectivityController.stream);
 
     service = ConnectivityService(connectivity: mockConnectivity);
   });
@@ -48,8 +51,9 @@ void main() {
       });
 
       test('checks initial connectivity', () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         await service.initialize();
 
@@ -58,8 +62,9 @@ void main() {
       });
 
       test('sets offline when no connectivity', () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.none]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.none]);
 
         await service.initialize();
 
@@ -116,8 +121,9 @@ void main() {
       test('returns current status', () async {
         await service.initialize();
 
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         final result = await service.checkConnectivity();
 
@@ -127,8 +133,9 @@ void main() {
       test('updates isOnline', () async {
         await service.initialize();
 
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.none]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.none]);
 
         await service.checkConnectivity();
 

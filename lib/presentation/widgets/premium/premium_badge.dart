@@ -77,19 +77,12 @@ class PremiumBadge extends ConsumerWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(dimensions.borderRadius),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: dimensions.iconSize,
-            color: foregroundColor,
-          ),
+          Icon(icon, size: dimensions.iconSize, color: foregroundColor),
           if (showLabel) ...[
             SizedBox(width: dimensions.spacing),
             Text(
@@ -109,29 +102,29 @@ class PremiumBadge extends ConsumerWidget {
   _BadgeDimensions _getDimensions(PremiumBadgeSize size) {
     return switch (size) {
       PremiumBadgeSize.small => const _BadgeDimensions(
-          horizontalPadding: 8,
-          verticalPadding: 4,
-          iconSize: 14,
-          fontSize: 11,
-          spacing: 4,
-          borderRadius: 12,
-        ),
+        horizontalPadding: 8,
+        verticalPadding: 4,
+        iconSize: 14,
+        fontSize: 11,
+        spacing: 4,
+        borderRadius: 12,
+      ),
       PremiumBadgeSize.medium => const _BadgeDimensions(
-          horizontalPadding: 12,
-          verticalPadding: 6,
-          iconSize: 18,
-          fontSize: 13,
-          spacing: 6,
-          borderRadius: 16,
-        ),
+        horizontalPadding: 12,
+        verticalPadding: 6,
+        iconSize: 18,
+        fontSize: 13,
+        spacing: 6,
+        borderRadius: 16,
+      ),
       PremiumBadgeSize.large => const _BadgeDimensions(
-          horizontalPadding: 16,
-          verticalPadding: 8,
-          iconSize: 24,
-          fontSize: 16,
-          spacing: 8,
-          borderRadius: 20,
-        ),
+        horizontalPadding: 16,
+        verticalPadding: 8,
+        iconSize: 24,
+        fontSize: 16,
+        spacing: 8,
+        borderRadius: 20,
+      ),
     };
   }
 }
@@ -193,10 +186,6 @@ class PremiumBadgeStatic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumBadge(
-      size: size,
-      showLabel: showLabel,
-      onTap: onTap,
-    );
+    return PremiumBadge(size: size, showLabel: showLabel, onTap: onTap);
   }
 }

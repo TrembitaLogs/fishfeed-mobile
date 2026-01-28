@@ -55,13 +55,13 @@ void main() {
         expect(find.text('Enable Notifications'), findsNWidgets(2));
 
         // Verify description
-        expect(
-          find.textContaining('Get timely reminders'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('Get timely reminders'), findsOneWidget);
 
         // Verify enable button
-        expect(find.widgetWithText(FilledButton, 'Enable Notifications'), findsOneWidget);
+        expect(
+          find.widgetWithText(FilledButton, 'Enable Notifications'),
+          findsOneWidget,
+        );
 
         // Verify later button
         expect(find.widgetWithText(TextButton, 'Later'), findsOneWidget);
@@ -98,8 +98,9 @@ void main() {
     });
 
     group('interactions', () {
-      testWidgets('returns enable result when enable button is tapped',
-          (tester) async {
+      testWidgets('returns enable result when enable button is tapped', (
+        tester,
+      ) async {
         NotificationPermissionDialogResult? result;
 
         await tester.pumpWidget(
@@ -118,14 +119,17 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.widgetWithText(FilledButton, 'Enable Notifications'));
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Enable Notifications'),
+        );
         await tester.pumpAndSettle();
 
         expect(result, equals(NotificationPermissionDialogResult.enable));
       });
 
-      testWidgets('returns later result when later button is tapped',
-          (tester) async {
+      testWidgets('returns later result when later button is tapped', (
+        tester,
+      ) async {
         NotificationPermissionDialogResult? result;
 
         await tester.pumpWidget(
@@ -150,8 +154,9 @@ void main() {
         expect(result, equals(NotificationPermissionDialogResult.later));
       });
 
-      testWidgets('returns later result when dialog is dismissed',
-          (tester) async {
+      testWidgets('returns later result when dialog is dismissed', (
+        tester,
+      ) async {
         NotificationPermissionDialogResult? result;
 
         await tester.pumpWidget(
@@ -179,8 +184,9 @@ void main() {
     });
 
     group('static show method', () {
-      testWidgets('show method displays dialog and returns result',
-          (tester) async {
+      testWidgets('show method displays dialog and returns result', (
+        tester,
+      ) async {
         NotificationPermissionDialogResult? result;
 
         await tester.pumpWidget(
@@ -203,7 +209,9 @@ void main() {
         expect(find.byType(NotificationPermissionDialog), findsOneWidget);
 
         // Close dialog
-        await tester.tap(find.widgetWithText(FilledButton, 'Enable Notifications'));
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Enable Notifications'),
+        );
         await tester.pumpAndSettle();
 
         expect(result, isNotNull);
@@ -214,18 +222,12 @@ void main() {
   group('NotificationPermissionDialogResult', () {
     test('has enable value', () {
       expect(NotificationPermissionDialogResult.enable, isNotNull);
-      expect(
-        NotificationPermissionDialogResult.enable.name,
-        equals('enable'),
-      );
+      expect(NotificationPermissionDialogResult.enable.name, equals('enable'));
     });
 
     test('has later value', () {
       expect(NotificationPermissionDialogResult.later, isNotNull);
-      expect(
-        NotificationPermissionDialogResult.later.name,
-        equals('later'),
-      );
+      expect(NotificationPermissionDialogResult.later.name, equals('later'));
     });
 
     test('has exactly 2 values', () {

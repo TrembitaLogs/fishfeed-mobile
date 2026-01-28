@@ -50,7 +50,7 @@ class MockAquariumRemoteDataSource extends Mock
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     implements UserAquariumsNotifier {
   MockUserAquariumsNotifier()
-      : super(UserAquariumsState(aquariums: _defaultAquariums));
+    : super(UserAquariumsState(aquariums: _defaultAquariums));
 
   static final _defaultAquariums = [
     Aquarium(
@@ -70,8 +70,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     required String name,
     WaterType? waterType,
     double? capacity,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<Aquarium?> updateAquarium({
@@ -80,8 +79,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     WaterType? waterType,
     double? capacity,
     String? imageUrl,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<bool> deleteAquarium(String aquariumId) async => true;
@@ -106,13 +104,15 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
     implements CalendarDataNotifier {
   MockCalendarDataNotifier()
-      : super(CalendarDataState(
+    : super(
+        CalendarDataState(
           monthData: CalendarMonthData.empty(
             DateTime.now().year,
             DateTime.now().month,
           ),
           isLoading: false,
-        ));
+        ),
+      );
 
   @override
   Future<void> loadMonth(int year, int month) async {
@@ -134,7 +134,7 @@ class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
 class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
     implements TodayFeedingsNotifier {
   MockTodayFeedingsNotifier()
-      : super(const TodayFeedingsState(feedings: [], isLoading: false));
+    : super(const TodayFeedingsState(feedings: [], isLoading: false));
 
   @override
   Future<void> loadFeedings() async {}
@@ -249,8 +249,9 @@ void main() {
         // Mock calendar data provider to prevent infinite rebuild loop
         calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),
         // Mock subscription status to prevent PurchaseService initialization
-        subscriptionStatusProvider
-            .overrideWithValue(const SubscriptionStatus.free()),
+        subscriptionStatusProvider.overrideWithValue(
+          const SubscriptionStatus.free(),
+        ),
         isPremiumProvider.overrideWithValue(false),
         shouldShowAdsProvider.overrideWithValue(false),
         // Mock SyncService to prevent conflicts with ConflictResolutionListener
@@ -260,7 +261,9 @@ void main() {
           yield SyncState.idle;
         }),
         // Mock user aquariums provider to avoid HiveBoxes dependency
-        userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
+        userAquariumsProvider.overrideWith(
+          (ref) => MockUserAquariumsNotifier(),
+        ),
         if (user != null)
           authNotifierProvider.overrideWith((ref) {
             final notifier = AuthNotifier(
@@ -299,8 +302,9 @@ void main() {
         expect(find.textContaining('TestUser'), findsOneWidget);
       });
 
-      testWidgets('displays greeting with email when no display name',
-          (tester) async {
+      testWidgets('displays greeting with email when no display name', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(user: testUserNoDisplayName));
         await tester.pumpAndSettle();
 
@@ -380,8 +384,9 @@ void main() {
         expect(find.text('TestUser'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('tab navigation preserves state with IndexedStack',
-          (tester) async {
+      testWidgets('tab navigation preserves state with IndexedStack', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 
@@ -423,10 +428,7 @@ void main() {
         final router = GoRouter(
           initialLocation: '/',
           routes: [
-            GoRoute(
-              path: '/',
-              builder: (context, state) => const HomeScreen(),
-            ),
+            GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
             GoRoute(
               path: '/ai-camera',
               builder: (context, state) {
@@ -444,22 +446,28 @@ void main() {
             overrides: [
               authRepositoryProvider.overrideWithValue(mockAuthRepository),
               userRepositoryProvider.overrideWithValue(mockUserRepository),
-              googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
+              googleAuthServiceProvider.overrideWithValue(
+                mockGoogleAuthService,
+              ),
               appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
               todayFeedingsProvider.overrideWith((ref) {
                 return MockTodayFeedingsNotifier();
               }),
-              calendarDataProvider
-                  .overrideWith((ref) => MockCalendarDataNotifier()),
-              subscriptionStatusProvider
-                  .overrideWithValue(const SubscriptionStatus.free()),
+              calendarDataProvider.overrideWith(
+                (ref) => MockCalendarDataNotifier(),
+              ),
+              subscriptionStatusProvider.overrideWithValue(
+                const SubscriptionStatus.free(),
+              ),
               isPremiumProvider.overrideWithValue(false),
               shouldShowAdsProvider.overrideWithValue(false),
               syncServiceProvider.overrideWithValue(createMockSyncService()),
               syncStateProvider.overrideWith((ref) async* {
                 yield SyncState.idle;
               }),
-              userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
+              userAquariumsProvider.overrideWith(
+                (ref) => MockUserAquariumsNotifier(),
+              ),
               authNotifierProvider.overrideWith((ref) {
                 final notifier = AuthNotifier(
                   repository: mockAuthRepository,
@@ -545,8 +553,9 @@ void main() {
         expect(find.text('Today'), findsOneWidget);
       });
 
-      testWidgets('Profile tab shows ProfileScreen with user info',
-          (tester) async {
+      testWidgets('Profile tab shows ProfileScreen with user info', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 

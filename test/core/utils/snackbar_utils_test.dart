@@ -118,8 +118,9 @@ void main() {
         expect(find.text('Dismiss'), findsOneWidget);
       });
 
-      testWidgets('hides previous snackbar before showing new one',
-          (tester) async {
+      testWidgets('hides previous snackbar before showing new one', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -158,8 +159,9 @@ void main() {
     });
 
     group('showSuccess', () {
-      testWidgets('displays success message with green background',
-          (tester) async {
+      testWidgets('displays success message with green background', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -214,8 +216,9 @@ void main() {
     });
 
     group('showInfo', () {
-      testWidgets('displays info message with primary color background',
-          (tester) async {
+      testWidgets('displays info message with primary color background', (
+        tester,
+      ) async {
         const primaryColor = Colors.blue;
 
         await tester.pumpWidget(

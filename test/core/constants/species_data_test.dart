@@ -33,8 +33,7 @@ void main() {
       });
 
       test('should contain all expected species', () {
-        final speciesIds =
-            SpeciesData.popularSpecies.map((s) => s.id).toList();
+        final speciesIds = SpeciesData.popularSpecies.map((s) => s.id).toList();
 
         expect(speciesIds, contains('guppy'));
         expect(speciesIds, contains('neon_tetra'));
@@ -49,14 +48,26 @@ void main() {
           expect(species.id, isNotEmpty, reason: 'id should not be empty');
           expect(species.name, isNotEmpty, reason: 'name should not be empty');
           // imageAsset is optional and not set for static species data
-          expect(species.feedingFrequency, isNotNull,
-              reason: '${species.name} should have feedingFrequency');
-          expect(species.foodType, isNotNull,
-              reason: '${species.name} should have foodType');
-          expect(species.portionHint, isNotNull,
-              reason: '${species.name} should have portionHint');
-          expect(species.defaultPortionGrams, isNotNull,
-              reason: '${species.name} should have defaultPortionGrams');
+          expect(
+            species.feedingFrequency,
+            isNotNull,
+            reason: '${species.name} should have feedingFrequency',
+          );
+          expect(
+            species.foodType,
+            isNotNull,
+            reason: '${species.name} should have foodType',
+          );
+          expect(
+            species.portionHint,
+            isNotNull,
+            reason: '${species.name} should have portionHint',
+          );
+          expect(
+            species.defaultPortionGrams,
+            isNotNull,
+            reason: '${species.name} should have defaultPortionGrams',
+          );
         }
       });
 
@@ -102,15 +113,20 @@ void main() {
         final ids = SpeciesData.popularSpecies.map((s) => s.id).toList();
         final uniqueIds = ids.toSet();
 
-        expect(uniqueIds.length, equals(ids.length),
-            reason: 'Species IDs should be unique');
+        expect(
+          uniqueIds.length,
+          equals(ids.length),
+          reason: 'Species IDs should be unique',
+        );
       });
     });
 
     group('allSpecies', () {
       test('should contain defaultSpecies and all popularSpecies', () {
-        expect(SpeciesData.allSpecies.length,
-            equals(SpeciesData.popularSpecies.length + 1));
+        expect(
+          SpeciesData.allSpecies.length,
+          equals(SpeciesData.popularSpecies.length + 1),
+        );
         expect(SpeciesData.allSpecies, contains(SpeciesData.defaultSpecies));
 
         for (final species in SpeciesData.popularSpecies) {

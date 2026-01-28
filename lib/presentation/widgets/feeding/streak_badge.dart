@@ -59,18 +59,24 @@ class _StreakBadgeState extends State<StreakBadge>
     );
     _bounceAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.2)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.2,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.2, end: 0.9)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween(
+          begin: 1.2,
+          end: 0.9,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 0.9, end: 1.0)
-            .chain(CurveTween(curve: Curves.elasticOut)),
+        tween: Tween(
+          begin: 0.9,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 30,
       ),
     ]).animate(_bounceController);
@@ -105,10 +111,7 @@ class _StreakBadgeState extends State<StreakBadge>
       child: AnimatedBuilder(
         animation: _bounceAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _bounceAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _bounceAnimation.value, child: child);
         },
         child: Container(
           padding: EdgeInsets.symmetric(
@@ -159,30 +162,21 @@ class _StreakBadgeState extends State<StreakBadge>
     if (streak > 30) {
       // Hot red gradient for long streaks
       return LinearGradient(
-        colors: [
-          Colors.red.shade100,
-          Colors.orange.shade100,
-        ],
+        colors: [Colors.red.shade100, Colors.orange.shade100],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else if (streak >= 7) {
       // Orange gradient for medium streaks
       return LinearGradient(
-        colors: [
-          Colors.orange.shade100,
-          Colors.amber.shade100,
-        ],
+        colors: [Colors.orange.shade100, Colors.amber.shade100],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else {
       // Amber gradient for starting streaks
       return LinearGradient(
-        colors: [
-          Colors.amber.shade100,
-          Colors.amber.shade50,
-        ],
+        colors: [Colors.amber.shade100, Colors.amber.shade50],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
@@ -192,29 +186,29 @@ class _StreakBadgeState extends State<StreakBadge>
   _BadgeDimensions _getDimensions(StreakBadgeSize size) {
     return switch (size) {
       StreakBadgeSize.small => const _BadgeDimensions(
-          horizontalPadding: 8,
-          verticalPadding: 4,
-          iconSize: 14,
-          fontSize: 12,
-          spacing: 2,
-          borderRadius: 12,
-        ),
+        horizontalPadding: 8,
+        verticalPadding: 4,
+        iconSize: 14,
+        fontSize: 12,
+        spacing: 2,
+        borderRadius: 12,
+      ),
       StreakBadgeSize.medium => const _BadgeDimensions(
-          horizontalPadding: 12,
-          verticalPadding: 6,
-          iconSize: 18,
-          fontSize: 14,
-          spacing: 4,
-          borderRadius: 16,
-        ),
+        horizontalPadding: 12,
+        verticalPadding: 6,
+        iconSize: 18,
+        fontSize: 14,
+        spacing: 4,
+        borderRadius: 16,
+      ),
       StreakBadgeSize.large => const _BadgeDimensions(
-          horizontalPadding: 16,
-          verticalPadding: 8,
-          iconSize: 24,
-          fontSize: 18,
-          spacing: 6,
-          borderRadius: 20,
-        ),
+        horizontalPadding: 16,
+        verticalPadding: 8,
+        iconSize: 24,
+        fontSize: 18,
+        spacing: 6,
+        borderRadius: 20,
+      ),
     };
   }
 }

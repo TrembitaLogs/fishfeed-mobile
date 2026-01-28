@@ -16,7 +16,9 @@ class ExtendedStatisticsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasAccess = ref.watch(featureAccessProvider(PremiumFeature.extendedStatistics));
+    final hasAccess = ref.watch(
+      featureAccessProvider(PremiumFeature.extendedStatistics),
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -46,11 +48,7 @@ class _SectionHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          Icons.trending_up,
-          color: theme.colorScheme.primary,
-          size: 20,
-        ),
+        Icon(Icons.trending_up, color: theme.colorScheme.primary, size: 20),
         const SizedBox(width: 8),
         Text(
           'Feeding History',
@@ -91,10 +89,7 @@ class _ExtendedStatsContent extends StatelessWidget {
       child: Column(
         children: [
           // Placeholder for feeding history chart
-          SizedBox(
-            height: 120,
-            child: _FeedingHistoryChart(isPremium: true),
-          ),
+          SizedBox(height: 120, child: _FeedingHistoryChart(isPremium: true)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -135,7 +130,9 @@ class _LockedStatsPreview extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -237,7 +234,9 @@ class _FeedingHistoryChart extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             color: isVisible
-                ? theme.colorScheme.primary.withValues(alpha: 0.7 + (index * 0.025))
+                ? theme.colorScheme.primary.withValues(
+                    alpha: 0.7 + (index * 0.025),
+                  )
                 : theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(4),
           ),
@@ -248,10 +247,7 @@ class _FeedingHistoryChart extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-  });
+  const _StatItem({required this.label, required this.value});
 
   final String label;
   final String value;

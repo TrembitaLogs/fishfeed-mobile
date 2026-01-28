@@ -58,13 +58,15 @@ class MockSyncTriggerService extends Mock implements SyncTriggerService {}
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
     implements CalendarDataNotifier {
   MockCalendarDataNotifier()
-      : super(CalendarDataState(
+    : super(
+        CalendarDataState(
           monthData: CalendarMonthData.empty(
             DateTime.now().year,
             DateTime.now().month,
           ),
           isLoading: false,
-        ));
+        ),
+      );
 
   @override
   Future<void> loadMonth(int year, int month) async {}
@@ -80,7 +82,7 @@ class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
 class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
     implements TodayFeedingsNotifier {
   MockTodayFeedingsNotifier()
-      : super(const TodayFeedingsState(feedings: [], isLoading: false));
+    : super(const TodayFeedingsState(feedings: [], isLoading: false));
 
   @override
   Future<void> loadFeedings() async {}
@@ -220,9 +222,11 @@ MockSyncTriggerService createMockSyncTriggerService() {
 /// Creates a mock PushTokenManager with default behavior.
 MockPushTokenManager createMockPushTokenManager() {
   final manager = MockPushTokenManager();
-  when(() => manager.onAuthStateChanged(
-        isAuthenticated: any(named: 'isAuthenticated'),
-      )).thenAnswer((_) async {});
+  when(
+    () => manager.onAuthStateChanged(
+      isAuthenticated: any(named: 'isAuthenticated'),
+    ),
+  ).thenAnswer((_) async {});
   return manager;
 }
 
@@ -297,7 +301,9 @@ List<Override> getCommonAppOverrides({
     todayFeedingsProvider.overrideWith((ref) => MockTodayFeedingsNotifier()),
 
     // Subscription and ads mocks
-    subscriptionStatusProvider.overrideWithValue(const SubscriptionStatus.free()),
+    subscriptionStatusProvider.overrideWithValue(
+      const SubscriptionStatus.free(),
+    ),
     isPremiumProvider.overrideWithValue(false),
     shouldShowAdsProvider.overrideWithValue(false),
 
@@ -327,7 +333,9 @@ List<Override> getWidgetTestOverrides({
       appleAuthServiceProvider.overrideWithValue(appleAuthService),
     calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),
     todayFeedingsProvider.overrideWith((ref) => MockTodayFeedingsNotifier()),
-    subscriptionStatusProvider.overrideWithValue(const SubscriptionStatus.free()),
+    subscriptionStatusProvider.overrideWithValue(
+      const SubscriptionStatus.free(),
+    ),
     isPremiumProvider.overrideWithValue(false),
     shouldShowAdsProvider.overrideWithValue(false),
     if (currentUser != null) currentUserProvider.overrideWithValue(currentUser),
@@ -335,10 +343,7 @@ List<Override> getWidgetTestOverrides({
 }
 
 /// Creates a test MaterialApp wrapper with proper theme and localization.
-Widget createTestApp({
-  required Widget child,
-  ThemeData? theme,
-}) {
+Widget createTestApp({required Widget child, ThemeData? theme}) {
   return MaterialApp(
     theme: theme ?? AppTheme.lightTheme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -32,7 +32,9 @@ void main() {
     stateController = StreamController<SyncState>.broadcast();
 
     // Default mock setup
-    when(() => mockSyncService.stateStream).thenAnswer((_) => stateController.stream);
+    when(
+      () => mockSyncService.stateStream,
+    ).thenAnswer((_) => stateController.stream);
     when(() => mockSyncService.currentState).thenReturn(SyncState.idle);
     when(() => mockSyncService.lastSyncTime).thenReturn(null);
     when(() => mockSyncService.pendingCount).thenReturn(0);
@@ -68,11 +70,7 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('en'),
-        home: const Scaffold(
-          body: Center(
-            child: SyncStatusIndicator(),
-          ),
-        ),
+        home: const Scaffold(body: Center(child: SyncStatusIndicator())),
       ),
     );
   }
@@ -110,20 +108,24 @@ void main() {
     });
 
     testWidgets('shows "Just now" for recent sync', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        initialState: SyncState.success,
-        lastSyncTime: DateTime.now(),
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          initialState: SyncState.success,
+          lastSyncTime: DateTime.now(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Just now'), findsOneWidget);
     });
 
     testWidgets('shows relative time for older syncs', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        initialState: SyncState.success,
-        lastSyncTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          initialState: SyncState.success,
+          lastSyncTime: DateTime.now().subtract(const Duration(minutes: 5)),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('5 min ago'), findsOneWidget);
@@ -140,10 +142,9 @@ void main() {
     });
 
     testWidgets('triggers sync when tapped while online', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        isOffline: false,
-        initialState: SyncState.idle,
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(isOffline: false, initialState: SyncState.idle),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byType(SyncStatusIndicator));
@@ -160,20 +161,24 @@ void main() {
     });
 
     testWidgets('shows hours ago for multi-hour old sync', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        initialState: SyncState.success,
-        lastSyncTime: DateTime.now().subtract(const Duration(hours: 2)),
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          initialState: SyncState.success,
+          lastSyncTime: DateTime.now().subtract(const Duration(hours: 2)),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('2 hours ago'), findsOneWidget);
     });
 
     testWidgets('shows days ago for multi-day old sync', (tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        initialState: SyncState.success,
-        lastSyncTime: DateTime.now().subtract(const Duration(days: 3)),
-      ));
+      await tester.pumpWidget(
+        buildTestWidget(
+          initialState: SyncState.success,
+          lastSyncTime: DateTime.now().subtract(const Duration(days: 3)),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('3 days ago'), findsOneWidget);

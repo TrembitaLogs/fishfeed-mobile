@@ -5,11 +5,7 @@ import 'package:flutter/material.dart';
 /// Shows trial duration and what happens after the trial ends.
 /// Used at the top of the paywall to highlight the trial offer.
 class TrialBanner extends StatelessWidget {
-  const TrialBanner({
-    super.key,
-    this.trialDays = 7,
-    this.isCompact = false,
-  });
+  const TrialBanner({super.key, this.trialDays = 7, this.isCompact = false});
 
   /// Number of days in the free trial.
   final int trialDays;
@@ -93,11 +89,7 @@ class TrialBanner extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.card_giftcard,
-            size: 18,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(Icons.card_giftcard, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
           Text(
             '$trialDays-day free trial',

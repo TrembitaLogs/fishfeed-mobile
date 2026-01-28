@@ -3,9 +3,7 @@ import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 
 /// Parameters for [GenerateScheduleUseCase].
 class GenerateScheduleParams {
-  const GenerateScheduleParams({
-    required this.speciesSelections,
-  });
+  const GenerateScheduleParams({required this.speciesSelections});
 
   final List<SpeciesSelection> speciesSelections;
 }
@@ -85,7 +83,8 @@ class GenerateScheduleUseCase {
 
   /// Calculates portion size based on species defaults and quantity.
   double _calculatePortion(Species species, int quantity) {
-    final basePortion = species.defaultPortionGrams ?? _getDefaultPortion(species.portionHint);
+    final basePortion =
+        species.defaultPortionGrams ?? _getDefaultPortion(species.portionHint);
     return basePortion * quantity;
   }
 
@@ -110,10 +109,7 @@ class GenerateScheduleUseCase {
 /// Used when multiple species have overlapping feeding times to create
 /// a unified feeding event.
 class MergedFeedingSlot {
-  const MergedFeedingSlot({
-    required this.time,
-    required this.species,
-  });
+  const MergedFeedingSlot({required this.time, required this.species});
 
   /// Feeding time in "HH:mm" format.
   final String time;
@@ -143,7 +139,9 @@ extension GenerateScheduleUseCaseX on GenerateScheduleUseCase {
   ///
   /// Groups all species that need feeding at the same time into
   /// single [MergedFeedingSlot] objects for unified notifications.
-  List<MergedFeedingSlot> mergeToTimeSlots(List<GeneratedScheduleEntry> schedule) {
+  List<MergedFeedingSlot> mergeToTimeSlots(
+    List<GeneratedScheduleEntry> schedule,
+  ) {
     final timeSlotMap = <String, List<FeedingSlotEntry>>{};
 
     for (final entry in schedule) {

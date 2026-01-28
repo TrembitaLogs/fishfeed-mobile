@@ -9,7 +9,7 @@ import 'package:fishfeed/data/models/feeding_schedule_model.dart';
 /// Schedules are associated with aquariums and define feeding times.
 class FeedingScheduleLocalDataSource {
   FeedingScheduleLocalDataSource({Box<dynamic>? scheduleBox})
-      : _scheduleBox = scheduleBox;
+    : _scheduleBox = scheduleBox;
 
   final Box<dynamic>? _scheduleBox;
 
@@ -109,12 +109,15 @@ class FeedingScheduleLocalDataSource {
       }
 
       // Update existing schedule
-      existing.timesPerDay = serverData['times_per_day'] as int? ?? existing.timesPerDay;
-      existing.scheduledTimes = (serverData['scheduled_times'] as List<dynamic>?)
+      existing.timesPerDay =
+          serverData['times_per_day'] as int? ?? existing.timesPerDay;
+      existing.scheduledTimes =
+          (serverData['scheduled_times'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           existing.scheduledTimes;
-      existing.foodType = serverData['food_type'] as String? ?? existing.foodType;
+      existing.foodType =
+          serverData['food_type'] as String? ?? existing.foodType;
       existing.portionHint = serverData['portion_hint'] as String?;
       existing.synced = true;
       existing.serverUpdatedAt = serverUpdatedAt;

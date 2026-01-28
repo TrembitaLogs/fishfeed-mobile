@@ -56,16 +56,16 @@ class SettingsState {
 
   /// Initial settings state with default values.
   const SettingsState.initial()
-      : themeMode = AppThemeMode.system,
-        notificationsEnabled = true,
-        feedingRemindersEnabled = true,
-        streakAlertsEnabled = true,
-        weeklySummaryEnabled = true,
-        quietHoursStart = null,
-        quietHoursEnd = null,
-        language = 'en',
-        isLoading = false,
-        isSaving = false;
+    : themeMode = AppThemeMode.system,
+      notificationsEnabled = true,
+      feedingRemindersEnabled = true,
+      streakAlertsEnabled = true,
+      weeklySummaryEnabled = true,
+      quietHoursStart = null,
+      quietHoursEnd = null,
+      language = 'en',
+      isLoading = false,
+      isSaving = false;
 
   /// The current theme mode.
   final AppThemeMode themeMode;
@@ -100,7 +100,8 @@ class SettingsState {
   final bool isSaving;
 
   /// Whether quiet hours are enabled.
-  bool get quietHoursEnabled => quietHoursStart != null && quietHoursEnd != null;
+  bool get quietHoursEnabled =>
+      quietHoursStart != null && quietHoursEnd != null;
 
   /// Formats quiet hours start time as HH:MM.
   String? get quietHoursStartFormatted => _formatMinutes(quietHoursStart);
@@ -132,11 +133,16 @@ class SettingsState {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-      feedingRemindersEnabled: feedingRemindersEnabled ?? this.feedingRemindersEnabled,
+      feedingRemindersEnabled:
+          feedingRemindersEnabled ?? this.feedingRemindersEnabled,
       streakAlertsEnabled: streakAlertsEnabled ?? this.streakAlertsEnabled,
       weeklySummaryEnabled: weeklySummaryEnabled ?? this.weeklySummaryEnabled,
-      quietHoursStart: clearQuietHours ? null : (quietHoursStart ?? this.quietHoursStart),
-      quietHoursEnd: clearQuietHours ? null : (quietHoursEnd ?? this.quietHoursEnd),
+      quietHoursStart: clearQuietHours
+          ? null
+          : (quietHoursStart ?? this.quietHoursStart),
+      quietHoursEnd: clearQuietHours
+          ? null
+          : (quietHoursEnd ?? this.quietHoursEnd),
       language: language ?? this.language,
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
@@ -161,17 +167,17 @@ class SettingsState {
 
   @override
   int get hashCode => Object.hash(
-        themeMode,
-        notificationsEnabled,
-        feedingRemindersEnabled,
-        streakAlertsEnabled,
-        weeklySummaryEnabled,
-        quietHoursStart,
-        quietHoursEnd,
-        language,
-        isLoading,
-        isSaving,
-      );
+    themeMode,
+    notificationsEnabled,
+    feedingRemindersEnabled,
+    streakAlertsEnabled,
+    weeklySummaryEnabled,
+    quietHoursStart,
+    quietHoursEnd,
+    language,
+    isLoading,
+    isSaving,
+  );
 }
 
 /// Notifier for managing user settings state.
@@ -263,7 +269,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   ///
   /// Pass null for both to disable quiet hours.
   Future<void> setQuietHours({int? startMinutes, int? endMinutes}) async {
-    if (state.quietHoursStart == startMinutes && state.quietHoursEnd == endMinutes) {
+    if (state.quietHoursStart == startMinutes &&
+        state.quietHoursEnd == endMinutes) {
       return;
     }
 
@@ -305,8 +312,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 /// Provider for [SettingsNotifier].
 final settingsNotifierProvider =
     StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-  return SettingsNotifier();
-});
+      return SettingsNotifier();
+    });
 
 /// Provider for the current theme mode.
 final themeModeProvider = Provider<ThemeMode>((ref) {

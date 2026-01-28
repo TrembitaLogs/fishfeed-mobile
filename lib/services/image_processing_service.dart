@@ -90,10 +90,7 @@ class ImageProcessingService {
       // Resize if needed (maintaining aspect ratio)
       img.Image processedImage = image;
       if (image.width > effectiveMaxWidth) {
-        processedImage = img.copyResize(
-          image,
-          width: effectiveMaxWidth,
-        );
+        processedImage = img.copyResize(image, width: effectiveMaxWidth);
       }
 
       // Encode as JPEG with quality
@@ -160,10 +157,7 @@ class ImageProcessingService {
       // Resize if needed
       img.Image processedImage = image;
       if (image.width > effectiveMaxWidth) {
-        processedImage = img.copyResize(
-          image,
-          width: effectiveMaxWidth,
-        );
+        processedImage = img.copyResize(image, width: effectiveMaxWidth);
       }
 
       // Encode as JPEG

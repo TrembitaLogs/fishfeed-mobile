@@ -191,18 +191,20 @@ void main() {
       expect(entity.isUnlocked, true);
     });
 
-    test('isUnlocked should return false when progress < 1.0 and no unlockedAt',
-        () {
-      const entity = Achievement(
-        id: 'locked',
-        userId: 'user-1',
-        type: 'test',
-        title: 'Test',
-        progress: 0.9,
-      );
+    test(
+      'isUnlocked should return false when progress < 1.0 and no unlockedAt',
+      () {
+        const entity = Achievement(
+          id: 'locked',
+          userId: 'user-1',
+          type: 'test',
+          title: 'Test',
+          progress: 0.9,
+        );
 
-      expect(entity.isUnlocked, false);
-    });
+        expect(entity.isUnlocked, false);
+      },
+    );
   });
 
   group('AchievementModel - Hive persistence', () {
@@ -258,10 +260,12 @@ void main() {
       await HiveBoxes.achievements.put(achievement2.id, achievement2);
       await HiveBoxes.achievements.put(achievement3.id, achievement3);
 
-      final allAchievements =
-          HiveBoxes.achievements.values.cast<AchievementModel>().toList();
-      final user1Achievements =
-          allAchievements.where((a) => a.userId == 'user-1').toList();
+      final allAchievements = HiveBoxes.achievements.values
+          .cast<AchievementModel>()
+          .toList();
+      final user1Achievements = allAchievements
+          .where((a) => a.userId == 'user-1')
+          .toList();
 
       expect(allAchievements.length, 3);
       expect(user1Achievements.length, 2);

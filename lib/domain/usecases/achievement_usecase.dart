@@ -38,10 +38,10 @@ class AchievementUseCase {
     required FeedingLocalDataSource feedingDataSource,
     required StreakLocalDataSource streakDataSource,
     required UserProgressLocalDataSource progressDataSource,
-  })  : _achievementDataSource = achievementDataSource,
-        _feedingDataSource = feedingDataSource,
-        _streakDataSource = streakDataSource,
-        _progressDataSource = progressDataSource;
+  }) : _achievementDataSource = achievementDataSource,
+       _feedingDataSource = feedingDataSource,
+       _streakDataSource = streakDataSource,
+       _progressDataSource = progressDataSource;
 
   final AchievementLocalDataSource _achievementDataSource;
   final FeedingLocalDataSource _feedingDataSource;
@@ -59,7 +59,11 @@ class AchievementUseCase {
   ) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -96,10 +100,12 @@ class AchievementUseCase {
         }
       }
 
-      return Right(AchievementCheckResult(
-        newlyUnlocked: newlyUnlocked,
-        totalXpAwarded: totalXp,
-      ));
+      return Right(
+        AchievementCheckResult(
+          newlyUnlocked: newlyUnlocked,
+          totalXpAwarded: totalXp,
+        ),
+      );
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to check achievements: $e'));
     }
@@ -117,7 +123,11 @@ class AchievementUseCase {
   ) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -160,13 +170,17 @@ class AchievementUseCase {
   ) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
     try {
-      final achievements =
-          await _achievementDataSource.getAllAchievementsOrdered(userId);
+      final achievements = await _achievementDataSource
+          .getAllAchievementsOrdered(userId);
       return Right(achievements);
     } catch (e) {
       return Left(CacheFailure(message: 'Failed to get achievements: $e'));
@@ -183,7 +197,11 @@ class AchievementUseCase {
   ) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
@@ -212,13 +230,19 @@ class AchievementUseCase {
   ) async {
     if (userId.isEmpty) {
       return const Left(
-        ValidationFailure(errors: {'userId': ['User ID is required']}),
+        ValidationFailure(
+          errors: {
+            'userId': ['User ID is required'],
+          },
+        ),
       );
     }
 
     try {
-      final achievement =
-          _achievementDataSource.getAchievementByType(userId, type);
+      final achievement = _achievementDataSource.getAchievementByType(
+        userId,
+        type,
+      );
       if (achievement != null) {
         return Right(achievement.progress);
       }
@@ -318,10 +342,11 @@ class AchievementUseCase {
       case AchievementType.streak30:
       case AchievementType.streak100:
         // Use the higher of current or longest streak
-        current = (stats.currentStreak > stats.longestStreak
-                ? stats.currentStreak
-                : stats.longestStreak)
-            .toDouble();
+        current =
+            (stats.currentStreak > stats.longestStreak
+                    ? stats.currentStreak
+                    : stats.longestStreak)
+                .toDouble();
         break;
 
       case AchievementType.weekWithoutMiss:

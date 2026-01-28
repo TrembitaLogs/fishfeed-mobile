@@ -42,41 +42,38 @@ class SentryService {
       return;
     }
 
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = dsn;
+    await SentryFlutter.init((options) {
+      options.dsn = dsn;
 
-        // Environment configuration
-        options.environment = kDebugMode ? 'development' : 'production';
+      // Environment configuration
+      options.environment = kDebugMode ? 'development' : 'production';
 
-        // Performance monitoring
-        // 100% of transactions in development, 20% in production
-        options.tracesSampleRate = kDebugMode ? 1.0 : 0.2;
+      // Performance monitoring
+      // 100% of transactions in development, 20% in production
+      options.tracesSampleRate = kDebugMode ? 1.0 : 0.2;
 
-        // Session tracking
-        options.enableAutoSessionTracking = true;
+      // Session tracking
+      options.enableAutoSessionTracking = true;
 
-        // Breadcrumbs configuration
-        options.enableAutoNativeBreadcrumbs = true;
-        options.maxBreadcrumbs = 100;
+      // Breadcrumbs configuration
+      options.enableAutoNativeBreadcrumbs = true;
+      options.maxBreadcrumbs = 100;
 
-        // Attach thread info to events
-        options.attachThreads = true;
+      // Attach thread info to events
+      options.attachThreads = true;
 
-        // Capture failed HTTP requests
-        options.captureFailedRequests = true;
+      // Capture failed HTTP requests
+      options.captureFailedRequests = true;
 
-        // Enable debug logging only in debug mode
-        options.debug = kDebugMode;
+      // Enable debug logging only in debug mode
+      options.debug = kDebugMode;
 
-        // Send default PII (IP address)
-        options.sendDefaultPii = false;
+      // Send default PII (IP address)
+      options.sendDefaultPii = false;
 
-        // Before send callback for filtering or modifying events
-        options.beforeSend = _beforeSend;
-      },
-      appRunner: appRunner,
-    );
+      // Before send callback for filtering or modifying events
+      options.beforeSend = _beforeSend;
+    }, appRunner: appRunner);
 
     _isInitialized = true;
 
@@ -106,12 +103,9 @@ class SentryService {
     if (!_isInitialized) return;
 
     await Sentry.configureScope((scope) {
-      scope.setUser(SentryUser(
-        id: userId,
-        email: email,
-        username: username,
-        data: extras,
-      ));
+      scope.setUser(
+        SentryUser(id: userId, email: email, username: username, data: extras),
+      );
     });
 
     if (kDebugMode) {

@@ -56,10 +56,7 @@ class CalendarNotifier extends Notifier<CalendarState> {
   /// Updates both selected and focused day when user taps a day.
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(state.selectedDay, selectedDay)) {
-      state = state.copyWith(
-        selectedDay: selectedDay,
-        focusedDay: focusedDay,
-      );
+      state = state.copyWith(selectedDay: selectedDay, focusedDay: focusedDay);
     }
   }
 
@@ -80,17 +77,12 @@ class CalendarNotifier extends Notifier<CalendarState> {
   /// Navigates to today's date.
   void goToToday() {
     final now = DateTime.now();
-    state = state.copyWith(
-      focusedDay: now,
-      selectedDay: now,
-    );
+    state = state.copyWith(focusedDay: now, selectedDay: now);
   }
 
   /// Navigates to a specific month.
   void goToMonth(DateTime date) {
-    state = state.copyWith(
-      focusedDay: date,
-    );
+    state = state.copyWith(focusedDay: date);
   }
 }
 
@@ -107,8 +99,9 @@ class CalendarNotifier extends Notifier<CalendarState> {
 /// // Handle page change
 /// ref.read(calendarProvider.notifier).onPageChanged(focusedDay);
 /// ```
-final calendarProvider =
-    NotifierProvider<CalendarNotifier, CalendarState>(CalendarNotifier.new);
+final calendarProvider = NotifierProvider<CalendarNotifier, CalendarState>(
+  CalendarNotifier.new,
+);
 
 /// Provider for the currently focused day.
 final focusedDayProvider = Provider<DateTime>((ref) {

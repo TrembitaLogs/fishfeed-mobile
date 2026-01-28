@@ -150,57 +150,69 @@ void main() {
   });
 
   group('migrateDefaultAquarium', () {
-    test('should return NoMigrationNeeded when no default fish exist',
-        () async {
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+    test(
+      'should return NoMigrationNeeded when no default fish exist',
+      () async {
+        when(() => mockFishDs.getAllFish()).thenReturn([]);
 
-      final result = await migrationService.migrateDefaultAquarium();
+        final result = await migrationService.migrateDefaultAquarium();
 
-      expect(result, isA<NoMigrationNeeded>());
-    });
+        expect(result, isA<NoMigrationNeeded>());
+      },
+    );
 
-    test('should create aquarium and migrate fish when default fish exist',
-        () async {
-      final fish1 = createTestFish(id: 'fish_1', aquariumId: 'default');
-      final fish2 = createTestFish(id: 'fish_2', aquariumId: 'default');
-      final user = createTestUser(id: 'user_123');
+    test(
+      'should create aquarium and migrate fish when default fish exist',
+      () async {
+        final fish1 = createTestFish(id: 'fish_1', aquariumId: 'default');
+        final fish2 = createTestFish(id: 'fish_2', aquariumId: 'default');
+        final user = createTestUser(id: 'user_123');
 
-      when(() => mockFishDs.getAllFish()).thenReturn([fish1, fish2]);
-      when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
-      when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFishDs.getAllFish()).thenReturn([fish1, fish2]);
+        when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
+        when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
+        when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
+        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
-      final result = await migrationService.migrateDefaultAquarium();
+        final result = await migrationService.migrateDefaultAquarium();
 
-      expect(result, isA<MigrationSuccess>());
-      final success = result as MigrationSuccess;
-      expect(success.migratedFishCount, 2);
-      expect(success.migratedEventsCount, 0);
-      expect(success.newAquariumName, 'My Aquarium');
+        expect(result, isA<MigrationSuccess>());
+        final success = result as MigrationSuccess;
+        expect(success.migratedFishCount, 2);
+        expect(success.migratedEventsCount, 0);
+        expect(success.newAquariumName, 'My Aquarium');
 
-      verify(() => mockAquariumDs.saveAquarium(any())).called(1);
-      verify(() => mockFishDs.updateFish(any())).called(2);
-    });
+        verify(() => mockAquariumDs.saveAquarium(any())).called(1);
+        verify(() => mockFishDs.updateFish(any())).called(2);
+      },
+    );
 
     test('should migrate feeding events along with fish', () async {
       final fish = createTestFish(id: 'fish_1', aquariumId: 'default');
-      final event1 =
-          createTestFeedingEvent(id: 'event_1', aquariumId: 'default');
-      final event2 =
-          createTestFeedingEvent(id: 'event_2', aquariumId: 'default');
-      final event3 =
-          createTestFeedingEvent(id: 'event_3', aquariumId: 'other_uuid');
+      final event1 = createTestFeedingEvent(
+        id: 'event_1',
+        aquariumId: 'default',
+      );
+      final event2 = createTestFeedingEvent(
+        id: 'event_2',
+        aquariumId: 'default',
+      );
+      final event3 = createTestFeedingEvent(
+        id: 'event_3',
+        aquariumId: 'other_uuid',
+      );
       final user = createTestUser();
 
       when(() => mockFishDs.getAllFish()).thenReturn([fish]);
       when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
       when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
       when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents())
-          .thenReturn([event1, event2, event3]);
-      when(() => mockFeedingDs.updateFeedingEvent(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockFeedingDs.getAllFeedingEvents(),
+      ).thenReturn([event1, event2, event3]);
+      when(
+        () => mockFeedingDs.updateFeedingEvent(any()),
+      ).thenAnswer((_) async => true);
 
       final result = await migrationService.migrateDefaultAquarium();
 
@@ -225,8 +237,9 @@ void main() {
 
       expect(result, isA<MigrationSuccess>());
 
-      final captured =
-          verify(() => mockAquariumDs.saveAquarium(captureAny())).captured;
+      final captured = verify(
+        () => mockAquariumDs.saveAquarium(captureAny()),
+      ).captured;
       expect(captured.length, 1);
       final savedAquarium = captured.first as AquariumModel;
       expect(savedAquarium.userId, 'local');
@@ -237,8 +250,9 @@ void main() {
 
       when(() => mockFishDs.getAllFish()).thenReturn([fish]);
       when(() => mockAuthDs.getCurrentUser()).thenReturn(null);
-      when(() => mockAquariumDs.saveAquarium(any()))
-          .thenThrow(Exception('Hive error'));
+      when(
+        () => mockAquariumDs.saveAquarium(any()),
+      ).thenThrow(Exception('Hive error'));
 
       final result = await migrationService.migrateDefaultAquarium();
 
@@ -261,8 +275,9 @@ void main() {
 
       expect(result, isA<MigrationSuccess>());
 
-      final capturedFish =
-          verify(() => mockFishDs.updateFish(captureAny())).captured;
+      final capturedFish = verify(
+        () => mockFishDs.updateFish(captureAny()),
+      ).captured;
       expect(capturedFish.length, 1);
       final updatedFish = capturedFish.first as FishModel;
       expect(updatedFish.aquariumId, isNot('default'));
@@ -291,27 +306,29 @@ void main() {
   });
 
   group('idempotency', () {
-    test('should return NoMigrationNeeded on second call after migration',
-        () async {
-      final fish = createTestFish(aquariumId: 'default');
-      final user = createTestUser();
+    test(
+      'should return NoMigrationNeeded on second call after migration',
+      () async {
+        final fish = createTestFish(aquariumId: 'default');
+        final user = createTestUser();
 
-      // First call - migration happens
-      when(() => mockFishDs.getAllFish()).thenReturn([fish]);
-      when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
-      when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        // First call - migration happens
+        when(() => mockFishDs.getAllFish()).thenReturn([fish]);
+        when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
+        when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
+        when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
+        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
-      final firstResult = await migrationService.migrateDefaultAquarium();
-      expect(firstResult, isA<MigrationSuccess>());
+        final firstResult = await migrationService.migrateDefaultAquarium();
+        expect(firstResult, isA<MigrationSuccess>());
 
-      // Second call - fish no longer has default aquariumId
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+        // Second call - fish no longer has default aquariumId
+        when(() => mockFishDs.getAllFish()).thenReturn([]);
 
-      final secondResult = await migrationService.migrateDefaultAquarium();
-      expect(secondResult, isA<NoMigrationNeeded>());
-    });
+        final secondResult = await migrationService.migrateDefaultAquarium();
+        expect(secondResult, isA<NoMigrationNeeded>());
+      },
+    );
   });
 
   group('MigrationResult types', () {

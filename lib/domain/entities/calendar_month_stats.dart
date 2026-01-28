@@ -63,10 +63,10 @@ class CalendarMonthStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        totalScheduledFeedings,
-        completedFeedings,
-        missedFeedings,
-        longestStreak,
-        currentStreak,
-      ];
+    totalScheduledFeedings,
+    completedFeedings,
+    missedFeedings,
+    longestStreak,
+    currentStreak,
+  ];
 }

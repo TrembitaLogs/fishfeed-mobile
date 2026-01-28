@@ -37,10 +37,12 @@ void main() {
         ),
       ).thenAnswer((_) async => Right(testUser));
 
-      final result = await useCase(const OAuthLoginParams(
-        provider: OAuthProvider.google,
-        idToken: 'google-id-token',
-      ));
+      final result = await useCase(
+        const OAuthLoginParams(
+          provider: OAuthProvider.google,
+          idToken: 'google-id-token',
+        ),
+      );
 
       expect(result.isRight(), true);
       verify(
@@ -59,10 +61,12 @@ void main() {
         ),
       ).thenAnswer((_) async => Right(testUser));
 
-      final result = await useCase(const OAuthLoginParams(
-        provider: OAuthProvider.apple,
-        idToken: 'apple-id-token',
-      ));
+      final result = await useCase(
+        const OAuthLoginParams(
+          provider: OAuthProvider.apple,
+          idToken: 'apple-id-token',
+        ),
+      );
 
       expect(result.isRight(), true);
       verify(
@@ -74,19 +78,15 @@ void main() {
     });
 
     test('should return OAuthFailure when idToken is empty', () async {
-      final result = await useCase(const OAuthLoginParams(
-        provider: OAuthProvider.google,
-        idToken: '',
-      ));
+      final result = await useCase(
+        const OAuthLoginParams(provider: OAuthProvider.google, idToken: ''),
+      );
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<OAuthFailure>());
-          expect((failure as OAuthFailure).message, 'Invalid OAuth token');
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<OAuthFailure>());
+        expect((failure as OAuthFailure).message, 'Invalid OAuth token');
+      }, (_) => fail('Should be Left'));
 
       verifyNever(
         () => mockRepository.oauthLogin(
@@ -104,10 +104,12 @@ void main() {
         ),
       ).thenAnswer((_) async => const Left(OAuthFailure(provider: 'google')));
 
-      final result = await useCase(const OAuthLoginParams(
-        provider: OAuthProvider.google,
-        idToken: 'invalid-token',
-      ));
+      final result = await useCase(
+        const OAuthLoginParams(
+          provider: OAuthProvider.google,
+          idToken: 'invalid-token',
+        ),
+      );
 
       expect(result.isLeft(), true);
       result.fold(

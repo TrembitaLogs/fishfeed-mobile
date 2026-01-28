@@ -19,10 +19,7 @@ void main() {
       theme: darkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       home: Scaffold(
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          child: Padding(padding: const EdgeInsets.all(16), child: child),
         ),
       ),
     );
@@ -30,14 +27,13 @@ void main() {
 
   group('PasswordField', () {
     group('Initial state', () {
-      testWidgets('renders with default label when no label provided',
-          (tester) async {
+      testWidgets('renders with default label when no label provided', (
+        tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         expect(find.text('Password'), findsOneWidget);
@@ -48,10 +44,7 @@ void main() {
 
         await tester.pumpWidget(
           buildTestWidget(
-            PasswordField(
-              controller: controller,
-              label: 'Enter Password',
-            ),
+            PasswordField(controller: controller, label: 'Enter Password'),
           ),
         );
 
@@ -77,22 +70,19 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         expect(find.byIcon(Icons.lock_outline), findsOneWidget);
       });
 
-      testWidgets('has visibility_outlined icon as suffix initially',
-          (tester) async {
+      testWidgets('has visibility_outlined icon as suffix initially', (
+        tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
@@ -103,9 +93,7 @@ void main() {
         final controller = TextEditingController(text: 'secret123');
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -118,9 +106,7 @@ void main() {
         final controller = TextEditingController(text: 'secret123');
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         // Initially obscured
@@ -142,9 +128,7 @@ void main() {
         final controller = TextEditingController(text: 'secret123');
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         // Tap to show
@@ -236,9 +220,7 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -249,9 +231,7 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -262,9 +242,7 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -331,9 +309,7 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -345,10 +321,7 @@ void main() {
 
         await tester.pumpWidget(
           buildTestWidget(
-            PasswordField(
-              controller: controller,
-              autofocus: true,
-            ),
+            PasswordField(controller: controller, autofocus: true),
           ),
         );
 
@@ -362,23 +335,20 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'Show password');
       });
 
-      testWidgets('toggle button has tooltip for visible state',
-          (tester) async {
+      testWidgets('toggle button has tooltip for visible state', (
+        tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
         await tester.tap(find.byIcon(Icons.visibility_outlined));
@@ -392,15 +362,10 @@ void main() {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
-          buildTestWidget(
-            PasswordField(controller: controller),
-          ),
+          buildTestWidget(PasswordField(controller: controller)),
         );
 
-        expect(
-          find.bySemanticsLabel('Show password'),
-          findsOneWidget,
-        );
+        expect(find.bySemanticsLabel('Show password'), findsOneWidget);
       });
     });
 

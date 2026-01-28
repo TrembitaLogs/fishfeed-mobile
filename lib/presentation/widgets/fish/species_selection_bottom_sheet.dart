@@ -66,10 +66,7 @@ class _SpeciesSelectionBottomSheetState
 
   void _selectSpecies(Species species) {
     Navigator.of(context).pop(
-      SpeciesSelectionResult(
-        speciesId: species.id,
-        speciesName: species.name,
-      ),
+      SpeciesSelectionResult(speciesId: species.id, speciesName: species.name),
     );
   }
 
@@ -92,7 +89,9 @@ class _SpeciesSelectionBottomSheetState
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -182,10 +181,7 @@ class _SpeciesSelectionBottomSheetState
 
 /// Single species item in the list.
 class _SpeciesListItem extends StatelessWidget {
-  const _SpeciesListItem({
-    required this.species,
-    required this.onTap,
-  });
+  const _SpeciesListItem({required this.species, required this.onTap});
 
   final Species species;
   final VoidCallback onTap;
@@ -210,9 +206,7 @@ class _SpeciesListItem extends StatelessWidget {
       ),
       title: Text(
         species.name,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
       ),
       subtitle: Text(
         _formatFeedingInfo(species),

@@ -10,8 +10,8 @@ import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock implements FeedingLocalDataSource {
-}
+class MockFeedingLocalDataSource extends Mock
+    implements FeedingLocalDataSource {}
 
 void main() {
   late MockStreakLocalDataSource mockStreakDs;
@@ -19,12 +19,14 @@ void main() {
   late CalculateStreakUseCase useCase;
 
   setUpAll(() {
-    registerFallbackValue(StreakModel(
-      id: 'test',
-      userId: 'test',
-      currentStreak: 0,
-      longestStreak: 0,
-    ));
+    registerFallbackValue(
+      StreakModel(
+        id: 'test',
+        userId: 'test',
+        currentStreak: 0,
+        longestStreak: 0,
+      ),
+    );
   });
 
   setUp(() {
@@ -73,14 +75,11 @@ void main() {
         final result = await useCase(const CalculateStreakParams(userId: ''));
 
         expect(result.isLeft(), true);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ValidationFailure>());
-            final validationFailure = failure as ValidationFailure;
-            expect(validationFailure.errors['userId'], isNotEmpty);
-          },
-          (_) => fail('Should be Left'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<ValidationFailure>());
+          final validationFailure = failure as ValidationFailure;
+          expect(validationFailure.errors['userId'], isNotEmpty);
+        }, (_) => fail('Should be Left'));
       });
     });
 
@@ -98,18 +97,16 @@ void main() {
         when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(true);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+        final result = await useCase(
+          const CalculateStreakParams(userId: 'user_1'),
+        );
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
-            expect(calcResult.streak.currentStreak, 5);
-            expect(calcResult.streak.longestStreak, 10);
-            expect(calcResult.isActive, isTrue);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (calcResult) {
+          expect(calcResult.streak.currentStreak, 5);
+          expect(calcResult.streak.longestStreak, 10);
+          expect(calcResult.isActive, isTrue);
+        });
       });
 
       test('should create default streak when none exists', () async {
@@ -117,19 +114,17 @@ void main() {
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
         when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+        final result = await useCase(
+          const CalculateStreakParams(userId: 'user_1'),
+        );
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
-            expect(calcResult.streak.currentStreak, 0);
-            expect(calcResult.streak.longestStreak, 0);
-            expect(calcResult.streak.userId, 'user_1');
-            expect(calcResult.isActive, isFalse);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (calcResult) {
+          expect(calcResult.streak.currentStreak, 0);
+          expect(calcResult.streak.longestStreak, 0);
+          expect(calcResult.streak.userId, 'user_1');
+          expect(calcResult.isActive, isFalse);
+        });
 
         verify(() => mockStreakDs.saveStreak(any())).called(1);
       });
@@ -143,46 +138,48 @@ void main() {
         when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(true);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+        final result = await useCase(
+          const CalculateStreakParams(userId: 'user_1'),
+        );
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
-            expect(calcResult.isActive, isTrue);
-            expect(calcResult.daysUntilExpiry, 2);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (calcResult) {
+          expect(calcResult.isActive, isTrue);
+          expect(calcResult.daysUntilExpiry, 2);
+        });
       });
 
       test('should return isActive true when fed yesterday', () async {
         final now = DateTime.now();
-        final yesterday = DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 1));
+        final yesterday = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 1));
         final streak = createTestStreak(lastFeedingDate: yesterday);
 
         when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(streak);
         when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(true);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+        final result = await useCase(
+          const CalculateStreakParams(userId: 'user_1'),
+        );
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
-            expect(calcResult.isActive, isTrue);
-            expect(calcResult.daysUntilExpiry, 1);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (calcResult) {
+          expect(calcResult.isActive, isTrue);
+          expect(calcResult.daysUntilExpiry, 1);
+        });
       });
 
       test('should reset streak when more than 1 day passed', () async {
         final now = DateTime.now();
-        final twoDaysAgo = DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 2));
+        final twoDaysAgo = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 2));
         final streak = createTestStreak(
           currentStreak: 5,
           lastFeedingDate: twoDaysAgo,
@@ -192,43 +189,44 @@ void main() {
         when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+        final result = await useCase(
+          const CalculateStreakParams(userId: 'user_1'),
+        );
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
-            expect(calcResult.streak.currentStreak, 0);
-            expect(calcResult.isActive, isFalse);
-            expect(calcResult.daysUntilExpiry, 0);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (calcResult) {
+          expect(calcResult.streak.currentStreak, 0);
+          expect(calcResult.isActive, isFalse);
+          expect(calcResult.daysUntilExpiry, 0);
+        });
 
         verify(() => mockStreakDs.saveStreak(any())).called(1);
       });
 
-      test('should return daysUntilExpiry as 0 when streak is broken', () async {
-        final streak = createTestStreak(
-          currentStreak: 0,
-          lastFeedingDate: null,
-        );
+      test(
+        'should return daysUntilExpiry as 0 when streak is broken',
+        () async {
+          final streak = createTestStreak(
+            currentStreak: 0,
+            lastFeedingDate: null,
+          );
 
-        when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(streak);
-        when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
-        when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
+          when(
+            () => mockStreakDs.getStreakByUserId('user_1'),
+          ).thenReturn(streak);
+          when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
+          when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+          final result = await useCase(
+            const CalculateStreakParams(userId: 'user_1'),
+          );
 
-        expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (calcResult) {
+          expect(result.isRight(), true);
+          result.fold((_) => fail('Should be Right'), (calcResult) {
             expect(calcResult.daysUntilExpiry, 0);
-          },
-        );
-      });
+          });
+        },
+      );
     });
 
     group('Recalculate from History', () {
@@ -239,13 +237,10 @@ void main() {
         final result = await useCase.recalculateFromHistory('user_1');
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (streak) {
-            expect(streak.currentStreak, 0);
-            expect(streak.longestStreak, 0);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (streak) {
+          expect(streak.currentStreak, 0);
+          expect(streak.longestStreak, 0);
+        });
       });
 
       test('should calculate streak from consecutive feeding days', () async {
@@ -267,18 +262,18 @@ void main() {
         final result = await useCase.recalculateFromHistory('user_1');
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (streak) {
-            expect(streak.currentStreak, 3);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (streak) {
+          expect(streak.currentStreak, 3);
+        });
       });
 
       test('should set streak to 0 when feeding is too old', () async {
         final now = DateTime.now();
-        final fiveDaysAgo = DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 5));
+        final fiveDaysAgo = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 5));
 
         final events = [
           createTestFeedingEvent(id: 'event_1', feedingTime: fiveDaysAgo),
@@ -291,12 +286,9 @@ void main() {
         final result = await useCase.recalculateFromHistory('user_1');
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (streak) {
-            expect(streak.currentStreak, 0);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (streak) {
+          expect(streak.currentStreak, 0);
+        });
       });
 
       test('should preserve longest streak when recalculating', () async {
@@ -313,55 +305,52 @@ void main() {
         );
 
         when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
-        when(() => mockStreakDs.getStreakByUserId('user_1'))
-            .thenReturn(existingStreak);
+        when(
+          () => mockStreakDs.getStreakByUserId('user_1'),
+        ).thenReturn(existingStreak);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
         final result = await useCase.recalculateFromHistory('user_1');
 
         expect(result.isRight(), true);
-        result.fold(
-          (_) => fail('Should be Right'),
-          (streak) {
-            expect(streak.longestStreak, 15);
-          },
-        );
+        result.fold((_) => fail('Should be Right'), (streak) {
+          expect(streak.longestStreak, 15);
+        });
       });
     });
 
     group('Error Handling', () {
-      test('should return CacheFailure when datasource throws exception',
-          () async {
-        when(() => mockStreakDs.getStreakByUserId(any()))
-            .thenThrow(Exception('Hive error'));
+      test(
+        'should return CacheFailure when datasource throws exception',
+        () async {
+          when(
+            () => mockStreakDs.getStreakByUserId(any()),
+          ).thenThrow(Exception('Hive error'));
 
-        final result =
-            await useCase(const CalculateStreakParams(userId: 'user_1'));
+          final result = await useCase(
+            const CalculateStreakParams(userId: 'user_1'),
+          );
 
-        expect(result.isLeft(), true);
-        result.fold(
-          (failure) {
+          expect(result.isLeft(), true);
+          result.fold((failure) {
             expect(failure, isA<CacheFailure>());
             expect(failure.message, contains('Failed to calculate streak'));
-          },
-          (_) => fail('Should be Left'),
-        );
-      });
+          }, (_) => fail('Should be Left'));
+        },
+      );
 
       test('should return CacheFailure on recalculate error', () async {
-        when(() => mockFeedingDs.getAllFeedingEvents())
-            .thenThrow(Exception('Hive error'));
+        when(
+          () => mockFeedingDs.getAllFeedingEvents(),
+        ).thenThrow(Exception('Hive error'));
 
         final result = await useCase.recalculateFromHistory('user_1');
 
         expect(result.isLeft(), true);
-        result.fold(
-          (failure) {
-            expect(failure, isA<CacheFailure>());
-            expect(failure.message, contains('Failed to recalculate streak'));
-          },
-          (_) => fail('Should be Left'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, contains('Failed to recalculate streak'));
+        }, (_) => fail('Should be Left'));
       });
     });
   });

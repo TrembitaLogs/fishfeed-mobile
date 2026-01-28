@@ -26,7 +26,8 @@ class FeedingScheduleModel extends HiveObject {
       id: json['id'] as String,
       aquariumId: json['aquarium_id'] as String,
       timesPerDay: json['times_per_day'] as int? ?? 2,
-      scheduledTimes: (json['scheduled_times'] as List<dynamic>?)
+      scheduledTimes:
+          (json['scheduled_times'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],

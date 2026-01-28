@@ -7,11 +7,7 @@ import 'package:fishfeed/domain/usecases/get_calendar_data_usecase.dart';
 
 /// State for calendar month data.
 class CalendarDataState {
-  const CalendarDataState({
-    this.monthData,
-    this.isLoading = false,
-    this.error,
-  });
+  const CalendarDataState({this.monthData, this.isLoading = false, this.error});
 
   /// The loaded calendar month data.
   final CalendarMonthData? monthData;
@@ -46,10 +42,9 @@ class CalendarDataState {
 /// Loads feeding data for the focused month and provides
 /// day status information for calendar display.
 class CalendarDataNotifier extends StateNotifier<CalendarDataState> {
-  CalendarDataNotifier({
-    required GetCalendarDataUseCase getCalendarDataUseCase,
-  })  : _getCalendarDataUseCase = getCalendarDataUseCase,
-        super(const CalendarDataState());
+  CalendarDataNotifier({required GetCalendarDataUseCase getCalendarDataUseCase})
+    : _getCalendarDataUseCase = getCalendarDataUseCase,
+      super(const CalendarDataState());
 
   final GetCalendarDataUseCase _getCalendarDataUseCase;
 
@@ -69,24 +64,17 @@ class CalendarDataNotifier extends StateNotifier<CalendarDataState> {
 
     state = state.copyWith(isLoading: true, error: null);
 
-    final result = await _getCalendarDataUseCase(GetCalendarDataParams(
-      year: year,
-      month: month,
-    ));
+    final result = await _getCalendarDataUseCase(
+      GetCalendarDataParams(year: year, month: month),
+    );
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (data) {
         _loadedMonth = monthKey;
-        state = state.copyWith(
-          monthData: data,
-          isLoading: false,
-        );
+        state = state.copyWith(monthData: data, isLoading: false);
       },
     );
   }
@@ -124,6 +112,6 @@ final getCalendarDataUseCaseProvider = Provider<GetCalendarDataUseCase>((ref) {
 /// ```
 final calendarDataProvider =
     StateNotifierProvider<CalendarDataNotifier, CalendarDataState>((ref) {
-  final useCase = ref.watch(getCalendarDataUseCaseProvider);
-  return CalendarDataNotifier(getCalendarDataUseCase: useCase);
-});
+      final useCase = ref.watch(getCalendarDataUseCaseProvider);
+      return CalendarDataNotifier(getCalendarDataUseCase: useCase);
+    });

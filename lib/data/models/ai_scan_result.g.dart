@@ -11,7 +11,8 @@ _$AiScanResultImpl _$$AiScanResultImplFromJson(Map<String, dynamic> json) =>
       speciesId: json['species_id'] as String,
       speciesName: json['species_name'] as String,
       confidence: (json['confidence'] as num).toDouble(),
-      recommendations: (json['recommendations'] as List<dynamic>?)
+      recommendations:
+          (json['recommendations'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],

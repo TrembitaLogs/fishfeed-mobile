@@ -75,10 +75,9 @@ void main() {
 
     group('Size Variants', () {
       testWidgets('small size renders smaller icons', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          available: 2,
-          size: FreezeIndicatorSize.small,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(available: 2, size: FreezeIndicatorSize.small),
+        );
 
         final icons = tester.widgetList<Icon>(find.byIcon(Icons.ac_unit));
         for (final icon in icons) {
@@ -87,10 +86,9 @@ void main() {
       });
 
       testWidgets('medium size renders default icons', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          available: 2,
-          size: FreezeIndicatorSize.medium,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(available: 2, size: FreezeIndicatorSize.medium),
+        );
 
         final icons = tester.widgetList<Icon>(find.byIcon(Icons.ac_unit));
         for (final icon in icons) {
@@ -99,10 +97,9 @@ void main() {
       });
 
       testWidgets('large size renders larger icons', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          available: 2,
-          size: FreezeIndicatorSize.large,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(available: 2, size: FreezeIndicatorSize.large),
+        );
 
         final icons = tester.widgetList<Icon>(find.byIcon(Icons.ac_unit));
         for (final icon in icons) {
@@ -113,41 +110,42 @@ void main() {
 
     group('Tooltip', () {
       testWidgets('has tooltip when showTooltip is true', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          available: 2,
-          showTooltip: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(available: 2, showTooltip: true),
+        );
 
         expect(find.byType(Tooltip), findsOneWidget);
       });
 
       testWidgets('no tooltip when showTooltip is false', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          available: 2,
-          showTooltip: false,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(available: 2, showTooltip: false),
+        );
 
         expect(find.byType(Tooltip), findsNothing);
       });
 
-      testWidgets('tooltip shows plural message for multiple freeze days',
-          (tester) async {
+      testWidgets('tooltip shows plural message for multiple freeze days', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(available: 2));
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
         expect(tooltip.message, equals('2 freeze days available'));
       });
 
-      testWidgets('tooltip shows singular message for one freeze day',
-          (tester) async {
+      testWidgets('tooltip shows singular message for one freeze day', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(available: 1));
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
         expect(tooltip.message, equals('1 freeze day available'));
       });
 
-      testWidgets('tooltip shows no freeze message when none available',
-          (tester) async {
+      testWidgets('tooltip shows no freeze message when none available', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(available: 0));
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
@@ -168,8 +166,9 @@ void main() {
       testWidgets('inactive icons have faded color', (tester) async {
         await tester.pumpWidget(buildTestWidget(available: 0, total: 2));
 
-        final icons =
-            tester.widgetList<Icon>(find.byIcon(Icons.ac_unit_outlined));
+        final icons = tester.widgetList<Icon>(
+          find.byIcon(Icons.ac_unit_outlined),
+        );
         for (final icon in icons) {
           // Color should have reduced alpha (using 0.0-1.0 scale)
           expect(icon.color!.a, lessThan(1.0));
@@ -184,8 +183,9 @@ void main() {
         expect(find.byType(Transform), findsWidgets);
       });
 
-      testWidgets('triggers animation when available count changes',
-          (tester) async {
+      testWidgets('triggers animation when available count changes', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(available: 2));
         await tester.pumpAndSettle();
 

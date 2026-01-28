@@ -46,13 +46,15 @@ class MockAppleAuthService extends Mock implements AppleAuthService {}
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
     implements CalendarDataNotifier {
   MockCalendarDataNotifier()
-      : super(CalendarDataState(
+    : super(
+        CalendarDataState(
           monthData: CalendarMonthData.empty(
             DateTime.now().year,
             DateTime.now().month,
           ),
           isLoading: false,
-        ));
+        ),
+      );
 
   @override
   Future<void> loadMonth(int year, int month) async {}
@@ -68,7 +70,7 @@ class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
 class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
     implements TodayFeedingsNotifier {
   MockTodayFeedingsNotifier()
-      : super(const TodayFeedingsState(feedings: [], isLoading: false));
+    : super(const TodayFeedingsState(feedings: [], isLoading: false));
 
   @override
   Future<void> loadFeedings() async {}
@@ -93,7 +95,7 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     implements UserAquariumsNotifier {
   MockUserAquariumsNotifier({List<Aquarium>? aquariums})
-      : super(UserAquariumsState(aquariums: aquariums ?? _defaultAquariums));
+    : super(UserAquariumsState(aquariums: aquariums ?? _defaultAquariums));
 
   static final _defaultAquariums = [
     Aquarium(
@@ -113,8 +115,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     required String name,
     WaterType? waterType,
     double? capacity,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<Aquarium?> updateAquarium({
@@ -123,8 +124,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     WaterType? waterType,
     double? capacity,
     String? imageUrl,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<bool> deleteAquarium(String aquariumId) async => true;
@@ -149,7 +149,7 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
 class MockFishManagementNotifier extends StateNotifier<FishManagementState>
     implements FishManagementNotifier {
   MockFishManagementNotifier({List<Fish>? fish})
-      : super(FishManagementState(userFish: fish ?? _defaultTestFish));
+    : super(FishManagementState(userFish: fish ?? _defaultTestFish));
 
   static final _defaultTestFish = [
     Fish(
@@ -174,8 +174,7 @@ class MockFishManagementNotifier extends StateNotifier<FishManagementState>
     int quantity = 1,
     String? name,
     String? aquariumId,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<bool> updateFish(Fish fish) async => true;
@@ -291,18 +290,20 @@ void main() {
         authState.dispose();
       });
 
-      testWidgets('redirects to /auth on initial load for unauthenticated user',
-          (tester) async {
-        final authState = TestAuthStateListenable();
-        final router = AppRouter.createRouter(authState);
+      testWidgets(
+        'redirects to /auth on initial load for unauthenticated user',
+        (tester) async {
+          final authState = TestAuthStateListenable();
+          final router = AppRouter.createRouter(authState);
 
-        await tester.pumpWidget(_buildApp(router));
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(_buildApp(router));
+          await tester.pumpAndSettle();
 
-        expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/auth');
 
-        authState.dispose();
-      });
+          authState.dispose();
+        },
+      );
     });
 
     group('redirect logic', () {
@@ -517,8 +518,9 @@ void main() {
           expect(find.text('My Aquarium'), findsOneWidget);
         });
 
-        testWidgets('can access /aquarium/fish/:fishId/edit with parameter',
-            (tester) async {
+        testWidgets('can access /aquarium/fish/:fishId/edit with parameter', (
+          tester,
+        ) async {
           await tester.pumpWidget(_buildApp(router));
           await tester.pumpAndSettle();
 
@@ -666,8 +668,9 @@ Widget _buildApp(GoRouter router) {
       googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
       appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
       // Mock aquarium remote data source for authNotifierProvider
-      aquariumRemoteDataSourceProvider
-          .overrideWithValue(createMockAquariumRemoteDataSource()),
+      aquariumRemoteDataSourceProvider.overrideWithValue(
+        createMockAquariumRemoteDataSource(),
+      ),
       // Mock calendar and feeding providers to prevent infinite rebuild loops
       calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),
       todayFeedingsProvider.overrideWith((ref) => MockTodayFeedingsNotifier()),
@@ -680,7 +683,9 @@ Widget _buildApp(GoRouter router) {
         yield SyncState.idle;
       }),
       // Mock fish management provider for aquarium screens
-      fishManagementProvider.overrideWith((ref) => MockFishManagementNotifier()),
+      fishManagementProvider.overrideWith(
+        (ref) => MockFishManagementNotifier(),
+      ),
       // Mock user aquariums provider to avoid HiveBoxes dependency
       userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
       // Mock fishByIdProvider for EditFishScreen

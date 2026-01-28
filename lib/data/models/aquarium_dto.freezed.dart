@@ -12,7 +12,8 @@ part of 'aquarium_dto.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 AquariumDto _$AquariumDtoFromJson(Map<String, dynamic> json) {
   return _AquariumDto.fromJson(json);
@@ -41,17 +42,19 @@ mixin _$AquariumDto {
 /// @nodoc
 abstract class $AquariumDtoCopyWith<$Res> {
   factory $AquariumDtoCopyWith(
-          AquariumDto value, $Res Function(AquariumDto) then) =
-      _$AquariumDtoCopyWithImpl<$Res, AquariumDto>;
+    AquariumDto value,
+    $Res Function(AquariumDto) then,
+  ) = _$AquariumDtoCopyWithImpl<$Res, AquariumDto>;
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'owner_id') String userId,
-      String name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String waterType,
-      @JsonKey(name: 'image_url') String? imageUrl,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'owner_id') String userId,
+    String name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String waterType,
+    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -75,36 +78,39 @@ class _$AquariumDtoCopyWithImpl<$Res, $Val extends AquariumDto>
     Object? imageUrl = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: null == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: freezed == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            capacity: freezed == capacity
+                ? _value.capacity
+                : capacity // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            waterType: null == waterType
+                ? _value.waterType
+                : waterType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            imageUrl: freezed == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -112,18 +118,20 @@ class _$AquariumDtoCopyWithImpl<$Res, $Val extends AquariumDto>
 abstract class _$$AquariumDtoImplCopyWith<$Res>
     implements $AquariumDtoCopyWith<$Res> {
   factory _$$AquariumDtoImplCopyWith(
-          _$AquariumDtoImpl value, $Res Function(_$AquariumDtoImpl) then) =
-      __$$AquariumDtoImplCopyWithImpl<$Res>;
+    _$AquariumDtoImpl value,
+    $Res Function(_$AquariumDtoImpl) then,
+  ) = __$$AquariumDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @JsonKey(name: 'owner_id') String userId,
-      String name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String waterType,
-      @JsonKey(name: 'image_url') String? imageUrl,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+  $Res call({
+    String id,
+    @JsonKey(name: 'owner_id') String userId,
+    String name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String waterType,
+    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -131,8 +139,9 @@ class __$$AquariumDtoImplCopyWithImpl<$Res>
     extends _$AquariumDtoCopyWithImpl<$Res, _$AquariumDtoImpl>
     implements _$$AquariumDtoImplCopyWith<$Res> {
   __$$AquariumDtoImplCopyWithImpl(
-      _$AquariumDtoImpl _value, $Res Function(_$AquariumDtoImpl) _then)
-      : super(_value, _then);
+    _$AquariumDtoImpl _value,
+    $Res Function(_$AquariumDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -145,51 +154,53 @@ class __$$AquariumDtoImplCopyWithImpl<$Res>
     Object? imageUrl = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_$AquariumDtoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: null == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String,
-      imageUrl: freezed == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
+    return _then(
+      _$AquariumDtoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        capacity: freezed == capacity
+            ? _value.capacity
+            : capacity // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        waterType: null == waterType
+            ? _value.waterType
+            : waterType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        imageUrl: freezed == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$AquariumDtoImpl extends _AquariumDto {
-  const _$AquariumDtoImpl(
-      {required this.id,
-      @JsonKey(name: 'owner_id') required this.userId,
-      required this.name,
-      this.capacity,
-      @JsonKey(name: 'water_type') this.waterType = 'freshwater',
-      @JsonKey(name: 'image_url') this.imageUrl,
-      @JsonKey(name: 'created_at') required this.createdAt})
-      : super._();
+  const _$AquariumDtoImpl({
+    required this.id,
+    @JsonKey(name: 'owner_id') required this.userId,
+    required this.name,
+    this.capacity,
+    @JsonKey(name: 'water_type') this.waterType = 'freshwater',
+    @JsonKey(name: 'image_url') this.imageUrl,
+    @JsonKey(name: 'created_at') required this.createdAt,
+  }) : super._();
 
   factory _$AquariumDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$AquariumDtoImplFromJson(json);
@@ -239,7 +250,15 @@ class _$AquariumDtoImpl extends _AquariumDto {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, userId, name, capacity, waterType, imageUrl, createdAt);
+    runtimeType,
+    id,
+    userId,
+    name,
+    capacity,
+    waterType,
+    imageUrl,
+    createdAt,
+  );
 
   @JsonKey(ignore: true)
   @override
@@ -249,22 +268,20 @@ class _$AquariumDtoImpl extends _AquariumDto {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AquariumDtoImplToJson(
-      this,
-    );
+    return _$$AquariumDtoImplToJson(this);
   }
 }
 
 abstract class _AquariumDto extends AquariumDto {
-  const factory _AquariumDto(
-          {required final String id,
-          @JsonKey(name: 'owner_id') required final String userId,
-          required final String name,
-          final double? capacity,
-          @JsonKey(name: 'water_type') final String waterType,
-          @JsonKey(name: 'image_url') final String? imageUrl,
-          @JsonKey(name: 'created_at') required final DateTime createdAt}) =
-      _$AquariumDtoImpl;
+  const factory _AquariumDto({
+    required final String id,
+    @JsonKey(name: 'owner_id') required final String userId,
+    required final String name,
+    final double? capacity,
+    @JsonKey(name: 'water_type') final String waterType,
+    @JsonKey(name: 'image_url') final String? imageUrl,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+  }) = _$AquariumDtoImpl;
   const _AquariumDto._() : super._();
 
   factory _AquariumDto.fromJson(Map<String, dynamic> json) =
@@ -295,7 +312,8 @@ abstract class _AquariumDto extends AquariumDto {
 }
 
 CreateAquariumRequestDto _$CreateAquariumRequestDtoFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _CreateAquariumRequestDto.fromJson(json);
 }
 
@@ -314,19 +332,23 @@ mixin _$CreateAquariumRequestDto {
 
 /// @nodoc
 abstract class $CreateAquariumRequestDtoCopyWith<$Res> {
-  factory $CreateAquariumRequestDtoCopyWith(CreateAquariumRequestDto value,
-          $Res Function(CreateAquariumRequestDto) then) =
-      _$CreateAquariumRequestDtoCopyWithImpl<$Res, CreateAquariumRequestDto>;
+  factory $CreateAquariumRequestDtoCopyWith(
+    CreateAquariumRequestDto value,
+    $Res Function(CreateAquariumRequestDto) then,
+  ) = _$CreateAquariumRequestDtoCopyWithImpl<$Res, CreateAquariumRequestDto>;
   @useResult
-  $Res call(
-      {String name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String? waterType});
+  $Res call({
+    String name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String? waterType,
+  });
 }
 
 /// @nodoc
-class _$CreateAquariumRequestDtoCopyWithImpl<$Res,
-        $Val extends CreateAquariumRequestDto>
+class _$CreateAquariumRequestDtoCopyWithImpl<
+  $Res,
+  $Val extends CreateAquariumRequestDto
+>
     implements $CreateAquariumRequestDtoCopyWith<$Res> {
   _$CreateAquariumRequestDtoCopyWithImpl(this._value, this._then);
 
@@ -342,20 +364,23 @@ class _$CreateAquariumRequestDtoCopyWithImpl<$Res,
     Object? capacity = freezed,
     Object? waterType = freezed,
   }) {
-    return _then(_value.copyWith(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: freezed == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            capacity: freezed == capacity
+                ? _value.capacity
+                : capacity // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            waterType: freezed == waterType
+                ? _value.waterType
+                : waterType // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -363,26 +388,30 @@ class _$CreateAquariumRequestDtoCopyWithImpl<$Res,
 abstract class _$$CreateAquariumRequestDtoImplCopyWith<$Res>
     implements $CreateAquariumRequestDtoCopyWith<$Res> {
   factory _$$CreateAquariumRequestDtoImplCopyWith(
-          _$CreateAquariumRequestDtoImpl value,
-          $Res Function(_$CreateAquariumRequestDtoImpl) then) =
-      __$$CreateAquariumRequestDtoImplCopyWithImpl<$Res>;
+    _$CreateAquariumRequestDtoImpl value,
+    $Res Function(_$CreateAquariumRequestDtoImpl) then,
+  ) = __$$CreateAquariumRequestDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String? waterType});
+  $Res call({
+    String name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String? waterType,
+  });
 }
 
 /// @nodoc
 class __$$CreateAquariumRequestDtoImplCopyWithImpl<$Res>
-    extends _$CreateAquariumRequestDtoCopyWithImpl<$Res,
-        _$CreateAquariumRequestDtoImpl>
+    extends
+        _$CreateAquariumRequestDtoCopyWithImpl<
+          $Res,
+          _$CreateAquariumRequestDtoImpl
+        >
     implements _$$CreateAquariumRequestDtoImplCopyWith<$Res> {
   __$$CreateAquariumRequestDtoImplCopyWithImpl(
-      _$CreateAquariumRequestDtoImpl _value,
-      $Res Function(_$CreateAquariumRequestDtoImpl) _then)
-      : super(_value, _then);
+    _$CreateAquariumRequestDtoImpl _value,
+    $Res Function(_$CreateAquariumRequestDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -391,30 +420,33 @@ class __$$CreateAquariumRequestDtoImplCopyWithImpl<$Res>
     Object? capacity = freezed,
     Object? waterType = freezed,
   }) {
-    return _then(_$CreateAquariumRequestDtoImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: freezed == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$CreateAquariumRequestDtoImpl(
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        capacity: freezed == capacity
+            ? _value.capacity
+            : capacity // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        waterType: freezed == waterType
+            ? _value.waterType
+            : waterType // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$CreateAquariumRequestDtoImpl implements _CreateAquariumRequestDto {
-  const _$CreateAquariumRequestDtoImpl(
-      {required this.name,
-      this.capacity,
-      @JsonKey(name: 'water_type') this.waterType});
+  const _$CreateAquariumRequestDtoImpl({
+    required this.name,
+    this.capacity,
+    @JsonKey(name: 'water_type') this.waterType,
+  });
 
   factory _$CreateAquariumRequestDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$CreateAquariumRequestDtoImplFromJson(json);
@@ -452,23 +484,23 @@ class _$CreateAquariumRequestDtoImpl implements _CreateAquariumRequestDto {
   @override
   @pragma('vm:prefer-inline')
   _$$CreateAquariumRequestDtoImplCopyWith<_$CreateAquariumRequestDtoImpl>
-      get copyWith => __$$CreateAquariumRequestDtoImplCopyWithImpl<
-          _$CreateAquariumRequestDtoImpl>(this, _$identity);
+  get copyWith =>
+      __$$CreateAquariumRequestDtoImplCopyWithImpl<
+        _$CreateAquariumRequestDtoImpl
+      >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$CreateAquariumRequestDtoImplToJson(
-      this,
-    );
+    return _$$CreateAquariumRequestDtoImplToJson(this);
   }
 }
 
 abstract class _CreateAquariumRequestDto implements CreateAquariumRequestDto {
-  const factory _CreateAquariumRequestDto(
-          {required final String name,
-          final double? capacity,
-          @JsonKey(name: 'water_type') final String? waterType}) =
-      _$CreateAquariumRequestDtoImpl;
+  const factory _CreateAquariumRequestDto({
+    required final String name,
+    final double? capacity,
+    @JsonKey(name: 'water_type') final String? waterType,
+  }) = _$CreateAquariumRequestDtoImpl;
 
   factory _CreateAquariumRequestDto.fromJson(Map<String, dynamic> json) =
       _$CreateAquariumRequestDtoImpl.fromJson;
@@ -483,11 +515,12 @@ abstract class _CreateAquariumRequestDto implements CreateAquariumRequestDto {
   @override
   @JsonKey(ignore: true)
   _$$CreateAquariumRequestDtoImplCopyWith<_$CreateAquariumRequestDtoImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 UpdateAquariumRequestDto _$UpdateAquariumRequestDtoFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _UpdateAquariumRequestDto.fromJson(json);
 }
 
@@ -508,20 +541,24 @@ mixin _$UpdateAquariumRequestDto {
 
 /// @nodoc
 abstract class $UpdateAquariumRequestDtoCopyWith<$Res> {
-  factory $UpdateAquariumRequestDtoCopyWith(UpdateAquariumRequestDto value,
-          $Res Function(UpdateAquariumRequestDto) then) =
-      _$UpdateAquariumRequestDtoCopyWithImpl<$Res, UpdateAquariumRequestDto>;
+  factory $UpdateAquariumRequestDtoCopyWith(
+    UpdateAquariumRequestDto value,
+    $Res Function(UpdateAquariumRequestDto) then,
+  ) = _$UpdateAquariumRequestDtoCopyWithImpl<$Res, UpdateAquariumRequestDto>;
   @useResult
-  $Res call(
-      {String? name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String? waterType,
-      @JsonKey(name: 'image_url') String? imageUrl});
+  $Res call({
+    String? name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String? waterType,
+    @JsonKey(name: 'image_url') String? imageUrl,
+  });
 }
 
 /// @nodoc
-class _$UpdateAquariumRequestDtoCopyWithImpl<$Res,
-        $Val extends UpdateAquariumRequestDto>
+class _$UpdateAquariumRequestDtoCopyWithImpl<
+  $Res,
+  $Val extends UpdateAquariumRequestDto
+>
     implements $UpdateAquariumRequestDtoCopyWith<$Res> {
   _$UpdateAquariumRequestDtoCopyWithImpl(this._value, this._then);
 
@@ -538,24 +575,27 @@ class _$UpdateAquariumRequestDtoCopyWithImpl<$Res,
     Object? waterType = freezed,
     Object? imageUrl = freezed,
   }) {
-    return _then(_value.copyWith(
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: freezed == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      imageUrl: freezed == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            name: freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            capacity: freezed == capacity
+                ? _value.capacity
+                : capacity // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            waterType: freezed == waterType
+                ? _value.waterType
+                : waterType // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            imageUrl: freezed == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -563,27 +603,31 @@ class _$UpdateAquariumRequestDtoCopyWithImpl<$Res,
 abstract class _$$UpdateAquariumRequestDtoImplCopyWith<$Res>
     implements $UpdateAquariumRequestDtoCopyWith<$Res> {
   factory _$$UpdateAquariumRequestDtoImplCopyWith(
-          _$UpdateAquariumRequestDtoImpl value,
-          $Res Function(_$UpdateAquariumRequestDtoImpl) then) =
-      __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>;
+    _$UpdateAquariumRequestDtoImpl value,
+    $Res Function(_$UpdateAquariumRequestDtoImpl) then,
+  ) = __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String? name,
-      double? capacity,
-      @JsonKey(name: 'water_type') String? waterType,
-      @JsonKey(name: 'image_url') String? imageUrl});
+  $Res call({
+    String? name,
+    double? capacity,
+    @JsonKey(name: 'water_type') String? waterType,
+    @JsonKey(name: 'image_url') String? imageUrl,
+  });
 }
 
 /// @nodoc
 class __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>
-    extends _$UpdateAquariumRequestDtoCopyWithImpl<$Res,
-        _$UpdateAquariumRequestDtoImpl>
+    extends
+        _$UpdateAquariumRequestDtoCopyWithImpl<
+          $Res,
+          _$UpdateAquariumRequestDtoImpl
+        >
     implements _$$UpdateAquariumRequestDtoImplCopyWith<$Res> {
   __$$UpdateAquariumRequestDtoImplCopyWithImpl(
-      _$UpdateAquariumRequestDtoImpl _value,
-      $Res Function(_$UpdateAquariumRequestDtoImpl) _then)
-      : super(_value, _then);
+    _$UpdateAquariumRequestDtoImpl _value,
+    $Res Function(_$UpdateAquariumRequestDtoImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -593,35 +637,38 @@ class __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>
     Object? waterType = freezed,
     Object? imageUrl = freezed,
   }) {
-    return _then(_$UpdateAquariumRequestDtoImpl(
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      capacity: freezed == capacity
-          ? _value.capacity
-          : capacity // ignore: cast_nullable_to_non_nullable
-              as double?,
-      waterType: freezed == waterType
-          ? _value.waterType
-          : waterType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      imageUrl: freezed == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$UpdateAquariumRequestDtoImpl(
+        name: freezed == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        capacity: freezed == capacity
+            ? _value.capacity
+            : capacity // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        waterType: freezed == waterType
+            ? _value.waterType
+            : waterType // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        imageUrl: freezed == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UpdateAquariumRequestDtoImpl implements _UpdateAquariumRequestDto {
-  const _$UpdateAquariumRequestDtoImpl(
-      {this.name,
-      this.capacity,
-      @JsonKey(name: 'water_type') this.waterType,
-      @JsonKey(name: 'image_url') this.imageUrl});
+  const _$UpdateAquariumRequestDtoImpl({
+    this.name,
+    this.capacity,
+    @JsonKey(name: 'water_type') this.waterType,
+    @JsonKey(name: 'image_url') this.imageUrl,
+  });
 
   factory _$UpdateAquariumRequestDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$UpdateAquariumRequestDtoImplFromJson(json);
@@ -665,24 +712,24 @@ class _$UpdateAquariumRequestDtoImpl implements _UpdateAquariumRequestDto {
   @override
   @pragma('vm:prefer-inline')
   _$$UpdateAquariumRequestDtoImplCopyWith<_$UpdateAquariumRequestDtoImpl>
-      get copyWith => __$$UpdateAquariumRequestDtoImplCopyWithImpl<
-          _$UpdateAquariumRequestDtoImpl>(this, _$identity);
+  get copyWith =>
+      __$$UpdateAquariumRequestDtoImplCopyWithImpl<
+        _$UpdateAquariumRequestDtoImpl
+      >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UpdateAquariumRequestDtoImplToJson(
-      this,
-    );
+    return _$$UpdateAquariumRequestDtoImplToJson(this);
   }
 }
 
 abstract class _UpdateAquariumRequestDto implements UpdateAquariumRequestDto {
-  const factory _UpdateAquariumRequestDto(
-          {final String? name,
-          final double? capacity,
-          @JsonKey(name: 'water_type') final String? waterType,
-          @JsonKey(name: 'image_url') final String? imageUrl}) =
-      _$UpdateAquariumRequestDtoImpl;
+  const factory _UpdateAquariumRequestDto({
+    final String? name,
+    final double? capacity,
+    @JsonKey(name: 'water_type') final String? waterType,
+    @JsonKey(name: 'image_url') final String? imageUrl,
+  }) = _$UpdateAquariumRequestDtoImpl;
 
   factory _UpdateAquariumRequestDto.fromJson(Map<String, dynamic> json) =
       _$UpdateAquariumRequestDtoImpl.fromJson;
@@ -700,5 +747,5 @@ abstract class _UpdateAquariumRequestDto implements UpdateAquariumRequestDto {
   @override
   @JsonKey(ignore: true)
   _$$UpdateAquariumRequestDtoImplCopyWith<_$UpdateAquariumRequestDtoImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

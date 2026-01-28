@@ -99,7 +99,11 @@ void main() {
 
         expect(result, false);
         expect(profileNotifier.state.nicknameError, 'Nickname cannot be empty');
-        verifyNever(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')));
+        verifyNever(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        );
       });
 
       test('returns false and sets error for short nickname', () async {
@@ -110,7 +114,11 @@ void main() {
           profileNotifier.state.nicknameError,
           'Nickname must be at least 3 characters',
         );
-        verifyNever(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')));
+        verifyNever(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        );
       });
 
       test('returns false and sets error for long nickname', () async {
@@ -121,12 +129,19 @@ void main() {
           profileNotifier.state.nicknameError,
           'Nickname cannot exceed 20 characters',
         );
-        verifyNever(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')));
+        verifyNever(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        );
       });
 
       test('sets isUpdatingNickname to true during update', () async {
-        when(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')))
-            .thenAnswer((_) async {
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((_) async {
           expect(profileNotifier.state.isUpdatingNickname, true);
           return Right(testUser);
         });
@@ -135,17 +150,24 @@ void main() {
       });
 
       test('calls repository with trimmed nickname', () async {
-        when(() => mockUserRepository.updateDisplayName(displayName: 'NewNickname'))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () =>
+              mockUserRepository.updateDisplayName(displayName: 'NewNickname'),
+        ).thenAnswer((_) async => Right(testUser));
 
         await profileNotifier.updateNickname('  NewNickname  ');
 
-        verify(() => mockUserRepository.updateDisplayName(displayName: 'NewNickname')).called(1);
+        verify(
+          () =>
+              mockUserRepository.updateDisplayName(displayName: 'NewNickname'),
+        ).called(1);
       });
 
       test('returns true and updates auth state on success', () async {
-        when(() => mockUserRepository.updateDisplayName(displayName: 'NewNickname'))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () =>
+              mockUserRepository.updateDisplayName(displayName: 'NewNickname'),
+        ).thenAnswer((_) async => Right(testUser));
 
         final result = await profileNotifier.updateNickname('NewNickname');
 
@@ -156,8 +178,11 @@ void main() {
       });
 
       test('returns false and sets error on failure', () async {
-        when(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')))
-            .thenAnswer((_) async => const Left(ServerFailure()));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((_) async => const Left(ServerFailure()));
 
         final result = await profileNotifier.updateNickname('NewNickname');
 
@@ -174,8 +199,11 @@ void main() {
           authNotifier: mockAuthNotifier,
         );
 
-        when(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
 
         await profileNotifier.updateNickname('NewNickname');
 
@@ -192,8 +220,11 @@ void main() {
       });
 
       test('sets isUpdatingAvatar to true during update', () async {
-        when(() => mockUserRepository.updateAvatar(avatarFile: any(named: 'avatarFile')))
-            .thenAnswer((_) async {
+        when(
+          () => mockUserRepository.updateAvatar(
+            avatarFile: any(named: 'avatarFile'),
+          ),
+        ).thenAnswer((_) async {
           expect(profileNotifier.state.isUpdatingAvatar, true);
           return Right(testUser);
         });
@@ -202,8 +233,11 @@ void main() {
       });
 
       test('returns true and updates auth state on success', () async {
-        when(() => mockUserRepository.updateAvatar(avatarFile: any(named: 'avatarFile')))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () => mockUserRepository.updateAvatar(
+            avatarFile: any(named: 'avatarFile'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
 
         final result = await profileNotifier.updateAvatar(testFile);
 
@@ -214,8 +248,11 @@ void main() {
       });
 
       test('returns false and sets error on failure', () async {
-        when(() => mockUserRepository.updateAvatar(avatarFile: any(named: 'avatarFile')))
-            .thenAnswer((_) async => const Left(ServerFailure()));
+        when(
+          () => mockUserRepository.updateAvatar(
+            avatarFile: any(named: 'avatarFile'),
+          ),
+        ).thenAnswer((_) async => const Left(ServerFailure()));
 
         final result = await profileNotifier.updateAvatar(testFile);
 
@@ -226,8 +263,11 @@ void main() {
       });
 
       test('clears previous errors before update', () async {
-        when(() => mockUserRepository.updateAvatar(avatarFile: any(named: 'avatarFile')))
-            .thenAnswer((_) async => Right(testUser));
+        when(
+          () => mockUserRepository.updateAvatar(
+            avatarFile: any(named: 'avatarFile'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
 
         await profileNotifier.updateAvatar(testFile);
 
@@ -238,8 +278,11 @@ void main() {
     group('clearErrors', () {
       test('clears all errors', () async {
         // First, trigger an error
-        when(() => mockUserRepository.updateDisplayName(displayName: any(named: 'displayName')))
-            .thenAnswer((_) async => const Left(ServerFailure()));
+        when(
+          () => mockUserRepository.updateDisplayName(
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((_) async => const Left(ServerFailure()));
         await profileNotifier.updateNickname('ValidName');
 
         expect(profileNotifier.state.error, isNotNull);
@@ -279,7 +322,10 @@ void main() {
     });
 
     test('isLoading returns true when updating both', () {
-      const state = ProfileState(isUpdatingNickname: true, isUpdatingAvatar: true);
+      const state = ProfileState(
+        isUpdatingNickname: true,
+        isUpdatingAvatar: true,
+      );
       expect(state.isLoading, true);
     });
 
@@ -306,9 +352,7 @@ void main() {
     });
 
     test('copyWith with clearError removes error', () {
-      const original = ProfileState(
-        error: ServerFailure(),
-      );
+      const original = ProfileState(error: ServerFailure());
 
       final copy = original.copyWith(clearError: true);
 
@@ -316,9 +360,7 @@ void main() {
     });
 
     test('copyWith with clearNicknameError removes nickname error', () {
-      const original = ProfileState(
-        nicknameError: 'some error',
-      );
+      const original = ProfileState(nicknameError: 'some error');
 
       final copy = original.copyWith(clearNicknameError: true);
 

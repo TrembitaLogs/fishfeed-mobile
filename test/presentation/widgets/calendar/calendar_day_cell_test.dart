@@ -51,20 +51,18 @@ void main() {
     group('Day Display', () {
       testWidgets('displays correct day number', (tester) async {
         final day = DateTime(2024, 1, 15);
-        await tester.pumpWidget(buildTestWidget(
-          day: day,
-          status: DayFeedingStatus.noData,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(day: day, status: DayFeedingStatus.noData),
+        );
 
         expect(find.text('15'), findsOneWidget);
       });
 
       testWidgets('displays single digit day correctly', (tester) async {
         final day = DateTime(2024, 1, 5);
-        await tester.pumpWidget(buildTestWidget(
-          day: day,
-          status: DayFeedingStatus.noData,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(day: day, status: DayFeedingStatus.noData),
+        );
 
         expect(find.text('5'), findsOneWidget);
       });
@@ -102,10 +100,12 @@ void main() {
 
     group('Status Dot Indicator', () {
       testWidgets('shows green dot for allFed status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+          ),
+        );
 
         final dotFinder = find.byWidgetPredicate(
           (widget) =>
@@ -120,10 +120,12 @@ void main() {
       });
 
       testWidgets('shows red dot for allMissed status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allMissed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allMissed,
+          ),
+        );
 
         final dotFinder = find.byWidgetPredicate(
           (widget) =>
@@ -138,10 +140,12 @@ void main() {
       });
 
       testWidgets('shows yellow dot for partial status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.partial,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.partial,
+          ),
+        );
 
         final dotFinder = find.byWidgetPredicate(
           (widget) =>
@@ -156,10 +160,12 @@ void main() {
       });
 
       testWidgets('hides dot for noData status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.noData,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.noData,
+          ),
+        );
 
         final dotFinder = find.byWidgetPredicate(
           (widget) =>
@@ -175,11 +181,13 @@ void main() {
 
     group('Selection State', () {
       testWidgets('shows primary background when selected', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-          isSelected: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+            isSelected: true,
+          ),
+        );
 
         final containerFinder = find.byWidgetPredicate(
           (widget) =>
@@ -192,14 +200,17 @@ void main() {
         expect(containerFinder, findsOneWidget);
       });
 
-      testWidgets('shows transparent background when not selected',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-          isSelected: false,
-          isToday: false,
-        ));
+      testWidgets('shows transparent background when not selected', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+            isSelected: false,
+            isToday: false,
+          ),
+        );
 
         final containerFinder = find.byWidgetPredicate(
           (widget) =>
@@ -214,12 +225,14 @@ void main() {
 
     group('Today State', () {
       testWidgets('shows border when today but not selected', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.noData,
-          isToday: true,
-          isSelected: false,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.noData,
+            isToday: true,
+            isSelected: false,
+          ),
+        );
 
         final containerFinder = find.byWidgetPredicate(
           (widget) =>
@@ -232,12 +245,14 @@ void main() {
       });
 
       testWidgets('hides border when today and selected', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.noData,
-          isToday: true,
-          isSelected: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.noData,
+            isToday: true,
+            isSelected: true,
+          ),
+        );
 
         final containerFinder = find.byWidgetPredicate(
           (widget) =>
@@ -255,11 +270,13 @@ void main() {
     group('Interaction', () {
       testWidgets('calls onTap when tapped', (tester) async {
         var tapped = false;
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-          onTap: () => tapped = true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+            onTap: () => tapped = true,
+          ),
+        );
 
         await tester.tap(find.byType(CalendarDayCell));
         await tester.pump();
@@ -268,10 +285,12 @@ void main() {
       });
 
       testWidgets('contains InkWell for tap feedback', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+          ),
+        );
 
         expect(find.byType(InkWell), findsOneWidget);
       });
@@ -279,10 +298,12 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('getStatusLabel returns correct labels', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Access l10n from widget context
@@ -308,10 +329,12 @@ void main() {
       });
 
       testWidgets('has Semantics widget with label', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+          ),
+        );
 
         final semanticsFinder = find.byWidgetPredicate(
           (widget) =>
@@ -324,10 +347,12 @@ void main() {
       });
 
       testWidgets('semantic label includes day and status', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+          ),
+        );
 
         final semanticsFinder = find.byWidgetPredicate(
           (widget) =>
@@ -341,11 +366,13 @@ void main() {
       });
 
       testWidgets('semantic label includes selected state', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-          isSelected: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+            isSelected: true,
+          ),
+        );
 
         final semanticsFinder = find.byWidgetPredicate(
           (widget) =>
@@ -358,11 +385,13 @@ void main() {
       });
 
       testWidgets('semantic label includes today state', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          day: DateTime(2024, 1, 15),
-          status: DayFeedingStatus.allFed,
-          isToday: true,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            day: DateTime(2024, 1, 15),
+            status: DayFeedingStatus.allFed,
+            isToday: true,
+          ),
+        );
 
         final semanticsFinder = find.byWidgetPredicate(
           (widget) =>

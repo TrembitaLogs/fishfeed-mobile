@@ -53,10 +53,7 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 500,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 500),
         );
 
         await tokenRefreshInterceptor.onError(error, mockHandler);
@@ -69,14 +66,12 @@ void main() {
         final requestOptions = RequestOptions(path: '/auth/refresh');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
-        when(() => mockSecureStorageService.clearTokens())
-            .thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
 
         await tokenRefreshInterceptor.onError(error, mockHandler);
 
@@ -89,16 +84,15 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => null);
-        when(() => mockSecureStorageService.clearTokens())
-            .thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
 
         await tokenRefreshInterceptor.onError(error, mockHandler);
 
@@ -111,16 +105,15 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => '');
-        when(() => mockSecureStorageService.clearTokens())
-            .thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => '');
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
 
         await tokenRefreshInterceptor.onError(error, mockHandler);
 
@@ -136,24 +129,25 @@ void main() {
         );
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
         const refreshToken = 'valid-refresh-token';
         const newAccessToken = 'new-access-token';
         const newRefreshToken = 'new-refresh-token';
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => refreshToken);
-        when(() => mockSecureStorageService.setAccessToken(newAccessToken))
-            .thenAnswer((_) async {});
-        when(() => mockSecureStorageService.setRefreshToken(newRefreshToken))
-            .thenAnswer((_) async {});
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => newAccessToken);
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => refreshToken);
+        when(
+          () => mockSecureStorageService.setAccessToken(newAccessToken),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.setRefreshToken(newRefreshToken),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => newAccessToken);
 
         when(
           () => mockDio.post<Map<String, dynamic>>(
@@ -178,15 +172,18 @@ void main() {
           data: {'user': 'data'},
         );
 
-        when(() => mockDio.fetch<dynamic>(any()))
-            .thenAnswer((_) async => retryResponse);
+        when(
+          () => mockDio.fetch<dynamic>(any()),
+        ).thenAnswer((_) async => retryResponse);
 
         await tokenRefreshInterceptor.onError(error, mockHandler);
 
-        verify(() => mockSecureStorageService.setAccessToken(newAccessToken))
-            .called(1);
-        verify(() => mockSecureStorageService.setRefreshToken(newRefreshToken))
-            .called(1);
+        verify(
+          () => mockSecureStorageService.setAccessToken(newAccessToken),
+        ).called(1);
+        verify(
+          () => mockSecureStorageService.setRefreshToken(newRefreshToken),
+        ).called(1);
         verify(() => mockHandler.resolve(retryResponse)).called(1);
       });
 
@@ -194,18 +191,17 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
         const refreshToken = 'expired-refresh-token';
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => refreshToken);
-        when(() => mockSecureStorageService.clearTokens())
-            .thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => refreshToken);
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
 
         when(
           () => mockDio.post<Map<String, dynamic>>(
@@ -234,21 +230,21 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
         const refreshToken = 'valid-refresh-token';
         const newAccessToken = 'new-access-token';
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => refreshToken);
-        when(() => mockSecureStorageService.setAccessToken(newAccessToken))
-            .thenAnswer((_) async {});
-        when(() => mockSecureStorageService.getAccessToken())
-            .thenAnswer((_) async => newAccessToken);
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => refreshToken);
+        when(
+          () => mockSecureStorageService.setAccessToken(newAccessToken),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getAccessToken(),
+        ).thenAnswer((_) async => newAccessToken);
 
         when(
           () => mockDio.post<Map<String, dynamic>>(
@@ -260,9 +256,7 @@ void main() {
           (_) async => Response(
             requestOptions: RequestOptions(path: '/auth/refresh'),
             statusCode: 200,
-            data: {
-              'access_token': newAccessToken,
-            },
+            data: {'access_token': newAccessToken},
           ),
         );
 
@@ -282,18 +276,17 @@ void main() {
         final requestOptions = RequestOptions(path: '/api/users');
         final error = DioException(
           requestOptions: requestOptions,
-          response: Response(
-            requestOptions: requestOptions,
-            statusCode: 401,
-          ),
+          response: Response(requestOptions: requestOptions, statusCode: 401),
         );
 
         const refreshToken = 'valid-refresh-token';
 
-        when(() => mockSecureStorageService.getRefreshToken())
-            .thenAnswer((_) async => refreshToken);
-        when(() => mockSecureStorageService.clearTokens())
-            .thenAnswer((_) async {});
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => refreshToken);
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
 
         when(
           () => mockDio.post<Map<String, dynamic>>(

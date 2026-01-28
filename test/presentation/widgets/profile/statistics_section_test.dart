@@ -22,25 +22,19 @@ void main() {
     AppTheme.useDefaultFonts = false;
   });
 
-  Widget buildTestWidget({
-    required StatisticsState statisticsState,
-  }) {
+  Widget buildTestWidget({required StatisticsState statisticsState}) {
     return ProviderScope(
       overrides: [
-        statisticsProvider.overrideWith(
-          (ref) {
-            return _TestStatisticsNotifier(statisticsState);
-          },
-        ),
+        statisticsProvider.overrideWith((ref) {
+          return _TestStatisticsNotifier(statisticsState);
+        }),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
-          body: SingleChildScrollView(
-            child: StatisticsSection(),
-          ),
+          body: SingleChildScrollView(child: StatisticsSection()),
         ),
       ),
     );
@@ -73,94 +67,106 @@ void main() {
   group('StatisticsSection', () {
     group('Display', () {
       testWidgets('displays section title', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(statistics: createStatistics()),
           ),
-        ));
+        );
 
         expect(find.text('Statistics'), findsOneWidget);
       });
 
       testWidgets('displays on-time percentage', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 85.0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 85.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('85%'), findsOneWidget);
         expect(find.text('On time'), findsOneWidget);
       });
 
       testWidgets('displays total feedings count', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(totalFeedings: 150),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(totalFeedings: 150),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('150'), findsOneWidget);
         expect(find.text('Feedings'), findsOneWidget);
       });
 
       testWidgets('displays days with app', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(daysWithApp: 45),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(daysWithApp: 45),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('45'), findsOneWidget);
         expect(find.text('Days with FishFeed'), findsOneWidget);
       });
 
       testWidgets('displays current level', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(currentLevel: UserLevel.fishMaster),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(currentLevel: UserLevel.fishMaster),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Master'), findsOneWidget);
         expect(find.text('Level'), findsOneWidget);
       });
 
       testWidgets('displays XP progress text', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(
-              xpInCurrentLevel: 150,
-              xpForCurrentLevel: 400,
-              isMaxLevel: false,
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(
+                xpInCurrentLevel: 150,
+                xpForCurrentLevel: 400,
+                isMaxLevel: false,
+              ),
             ),
           ),
-        ));
+        );
 
         expect(find.text('150 / 400 XP'), findsOneWidget);
         expect(find.text('Experience'), findsOneWidget);
       });
 
       testWidgets('displays max level XP text', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(
-              currentLevel: UserLevel.aquariumPro,
-              totalXp: 3000,
-              isMaxLevel: true,
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(
+                currentLevel: UserLevel.aquariumPro,
+                totalXp: 3000,
+                isMaxLevel: true,
+              ),
             ),
           ),
-        ));
+        );
 
         expect(find.text('3000 XP (Max)'), findsOneWidget);
       });
 
       testWidgets('displays all four stat icons', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(statistics: createStatistics()),
           ),
-        ));
+        );
 
         expect(find.byIcon(Icons.bar_chart_rounded), findsOneWidget);
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
@@ -171,9 +177,11 @@ void main() {
 
     group('Loading State', () {
       testWidgets('shows shimmer when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: const StatisticsState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: const StatisticsState(isLoading: true),
+          ),
+        );
 
         // Should not find stat labels
         expect(find.text('Statistics'), findsNothing);
@@ -181,9 +189,11 @@ void main() {
       });
 
       testWidgets('does not show content when loading', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: const StatisticsState(isLoading: true),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: const StatisticsState(isLoading: true),
+          ),
+        );
 
         expect(find.text('On Time'), findsNothing);
         expect(find.byIcon(Icons.restaurant), findsNothing);
@@ -192,9 +202,9 @@ void main() {
 
     group('Null Statistics State', () {
       testWidgets('renders nothing when statistics is null', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: const StatisticsState(),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(statisticsState: const StatisticsState()),
+        );
 
         expect(find.byType(SizedBox), findsWidgets);
         expect(find.text('Statistics'), findsNothing);
@@ -203,44 +213,53 @@ void main() {
 
     group('Level Colors', () {
       testWidgets('displays green color for beginner level', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(
-              currentLevel: UserLevel.beginnerAquarist,
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(
+                currentLevel: UserLevel.beginnerAquarist,
+              ),
             ),
           ),
-        ));
+        );
 
         expect(find.text('Beginner'), findsOneWidget);
       });
 
       testWidgets('displays blue color for caretaker level', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(currentLevel: UserLevel.caretaker),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(currentLevel: UserLevel.caretaker),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Caretaker'), findsOneWidget);
       });
 
       testWidgets('displays orange color for fishMaster level', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(currentLevel: UserLevel.fishMaster),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(currentLevel: UserLevel.fishMaster),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Master'), findsOneWidget);
       });
 
-      testWidgets('displays purple color for aquariumPro level',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(currentLevel: UserLevel.aquariumPro),
+      testWidgets('displays purple color for aquariumPro level', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(currentLevel: UserLevel.aquariumPro),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('Pro'), findsOneWidget);
       });
@@ -248,32 +267,37 @@ void main() {
 
     group('On-Time Percentage Colors', () {
       testWidgets('displays green color for percentage >= 80', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 90.0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 90.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('90%'), findsOneWidget);
       });
 
-      testWidgets('displays orange color for percentage 50-79',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 65.0),
+      testWidgets('displays orange color for percentage 50-79', (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 65.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('65%'), findsOneWidget);
       });
 
       testWidgets('displays red color for percentage < 50', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 30.0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 30.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('30%'), findsOneWidget);
       });
@@ -281,39 +305,46 @@ void main() {
 
     group('XP Progress Bar', () {
       testWidgets('displays progress bar with animation', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(levelProgress: 0.5),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(levelProgress: 0.5),
+            ),
           ),
-        ));
+        );
 
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
         expect(find.byType(TweenAnimationBuilder<double>), findsOneWidget);
       });
 
       testWidgets('shows full progress for max level', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(
-              currentLevel: UserLevel.aquariumPro,
-              isMaxLevel: true,
-              levelProgress: 1.0,
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(
+                currentLevel: UserLevel.aquariumPro,
+                isMaxLevel: true,
+                levelProgress: 1.0,
+              ),
             ),
           ),
-        ));
+        );
 
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
     });
 
     group('Circular Progress Indicator', () {
-      testWidgets('displays circular progress for on-time percentage',
-          (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 75.0),
+      testWidgets('displays circular progress for on-time percentage', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 75.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
@@ -321,41 +352,49 @@ void main() {
 
     group('Edge Cases', () {
       testWidgets('handles 0% on-time correctly', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 0.0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 0.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('0%'), findsOneWidget);
       });
 
       testWidgets('handles 100% on-time correctly', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(onTimePercentage: 100.0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(onTimePercentage: 100.0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('100%'), findsOneWidget);
       });
 
       testWidgets('handles 0 total feedings correctly', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(totalFeedings: 0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(totalFeedings: 0),
+            ),
           ),
-        ));
+        );
 
         expect(find.text('0'), findsOneWidget);
       });
 
       testWidgets('handles 0 days with app correctly', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(daysWithApp: 0),
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(daysWithApp: 0),
+            ),
           ),
-        ));
+        );
 
         // daysWithApp shows 0
         final finder = find.descendant(
@@ -369,14 +408,16 @@ void main() {
       });
 
       testWidgets('handles large numbers correctly', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statisticsState: StatisticsState(
-            statistics: createStatistics(
-              totalFeedings: 9999,
-              daysWithApp: 365,
+        await tester.pumpWidget(
+          buildTestWidget(
+            statisticsState: StatisticsState(
+              statistics: createStatistics(
+                totalFeedings: 9999,
+                daysWithApp: 365,
+              ),
             ),
           ),
-        ));
+        );
 
         expect(find.text('9999'), findsOneWidget);
         expect(find.text('365'), findsOneWidget);
@@ -388,10 +429,10 @@ void main() {
 /// Test-only StatisticsNotifier that returns a fixed state.
 class _TestStatisticsNotifier extends StatisticsNotifier {
   _TestStatisticsNotifier(this._initialState)
-      : super(
-          calculateStatisticsUseCase: _MockCalculateStatisticsUseCase(),
-          userId: 'test_user',
-        );
+    : super(
+        calculateStatisticsUseCase: _MockCalculateStatisticsUseCase(),
+        userId: 'test_user',
+      );
 
   final StatisticsState _initialState;
 

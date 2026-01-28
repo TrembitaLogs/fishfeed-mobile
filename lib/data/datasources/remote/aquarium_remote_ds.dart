@@ -141,9 +141,7 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
     WaterType? waterType,
     double? capacity,
   }) async {
-    final data = <String, dynamic>{
-      'name': name,
-    };
+    final data = <String, dynamic>{'name': name};
 
     if (waterType != null) {
       data['water_type'] = waterType.name;
@@ -162,9 +160,7 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
 
   @override
   Future<List<AquariumDto>> getAquariums() async {
-    final response = await _dio.get<List<dynamic>>(
-      ApiEndpoints.aquariums,
-    );
+    final response = await _dio.get<List<dynamic>>(ApiEndpoints.aquariums);
 
     return (response.data ?? [])
         .map((json) => AquariumDto.fromJson(json as Map<String, dynamic>))
@@ -205,9 +201,7 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
 
   @override
   Future<void> deleteAquarium(String aquariumId) async {
-    await _dio.delete<void>(
-      '${ApiEndpoints.aquariums}/$aquariumId',
-    );
+    await _dio.delete<void>('${ApiEndpoints.aquariums}/$aquariumId');
   }
 
   @override
@@ -301,8 +295,9 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
 /// final aquariumDs = ref.watch(aquariumRemoteDataSourceProvider);
 /// final aquariums = await aquariumDs.getAquariums();
 /// ```
-final aquariumRemoteDataSourceProvider =
-    Provider<AquariumRemoteDataSource>((ref) {
+final aquariumRemoteDataSourceProvider = Provider<AquariumRemoteDataSource>((
+  ref,
+) {
   final apiClient = ref.watch(apiClientProvider);
   return AquariumRemoteDataSourceImpl(dio: apiClient.dio);
 });

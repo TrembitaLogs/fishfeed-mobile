@@ -16,10 +16,7 @@ import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
 ///
 /// Allows users to rename the aquarium, manage fish, and delete the aquarium.
 class AquariumEditScreen extends ConsumerStatefulWidget {
-  const AquariumEditScreen({
-    super.key,
-    required this.aquariumId,
-  });
+  const AquariumEditScreen({super.key, required this.aquariumId});
 
   /// The ID of the aquarium to edit.
   final String aquariumId;
@@ -91,10 +88,9 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
       _isSaving = true;
     });
 
-    final result = await ref.read(userAquariumsProvider.notifier).updateAquarium(
-          aquariumId: widget.aquariumId,
-          name: trimmedName,
-        );
+    final result = await ref
+        .read(userAquariumsProvider.notifier)
+        .updateAquarium(aquariumId: widget.aquariumId, name: trimmedName);
 
     if (mounted) {
       setState(() {
@@ -246,9 +242,7 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
 
     if (aquarium == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(l.editAquarium),
-        ),
+        appBar: AppBar(title: Text(l.editAquarium)),
         body: _AquariumNotFoundState(),
       );
     }
@@ -259,9 +253,7 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
     final aquariumFish = ref.watch(fishByAquariumIdProvider(widget.aquariumId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.editAquarium),
-      ),
+      appBar: AppBar(title: Text(l.editAquarium)),
       body: _isDeleting
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -453,11 +445,7 @@ class _FishListTile extends StatelessWidget {
           size: 20,
         ),
       ),
-      title: Text(
-        displayName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: Text(displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         'x${fish.quantity}',
         style: theme.textTheme.bodySmall?.copyWith(
@@ -465,10 +453,7 @@ class _FishListTile extends StatelessWidget {
         ),
       ),
       trailing: PopupMenuButton<_FishAction>(
-        icon: Icon(
-          Icons.more_vert,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurfaceVariant),
         onSelected: (action) {
           switch (action) {
             case _FishAction.edit:
@@ -494,10 +479,7 @@ class _FishListTile extends StatelessWidget {
             value: _FishAction.delete,
             child: Row(
               children: [
-                Icon(
-                  Icons.delete_outlined,
-                  color: theme.colorScheme.error,
-                ),
+                Icon(Icons.delete_outlined, color: theme.colorScheme.error),
                 const SizedBox(width: 12),
                 Text(
                   l.delete,
@@ -595,16 +577,9 @@ class _AquariumNotFoundState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: theme.colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
-            Text(
-              l.aquariumNotFound,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l.aquariumNotFound, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
               l.aquariumNotFoundDescription,
@@ -626,7 +601,4 @@ class _AquariumNotFoundState extends StatelessWidget {
 }
 
 /// Actions available for fish items.
-enum _FishAction {
-  edit,
-  delete,
-}
+enum _FishAction { edit, delete }

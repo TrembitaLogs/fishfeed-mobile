@@ -6,18 +6,12 @@ import 'package:fishfeed/services/analytics/analytics_service.dart';
 
 /// Represents a selected species with its quantity for onboarding.
 class SpeciesSelection {
-  const SpeciesSelection({
-    required this.species,
-    this.quantity = 1,
-  });
+  const SpeciesSelection({required this.species, this.quantity = 1});
 
   final Species species;
   final int quantity;
 
-  SpeciesSelection copyWith({
-    Species? species,
-    int? quantity,
-  }) {
+  SpeciesSelection copyWith({Species? species, int? quantity}) {
     return SpeciesSelection(
       species: species ?? this.species,
       quantity: quantity ?? this.quantity,
@@ -86,12 +80,12 @@ class GeneratedScheduleEntry {
 
   @override
   int get hashCode => Object.hash(
-        speciesId,
-        speciesName,
-        Object.hashAll(feedingTimes),
-        foodType,
-        portionGrams,
-      );
+    speciesId,
+    speciesName,
+    Object.hashAll(feedingTimes),
+    foodType,
+    portionGrams,
+  );
 }
 
 /// State for the onboarding flow.
@@ -141,7 +135,8 @@ class OnboardingState {
   /// Whether user can proceed to next step.
   bool get canProceed {
     return switch (currentStep) {
-      0 => currentAquariumName != null && currentAquariumName!.trim().isNotEmpty,
+      0 =>
+        currentAquariumName != null && currentAquariumName!.trim().isNotEmpty,
       1 => selectedSpecies.isNotEmpty,
       2 => selectedSpecies.every((s) => s.quantity > 0),
       3 => generatedSchedule.isNotEmpty,
@@ -211,7 +206,8 @@ class OnboardingState {
     for (var i = 0; i < selectedSpecies.length; i++) {
       if (selectedSpecies[i] != other.selectedSpecies[i]) return false;
     }
-    if (generatedSchedule.length != other.generatedSchedule.length) return false;
+    if (generatedSchedule.length != other.generatedSchedule.length)
+      return false;
     for (var i = 0; i < generatedSchedule.length; i++) {
       if (generatedSchedule[i] != other.generatedSchedule[i]) return false;
     }
@@ -221,15 +217,15 @@ class OnboardingState {
 
   @override
   int get hashCode => Object.hash(
-        currentStep,
-        currentAquariumId,
-        currentAquariumName,
-        Object.hashAll(createdAquariums),
-        isCreatingAquarium,
-        Object.hashAll(selectedSpecies),
-        Object.hashAll(generatedSchedule),
-        isGeneratingSchedule,
-      );
+    currentStep,
+    currentAquariumId,
+    currentAquariumName,
+    Object.hashAll(createdAquariums),
+    isCreatingAquarium,
+    Object.hashAll(selectedSpecies),
+    Object.hashAll(generatedSchedule),
+    isGeneratingSchedule,
+  );
 }
 
 /// Notifier for managing onboarding state.
@@ -402,7 +398,8 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   /// [newTime] - New time in "HH:mm" format.
   void updateFeedingTime(String speciesId, int timeIndex, String newTime) {
     final updatedSchedule = state.generatedSchedule.map((entry) {
-      if (entry.speciesId == speciesId && timeIndex < entry.feedingTimes.length) {
+      if (entry.speciesId == speciesId &&
+          timeIndex < entry.feedingTimes.length) {
         final newTimes = List<String>.from(entry.feedingTimes);
         newTimes[timeIndex] = newTime;
         return entry.copyWith(feedingTimes: newTimes);
@@ -437,8 +434,8 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 /// ```
 final onboardingNotifierProvider =
     StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
-  return OnboardingNotifier();
-});
+      return OnboardingNotifier();
+    });
 
 /// Provider for current onboarding step.
 final onboardingStepProvider = Provider<int>((ref) {

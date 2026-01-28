@@ -20,9 +20,7 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
@@ -129,8 +127,9 @@ void main() {
       expect(secondaryPressed, isTrue);
     });
 
-    testWidgets('does not show secondary action when label is null',
-        (tester) async {
+    testWidgets('does not show secondary action when label is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           ErrorStateWidget(
@@ -219,7 +218,10 @@ void main() {
             title: 'Error',
             description: 'Failed to load',
             onRetry: () async {},
-            illustration: const Icon(Icons.star, key: Key('custom_illustration')),
+            illustration: const Icon(
+              Icons.star,
+              key: Key('custom_illustration'),
+            ),
             animate: false,
           ),
         ),
@@ -281,8 +283,9 @@ void main() {
   });
 
   group('ScrollableErrorState', () {
-    testWidgets('renders ErrorStateWidget inside CustomScrollView',
-        (tester) async {
+    testWidgets('renders ErrorStateWidget inside CustomScrollView', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           ScrollableErrorState(
@@ -299,8 +302,9 @@ void main() {
       expect(find.text('Error'), findsOneWidget);
     });
 
-    testWidgets('supports pull to refresh with RefreshIndicator',
-        (tester) async {
+    testWidgets('supports pull to refresh with RefreshIndicator', (
+      tester,
+    ) async {
       var refreshed = false;
 
       await tester.pumpWidget(

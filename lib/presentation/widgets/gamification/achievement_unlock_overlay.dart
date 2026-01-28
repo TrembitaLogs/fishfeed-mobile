@@ -58,10 +58,7 @@ class AchievementUnlockOverlay extends StatefulWidget {
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
-            scale: CurvedAnimation(
-              parent: animation,
-              curve: Curves.elasticOut,
-            ),
+            scale: CurvedAnimation(parent: animation, curve: Curves.elasticOut),
             child: child,
           ),
         );
@@ -100,10 +97,7 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
       vsync: this,
     );
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
-      CurvedAnimation(
-        parent: _pulseController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _pulseController.repeat(reverse: true);
 
@@ -212,9 +206,9 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                     Text(
                       AppLocalizations.of(context)!.achievementUnlocked,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -229,10 +223,7 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [
-                              color.withValues(alpha: 0.8),
-                              color,
-                            ],
+                            colors: [color.withValues(alpha: 0.8), color],
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -242,11 +233,7 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                             ),
                           ],
                         ),
-                        child: Icon(
-                          icon,
-                          size: 50,
-                          color: Colors.white,
-                        ),
+                        child: Icon(icon, size: 50, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -254,9 +241,8 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                     // Achievement title
                     Text(
                       widget.achievement.title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -266,11 +252,10 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                       Text(
                         widget.achievement.description!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.7),
-                            ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     const SizedBox(height: 16),
@@ -284,18 +269,12 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: color.withValues(alpha: 0.3),
-                        ),
+                        border: Border.all(color: color.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: color,
-                            size: 20,
-                          ),
+                          Icon(Icons.star, color: color, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             '+${widget.achievement.xpReward} XP',
@@ -323,9 +302,11 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                               ),
                             )
                           : const Icon(Icons.share, size: 18),
-                      label: Text(_isSharing
-                          ? AppLocalizations.of(context)!.sharingButton
-                          : AppLocalizations.of(context)!.shareButton),
+                      label: Text(
+                        _isSharing
+                            ? AppLocalizations.of(context)!.sharingButton
+                            : AppLocalizations.of(context)!.shareButton,
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: color,
                         foregroundColor: Colors.white,
@@ -341,11 +322,10 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                     Text(
                       AppLocalizations.of(context)!.tapToDismiss,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.5),
-                          ),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
                     ),
                   ],
                 ),

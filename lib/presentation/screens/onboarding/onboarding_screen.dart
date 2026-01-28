@@ -122,9 +122,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (!widget.isAddMode && !widget.isAddAquariumMode) {
         analytics.trackNotificationsPermissionPromptShown();
         await NotificationService.instance.initialize();
-        final permissionGranted =
-            await NotificationService.instance.requestPermissions();
-        analytics.trackNotificationsPermissionResult(granted: permissionGranted);
+        final permissionGranted = await NotificationService.instance
+            .requestPermissions();
+        analytics.trackNotificationsPermissionResult(
+          granted: permissionGranted,
+        );
       }
 
       // 2. Get aquarium ID (use current aquarium from onboarding or selected aquarium for add mode)
@@ -243,7 +245,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Future<void> _scheduleNotifications(List<GeneratedScheduleEntry> schedule) async {
+  Future<void> _scheduleNotifications(
+    List<GeneratedScheduleEntry> schedule,
+  ) async {
     // Use the merged time slots for scheduling notifications
     const usecase = GenerateScheduleUseCase();
     final mergedSlots = usecase.mergeToTimeSlots(schedule);
@@ -424,7 +428,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Expanded(
             flex: 2,
             child: FilledButton(
-              onPressed: _canProceed(state) && !isLoading ? _onNextPressed : null,
+              onPressed: _canProceed(state) && !isLoading
+                  ? _onNextPressed
+                  : null,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: theme.colorScheme.primary,
@@ -452,7 +458,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isLast = state.currentStep >= totalSteps - 1;
 
     if (isLast) {
-      return (widget.isAddMode || widget.isAddAquariumMode) ? 'Done' : 'Get Started';
+      return (widget.isAddMode || widget.isAddAquariumMode)
+          ? 'Done'
+          : 'Get Started';
     }
     return 'Next';
   }
@@ -497,7 +505,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       // Create aquarium via provider
       final aquariumsNotifier = ref.read(userAquariumsProvider.notifier);
-      final aquarium = await aquariumsNotifier.createAquarium(name: aquariumName);
+      final aquarium = await aquariumsNotifier.createAquarium(
+        name: aquariumName,
+      );
 
       if (aquarium != null) {
         // Store aquarium ID and add to created list
@@ -546,10 +556,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 /// Progress dot indicator for onboarding steps.
 class _ProgressDot extends StatelessWidget {
-  const _ProgressDot({
-    required this.isActive,
-    required this.isCompleted,
-  });
+  const _ProgressDot({required this.isActive, required this.isCompleted});
 
   final bool isActive;
   final bool isCompleted;

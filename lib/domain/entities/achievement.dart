@@ -124,16 +124,16 @@ class Achievement extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        type,
-        title,
-        description,
-        unlockedAt,
-        iconUrl,
-        progress,
-        synced,
-        updatedAt,
-        serverUpdatedAt,
-      ];
+    id,
+    userId,
+    type,
+    title,
+    description,
+    unlockedAt,
+    iconUrl,
+    progress,
+    synced,
+    updatedAt,
+    serverUpdatedAt,
+  ];
 }

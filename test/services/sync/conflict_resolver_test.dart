@@ -37,18 +37,21 @@ void main() {
         expect(result, ConflictResolution.useServer);
       });
 
-      test('returns requireManual when timestamps are equal and data differs', () {
-        final timestamp = DateTime(2024, 1, 15, 12, 0, 0);
+      test(
+        'returns requireManual when timestamps are equal and data differs',
+        () {
+          final timestamp = DateTime(2024, 1, 15, 12, 0, 0);
 
-        final result = resolver.resolveConflict(
-          localUpdatedAt: timestamp,
-          serverUpdatedAt: timestamp,
-          hasDataDifferences: true,
-        );
+          final result = resolver.resolveConflict(
+            localUpdatedAt: timestamp,
+            serverUpdatedAt: timestamp,
+            hasDataDifferences: true,
+          );
 
-        // When timestamps are equal and data differs, requires manual resolution
-        expect(result, ConflictResolution.requireManual);
-      });
+          // When timestamps are equal and data differs, requires manual resolution
+          expect(result, ConflictResolution.requireManual);
+        },
+      );
 
       test('returns useLocal when timestamps are equal and data is same', () {
         final timestamp = DateTime(2024, 1, 15, 12, 0, 0);
@@ -63,47 +66,53 @@ void main() {
         expect(result, ConflictResolution.useLocal);
       });
 
-      test('returns requireManual when timestamps are within 5 seconds and data differs',
-          () {
-        final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 3);
-        final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
+      test(
+        'returns requireManual when timestamps are within 5 seconds and data differs',
+        () {
+          final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 3);
+          final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
 
-        final result = resolver.resolveConflict(
-          localUpdatedAt: localUpdatedAt,
-          serverUpdatedAt: serverUpdatedAt,
-          hasDataDifferences: true,
-        );
+          final result = resolver.resolveConflict(
+            localUpdatedAt: localUpdatedAt,
+            serverUpdatedAt: serverUpdatedAt,
+            hasDataDifferences: true,
+          );
 
-        expect(result, ConflictResolution.requireManual);
-      });
+          expect(result, ConflictResolution.requireManual);
+        },
+      );
 
-      test('returns useLocal when timestamps are within 5 seconds but data is same',
-          () {
-        final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 3);
-        final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
+      test(
+        'returns useLocal when timestamps are within 5 seconds but data is same',
+        () {
+          final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 3);
+          final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
 
-        final result = resolver.resolveConflict(
-          localUpdatedAt: localUpdatedAt,
-          serverUpdatedAt: serverUpdatedAt,
-          hasDataDifferences: false,
-        );
+          final result = resolver.resolveConflict(
+            localUpdatedAt: localUpdatedAt,
+            serverUpdatedAt: serverUpdatedAt,
+            hasDataDifferences: false,
+          );
 
-        expect(result, ConflictResolution.useLocal);
-      });
+          expect(result, ConflictResolution.useLocal);
+        },
+      );
 
-      test('returns useServer when server is slightly newer but outside threshold',
-          () {
-        final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
-        final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 6);
+      test(
+        'returns useServer when server is slightly newer but outside threshold',
+        () {
+          final localUpdatedAt = DateTime(2024, 1, 15, 12, 0, 0);
+          final serverUpdatedAt = DateTime(2024, 1, 15, 12, 0, 6);
 
-        final result = resolver.resolveConflict(
-          localUpdatedAt: localUpdatedAt,
-          serverUpdatedAt: serverUpdatedAt,
-          hasDataDifferences: true,
-        );
+          final result = resolver.resolveConflict(
+            localUpdatedAt: localUpdatedAt,
+            serverUpdatedAt: serverUpdatedAt,
+            hasDataDifferences: true,
+          );
 
-        expect(result, ConflictResolution.useServer);
-      });
+          expect(result, ConflictResolution.useServer);
+        },
+      );
 
       test('uses custom critical threshold', () {
         final customResolver = ConflictResolver(

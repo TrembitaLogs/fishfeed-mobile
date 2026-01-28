@@ -22,10 +22,7 @@ void main() {
         body: Center(
           child: SizedBox(
             width: 350,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: child,
-            ),
+            child: Padding(padding: const EdgeInsets.all(16), child: child),
           ),
         ),
       ),
@@ -38,10 +35,7 @@ void main() {
 
       await tester.pumpWidget(
         buildGoldenWidget(
-          PasswordField(
-            controller: controller,
-            label: 'Password',
-          ),
+          PasswordField(controller: controller, label: 'Password'),
           darkMode: false,
         ),
       );
@@ -58,10 +52,7 @@ void main() {
 
       await tester.pumpWidget(
         buildGoldenWidget(
-          PasswordField(
-            controller: controller,
-            label: 'Password',
-          ),
+          PasswordField(controller: controller, label: 'Password'),
           darkMode: false,
         ),
       );
@@ -82,10 +73,7 @@ void main() {
 
       await tester.pumpWidget(
         buildGoldenWidget(
-          PasswordField(
-            controller: controller,
-            label: 'Password',
-          ),
+          PasswordField(controller: controller, label: 'Password'),
           darkMode: true,
         ),
       );
@@ -102,10 +90,7 @@ void main() {
 
       await tester.pumpWidget(
         buildGoldenWidget(
-          PasswordField(
-            controller: controller,
-            label: 'Password',
-          ),
+          PasswordField(controller: controller, label: 'Password'),
           darkMode: true,
         ),
       );

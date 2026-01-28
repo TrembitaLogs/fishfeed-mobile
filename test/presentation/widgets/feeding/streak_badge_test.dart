@@ -69,10 +69,12 @@ void main() {
         await tester.pumpWidget(buildTestWidget(streak: 3));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = container.decoration as BoxDecoration;
@@ -85,10 +87,12 @@ void main() {
         await tester.pumpWidget(buildTestWidget(streak: 15));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = container.decoration as BoxDecoration;
@@ -101,10 +105,12 @@ void main() {
         await tester.pumpWidget(buildTestWidget(streak: 50));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = container.decoration as BoxDecoration;
@@ -117,10 +123,12 @@ void main() {
         await tester.pumpWidget(buildTestWidget(streak: 7));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = container.decoration as BoxDecoration;
@@ -133,10 +141,12 @@ void main() {
         await tester.pumpWidget(buildTestWidget(streak: 30));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = container.decoration as BoxDecoration;
@@ -148,10 +158,9 @@ void main() {
 
     group('Size Variants', () {
       testWidgets('small size renders smaller dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streak: 5,
-          size: StreakBadgeSize.small,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streak: 5, size: StreakBadgeSize.small),
+        );
 
         final icon = tester.widget<Icon>(
           find.byIcon(Icons.local_fire_department),
@@ -161,10 +170,9 @@ void main() {
       });
 
       testWidgets('medium size renders default dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streak: 5,
-          size: StreakBadgeSize.medium,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streak: 5, size: StreakBadgeSize.medium),
+        );
 
         final icon = tester.widget<Icon>(
           find.byIcon(Icons.local_fire_department),
@@ -174,10 +182,9 @@ void main() {
       });
 
       testWidgets('large size renders larger dimensions', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streak: 5,
-          size: StreakBadgeSize.large,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(streak: 5, size: StreakBadgeSize.large),
+        );
 
         final icon = tester.widget<Icon>(
           find.byIcon(Icons.local_fire_department),
@@ -227,10 +234,7 @@ void main() {
       });
 
       testWidgets('animates when previousStreak triggers', (tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          streak: 10,
-          previousStreak: 9,
-        ));
+        await tester.pumpWidget(buildTestWidget(streak: 10, previousStreak: 9));
 
         // Animation should be triggered
         await tester.pump(const Duration(milliseconds: 100));
@@ -240,14 +244,18 @@ void main() {
     });
 
     group('Widget Structure', () {
-      testWidgets('contains Container with gradient decoration', (tester) async {
+      testWidgets('contains Container with gradient decoration', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(streak: 5));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(StreakBadge),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(StreakBadge),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         expect(container.decoration, isA<BoxDecoration>());

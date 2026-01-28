@@ -39,9 +39,9 @@ class UserSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        notificationsEnabled,
-        feedingReminderMinutesBefore,
-        darkModeEnabled,
-        language,
-      ];
+    notificationsEnabled,
+    feedingReminderMinutesBefore,
+    darkModeEnabled,
+    language,
+  ];
 }

@@ -9,7 +9,10 @@ void main() {
     test('has all expected values', () {
       expect(PremiumFeature.values, contains(PremiumFeature.noAds));
       expect(PremiumFeature.values, contains(PremiumFeature.unlimitedAiScans));
-      expect(PremiumFeature.values, contains(PremiumFeature.extendedStatistics));
+      expect(
+        PremiumFeature.values,
+        contains(PremiumFeature.extendedStatistics),
+      );
       expect(PremiumFeature.values, contains(PremiumFeature.familyMode));
       expect(PremiumFeature.values, contains(PremiumFeature.multipleAquariums));
       expect(PremiumFeature.values.length, equals(5));
@@ -147,7 +150,9 @@ void main() {
         isFalse,
       );
       expect(
-        container.read(featureAccessProvider(PremiumFeature.extendedStatistics)),
+        container.read(
+          featureAccessProvider(PremiumFeature.extendedStatistics),
+        ),
         isFalse,
       );
       expect(

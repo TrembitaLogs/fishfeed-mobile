@@ -45,9 +45,7 @@ class SpeciesRemoteDataSourceImpl implements SpeciesRemoteDataSource {
 
   @override
   Future<List<SpeciesDto>> getPopularSpecies() async {
-    final response = await _dio.get<List<dynamic>>(
-      ApiEndpoints.speciesPopular,
-    );
+    final response = await _dio.get<List<dynamic>>(ApiEndpoints.speciesPopular);
 
     return (response.data ?? [])
         .map((json) => SpeciesDto.fromJson(json as Map<String, dynamic>))
@@ -73,10 +71,7 @@ class SpeciesRemoteDataSourceImpl implements SpeciesRemoteDataSource {
     String? careLevel,
     String? waterType,
   }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'per_page': perPage,
-    };
+    final queryParams = <String, dynamic>{'page': page, 'per_page': perPage};
 
     if (careLevel != null) queryParams['care_level'] = careLevel;
     if (waterType != null) queryParams['water_type'] = waterType;
@@ -106,7 +101,9 @@ class SpeciesRemoteDataSourceImpl implements SpeciesRemoteDataSource {
 /// final speciesDs = ref.watch(speciesRemoteDataSourceProvider);
 /// final popular = await speciesDs.getPopularSpecies();
 /// ```
-final speciesRemoteDataSourceProvider = Provider<SpeciesRemoteDataSource>((ref) {
+final speciesRemoteDataSourceProvider = Provider<SpeciesRemoteDataSource>((
+  ref,
+) {
   final apiClient = ref.watch(apiClientProvider);
   return SpeciesRemoteDataSourceImpl(dio: apiClient.dio);
 });

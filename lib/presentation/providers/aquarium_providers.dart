@@ -68,10 +68,9 @@ class UserAquariumsState {
 ///
 /// Integrates with [AquariumRepository] for CRUD operations.
 class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
-  UserAquariumsNotifier({
-    required AquariumRepository aquariumRepository,
-  })  : _aquariumRepository = aquariumRepository,
-        super(const UserAquariumsState()) {
+  UserAquariumsNotifier({required AquariumRepository aquariumRepository})
+    : _aquariumRepository = aquariumRepository,
+      super(const UserAquariumsState()) {
     loadAquariums();
   }
 
@@ -87,16 +86,10 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (aquariums) {
-        state = state.copyWith(
-          aquariums: aquariums,
-          isLoading: false,
-        );
+        state = state.copyWith(aquariums: aquariums, isLoading: false);
       },
     );
   }
@@ -111,16 +104,10 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isRefreshing: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isRefreshing: false, error: failure.message);
       },
       (aquariums) {
-        state = state.copyWith(
-          aquariums: aquariums,
-          isRefreshing: false,
-        );
+        state = state.copyWith(aquariums: aquariums, isRefreshing: false);
       },
     );
   }
@@ -225,8 +212,9 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
       },
       (_) {
         // Remove from local state
-        final updated =
-            state.aquariums.where((a) => a.id != aquariumId).toList();
+        final updated = state.aquariums
+            .where((a) => a.id != aquariumId)
+            .toList();
         state = state.copyWith(aquariums: updated);
         return true;
       },
@@ -248,12 +236,10 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 /// ```
 final userAquariumsProvider =
     StateNotifierProvider<UserAquariumsNotifier, UserAquariumsState>((ref) {
-  final aquariumRepository = ref.watch(aquariumRepositoryProvider);
+      final aquariumRepository = ref.watch(aquariumRepositoryProvider);
 
-  return UserAquariumsNotifier(
-    aquariumRepository: aquariumRepository,
-  );
-});
+      return UserAquariumsNotifier(aquariumRepository: aquariumRepository);
+    });
 
 // ============================================================================
 // Selected Aquarium Provider

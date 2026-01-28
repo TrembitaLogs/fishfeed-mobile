@@ -48,14 +48,12 @@ void main() {
 
   group('awardFeedingXp', () {
     test('should return validation error when userId is empty', () async {
-      final result = await useCase.awardFeedingXp(
-        userId: '',
-        isOnTime: true,
-      );
+      final result = await useCase.awardFeedingXp(userId: '', isOnTime: true);
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure.toString(), contains('User ID is required')),
+        (failure) =>
+            expect(failure.toString(), contains('User ID is required')),
         (_) => fail('Should return failure'),
       );
     });
@@ -64,10 +62,12 @@ void main() {
       final beforeProgress = createTestProgress(totalXp: 50);
       final afterProgress = createTestProgress(totalXp: 60);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.awardFeedingXp(
         userId: 'user_1',
@@ -75,24 +75,23 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (award) {
-          expect(award.xpAwarded, XpConstants.xpOnTimeFeeding);
-          expect(award.progress.totalXp, 60);
-          expect(award.didLevelUp, isFalse);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (award) {
+        expect(award.xpAwarded, XpConstants.xpOnTimeFeeding);
+        expect(award.progress.totalXp, 60);
+        expect(award.didLevelUp, isFalse);
+      });
     });
 
     test('should award 5 XP for late feeding', () async {
       final beforeProgress = createTestProgress(totalXp: 50);
       final afterProgress = createTestProgress(totalXp: 55);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.xpLateFeeding))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.xpLateFeeding),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.awardFeedingXp(
         userId: 'user_1',
@@ -100,13 +99,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (award) {
-          expect(award.xpAwarded, XpConstants.xpLateFeeding);
-          expect(award.progress.totalXp, 55);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (award) {
+        expect(award.xpAwarded, XpConstants.xpLateFeeding);
+        expect(award.progress.totalXp, 55);
+      });
     });
 
     test('should detect level up when crossing threshold', () async {
@@ -115,12 +111,15 @@ void main() {
       final beforeProgress = createTestProgress(totalXp: 95);
       final afterProgress = createTestProgress(totalXp: 105);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding))
-          .thenAnswer((_) async => afterProgress);
-      when(() => mockProgressDs.recordLevelUp('user_1'))
-          .thenAnswer((_) async {});
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding),
+      ).thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.recordLevelUp('user_1'),
+      ).thenAnswer((_) async {});
 
       final result = await useCase.awardFeedingXp(
         userId: 'user_1',
@@ -128,14 +127,11 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (award) {
-          expect(award.didLevelUp, isTrue);
-          expect(award.previousLevel, UserLevel.beginnerAquarist);
-          expect(award.newLevel, UserLevel.caretaker);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (award) {
+        expect(award.didLevelUp, isTrue);
+        expect(award.previousLevel, UserLevel.beginnerAquarist);
+        expect(award.newLevel, UserLevel.caretaker);
+      });
 
       verify(() => mockProgressDs.recordLevelUp('user_1')).called(1);
     });
@@ -144,10 +140,12 @@ void main() {
       final beforeProgress = createTestProgress(totalXp: 50);
       final afterProgress = createTestProgress(totalXp: 60);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.xpOnTimeFeeding),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.awardFeedingXp(
         userId: 'user_1',
@@ -155,14 +153,11 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (award) {
-          expect(award.didLevelUp, isFalse);
-          expect(award.previousLevel, isNull);
-          expect(award.newLevel, isNull);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (award) {
+        expect(award.didLevelUp, isFalse);
+        expect(award.previousLevel, isNull);
+        expect(award.newLevel, isNull);
+      });
 
       verifyNever(() => mockProgressDs.recordLevelUp(any()));
     });
@@ -186,14 +181,18 @@ void main() {
         streakBonusesEarned: [7],
       );
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 7))
-          .thenReturn(false);
-      when(() => mockProgressDs.recordStreakBonusEarned('user_1', 7))
-          .thenAnswer((_) async => true);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.streakBonus7Days))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 7),
+      ).thenReturn(false);
+      when(
+        () => mockProgressDs.recordStreakBonusEarned('user_1', 7),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.streakBonus7Days),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -222,16 +221,21 @@ void main() {
         streakBonusesEarned: [7, 30],
       );
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 7))
-          .thenReturn(true);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 30))
-          .thenReturn(false);
-      when(() => mockProgressDs.recordStreakBonusEarned('user_1', 30))
-          .thenAnswer((_) async => true);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.streakBonus30Days))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 7),
+      ).thenReturn(true);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 30),
+      ).thenReturn(false);
+      when(
+        () => mockProgressDs.recordStreakBonusEarned('user_1', 30),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.streakBonus30Days),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -239,13 +243,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (bonus) {
-          expect(bonus.bonusAwarded, XpConstants.streakBonus30Days);
-          expect(bonus.milestone, 30);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (bonus) {
+        expect(bonus.bonusAwarded, XpConstants.streakBonus30Days);
+        expect(bonus.milestone, 30);
+      });
     });
 
     test('should award 100-day streak bonus', () async {
@@ -258,18 +259,24 @@ void main() {
         streakBonusesEarned: [7, 30, 100],
       );
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 7))
-          .thenReturn(true);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 30))
-          .thenReturn(true);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 100))
-          .thenReturn(false);
-      when(() => mockProgressDs.recordStreakBonusEarned('user_1', 100))
-          .thenAnswer((_) async => true);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.streakBonus100Days))
-          .thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 7),
+      ).thenReturn(true);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 30),
+      ).thenReturn(true);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 100),
+      ).thenReturn(false);
+      when(
+        () => mockProgressDs.recordStreakBonusEarned('user_1', 100),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.streakBonus100Days),
+      ).thenAnswer((_) async => afterProgress);
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -277,13 +284,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (bonus) {
-          expect(bonus.bonusAwarded, XpConstants.streakBonus100Days);
-          expect(bonus.milestone, 100);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (bonus) {
+        expect(bonus.bonusAwarded, XpConstants.streakBonus100Days);
+        expect(bonus.milestone, 100);
+      });
     });
 
     test('should not award already earned bonus', () async {
@@ -292,10 +296,12 @@ void main() {
         streakBonusesEarned: [7],
       );
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => progress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 7))
-          .thenReturn(true);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => progress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 7),
+      ).thenReturn(true);
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -303,13 +309,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (bonus) {
-          expect(bonus.bonusAwarded, 0);
-          expect(bonus.milestone, isNull);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (bonus) {
+        expect(bonus.bonusAwarded, 0);
+        expect(bonus.milestone, isNull);
+      });
 
       verifyNever(() => mockProgressDs.recordStreakBonusEarned(any(), any()));
       verifyNever(() => mockProgressDs.addXp(any(), any()));
@@ -318,10 +321,12 @@ void main() {
     test('should not award bonus when streak below milestone', () async {
       final progress = createTestProgress(totalXp: 50);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => progress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', any()))
-          .thenReturn(false);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => progress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', any()),
+      ).thenReturn(false);
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -329,13 +334,10 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (bonus) {
-          expect(bonus.bonusAwarded, 0);
-          expect(bonus.milestone, isNull);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (bonus) {
+        expect(bonus.bonusAwarded, 0);
+        expect(bonus.milestone, isNull);
+      });
     });
 
     test('should trigger level up from streak bonus', () async {
@@ -346,16 +348,21 @@ void main() {
         streakBonusesEarned: [7],
       );
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => beforeProgress);
-      when(() => mockProgressDs.hasEarnedStreakBonus('user_1', 7))
-          .thenReturn(false);
-      when(() => mockProgressDs.recordStreakBonusEarned('user_1', 7))
-          .thenAnswer((_) async => true);
-      when(() => mockProgressDs.addXp('user_1', XpConstants.streakBonus7Days))
-          .thenAnswer((_) async => afterProgress);
-      when(() => mockProgressDs.recordLevelUp('user_1'))
-          .thenAnswer((_) async {});
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => beforeProgress);
+      when(
+        () => mockProgressDs.hasEarnedStreakBonus('user_1', 7),
+      ).thenReturn(false);
+      when(
+        () => mockProgressDs.recordStreakBonusEarned('user_1', 7),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockProgressDs.addXp('user_1', XpConstants.streakBonus7Days),
+      ).thenAnswer((_) async => afterProgress);
+      when(
+        () => mockProgressDs.recordLevelUp('user_1'),
+      ).thenAnswer((_) async {});
 
       final result = await useCase.checkStreakBonus(
         userId: 'user_1',
@@ -363,14 +370,11 @@ void main() {
       );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (bonus) {
-          expect(bonus.didLevelUp, isTrue);
-          expect(bonus.previousLevel, UserLevel.caretaker);
-          expect(bonus.newLevel, UserLevel.fishMaster);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (bonus) {
+        expect(bonus.didLevelUp, isTrue);
+        expect(bonus.previousLevel, UserLevel.caretaker);
+        expect(bonus.newLevel, UserLevel.fishMaster);
+      });
     });
   });
 
@@ -384,19 +388,17 @@ void main() {
     test('should return existing progress', () async {
       final progress = createTestProgress(totalXp: 250);
 
-      when(() => mockProgressDs.getOrCreateProgress('user_1'))
-          .thenAnswer((_) async => progress);
+      when(
+        () => mockProgressDs.getOrCreateProgress('user_1'),
+      ).thenAnswer((_) async => progress);
 
       final result = await useCase.getProgress('user_1');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (p) {
-          expect(p.totalXp, 250);
-          expect(p.currentLevel, UserLevel.caretaker);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (p) {
+        expect(p.totalXp, 250);
+        expect(p.currentLevel, UserLevel.caretaker);
+      });
     });
   });
 
@@ -425,8 +427,9 @@ void main() {
 
   group('getEarnedStreakBonuses', () {
     test('should return earned bonuses from data source', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([7, 30]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([7, 30]);
 
       final bonuses = useCase.getEarnedStreakBonuses('user_1');
 
@@ -434,8 +437,9 @@ void main() {
     });
 
     test('should return empty list when no bonuses earned', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([]);
 
       final bonuses = useCase.getEarnedStreakBonuses('user_1');
 
@@ -445,8 +449,9 @@ void main() {
 
   group('getPendingStreakBonuses', () {
     test('should return pending bonus for 7-day streak', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([]);
 
       final pending = useCase.getPendingStreakBonuses(
         userId: 'user_1',
@@ -459,8 +464,9 @@ void main() {
     });
 
     test('should return multiple pending bonuses', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([]);
 
       final pending = useCase.getPendingStreakBonuses(
         userId: 'user_1',
@@ -474,8 +480,9 @@ void main() {
     });
 
     test('should exclude already earned bonuses', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([7, 30]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([7, 30]);
 
       final pending = useCase.getPendingStreakBonuses(
         userId: 'user_1',
@@ -487,8 +494,9 @@ void main() {
     });
 
     test('should return empty list when all bonuses earned', () {
-      when(() => mockProgressDs.getEarnedStreakBonuses('user_1'))
-          .thenReturn([7, 30, 100]);
+      when(
+        () => mockProgressDs.getEarnedStreakBonuses('user_1'),
+      ).thenReturn([7, 30, 100]);
 
       final pending = useCase.getPendingStreakBonuses(
         userId: 'user_1',

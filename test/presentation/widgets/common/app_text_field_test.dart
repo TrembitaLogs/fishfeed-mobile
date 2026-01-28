@@ -18,32 +18,21 @@ void main() {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        body: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     );
   }
 
   group('AppTextField', () {
     testWidgets('renders TextFormField', (tester) async {
-      await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(const AppTextField()));
 
       expect(find.byType(TextFormField), findsOneWidget);
     });
 
     testWidgets('displays label text', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            label: 'Email',
-          ),
-        ),
+        buildTestWidget(const AppTextField(label: 'Email')),
       );
 
       expect(find.text('Email'), findsOneWidget);
@@ -51,11 +40,7 @@ void main() {
 
     testWidgets('displays hint text', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            hint: 'Enter your email',
-          ),
-        ),
+        buildTestWidget(const AppTextField(hint: 'Enter your email')),
       );
 
       expect(find.text('Enter your email'), findsOneWidget);
@@ -63,11 +48,7 @@ void main() {
 
     testWidgets('displays error text', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            errorText: 'Invalid email',
-          ),
-        ),
+        buildTestWidget(const AppTextField(errorText: 'Invalid email')),
       );
 
       expect(find.text('Invalid email'), findsOneWidget);
@@ -75,11 +56,7 @@ void main() {
 
     testWidgets('displays prefix icon', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            prefixIcon: Icon(Icons.email),
-          ),
-        ),
+        buildTestWidget(const AppTextField(prefixIcon: Icon(Icons.email))),
       );
 
       expect(find.byIcon(Icons.email), findsOneWidget);
@@ -87,11 +64,7 @@ void main() {
 
     testWidgets('displays suffix icon', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            suffixIcon: Icon(Icons.visibility),
-          ),
-        ),
+        buildTestWidget(const AppTextField(suffixIcon: Icon(Icons.visibility))),
       );
 
       expect(find.byIcon(Icons.visibility), findsOneWidget);
@@ -99,11 +72,7 @@ void main() {
 
     testWidgets('obscures text when obscureText is true', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            obscureText: true,
-          ),
-        ),
+        buildTestWidget(const AppTextField(obscureText: true)),
       );
 
       final editableText = tester.widget<EditableText>(
@@ -117,9 +86,7 @@ void main() {
 
       await tester.pumpWidget(
         buildTestWidget(
-          AppTextField(
-            onChanged: (value) => changedValue = value,
-          ),
+          AppTextField(onChanged: (value) => changedValue = value),
         ),
       );
 
@@ -160,11 +127,7 @@ void main() {
 
     testWidgets('is disabled when enabled is false', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          const AppTextField(
-            enabled: false,
-          ),
-        ),
+        buildTestWidget(const AppTextField(enabled: false)),
       );
 
       final textField = tester.widget<TextFormField>(
@@ -177,11 +140,7 @@ void main() {
       final controller = TextEditingController(text: 'Initial value');
 
       await tester.pumpWidget(
-        buildTestWidget(
-          AppTextField(
-            controller: controller,
-          ),
-        ),
+        buildTestWidget(AppTextField(controller: controller)),
       );
 
       expect(find.text('Initial value'), findsOneWidget);
@@ -194,9 +153,7 @@ void main() {
 
       await tester.pumpWidget(
         buildTestWidget(
-          AppTextField(
-            onSubmitted: (value) => submittedValue = value,
-          ),
+          AppTextField(onSubmitted: (value) => submittedValue = value),
         ),
       );
 

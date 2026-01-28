@@ -43,10 +43,7 @@ class LevelBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(dimensions.borderRadius),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -80,11 +77,7 @@ class LevelBadge extends StatelessWidget {
   Widget _buildLevelIcon(UserLevel level, double size, Color color) {
     final icon = _getLevelIcon(level);
 
-    return Icon(
-      icon,
-      size: size,
-      color: color,
-    );
+    return Icon(icon, size: size, color: color);
   }
 
   IconData _getLevelIcon(UserLevel level) {
@@ -117,29 +110,29 @@ class LevelBadge extends StatelessWidget {
   _BadgeDimensions _getDimensions(LevelBadgeSize size) {
     return switch (size) {
       LevelBadgeSize.small => const _BadgeDimensions(
-          horizontalPadding: 8,
-          verticalPadding: 4,
-          iconSize: 14,
-          fontSize: 11,
-          spacing: 4,
-          borderRadius: 12,
-        ),
+        horizontalPadding: 8,
+        verticalPadding: 4,
+        iconSize: 14,
+        fontSize: 11,
+        spacing: 4,
+        borderRadius: 12,
+      ),
       LevelBadgeSize.medium => const _BadgeDimensions(
-          horizontalPadding: 12,
-          verticalPadding: 6,
-          iconSize: 18,
-          fontSize: 13,
-          spacing: 6,
-          borderRadius: 16,
-        ),
+        horizontalPadding: 12,
+        verticalPadding: 6,
+        iconSize: 18,
+        fontSize: 13,
+        spacing: 6,
+        borderRadius: 16,
+      ),
       LevelBadgeSize.large => const _BadgeDimensions(
-          horizontalPadding: 16,
-          verticalPadding: 8,
-          iconSize: 24,
-          fontSize: 16,
-          spacing: 8,
-          borderRadius: 20,
-        ),
+        horizontalPadding: 16,
+        verticalPadding: 8,
+        iconSize: 24,
+        fontSize: 16,
+        spacing: 8,
+        borderRadius: 20,
+      ),
     };
   }
 }

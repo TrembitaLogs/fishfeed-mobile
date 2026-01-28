@@ -51,10 +51,12 @@ void main() {
     mockAquariumRemoteDataSource = createMockAquariumRemoteDataSource();
 
     // Setup default mock behavior - unauthenticated user
-    when(() => mockAuthRepository.isAuthenticated())
-        .thenAnswer((_) async => false);
-    when(() => mockAuthRepository.getCurrentUser())
-        .thenAnswer((_) async => const Left(CacheFailure()));
+    when(
+      () => mockAuthRepository.isAuthenticated(),
+    ).thenAnswer((_) async => false);
+    when(
+      () => mockAuthRepository.getCurrentUser(),
+    ).thenAnswer((_) async => const Left(CacheFailure()));
   });
 
   Widget buildTestApp() {
@@ -65,8 +67,9 @@ void main() {
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
         pushTokenManagerProvider.overrideWithValue(mockPushTokenManager),
-        aquariumRemoteDataSourceProvider
-            .overrideWithValue(mockAquariumRemoteDataSource),
+        aquariumRemoteDataSourceProvider.overrideWithValue(
+          mockAquariumRemoteDataSource,
+        ),
 
         // Service mocks required by FishFeedApp listeners
         syncServiceProvider.overrideWithValue(mockSyncService),
@@ -106,8 +109,7 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final materialApp =
-          tester.widget<MaterialApp>(find.byType(MaterialApp));
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(materialApp.routerConfig, isNotNull);
     });
 
@@ -115,8 +117,7 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final materialApp =
-          tester.widget<MaterialApp>(find.byType(MaterialApp));
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(materialApp.title, 'FishFeed');
     });
 
@@ -124,18 +125,17 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final materialApp =
-          tester.widget<MaterialApp>(find.byType(MaterialApp));
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(materialApp.debugShowCheckedModeBanner, false);
     });
 
-    testWidgets('has light and dark themes configured',
-        (WidgetTester tester) async {
+    testWidgets('has light and dark themes configured', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final materialApp =
-          tester.widget<MaterialApp>(find.byType(MaterialApp));
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(materialApp.theme, isNotNull);
       expect(materialApp.darkTheme, isNotNull);
     });
@@ -144,13 +144,13 @@ void main() {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
-      final materialApp =
-          tester.widget<MaterialApp>(find.byType(MaterialApp));
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(materialApp.themeMode, ThemeMode.system);
     });
 
-    testWidgets('displays auth screen initially (user not logged in)',
-        (WidgetTester tester) async {
+    testWidgets('displays auth screen initially (user not logged in)', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
@@ -161,8 +161,9 @@ void main() {
       expect(find.text('Log In'), findsOneWidget);
     });
 
-    testWidgets('applies AppTheme.lightTheme correctly',
-        (WidgetTester tester) async {
+    testWidgets('applies AppTheme.lightTheme correctly', (
+      WidgetTester tester,
+    ) async {
       // Simulate light mode
       tester.view.platformDispatcher.platformBrightnessTestValue =
           Brightness.light;
@@ -180,8 +181,9 @@ void main() {
       tester.view.platformDispatcher.clearPlatformBrightnessTestValue();
     });
 
-    testWidgets('applies AppTheme.darkTheme correctly',
-        (WidgetTester tester) async {
+    testWidgets('applies AppTheme.darkTheme correctly', (
+      WidgetTester tester,
+    ) async {
       // Simulate dark mode
       tester.view.platformDispatcher.platformBrightnessTestValue =
           Brightness.dark;
@@ -209,8 +211,9 @@ void main() {
       expect(find.byType(Navigator), findsOneWidget);
     });
 
-    testWidgets('initial route redirects to auth for unauthenticated user',
-        (WidgetTester tester) async {
+    testWidgets('initial route redirects to auth for unauthenticated user', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 

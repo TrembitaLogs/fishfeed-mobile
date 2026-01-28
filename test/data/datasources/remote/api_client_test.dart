@@ -116,7 +116,10 @@ void main() {
           baseUrl: 'https://test.api.com',
         );
 
-        expect(apiClient.dio.options.headers['Content-Type'], 'application/json');
+        expect(
+          apiClient.dio.options.headers['Content-Type'],
+          'application/json',
+        );
       });
 
       test('should set Accept header to application/json', () {
@@ -136,8 +139,9 @@ void main() {
           baseUrl: 'https://test.api.com',
         );
 
-        final hasAuthInterceptor = apiClient.dio.interceptors
-            .any((interceptor) => interceptor is AuthInterceptor);
+        final hasAuthInterceptor = apiClient.dio.interceptors.any(
+          (interceptor) => interceptor is AuthInterceptor,
+        );
 
         expect(hasAuthInterceptor, isTrue);
       });
@@ -148,8 +152,9 @@ void main() {
           baseUrl: 'https://test.api.com',
         );
 
-        final hasTokenRefreshInterceptor = apiClient.dio.interceptors
-            .any((interceptor) => interceptor is TokenRefreshInterceptor);
+        final hasTokenRefreshInterceptor = apiClient.dio.interceptors.any(
+          (interceptor) => interceptor is TokenRefreshInterceptor,
+        );
 
         expect(hasTokenRefreshInterceptor, isTrue);
       });
@@ -160,8 +165,9 @@ void main() {
           baseUrl: 'https://test.api.com',
         );
 
-        final hasLogInterceptor = apiClient.dio.interceptors
-            .any((interceptor) => interceptor is LogInterceptor);
+        final hasLogInterceptor = apiClient.dio.interceptors.any(
+          (interceptor) => interceptor is LogInterceptor,
+        );
 
         // Note: In debug mode (test environment), LogInterceptor should be present
         expect(hasLogInterceptor, isTrue);
@@ -235,10 +241,12 @@ void main() {
         },
       );
 
-      when(() => mockAdapter.fetch(any(), any(), any()))
-          .thenAnswer((_) async => responsePayload);
-      when(() => mockSecureStorageService.getAccessToken())
-          .thenAnswer((_) async => 'test-token');
+      when(
+        () => mockAdapter.fetch(any(), any(), any()),
+      ).thenAnswer((_) async => responsePayload);
+      when(
+        () => mockSecureStorageService.getAccessToken(),
+      ).thenAnswer((_) async => 'test-token');
 
       final apiClient = ApiClient(
         secureStorageService: mockSecureStorageService,
@@ -266,10 +274,12 @@ void main() {
         },
       );
 
-      when(() => mockAdapter.fetch(any(), any(), any()))
-          .thenAnswer((_) async => responsePayload);
-      when(() => mockSecureStorageService.getAccessToken())
-          .thenAnswer((_) async => 'test-token');
+      when(
+        () => mockAdapter.fetch(any(), any(), any()),
+      ).thenAnswer((_) async => responsePayload);
+      when(
+        () => mockSecureStorageService.getAccessToken(),
+      ).thenAnswer((_) async => 'test-token');
 
       final apiClient = ApiClient(
         secureStorageService: mockSecureStorageService,
@@ -300,10 +310,12 @@ void main() {
         },
       );
 
-      when(() => mockAdapter.fetch(any(), any(), any()))
-          .thenAnswer((_) async => errorPayload);
-      when(() => mockSecureStorageService.getAccessToken())
-          .thenAnswer((_) async => 'test-token');
+      when(
+        () => mockAdapter.fetch(any(), any(), any()),
+      ).thenAnswer((_) async => errorPayload);
+      when(
+        () => mockSecureStorageService.getAccessToken(),
+      ).thenAnswer((_) async => 'test-token');
 
       final apiClient = ApiClient(
         secureStorageService: mockSecureStorageService,

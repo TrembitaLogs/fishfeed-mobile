@@ -42,10 +42,7 @@ class AnimatedCounter extends StatelessWidget {
       duration: duration,
       curve: curve,
       builder: (context, animatedValue, child) {
-        return Text(
-          '$prefix$animatedValue$suffix',
-          style: style,
-        );
+        return Text('$prefix$animatedValue$suffix', style: style);
       },
     );
   }
@@ -101,10 +98,7 @@ class _AnimatedCounterFromToState extends State<AnimatedCounterFromTo>
   void initState() {
     super.initState();
     _oldValue = widget.previousValue ?? 0;
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _updateAnimation();
     _controller.forward();
   }
@@ -123,10 +117,7 @@ class _AnimatedCounterFromToState extends State<AnimatedCounterFromTo>
     _animation = IntTween(
       begin: _oldValue,
       end: widget.value,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: widget.curve,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
   }
 
   @override
@@ -192,10 +183,7 @@ class _AnimatedXpCounterState extends State<AnimatedXpCounter>
   void initState() {
     super.initState();
     _oldXp = widget.currentXp;
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _updateAnimations();
   }
 
@@ -216,21 +204,12 @@ class _AnimatedXpCounterState extends State<AnimatedXpCounter>
     _progressAnimation = Tween<double>(
       begin: oldProgress.clamp(0.0, 1.0),
       end: newProgress.clamp(0.0, 1.0),
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     // Glow effect when gaining XP
     _glowAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 1.0),
-        weight: 30,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0),
-        weight: 70,
-      ),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 70),
     ]).animate(_controller);
   }
 
@@ -296,8 +275,9 @@ class _AnimatedXpCounterState extends State<AnimatedXpCounter>
                       boxShadow: _glowAnimation.value > 0
                           ? [
                               BoxShadow(
-                                color: theme.colorScheme.primary
-                                    .withValues(alpha: _glowAnimation.value * 0.5),
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: _glowAnimation.value * 0.5,
+                                ),
                                 blurRadius: 8 * _glowAnimation.value,
                                 spreadRadius: 2 * _glowAnimation.value,
                               ),

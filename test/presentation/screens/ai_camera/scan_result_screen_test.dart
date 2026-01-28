@@ -34,7 +34,10 @@ void main() {
     String speciesId = 'guppy',
     String speciesName = 'Guppy',
     double confidence = 0.85,
-    List<String> recommendations = const ['Feed twice daily', 'Maintain water temperature'],
+    List<String> recommendations = const [
+      'Feed twice daily',
+      'Maintain water temperature',
+    ],
     String? careLevel,
     String? feedingFrequency,
   }) {
@@ -118,10 +121,7 @@ void main() {
 
       testWidgets('renders AI Result badge in top bar', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            result: createResult(),
-            imageBytes: testImageBytes,
-          ),
+          buildTestWidget(result: createResult(), imageBytes: testImageBytes),
         );
         await tester.pumpAndSettle();
 
@@ -131,10 +131,7 @@ void main() {
 
       testWidgets('renders back button', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
-            result: createResult(),
-            imageBytes: testImageBytes,
-          ),
+          buildTestWidget(result: createResult(), imageBytes: testImageBytes),
         );
         await tester.pumpAndSettle();
 
@@ -157,8 +154,9 @@ void main() {
         expect(find.text('Clean tank weekly'), findsOneWidget);
       });
 
-      testWidgets('does not render recommendations section when empty',
-          (tester) async {
+      testWidgets('does not render recommendations section when empty', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             result: createResult(recommendations: []),
@@ -174,13 +172,7 @@ void main() {
         await tester.pumpWidget(
           buildTestWidget(
             result: createResult(
-              recommendations: [
-                'Rec 1',
-                'Rec 2',
-                'Rec 3',
-                'Rec 4',
-                'Rec 5',
-              ],
+              recommendations: ['Rec 1', 'Rec 2', 'Rec 3', 'Rec 4', 'Rec 5'],
             ),
             imageBytes: testImageBytes,
           ),
@@ -207,8 +199,9 @@ void main() {
         expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
       });
 
-      testWidgets('renders feeding frequency chip when provided',
-          (tester) async {
+      testWidgets('renders feeding frequency chip when provided', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             result: createResult(feedingFrequency: 'twice_daily'),
@@ -342,13 +335,13 @@ void main() {
                     onPressed: () async {
                       poppedResult = await Navigator.of(context)
                           .push<ScanConfirmResult>(
-                        MaterialPageRoute(
-                          builder: (_) => ScanResultScreen(
-                            result: createResult(),
-                            imageBytes: testImageBytes,
-                          ),
-                        ),
-                      );
+                            MaterialPageRoute(
+                              builder: (_) => ScanResultScreen(
+                                result: createResult(),
+                                imageBytes: testImageBytes,
+                              ),
+                            ),
+                          );
                     },
                     child: const Text('Open Result'),
                   );
@@ -385,17 +378,17 @@ void main() {
                     onPressed: () async {
                       poppedResult = await Navigator.of(context)
                           .push<ScanConfirmResult>(
-                        MaterialPageRoute(
-                          builder: (_) => ScanResultScreen(
-                            result: createResult(
-                              speciesId: 'guppy',
-                              speciesName: 'Guppy',
-                              recommendations: ['Feed daily'],
+                            MaterialPageRoute(
+                              builder: (_) => ScanResultScreen(
+                                result: createResult(
+                                  speciesId: 'guppy',
+                                  speciesName: 'Guppy',
+                                  recommendations: ['Feed daily'],
+                                ),
+                                imageBytes: testImageBytes,
+                              ),
                             ),
-                            imageBytes: testImageBytes,
-                          ),
-                        ),
-                      );
+                          );
                     },
                     child: const Text('Open Result'),
                   );
@@ -422,8 +415,9 @@ void main() {
         await cleanupAnimations(tester);
       });
 
-      testWidgets('Not correct? button calls onEditRequested and pops',
-          (tester) async {
+      testWidgets('Not correct? button calls onEditRequested and pops', (
+        tester,
+      ) async {
         var editRequested = false;
 
         await tester.pumpWidget(
@@ -466,8 +460,9 @@ void main() {
         await cleanupAnimations(tester);
       });
 
-      testWidgets('Confirm Anyway button pops with result for low confidence',
-          (tester) async {
+      testWidgets('Confirm Anyway button pops with result for low confidence', (
+        tester,
+      ) async {
         ScanConfirmResult? poppedResult;
 
         await tester.pumpWidget(
@@ -480,18 +475,18 @@ void main() {
                     onPressed: () async {
                       poppedResult = await Navigator.of(context)
                           .push<ScanConfirmResult>(
-                        MaterialPageRoute(
-                          builder: (_) => ScanResultScreen(
-                            result: createResult(
-                              speciesId: 'unknown',
-                              speciesName: 'Unknown Fish',
-                              confidence: 0.35,
-                              recommendations: [],
+                            MaterialPageRoute(
+                              builder: (_) => ScanResultScreen(
+                                result: createResult(
+                                  speciesId: 'unknown',
+                                  speciesName: 'Unknown Fish',
+                                  confidence: 0.35,
+                                  recommendations: [],
+                                ),
+                                imageBytes: testImageBytes,
+                              ),
                             ),
-                            imageBytes: testImageBytes,
-                          ),
-                        ),
-                      );
+                          );
                     },
                     child: const Text('Open Result'),
                   );
@@ -520,56 +515,58 @@ void main() {
         await cleanupAnimations(tester);
       });
 
-      testWidgets('Select Manually button calls onEditRequested for low confidence',
-          (tester) async {
-        var editRequested = false;
+      testWidgets(
+        'Select Manually button calls onEditRequested for low confidence',
+        (tester) async {
+          var editRequested = false;
 
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              theme: AppTheme.lightTheme,
-              home: Builder(
-                builder: (context) {
-                  return ElevatedButton(
-                    onPressed: () async {
-                      await Navigator.of(context).push<ScanConfirmResult>(
-                        MaterialPageRoute(
-                          builder: (_) => ScanResultScreen(
-                            result: createResult(
-                              confidence: 0.35,
-                              recommendations: [],
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                theme: AppTheme.lightTheme,
+                home: Builder(
+                  builder: (context) {
+                    return ElevatedButton(
+                      onPressed: () async {
+                        await Navigator.of(context).push<ScanConfirmResult>(
+                          MaterialPageRoute(
+                            builder: (_) => ScanResultScreen(
+                              result: createResult(
+                                confidence: 0.35,
+                                recommendations: [],
+                              ),
+                              imageBytes: testImageBytes,
+                              onEditRequested: () => editRequested = true,
                             ),
-                            imageBytes: testImageBytes,
-                            onEditRequested: () => editRequested = true,
                           ),
-                        ),
-                      );
-                    },
-                    child: const Text('Open Result'),
-                  );
-                },
+                        );
+                      },
+                      child: const Text('Open Result'),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        );
+          );
 
-        // Open result screen
-        await tester.tap(find.text('Open Result'));
-        await tester.pumpAndSettle();
+          // Open result screen
+          await tester.tap(find.text('Open Result'));
+          await tester.pumpAndSettle();
 
-        // Scroll to make button visible if needed
-        await tester.ensureVisible(find.text('Select Manually'));
-        await tester.pumpAndSettle();
+          // Scroll to make button visible if needed
+          await tester.ensureVisible(find.text('Select Manually'));
+          await tester.pumpAndSettle();
 
-        // Tap Select Manually button
-        await tester.tap(find.text('Select Manually'));
-        await tester.pumpAndSettle();
+          // Tap Select Manually button
+          await tester.tap(find.text('Select Manually'));
+          await tester.pumpAndSettle();
 
-        expect(editRequested, isTrue);
+          expect(editRequested, isTrue);
 
-        // Clean up animations
-        await cleanupAnimations(tester);
-      });
+          // Clean up animations
+          await cleanupAnimations(tester);
+        },
+      );
     });
   });
 

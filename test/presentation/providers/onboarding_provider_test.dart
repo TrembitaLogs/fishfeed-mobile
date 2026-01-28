@@ -22,9 +22,7 @@ void main() {
     });
 
     test('canProceed should be true when aquarium name set on step 0', () {
-      const state = OnboardingState(
-        currentAquariumName: 'My Aquarium',
-      );
+      const state = OnboardingState(currentAquariumName: 'My Aquarium');
 
       expect(state.canProceed, true);
     });
@@ -32,9 +30,7 @@ void main() {
     test('canProceed should be true when species selected on step 1', () {
       const state = OnboardingState(
         currentStep: 1,
-        selectedSpecies: [
-          SpeciesSelection(species: SpeciesData.guppy),
-        ],
+        selectedSpecies: [SpeciesSelection(species: SpeciesData.guppy)],
       );
 
       expect(state.canProceed, true);
@@ -136,8 +132,10 @@ void main() {
     test('equality should work correctly', () {
       const selection1 = SpeciesSelection(species: SpeciesData.guppy);
       const selection2 = SpeciesSelection(species: SpeciesData.guppy);
-      const selection3 =
-          SpeciesSelection(species: SpeciesData.guppy, quantity: 2);
+      const selection3 = SpeciesSelection(
+        species: SpeciesData.guppy,
+        quantity: 2,
+      );
 
       expect(selection1, equals(selection2));
       expect(selection1, isNot(equals(selection3)));

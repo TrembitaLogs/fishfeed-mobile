@@ -4,11 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// Uses theme colors for consistent styling.
 class LoadingIndicator extends StatelessWidget {
-  const LoadingIndicator({
-    super.key,
-    this.message,
-    this.size = 36.0,
-  });
+  const LoadingIndicator({super.key, this.message, this.size = 36.0});
 
   /// Optional message to display below the indicator.
   final String? message;

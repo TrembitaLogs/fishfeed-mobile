@@ -10,10 +10,7 @@ import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 /// Shows summary of created aquariums and fish.
 /// User can choose to add another aquarium or finish setup.
 class AddMoreAquariumStep extends ConsumerWidget {
-  const AddMoreAquariumStep({
-    super.key,
-    this.onAddAnotherAquarium,
-  });
+  const AddMoreAquariumStep({super.key, this.onAddAnotherAquarium});
 
   /// Callback when user wants to add another aquarium.
   /// If provided, this is called instead of directly resetting state.
@@ -26,7 +23,9 @@ class AddMoreAquariumStep extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final createdAquariums = ref.watch(createdAquariumsProvider);
     final selectedSpecies = ref.watch(selectedSpeciesProvider);
-    final currentAquariumName = ref.watch(currentOnboardingAquariumNameProvider);
+    final currentAquariumName = ref.watch(
+      currentOnboardingAquariumNameProvider,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -72,15 +71,18 @@ class AddMoreAquariumStep extends ConsumerWidget {
             const SizedBox(height: 8),
             ...createdAquariums
                 .take(createdAquariums.length - 1)
-                .map((aquarium) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _AquariumSummaryCard(
-                        aquariumName: aquarium.name,
-                        fishCount: 0, // We don't track fish count per aquarium during onboarding
-                        speciesCount: 0,
-                        isCurrentAquarium: false,
-                      ),
-                    )),
+                .map(
+                  (aquarium) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _AquariumSummaryCard(
+                      aquariumName: aquarium.name,
+                      fishCount:
+                          0, // We don't track fish count per aquarium during onboarding
+                      speciesCount: 0,
+                      isCurrentAquarium: false,
+                    ),
+                  ),
+                ),
           ],
 
           const Spacer(),

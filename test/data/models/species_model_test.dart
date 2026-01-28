@@ -25,10 +25,7 @@ void main() {
 
   group('SpeciesModel', () {
     test('should create SpeciesModel with required fields', () {
-      final model = SpeciesModel(
-        id: 'species-123',
-        name: 'Neon Tetra',
-      );
+      final model = SpeciesModel(id: 'species-123', name: 'Neon Tetra');
 
       expect(model.id, 'species-123');
       expect(model.name, 'Neon Tetra');
@@ -108,10 +105,7 @@ void main() {
     });
 
     test('round-trip should preserve null optional fields', () {
-      const originalEntity = Species(
-        id: 'minimal',
-        name: 'Unknown Fish',
-      );
+      const originalEntity = Species(id: 'minimal', name: 'Unknown Fish');
 
       final model = SpeciesModel.fromEntity(originalEntity);
       final resultEntity = model.toEntity();
@@ -192,12 +186,13 @@ void main() {
         await HiveBoxes.species.put(s.id, s);
       }
 
-      final allSpecies =
-          HiveBoxes.species.values.cast<SpeciesModel>().toList();
-      final beginnerSpecies =
-          allSpecies.where((s) => s.careLevel == 'beginner').toList();
-      final advancedSpecies =
-          allSpecies.where((s) => s.careLevel == 'advanced').toList();
+      final allSpecies = HiveBoxes.species.values.cast<SpeciesModel>().toList();
+      final beginnerSpecies = allSpecies
+          .where((s) => s.careLevel == 'beginner')
+          .toList();
+      final advancedSpecies = allSpecies
+          .where((s) => s.careLevel == 'advanced')
+          .toList();
 
       expect(allSpecies.length, 4);
       expect(beginnerSpecies.length, 2);

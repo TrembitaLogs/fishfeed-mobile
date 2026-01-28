@@ -16,7 +16,7 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 /// ```
 class AquariumLocalDataSource {
   AquariumLocalDataSource({Box<dynamic>? aquariumBox})
-      : _aquariumBox = aquariumBox;
+    : _aquariumBox = aquariumBox;
 
   final Box<dynamic>? _aquariumBox;
 
@@ -193,11 +193,13 @@ class AquariumLocalDataSource {
   List<AquariumModel> getModifiedAquariums() {
     return _aquariums.values
         .whereType<AquariumModel>()
-        .where((a) =>
-            !a.isDeleted &&
-            a.updatedAt != null &&
-            a.serverUpdatedAt != null &&
-            a.updatedAt!.isAfter(a.serverUpdatedAt!))
+        .where(
+          (a) =>
+              !a.isDeleted &&
+              a.updatedAt != null &&
+              a.serverUpdatedAt != null &&
+              a.updatedAt!.isAfter(a.serverUpdatedAt!),
+        )
         .toList();
   }
 
@@ -242,7 +244,10 @@ class AquariumLocalDataSource {
   ///
   /// [ids] - List of aquarium IDs.
   /// [serverTime] - The server timestamp to use.
-  Future<void> markMultipleAsSynced(List<String> ids, DateTime serverTime) async {
+  Future<void> markMultipleAsSynced(
+    List<String> ids,
+    DateTime serverTime,
+  ) async {
     for (final id in ids) {
       await markAsSynced(id, serverTime);
     }
@@ -282,7 +287,8 @@ class AquariumLocalDataSource {
         userId: serverData['owner_id'] as String? ?? '',
         name: serverData['name'] as String? ?? 'Unnamed Aquarium',
         createdAt: serverData['created_at'] != null
-            ? DateTime.tryParse(serverData['created_at'] as String) ?? DateTime.now()
+            ? DateTime.tryParse(serverData['created_at'] as String) ??
+                  DateTime.now()
             : DateTime.now(),
         synced: true,
         serverUpdatedAt: serverUpdatedAt,

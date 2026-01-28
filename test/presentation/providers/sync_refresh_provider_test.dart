@@ -41,13 +41,9 @@ void main() {
       addTearDown(container.dispose);
 
       var notificationCount = 0;
-      container.listen(
-        syncRefreshProvider,
-        (previous, next) {
-          notificationCount++;
-        },
-        fireImmediately: false,
-      );
+      container.listen(syncRefreshProvider, (previous, next) {
+        notificationCount++;
+      }, fireImmediately: false);
 
       container.read(syncRefreshProvider.notifier).state++;
       container.read(syncRefreshProvider.notifier).state++;

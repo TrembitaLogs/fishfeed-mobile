@@ -22,8 +22,8 @@ class PushTokenManager {
   PushTokenManager({
     required PushRepository pushRepository,
     FcmService? fcmService,
-  })  : _pushRepository = pushRepository,
-        _fcmService = fcmService ?? FcmService.instance;
+  }) : _pushRepository = pushRepository,
+       _fcmService = fcmService ?? FcmService.instance;
 
   final PushRepository _pushRepository;
   final FcmService _fcmService;

@@ -99,7 +99,9 @@ void main() {
 
         expect(timestamp, isNotNull);
         expect(
-          timestamp!.isAfter(beforeDecline.subtract(const Duration(seconds: 1))),
+          timestamp!.isAfter(
+            beforeDecline.subtract(const Duration(seconds: 1)),
+          ),
           isTrue,
         );
         expect(

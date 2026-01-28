@@ -103,12 +103,19 @@ class FishModel extends HiveObject {
 
   /// Current conflict status for this fish.
   ConflictStatus get conflictStatus =>
-      ConflictStatus.values[conflictStatusValue.clamp(0, ConflictStatus.values.length - 1)];
+      ConflictStatus.values[conflictStatusValue.clamp(
+        0,
+        ConflictStatus.values.length - 1,
+      )];
 
   set conflictStatus(ConflictStatus value) => conflictStatusValue = value.index;
 
   /// Whether this fish needs to be synced (modified locally after last server sync).
-  bool get needsSync => !synced || (updatedAt != null && serverUpdatedAt != null && updatedAt!.isAfter(serverUpdatedAt!));
+  bool get needsSync =>
+      !synced ||
+      (updatedAt != null &&
+          serverUpdatedAt != null &&
+          updatedAt!.isAfter(serverUpdatedAt!));
 
   /// Converts this model to a domain entity.
   Fish toEntity() {

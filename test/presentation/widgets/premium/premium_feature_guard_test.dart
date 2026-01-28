@@ -41,28 +41,28 @@ void main() {
               path: '/',
               builder: (context, state) => Scaffold(
                 body: SizedBox(
-                width: 400,
-                height: 400,
-                child: PremiumFeatureGuard(
-                  feature: feature,
-                  showBlur: showBlur,
-                  showLockIcon: showLockIcon,
-                  showUpgradeButton: showUpgradeButton,
-                  child: child ??
-                      const SizedBox(
-                        width: 400,
-                        height: 400,
-                        child: Center(child: Text('Premium Content')),
-                      ),
+                  width: 400,
+                  height: 400,
+                  child: PremiumFeatureGuard(
+                    feature: feature,
+                    showBlur: showBlur,
+                    showLockIcon: showLockIcon,
+                    showUpgradeButton: showUpgradeButton,
+                    child:
+                        child ??
+                        const SizedBox(
+                          width: 400,
+                          height: 400,
+                          child: Center(child: Text('Premium Content')),
+                        ),
+                  ),
                 ),
-              ),
               ),
             ),
             GoRoute(
               path: '/paywall',
-              builder: (context, state) => const Scaffold(
-                body: Center(child: Text('Paywall Screen')),
-              ),
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Paywall Screen'))),
             ),
           ],
         ),
@@ -82,8 +82,9 @@ void main() {
         expect(find.byIcon(Icons.lock_outline), findsNothing);
       });
 
-      testWidgets('shows child for noAds feature with removeAds purchase',
-          (tester) async {
+      testWidgets('shows child for noAds feature with removeAds purchase', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             isPremium: false,
@@ -142,8 +143,9 @@ void main() {
         expect(find.text('Upgrade'), findsOneWidget);
       });
 
-      testWidgets('hides upgrade button when showUpgradeButton is false',
-          (tester) async {
+      testWidgets('hides upgrade button when showUpgradeButton is false', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             isPremium: false,
@@ -169,7 +171,9 @@ void main() {
         expect(find.byIcon(Icons.lock_outline), findsNothing);
       });
 
-      testWidgets('navigates to paywall when upgrade is tapped', (tester) async {
+      testWidgets('navigates to paywall when upgrade is tapped', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(isPremium: false, hasRemoveAds: false),
         );
@@ -207,9 +211,8 @@ void main() {
             ),
             GoRoute(
               path: '/paywall',
-              builder: (context, state) => const Scaffold(
-                body: Center(child: Text('Paywall Screen')),
-              ),
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Paywall Screen'))),
             ),
           ],
         ),
@@ -254,10 +257,7 @@ void main() {
       await tester.pumpWidget(buildOverlayTestWidget(compact: true));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining('Upgrade to unlock'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Upgrade to unlock'), findsOneWidget);
     });
 
     testWidgets('navigates to paywall on tap in full mode', (tester) async {

@@ -102,18 +102,14 @@ void main() {
 
       test('should return true for premium with future expiration date', () {
         final futureDate = DateTime.now().add(const Duration(days: 30));
-        final status = SubscriptionStatus.premium(
-          expirationDate: futureDate,
-        );
+        final status = SubscriptionStatus.premium(expirationDate: futureDate);
 
         expect(status.isActive, isTrue);
       });
 
       test('should return false for premium with past expiration date', () {
         final pastDate = DateTime.now().subtract(const Duration(days: 1));
-        final status = SubscriptionStatus.premium(
-          expirationDate: pastDate,
-        );
+        final status = SubscriptionStatus.premium(expirationDate: pastDate);
 
         expect(status.isActive, isFalse);
       });
@@ -148,16 +144,18 @@ void main() {
         expect(copy.tier, original.tier);
       });
 
-      test('should clear product identifier when clearProductIdentifier is true',
-          () {
-        final original = SubscriptionStatus.premium(
-          productIdentifier: 'test_product',
-        );
-        final copy = original.copyWith(clearProductIdentifier: true);
+      test(
+        'should clear product identifier when clearProductIdentifier is true',
+        () {
+          final original = SubscriptionStatus.premium(
+            productIdentifier: 'test_product',
+          );
+          final copy = original.copyWith(clearProductIdentifier: true);
 
-        expect(copy.productIdentifier, isNull);
-        expect(copy.tier, original.tier);
-      });
+          expect(copy.productIdentifier, isNull);
+          expect(copy.tier, original.tier);
+        },
+      );
 
       test('should update multiple fields at once', () {
         const original = SubscriptionStatus.free();
@@ -215,7 +213,9 @@ void main() {
       expect(SubscriptionTier.values.length, 2);
       expect(SubscriptionTier.values.contains(SubscriptionTier.free), isTrue);
       expect(
-          SubscriptionTier.values.contains(SubscriptionTier.premium), isTrue);
+        SubscriptionTier.values.contains(SubscriptionTier.premium),
+        isTrue,
+      );
     });
   });
 }

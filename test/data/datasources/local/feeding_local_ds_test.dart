@@ -43,8 +43,9 @@ void main() {
     group('createFeedingEvent', () {
       test('should save event to Hive box', () async {
         final event = createTestEvent();
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await feedingDs.createFeedingEvent(event);
 
@@ -64,13 +65,11 @@ void main() {
           aquariumId: 'aquarium_1',
           feedingTime: DateTime(2025, 6, 15, 12, 0),
         );
-        final event3 = createTestEvent(
-          id: 'event_3',
-          aquariumId: 'aquarium_2',
-        );
+        final event3 = createTestEvent(id: 'event_3', aquariumId: 'aquarium_2');
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([event1, event2, event3]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([event1, event2, event3]);
 
         final result = feedingDs.getFeedingEvents('aquarium_1');
 
@@ -88,7 +87,9 @@ void main() {
           feedingTime: DateTime(2025, 6, 15, 12, 0),
         );
 
-        when(() => mockFeedingEventsBox.values).thenReturn([oldEvent, newEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([oldEvent, newEvent]);
 
         final result = feedingDs.getFeedingEvents('aquarium_1');
 
@@ -115,8 +116,9 @@ void main() {
           deletedAt: DateTime(2025, 6, 15, 11, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([activeEvent, deletedEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([activeEvent, deletedEvent]);
 
         final result = feedingDs.getFeedingEvents('aquarium_1');
 
@@ -140,8 +142,9 @@ void main() {
           feedingTime: DateTime(2025, 6, 16, 10, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([event1, event2, event3]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([event1, event2, event3]);
 
         final result = feedingDs.getFeedingEventsByDate(DateTime(2025, 6, 15));
 
@@ -172,8 +175,9 @@ void main() {
           deletedAt: DateTime(2025, 6, 15, 15, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([activeEvent, deletedEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([activeEvent, deletedEvent]);
 
         final result = feedingDs.getFeedingEventsByDate(DateTime(2025, 6, 15));
 
@@ -226,13 +230,16 @@ void main() {
         );
 
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event);
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await feedingDs.updateFeedingEvent(updatedEvent);
 
         expect(result, isTrue);
-        verify(() => mockFeedingEventsBox.put('event_1', updatedEvent)).called(1);
+        verify(
+          () => mockFeedingEventsBox.put('event_1', updatedEvent),
+        ).called(1);
       });
 
       test('should return false when event does not exist', () async {
@@ -242,7 +249,9 @@ void main() {
         final result = await feedingDs.updateFeedingEvent(event);
 
         expect(result, isFalse);
-        verifyNever(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()));
+        verifyNever(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        );
       });
     });
 
@@ -250,7 +259,9 @@ void main() {
       test('should delete event when exists', () async {
         final event = createTestEvent();
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event);
-        when(() => mockFeedingEventsBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await feedingDs.deleteFeedingEvent('event_1');
 
@@ -301,8 +312,9 @@ void main() {
           deletedAt: DateTime(2025, 6, 15, 14, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([activeEvent, deletedEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([activeEvent, deletedEvent]);
 
         final result = feedingDs.getAllFeedingEvents();
 
@@ -319,8 +331,9 @@ void main() {
         final unsyncedEvent1 = createTestEvent(id: 'event_2', synced: false);
         final unsyncedEvent2 = createTestEvent(id: 'event_3', synced: false);
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([syncedEvent, unsyncedEvent1, unsyncedEvent2]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([syncedEvent, unsyncedEvent1, unsyncedEvent2]);
 
         final result = feedingDs.getUnsyncedEvents();
 
@@ -340,8 +353,9 @@ void main() {
           createdAt: DateTime(2025, 6, 15, 8, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([newerEvent, olderEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([newerEvent, olderEvent]);
 
         final result = feedingDs.getUnsyncedEvents();
 
@@ -367,8 +381,9 @@ void main() {
           deletedAt: DateTime(2025, 6, 15, 11, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([unsyncedEvent, deletedUnsyncedEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([unsyncedEvent, deletedUnsyncedEvent]);
 
         final result = feedingDs.getUnsyncedEvents();
 
@@ -381,8 +396,9 @@ void main() {
       test('should mark event as synced when exists', () async {
         final event = createTestEvent(synced: false);
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event);
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await feedingDs.markAsSynced('event_1');
 
@@ -397,7 +413,9 @@ void main() {
         final result = await feedingDs.markAsSynced('event_1');
 
         expect(result, isFalse);
-        verifyNever(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()));
+        verifyNever(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        );
       });
     });
 
@@ -408,10 +426,14 @@ void main() {
 
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event1);
         when(() => mockFeedingEventsBox.get('event_2')).thenReturn(event2);
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
-        final result = await feedingDs.markMultipleAsSynced(['event_1', 'event_2']);
+        final result = await feedingDs.markMultipleAsSynced([
+          'event_1',
+          'event_2',
+        ]);
 
         expect(result, 2);
         expect(event1.synced, isTrue);
@@ -423,11 +445,14 @@ void main() {
 
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event1);
         when(() => mockFeedingEventsBox.get('event_2')).thenReturn(null);
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
-        final result =
-            await feedingDs.markMultipleAsSynced(['event_1', 'event_2']);
+        final result = await feedingDs.markMultipleAsSynced([
+          'event_1',
+          'event_2',
+        ]);
 
         expect(result, 1);
       });
@@ -437,8 +462,9 @@ void main() {
       test('should mark event as unsynced when exists', () async {
         final event = createTestEvent(synced: true);
         when(() => mockFeedingEventsBox.get('event_1')).thenReturn(event);
-        when(() => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await feedingDs.markAsUnsynced('event_1');
 
@@ -461,8 +487,9 @@ void main() {
         final unsyncedEvent1 = createTestEvent(id: 'event_2', synced: false);
         final unsyncedEvent2 = createTestEvent(id: 'event_3', synced: false);
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([syncedEvent, unsyncedEvent1, unsyncedEvent2]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([syncedEvent, unsyncedEvent1, unsyncedEvent2]);
 
         final result = feedingDs.getUnsyncedCount();
 
@@ -487,8 +514,9 @@ void main() {
           deletedAt: DateTime(2025, 6, 15, 11, 0),
         );
 
-        when(() => mockFeedingEventsBox.values)
-            .thenReturn([unsyncedEvent, deletedUnsyncedEvent]);
+        when(
+          () => mockFeedingEventsBox.values,
+        ).thenReturn([unsyncedEvent, deletedUnsyncedEvent]);
 
         final result = feedingDs.getUnsyncedCount();
 
@@ -514,7 +542,9 @@ void main() {
         final event2 = createTestEvent(id: 'event_2', aquariumId: 'aquarium_1');
 
         when(() => mockFeedingEventsBox.values).thenReturn([event1, event2]);
-        when(() => mockFeedingEventsBox.delete(any<dynamic>())).thenAnswer((_) async {});
+        when(
+          () => mockFeedingEventsBox.delete(any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await feedingDs.deleteEventsByAquarium('aquarium_1');
 

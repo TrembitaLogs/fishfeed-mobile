@@ -8,10 +8,7 @@ import 'package:fishfeed/services/storage/storage_service.dart';
 ///
 /// Provides options to clear the cache or dismiss the warning.
 class LowStorageDialog extends ConsumerStatefulWidget {
-  const LowStorageDialog({
-    super.key,
-    required this.freeSpaceMb,
-  });
+  const LowStorageDialog({super.key, required this.freeSpaceMb});
 
   /// The current free space in megabytes.
   final double freeSpaceMb;
@@ -66,11 +63,7 @@ class _LowStorageDialogState extends ConsumerState<LowStorageDialog> {
     final colorScheme = theme.colorScheme;
 
     return AlertDialog(
-      icon: Icon(
-        Icons.storage_rounded,
-        size: 48,
-        color: colorScheme.error,
-      ),
+      icon: Icon(Icons.storage_rounded, size: 48, color: colorScheme.error),
       title: Text(l10n.lowStorageTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -109,7 +102,9 @@ class _LowStorageDialogState extends ConsumerState<LowStorageDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isClearing ? null : () => Navigator.of(context).pop(false),
+          onPressed: _isClearing
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: Text(l10n.lowStorageDismiss),
         ),
         FilledButton.icon(
@@ -167,10 +162,7 @@ mixin StorageCheckMixin<T extends StatefulWidget> on State<T> {
 /// Add this widget near the root of your widget tree to check storage
 /// when the app starts.
 class StorageCheckWidget extends ConsumerStatefulWidget {
-  const StorageCheckWidget({
-    super.key,
-    required this.child,
-  });
+  const StorageCheckWidget({super.key, required this.child});
 
   final Widget child;
 

@@ -78,8 +78,12 @@ class _XpProgressBarState extends State<XpProgressBar>
       CurvedAnimation(parent: _sparkleController, curve: Curves.easeOut),
     );
 
-    _previousProgress = LevelConstants.getXpProgress(widget.previousXp ?? widget.totalXp);
-    _previousLevel = LevelConstants.getLevelForXp(widget.previousXp ?? widget.totalXp);
+    _previousProgress = LevelConstants.getXpProgress(
+      widget.previousXp ?? widget.totalXp,
+    );
+    _previousLevel = LevelConstants.getLevelForXp(
+      widget.previousXp ?? widget.totalXp,
+    );
   }
 
   @override
@@ -93,7 +97,7 @@ class _XpProgressBarState extends State<XpProgressBar>
       // Check for level up
       if (newLevel != oldLevel &&
           LevelConstants.orderedLevels.indexOf(newLevel) >
-          LevelConstants.orderedLevels.indexOf(oldLevel)) {
+              LevelConstants.orderedLevels.indexOf(oldLevel)) {
         _sparkleController.forward(from: 0);
         widget.onLevelUp?.call();
       }
@@ -157,8 +161,10 @@ class _XpProgressBarState extends State<XpProgressBar>
               animation: _progressAnimation,
               builder: (context, child) {
                 // Interpolate between previous and current progress
-                final animatedProgress = _previousProgress +
-                    (_progressAnimation.value * (currentProgress - _previousProgress));
+                final animatedProgress =
+                    _previousProgress +
+                    (_progressAnimation.value *
+                        (currentProgress - _previousProgress));
 
                 return _buildProgressBar(
                   context,
@@ -268,10 +274,7 @@ class _XpProgressBarState extends State<XpProgressBar>
     return SizedBox(
       height: widget.height,
       child: CustomPaint(
-        painter: _SparklePainter(
-          progress: animationValue,
-          color: Colors.amber,
-        ),
+        painter: _SparklePainter(progress: animationValue, color: Colors.amber),
         size: Size.infinite,
       ),
     );
@@ -289,35 +292,32 @@ class _XpProgressBarState extends State<XpProgressBar>
   LinearGradient _getLevelGradient(UserLevel level, ThemeData theme) {
     return switch (level) {
       UserLevel.beginnerAquarist => LinearGradient(
-          colors: [Colors.blue.shade400, Colors.blue.shade600],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        colors: [Colors.blue.shade400, Colors.blue.shade600],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ),
       UserLevel.caretaker => LinearGradient(
-          colors: [Colors.green.shade400, Colors.teal.shade600],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        colors: [Colors.green.shade400, Colors.teal.shade600],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ),
       UserLevel.fishMaster => LinearGradient(
-          colors: [Colors.purple.shade400, Colors.deepPurple.shade600],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        colors: [Colors.purple.shade400, Colors.deepPurple.shade600],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ),
       UserLevel.aquariumPro => LinearGradient(
-          colors: [Colors.amber.shade400, Colors.orange.shade600],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        colors: [Colors.amber.shade400, Colors.orange.shade600],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ),
     };
   }
 }
 
 /// Custom painter for sparkle effect during level up.
 class _SparklePainter extends CustomPainter {
-  _SparklePainter({
-    required this.progress,
-    required this.color,
-  });
+  _SparklePainter({required this.progress, required this.color});
 
   final double progress;
   final Color color;

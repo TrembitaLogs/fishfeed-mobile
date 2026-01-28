@@ -61,13 +61,17 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
     );
     _pulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.15)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.15,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.15, end: 1.0)
-            .chain(CurveTween(curve: Curves.elasticOut)),
+        tween: Tween(
+          begin: 1.15,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 50,
       ),
     ]).animate(_pulseController);
@@ -98,10 +102,7 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
     final content = AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _pulseAnimation.value, child: child);
       },
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -111,9 +112,7 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(dimensions.borderRadius),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant,
-          ),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -121,9 +120,7 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
             for (int i = 0; i < widget.total; i++) ...[
               if (i > 0) SizedBox(width: dimensions.spacing),
               Icon(
-                i < widget.available
-                    ? Icons.ac_unit
-                    : Icons.ac_unit_outlined,
+                i < widget.available ? Icons.ac_unit : Icons.ac_unit_outlined,
                 size: dimensions.iconSize,
                 color: i < widget.available ? activeColor : inactiveColor,
               ),
@@ -137,10 +134,7 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
       return content;
     }
 
-    return Tooltip(
-      message: _getTooltipMessage(context),
-      child: content,
-    );
+    return Tooltip(message: _getTooltipMessage(context), child: content);
   }
 
   String _getTooltipMessage(BuildContext context) {
@@ -156,26 +150,26 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
   _FreezeDimensions _getDimensions(FreezeIndicatorSize size) {
     return switch (size) {
       FreezeIndicatorSize.small => const _FreezeDimensions(
-          horizontalPadding: 6,
-          verticalPadding: 4,
-          iconSize: 14,
-          spacing: 2,
-          borderRadius: 8,
-        ),
+        horizontalPadding: 6,
+        verticalPadding: 4,
+        iconSize: 14,
+        spacing: 2,
+        borderRadius: 8,
+      ),
       FreezeIndicatorSize.medium => const _FreezeDimensions(
-          horizontalPadding: 10,
-          verticalPadding: 6,
-          iconSize: 18,
-          spacing: 4,
-          borderRadius: 12,
-        ),
+        horizontalPadding: 10,
+        verticalPadding: 6,
+        iconSize: 18,
+        spacing: 4,
+        borderRadius: 12,
+      ),
       FreezeIndicatorSize.large => const _FreezeDimensions(
-          horizontalPadding: 14,
-          verticalPadding: 8,
-          iconSize: 24,
-          spacing: 6,
-          borderRadius: 16,
-        ),
+        horizontalPadding: 14,
+        verticalPadding: 8,
+        iconSize: 24,
+        spacing: 6,
+        borderRadius: 16,
+      ),
     };
   }
 }

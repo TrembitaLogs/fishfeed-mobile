@@ -23,9 +23,7 @@ abstract interface class UserRemoteDataSource {
   ///
   /// Returns [UserDto] with updated user data on success.
   /// Throws [DioException] on network or server errors.
-  Future<UserDto> updateProfile({
-    String? displayName,
-  });
+  Future<UserDto> updateProfile({String? displayName});
 
   /// Uploads a new avatar for the current user.
   ///
@@ -33,9 +31,7 @@ abstract interface class UserRemoteDataSource {
   ///
   /// Returns [UserDto] with updated user data including new avatar URL.
   /// Throws [DioException] on network or server errors.
-  Future<UserDto> uploadAvatar({
-    required File avatarFile,
-  });
+  Future<UserDto> uploadAvatar({required File avatarFile});
 }
 
 /// Implementation of [UserRemoteDataSource] using Dio HTTP client.
@@ -45,9 +41,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   final Dio _dio;
 
   @override
-  Future<UserDto> updateProfile({
-    String? displayName,
-  }) async {
+  Future<UserDto> updateProfile({String? displayName}) async {
     final data = <String, dynamic>{};
 
     if (displayName != null) {
@@ -63,9 +57,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<UserDto> uploadAvatar({
-    required File avatarFile,
-  }) async {
+  Future<UserDto> uploadAvatar({required File avatarFile}) async {
     final fileName = avatarFile.path.split('/').last;
     final formData = FormData.fromMap({
       'avatar': await MultipartFile.fromFile(
@@ -77,9 +69,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     final response = await _dio.put<Map<String, dynamic>>(
       UserEndpoints.avatar,
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
 
     return UserDto.fromJson(response.data!);

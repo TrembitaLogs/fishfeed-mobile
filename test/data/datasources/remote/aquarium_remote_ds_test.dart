@@ -167,9 +167,7 @@ void main() {
 
     group('getAquariums', () {
       test('should call GET /aquariums', () async {
-        when(
-          () => mockDio.get<List<dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<List<dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: aquariumListJson,
             statusCode: 200,
@@ -185,9 +183,7 @@ void main() {
       });
 
       test('should return list of AquariumDto on success', () async {
-        when(
-          () => mockDio.get<List<dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<List<dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: aquariumListJson,
             statusCode: 200,
@@ -205,9 +201,7 @@ void main() {
       });
 
       test('should return empty list when no aquariums', () async {
-        when(
-          () => mockDio.get<List<dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<List<dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: <Map<String, dynamic>>[],
             statusCode: 200,
@@ -221,9 +215,7 @@ void main() {
       });
 
       test('should return empty list when response data is null', () async {
-        when(
-          () => mockDio.get<List<dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<List<dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: null,
             statusCode: 200,
@@ -237,27 +229,20 @@ void main() {
       });
 
       test('should throw DioException on network error', () async {
-        when(
-          () => mockDio.get<List<dynamic>>(any()),
-        ).thenThrow(
+        when(() => mockDio.get<List<dynamic>>(any())).thenThrow(
           DioException(
             requestOptions: RequestOptions(),
             type: DioExceptionType.connectionError,
           ),
         );
 
-        expect(
-          () => dataSource.getAquariums(),
-          throwsA(isA<DioException>()),
-        );
+        expect(() => dataSource.getAquariums(), throwsA(isA<DioException>()));
       });
     });
 
     group('getAquariumById', () {
       test('should call GET /aquariums/{id}', () async {
-        when(
-          () => mockDio.get<Map<String, dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<Map<String, dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: aquariumJson,
             statusCode: 200,
@@ -275,9 +260,7 @@ void main() {
       });
 
       test('should return AquariumDto on success', () async {
-        when(
-          () => mockDio.get<Map<String, dynamic>>(any()),
-        ).thenAnswer(
+        when(() => mockDio.get<Map<String, dynamic>>(any())).thenAnswer(
           (_) async => Response(
             data: aquariumJson,
             statusCode: 200,
@@ -292,9 +275,7 @@ void main() {
       });
 
       test('should throw DioException when not found', () async {
-        when(
-          () => mockDio.get<Map<String, dynamic>>(any()),
-        ).thenThrow(
+        when(() => mockDio.get<Map<String, dynamic>>(any())).thenThrow(
           DioException(
             requestOptions: RequestOptions(),
             response: Response(
@@ -435,44 +416,29 @@ void main() {
 
     group('deleteAquarium', () {
       test('should call DELETE /aquariums/{id}', () async {
-        when(
-          () => mockDio.delete<void>(any()),
-        ).thenAnswer(
-          (_) async => Response(
-            statusCode: 204,
-            requestOptions: RequestOptions(),
-          ),
+        when(() => mockDio.delete<void>(any())).thenAnswer(
+          (_) async =>
+              Response(statusCode: 204, requestOptions: RequestOptions()),
         );
 
         await dataSource.deleteAquarium('aquarium-123');
 
         verify(
-          () => mockDio.delete<void>(
-            '${ApiEndpoints.aquariums}/aquarium-123',
-          ),
+          () => mockDio.delete<void>('${ApiEndpoints.aquariums}/aquarium-123'),
         ).called(1);
       });
 
       test('should complete without error on success', () async {
-        when(
-          () => mockDio.delete<void>(any()),
-        ).thenAnswer(
-          (_) async => Response(
-            statusCode: 204,
-            requestOptions: RequestOptions(),
-          ),
+        when(() => mockDio.delete<void>(any())).thenAnswer(
+          (_) async =>
+              Response(statusCode: 204, requestOptions: RequestOptions()),
         );
 
-        await expectLater(
-          dataSource.deleteAquarium('aquarium-123'),
-          completes,
-        );
+        await expectLater(dataSource.deleteAquarium('aquarium-123'), completes);
       });
 
       test('should throw DioException on error', () async {
-        when(
-          () => mockDio.delete<void>(any()),
-        ).thenThrow(
+        when(() => mockDio.delete<void>(any())).thenThrow(
           DioException(
             requestOptions: RequestOptions(),
             response: Response(
@@ -508,8 +474,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final aquariumRemoteDs =
-          container.read(aquariumRemoteDataSourceProvider);
+      final aquariumRemoteDs = container.read(aquariumRemoteDataSourceProvider);
 
       expect(aquariumRemoteDs, isA<AquariumRemoteDataSource>());
       expect(aquariumRemoteDs, isA<AquariumRemoteDataSourceImpl>());

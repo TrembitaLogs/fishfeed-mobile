@@ -126,155 +126,175 @@ void main() {
 
     test('should unlock firstFeeding when user has 1 feeding', () async {
       // Arrange
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([
-        createTestFeedingEvent(id: 'feed_1'),
-      ]);
+      when(
+        () => mockFeedingDs.getAllFeedingEvents(),
+      ).thenReturn([createTestFeedingEvent(id: 'feed_1')]);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       // All achievements initially locked
       for (final type in AchievementType.values) {
-        when(() => mockAchievementDs.isAchievementUnlocked('user_1', type))
-            .thenReturn(false);
+        when(
+          () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+        ).thenReturn(false);
       }
 
       // Unlock firstFeeding
-      when(() => mockAchievementDs.unlockAchievement(
-            'user_1',
-            AchievementType.firstFeeding,
-          )).thenAnswer((_) async =>
-          createTestAchievement(
-            type: AchievementType.firstFeeding,
-            unlockedAt: DateTime.now(),
-            progress: 1.0,
-          ));
+      when(
+        () => mockAchievementDs.unlockAchievement(
+          'user_1',
+          AchievementType.firstFeeding,
+        ),
+      ).thenAnswer(
+        (_) async => createTestAchievement(
+          type: AchievementType.firstFeeding,
+          unlockedAt: DateTime.now(),
+          progress: 1.0,
+        ),
+      );
 
       // Update progress for other achievements
-      when(() => mockAchievementDs.updateProgress(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => createTestAchievement(
-            type: AchievementType.streak7,
-          ));
+      when(
+        () => mockAchievementDs.updateProgress(any(), any(), any()),
+      ).thenAnswer(
+        (_) async => createTestAchievement(type: AchievementType.streak7),
+      );
 
-      when(() => mockProgressDs.addXp(any(), any()))
-          .thenAnswer((_) async => createTestProgress());
+      when(
+        () => mockProgressDs.addXp(any(), any()),
+      ).thenAnswer((_) async => createTestProgress());
 
       // Act
       final result = await useCase.checkAchievements('user_1');
 
       // Assert
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (checkResult) {
-          expect(checkResult.hasUnlocked, isTrue);
-          expect(checkResult.newlyUnlocked.length, 1);
-          expect(
-            checkResult.newlyUnlocked.first.achievementType,
-            AchievementType.firstFeeding,
-          );
-          expect(checkResult.totalXpAwarded, AchievementType.firstFeeding.xpReward);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (checkResult) {
+        expect(checkResult.hasUnlocked, isTrue);
+        expect(checkResult.newlyUnlocked.length, 1);
+        expect(
+          checkResult.newlyUnlocked.first.achievementType,
+          AchievementType.firstFeeding,
+        );
+        expect(
+          checkResult.totalXpAwarded,
+          AchievementType.firstFeeding.xpReward,
+        );
+      });
     });
 
     test('should unlock streak7 when streak reaches 7 days', () async {
       // Arrange
       when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
-      when(() => mockStreakDs.getStreakByUserId('user_1'))
-          .thenReturn(createTestStreak(currentStreak: 7));
+      when(
+        () => mockStreakDs.getStreakByUserId('user_1'),
+      ).thenReturn(createTestStreak(currentStreak: 7));
 
       for (final type in AchievementType.values) {
-        when(() => mockAchievementDs.isAchievementUnlocked('user_1', type))
-            .thenReturn(false);
+        when(
+          () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+        ).thenReturn(false);
       }
 
-      when(() => mockAchievementDs.unlockAchievement(
-            'user_1',
-            AchievementType.streak7,
-          )).thenAnswer((_) async =>
-          createTestAchievement(
-            type: AchievementType.streak7,
-            unlockedAt: DateTime.now(),
-            progress: 1.0,
-          ));
+      when(
+        () => mockAchievementDs.unlockAchievement(
+          'user_1',
+          AchievementType.streak7,
+        ),
+      ).thenAnswer(
+        (_) async => createTestAchievement(
+          type: AchievementType.streak7,
+          unlockedAt: DateTime.now(),
+          progress: 1.0,
+        ),
+      );
 
-      when(() => mockAchievementDs.unlockAchievement(
-            'user_1',
-            AchievementType.weekWithoutMiss,
-          )).thenAnswer((_) async =>
-          createTestAchievement(
-            type: AchievementType.weekWithoutMiss,
-            unlockedAt: DateTime.now(),
-            progress: 1.0,
-          ));
+      when(
+        () => mockAchievementDs.unlockAchievement(
+          'user_1',
+          AchievementType.weekWithoutMiss,
+        ),
+      ).thenAnswer(
+        (_) async => createTestAchievement(
+          type: AchievementType.weekWithoutMiss,
+          unlockedAt: DateTime.now(),
+          progress: 1.0,
+        ),
+      );
 
-      when(() => mockAchievementDs.updateProgress(any(), any(), any()))
-          .thenAnswer(
-              (_) async => createTestAchievement(type: AchievementType.streak30));
+      when(
+        () => mockAchievementDs.updateProgress(any(), any(), any()),
+      ).thenAnswer(
+        (_) async => createTestAchievement(type: AchievementType.streak30),
+      );
 
-      when(() => mockProgressDs.addXp(any(), any()))
-          .thenAnswer((_) async => createTestProgress());
+      when(
+        () => mockProgressDs.addXp(any(), any()),
+      ).thenAnswer((_) async => createTestProgress());
 
       // Act
       final result = await useCase.checkAchievements('user_1');
 
       // Assert
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (checkResult) {
-          expect(checkResult.hasUnlocked, isTrue);
-          final unlockedTypes =
-              checkResult.newlyUnlocked.map((a) => a.achievementType).toList();
-          expect(unlockedTypes, contains(AchievementType.streak7));
-        },
-      );
+      result.fold((_) => fail('Should return success'), (checkResult) {
+        expect(checkResult.hasUnlocked, isTrue);
+        final unlockedTypes = checkResult.newlyUnlocked
+            .map((a) => a.achievementType)
+            .toList();
+        expect(unlockedTypes, contains(AchievementType.streak7));
+      });
     });
 
     test('should not unlock achievement that is already unlocked', () async {
       // Arrange
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([
-        createTestFeedingEvent(id: 'feed_1'),
-      ]);
+      when(
+        () => mockFeedingDs.getAllFeedingEvents(),
+      ).thenReturn([createTestFeedingEvent(id: 'feed_1')]);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       // firstFeeding is already unlocked
-      when(() =>
-              mockAchievementDs.isAchievementUnlocked('user_1', AchievementType.firstFeeding))
-          .thenReturn(true);
+      when(
+        () => mockAchievementDs.isAchievementUnlocked(
+          'user_1',
+          AchievementType.firstFeeding,
+        ),
+      ).thenReturn(true);
 
       // Other achievements are locked
       for (final type in AchievementType.values) {
         if (type != AchievementType.firstFeeding) {
-          when(() => mockAchievementDs.isAchievementUnlocked('user_1', type))
-              .thenReturn(false);
+          when(
+            () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+          ).thenReturn(false);
         }
       }
 
-      when(() => mockAchievementDs.updateProgress(any(), any(), any()))
-          .thenAnswer(
-              (_) async => createTestAchievement(type: AchievementType.streak7));
+      when(
+        () => mockAchievementDs.updateProgress(any(), any(), any()),
+      ).thenAnswer(
+        (_) async => createTestAchievement(type: AchievementType.streak7),
+      );
 
       // Act
       final result = await useCase.checkAchievements('user_1');
 
       // Assert
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (checkResult) {
-          // firstFeeding should NOT be in newly unlocked
-          final unlockedTypes =
-              checkResult.newlyUnlocked.map((a) => a.achievementType).toList();
-          expect(unlockedTypes, isNot(contains(AchievementType.firstFeeding)));
-        },
-      );
+      result.fold((_) => fail('Should return success'), (checkResult) {
+        // firstFeeding should NOT be in newly unlocked
+        final unlockedTypes = checkResult.newlyUnlocked
+            .map((a) => a.achievementType)
+            .toList();
+        expect(unlockedTypes, isNot(contains(AchievementType.firstFeeding)));
+      });
 
       // Verify unlockAchievement was never called for firstFeeding
       verifyNever(
-          () => mockAchievementDs.unlockAchievement('user_1', AchievementType.firstFeeding));
+        () => mockAchievementDs.unlockAchievement(
+          'user_1',
+          AchievementType.firstFeeding,
+        ),
+      );
     });
 
     test('should unlock feedings100 when user has 100 feedings', () async {
@@ -287,12 +307,14 @@ void main() {
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       for (final type in AchievementType.values) {
-        when(() => mockAchievementDs.isAchievementUnlocked('user_1', type))
-            .thenReturn(false);
+        when(
+          () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+        ).thenReturn(false);
       }
 
-      when(() => mockAchievementDs.unlockAchievement('user_1', any()))
-          .thenAnswer((invocation) async {
+      when(
+        () => mockAchievementDs.unlockAchievement('user_1', any()),
+      ).thenAnswer((invocation) async {
         final type = invocation.positionalArguments[1] as AchievementType;
         return createTestAchievement(
           type: type,
@@ -301,80 +323,85 @@ void main() {
         );
       });
 
-      when(() => mockAchievementDs.updateProgress(any(), any(), any()))
-          .thenAnswer(
-              (_) async => createTestAchievement(type: AchievementType.streak7));
+      when(
+        () => mockAchievementDs.updateProgress(any(), any(), any()),
+      ).thenAnswer(
+        (_) async => createTestAchievement(type: AchievementType.streak7),
+      );
 
-      when(() => mockProgressDs.addXp(any(), any()))
-          .thenAnswer((_) async => createTestProgress());
+      when(
+        () => mockProgressDs.addXp(any(), any()),
+      ).thenAnswer((_) async => createTestProgress());
 
       // Act
       final result = await useCase.checkAchievements('user_1');
 
       // Assert
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (checkResult) {
-          final unlockedTypes =
-              checkResult.newlyUnlocked.map((a) => a.achievementType).toList();
-          expect(unlockedTypes, contains(AchievementType.feedings100));
-          expect(unlockedTypes, contains(AchievementType.firstFeeding));
-        },
-      );
+      result.fold((_) => fail('Should return success'), (checkResult) {
+        final unlockedTypes = checkResult.newlyUnlocked
+            .map((a) => a.achievementType)
+            .toList();
+        expect(unlockedTypes, contains(AchievementType.feedings100));
+        expect(unlockedTypes, contains(AchievementType.firstFeeding));
+      });
     });
   });
 
   group('getProgress', () {
     test('should return validation error when userId is empty', () async {
-      final result =
-          await useCase.getProgress('', AchievementType.firstFeeding);
+      final result = await useCase.getProgress(
+        '',
+        AchievementType.firstFeeding,
+      );
 
       expect(result.isLeft(), isTrue);
     });
 
     test('should return stored progress if achievement exists', () async {
-      when(() => mockAchievementDs.getAchievementByType(
-            'user_1',
-            AchievementType.streak7,
-          )).thenReturn(createTestAchievement(
-        type: AchievementType.streak7,
-        progress: 0.5,
-      ));
+      when(
+        () => mockAchievementDs.getAchievementByType(
+          'user_1',
+          AchievementType.streak7,
+        ),
+      ).thenReturn(
+        createTestAchievement(type: AchievementType.streak7, progress: 0.5),
+      );
 
-      final result =
-          await useCase.getProgress('user_1', AchievementType.streak7);
+      final result = await useCase.getProgress(
+        'user_1',
+        AchievementType.streak7,
+      );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (progress) {
-          expect(progress, 0.5);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (progress) {
+        expect(progress, 0.5);
+      });
     });
 
     test('should calculate progress if achievement does not exist', () async {
-      when(() => mockAchievementDs.getAchievementByType(
-            'user_1',
-            AchievementType.streak7,
-          )).thenReturn(null);
+      when(
+        () => mockAchievementDs.getAchievementByType(
+          'user_1',
+          AchievementType.streak7,
+        ),
+      ).thenReturn(null);
 
       when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
-      when(() => mockStreakDs.getStreakByUserId('user_1'))
-          .thenReturn(createTestStreak(currentStreak: 3));
+      when(
+        () => mockStreakDs.getStreakByUserId('user_1'),
+      ).thenReturn(createTestStreak(currentStreak: 3));
 
-      final result =
-          await useCase.getProgress('user_1', AchievementType.streak7);
+      final result = await useCase.getProgress(
+        'user_1',
+        AchievementType.streak7,
+      );
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (progress) {
-          // 3 out of 7 days = ~0.43
-          expect(progress, closeTo(3 / 7, 0.01));
-        },
-      );
+      result.fold((_) => fail('Should return success'), (progress) {
+        // 3 out of 7 days = ~0.43
+        expect(progress, closeTo(3 / 7, 0.01));
+      });
     });
   });
 
@@ -390,18 +417,16 @@ void main() {
           .map((type) => createTestAchievement(type: type).toEntity())
           .toList();
 
-      when(() => mockAchievementDs.getAllAchievementsOrdered('user_1'))
-          .thenAnswer((_) async => achievements);
+      when(
+        () => mockAchievementDs.getAllAchievementsOrdered('user_1'),
+      ).thenAnswer((_) async => achievements);
 
       final result = await useCase.getAllAchievements('user_1');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (list) {
-          expect(list.length, AchievementType.values.length);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (list) {
+        expect(list.length, AchievementType.values.length);
+      });
     });
   });
 
@@ -418,19 +443,17 @@ void main() {
         ),
       ];
 
-      when(() => mockAchievementDs.getUnlockedAchievements('user_1'))
-          .thenReturn(unlockedAchievements);
+      when(
+        () => mockAchievementDs.getUnlockedAchievements('user_1'),
+      ).thenReturn(unlockedAchievements);
 
       final result = await useCase.getUnlockedAchievements('user_1');
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should return success'),
-        (list) {
-          expect(list.length, 2);
-          expect(list.every((a) => a.isUnlocked), isTrue);
-        },
-      );
+      result.fold((_) => fail('Should return success'), (list) {
+        expect(list.length, 2);
+        expect(list.every((a) => a.isUnlocked), isTrue);
+      });
     });
   });
 
@@ -443,8 +466,9 @@ void main() {
         ),
       ];
 
-      when(() => mockAchievementDs.getUnlockedAchievements('user_1'))
-          .thenReturn(unlockedAchievements);
+      when(
+        () => mockAchievementDs.getUnlockedAchievements('user_1'),
+      ).thenReturn(unlockedAchievements);
 
       final count = useCase.getUnlockedCount('user_1');
 

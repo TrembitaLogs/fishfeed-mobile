@@ -191,11 +191,7 @@ class _RadioIndicator extends StatelessWidget {
         color: isSelected ? primaryColor : Colors.transparent,
       ),
       child: isSelected
-          ? Icon(
-              Icons.check,
-              size: 16,
-              color: theme.colorScheme.onPrimary,
-            )
+          ? Icon(Icons.check, size: 16, color: theme.colorScheme.onPrimary)
           : null,
     );
   }

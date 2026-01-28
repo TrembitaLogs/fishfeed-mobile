@@ -109,7 +109,7 @@ final isInterstitialAdReadyProvider = Provider<bool>((ref) {
 /// Handles loading banner ads with the correct width.
 class BannerAdNotifier extends StateNotifier<AsyncValue<BannerAd?>> {
   BannerAdNotifier(this._adService, this._shouldShowAds)
-      : super(const AsyncValue.loading());
+    : super(const AsyncValue.loading());
 
   final AdService _adService;
   final bool _shouldShowAds;
@@ -162,14 +162,14 @@ class BannerAdNotifier extends StateNotifier<AsyncValue<BannerAd?>> {
 /// ```
 final bannerAdProvider =
     StateNotifierProvider<BannerAdNotifier, AsyncValue<BannerAd?>>((ref) {
-  final adService = ref.watch(adServiceProvider);
-  final shouldShowAds = ref.watch(shouldShowAdsProvider);
+      final adService = ref.watch(adServiceProvider);
+      final shouldShowAds = ref.watch(shouldShowAdsProvider);
 
-  final notifier = BannerAdNotifier(adService, shouldShowAds);
+      final notifier = BannerAdNotifier(adService, shouldShowAds);
 
-  ref.onDispose(() {
-    notifier.disposeAd();
-  });
+      ref.onDispose(() {
+        notifier.disposeAd();
+      });
 
-  return notifier;
-});
+      return notifier;
+    });

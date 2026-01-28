@@ -48,10 +48,12 @@ void main() {
     mockSyncTriggerService = createMockSyncTriggerService();
     mockAquariumRemoteDs = createMockAquariumRemoteDataSource();
 
-    when(() => mockAuthRepository.isAuthenticated())
-        .thenAnswer((_) async => false);
-    when(() => mockAuthRepository.getCurrentUser())
-        .thenAnswer((_) async => const Left(CacheFailure()));
+    when(
+      () => mockAuthRepository.isAuthenticated(),
+    ).thenAnswer((_) async => false);
+    when(
+      () => mockAuthRepository.getCurrentUser(),
+    ).thenAnswer((_) async => const Left(CacheFailure()));
   });
 
   testWidgets('App renders correctly', (WidgetTester tester) async {
@@ -63,12 +65,18 @@ void main() {
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
           pushTokenManagerProvider.overrideWithValue(mockPushTokenManager),
-          aquariumRemoteDataSourceProvider.overrideWithValue(mockAquariumRemoteDs),
+          aquariumRemoteDataSourceProvider.overrideWithValue(
+            mockAquariumRemoteDs,
+          ),
 
           // Service mocks required by FishFeedApp listeners
           syncServiceProvider.overrideWithValue(mockSyncService),
-          connectivityServiceProvider.overrideWithValue(mockConnectivityService),
-          appLifecycleServiceProvider.overrideWithValue(mockAppLifecycleService),
+          connectivityServiceProvider.overrideWithValue(
+            mockConnectivityService,
+          ),
+          appLifecycleServiceProvider.overrideWithValue(
+            mockAppLifecycleService,
+          ),
           syncTriggerServiceProvider.overrideWithValue(mockSyncTriggerService),
 
           // Connectivity providers

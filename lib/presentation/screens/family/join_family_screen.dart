@@ -15,10 +15,7 @@ import 'package:fishfeed/presentation/router/app_router.dart';
 /// - Expired code: Shows error with option to go home
 /// - Not authenticated: Redirects to login
 class JoinFamilyScreen extends ConsumerStatefulWidget {
-  const JoinFamilyScreen({
-    super.key,
-    required this.inviteCode,
-  });
+  const JoinFamilyScreen({super.key, required this.inviteCode});
 
   /// The invite code from the deep link.
   final String inviteCode;
@@ -42,7 +39,9 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
     if (_hasAccepted) return;
     _hasAccepted = true;
 
-    ref.read(joinInviteNotifierProvider.notifier).acceptInvite(widget.inviteCode);
+    ref
+        .read(joinInviteNotifierProvider.notifier)
+        .acceptInvite(widget.inviteCode);
   }
 
   void _goHome() {
@@ -62,25 +61,22 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
     final state = ref.watch(joinInviteNotifierProvider);
     final theme = Theme.of(context);
 
-    ref.listen<JoinInviteState>(
-      joinInviteNotifierProvider,
-      (previous, next) {
-        if (next is JoinInviteSuccess) {
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              _goToAquarium(next.member.aquariumId);
-            }
-          });
-        }
-        if (next is JoinInviteError && next.requiresAuth) {
-          Future.delayed(const Duration(seconds: 1), () {
-            if (mounted) {
-              _goToLogin();
-            }
-          });
-        }
-      },
-    );
+    ref.listen<JoinInviteState>(joinInviteNotifierProvider, (previous, next) {
+      if (next is JoinInviteSuccess) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            _goToAquarium(next.member.aquariumId);
+          }
+        });
+      }
+      if (next is JoinInviteError && next.requiresAuth) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            _goToLogin();
+          }
+        });
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -90,7 +86,10 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
             child: switch (state) {
               JoinInviteInitial() => _buildLoading(theme),
               JoinInviteLoading() => _buildLoading(theme),
-              JoinInviteSuccess(:final member) => _buildSuccess(theme, member.aquariumId),
+              JoinInviteSuccess(:final member) => _buildSuccess(
+                theme,
+                member.aquariumId,
+              ),
               JoinInviteError(:final message, :final requiresAuth) =>
                 _buildError(theme, message, requiresAuth),
             },
@@ -112,9 +111,7 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
             color: theme.colorScheme.primaryContainer,
             shape: BoxShape.circle,
           ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: CircularProgressIndicator()),
         ),
         const SizedBox(height: 24),
         Text(
@@ -203,9 +200,7 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          requiresAuth
-              ? l10n.loginToAcceptInvitation
-              : message,
+          requiresAuth ? l10n.loginToAcceptInvitation : message,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

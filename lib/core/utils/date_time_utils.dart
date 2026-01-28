@@ -201,7 +201,9 @@ class DateTimeUtils {
   }
 
   /// Formats a relative date (Today, Yesterday, or date).
-  static String formatRelativeDate(DateTime date, String locale, {
+  static String formatRelativeDate(
+    DateTime date,
+    String locale, {
     String? todayLabel,
     String? yesterdayLabel,
   }) {

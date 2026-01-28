@@ -84,10 +84,7 @@ class _MyAquariumSectionState extends ConsumerState<MyAquariumSection> {
 }
 
 /// Choice for adding fish method.
-enum _AddFishChoice {
-  aiCamera,
-  manual,
-}
+enum _AddFishChoice { aiCamera, manual }
 
 /// Content widget displaying the aquarium section.
 class _MyAquariumSectionContent extends StatelessWidget {
@@ -219,10 +216,7 @@ class _EmptyState extends StatelessWidget {
 
 /// Fish preview list with action buttons.
 class _FishPreview extends StatelessWidget {
-  const _FishPreview({
-    required this.fish,
-    required this.onAddFish,
-  });
+  const _FishPreview({required this.fish, required this.onAddFish});
 
   final List<Fish> fish;
   final VoidCallback onAddFish;
@@ -380,9 +374,10 @@ class _MyAquariumSectionShimmerState extends State<_MyAquariumSectionShimmer>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
-    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -412,9 +407,13 @@ class _MyAquariumSectionShimmerState extends State<_MyAquariumSectionShimmer>
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildShimmerBox(height: 40, width: double.infinity)),
+                Expanded(
+                  child: _buildShimmerBox(height: 40, width: double.infinity),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: _buildShimmerBox(height: 40, width: double.infinity)),
+                Expanded(
+                  child: _buildShimmerBox(height: 40, width: double.infinity),
+                ),
               ],
             ),
           ],

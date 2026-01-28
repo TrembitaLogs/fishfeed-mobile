@@ -65,10 +65,10 @@ class MigrationService {
     required FishLocalDataSource fishLocalDs,
     required FeedingLocalDataSource feedingLocalDs,
     required AuthLocalDataSource authLocalDs,
-  })  : _aquariumLocalDs = aquariumLocalDs,
-        _fishLocalDs = fishLocalDs,
-        _feedingLocalDs = feedingLocalDs,
-        _authLocalDs = authLocalDs;
+  }) : _aquariumLocalDs = aquariumLocalDs,
+       _fishLocalDs = fishLocalDs,
+       _feedingLocalDs = feedingLocalDs,
+       _authLocalDs = authLocalDs;
 
   final AquariumLocalDataSource _aquariumLocalDs;
   final FishLocalDataSource _fishLocalDs;
@@ -230,7 +230,8 @@ class MigrationService {
         migratedFishCount: 0,
         migratedEventsCount: migratedCount,
         newAquariumId: '',
-        newAquariumName: 'Migrated $migratedCount events, deleted $deletedCount orphaned',
+        newAquariumName:
+            'Migrated $migratedCount events, deleted $deletedCount orphaned',
       );
     } catch (e) {
       return MigrationError(

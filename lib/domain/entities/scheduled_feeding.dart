@@ -131,19 +131,19 @@ class ScheduledFeeding extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        scheduledTime,
-        aquariumId,
-        aquariumName,
-        fishId,
-        fishName,
-        speciesName,
-        status,
-        foodType,
-        portionGrams,
-        completedAt,
-        completedBy,
-        completedByName,
-        completedByAvatar,
-      ];
+    id,
+    scheduledTime,
+    aquariumId,
+    aquariumName,
+    fishId,
+    fishName,
+    speciesName,
+    status,
+    foodType,
+    portionGrams,
+    completedAt,
+    completedBy,
+    completedByName,
+    completedByAvatar,
+  ];
 }

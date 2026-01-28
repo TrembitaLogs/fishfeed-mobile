@@ -90,8 +90,9 @@ class _SpeciesSelectionStepState extends ConsumerState<SpeciesSelectionStep> {
           const SizedBox(height: 16),
           // "I don't know" button
           _UnknownSpeciesButton(
-            isSelected: selectedSpecies
-                .any((s) => s.species.id == SpeciesData.defaultSpecies.id),
+            isSelected: selectedSpecies.any(
+              (s) => s.species.id == SpeciesData.defaultSpecies.id,
+            ),
             onTap: () => ref
                 .read(onboardingNotifierProvider.notifier)
                 .toggleSpecies(SpeciesData.defaultSpecies),
@@ -142,16 +143,16 @@ class _SelectedSpeciesChips extends StatelessWidget {
                   color: theme.colorScheme.onSecondaryContainer,
                 )
               : selection.species.imageUrl != null
-                  ? AppCachedAvatar(
-                      imageUrl: selection.species.imageUrl,
-                      radius: 12,
-                      fallbackIcon: Icons.pets,
-                    )
-                  : Icon(
-                      Icons.pets,
-                      size: 18,
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
+              ? AppCachedAvatar(
+                  imageUrl: selection.species.imageUrl,
+                  radius: 12,
+                  fallbackIcon: Icons.pets,
+                )
+              : Icon(
+                  Icons.pets,
+                  size: 18,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
           label: Text(
             isDefault ? 'Unknown' : selection.species.name,
             style: theme.textTheme.bodyMedium,
@@ -168,10 +169,7 @@ class _SelectedSpeciesChips extends StatelessWidget {
 
 /// Search text field for filtering species.
 class _SearchField extends StatelessWidget {
-  const _SearchField({
-    required this.controller,
-    required this.onChanged,
-  });
+  const _SearchField({required this.controller, required this.onChanged});
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
@@ -196,7 +194,9 @@ class _SearchField extends StatelessWidget {
               )
             : null,
         filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.5,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -212,10 +212,7 @@ class _SearchField extends StatelessWidget {
 
 /// Button for users who don't know their fish species.
 class _UnknownSpeciesButton extends StatelessWidget {
-  const _UnknownSpeciesButton({
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _UnknownSpeciesButton({required this.isSelected, required this.onTap});
 
   final bool isSelected;
   final VoidCallback onTap;
@@ -250,8 +247,9 @@ class _UnknownSpeciesButton extends StatelessWidget {
                     Text(
                       "I don't know my species",
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         color: isSelected
                             ? theme.colorScheme.onSecondaryContainer
                             : null,
@@ -261,8 +259,9 @@ class _UnknownSpeciesButton extends StatelessWidget {
                       "We'll use safe default settings",
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isSelected
-                            ? theme.colorScheme.onSecondaryContainer
-                                .withValues(alpha: 0.7)
+                            ? theme.colorScheme.onSecondaryContainer.withValues(
+                                alpha: 0.7,
+                              )
                             : theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -302,8 +301,8 @@ class _SpeciesGrid extends StatelessWidget {
         child: Text(
           'No species found',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       );
     }
@@ -318,8 +317,9 @@ class _SpeciesGrid extends StatelessWidget {
       itemCount: species.length,
       itemBuilder: (context, index) {
         final speciesItem = species[index];
-        final isSelected =
-            selectedSpecies.any((s) => s.species.id == speciesItem.id);
+        final isSelected = selectedSpecies.any(
+          (s) => s.species.id == speciesItem.id,
+        );
 
         return _SpeciesCard(
           species: speciesItem,
@@ -420,8 +420,9 @@ class _SpeciesCard extends StatelessWidget {
                     Text(
                       species.name,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,

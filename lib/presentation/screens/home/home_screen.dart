@@ -52,11 +52,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: IndexedStack(
         index: currentTab.index,
-        children: const [
-          TodayView(),
-          CalendarScreen(),
-          ProfileScreen(),
-        ],
+        children: const [TodayView(), CalendarScreen(), ProfileScreen()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentTab.index,
@@ -152,8 +148,4 @@ class HomeScreen extends ConsumerWidget {
 }
 
 /// Choice for adding fish method.
-enum _AddFishChoice {
-  aiCamera,
-  manual,
-}
-
+enum _AddFishChoice { aiCamera, manual }

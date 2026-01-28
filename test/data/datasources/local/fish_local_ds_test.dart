@@ -117,10 +117,7 @@ void main() {
           aquariumId: 'aquarium_1',
           addedAt: DateTime(2025, 6, 15, 12, 0),
         );
-        final fish3 = createTestFish(
-          id: 'fish_3',
-          aquariumId: 'aquarium_2',
-        );
+        final fish3 = createTestFish(id: 'fish_3', aquariumId: 'aquarium_2');
 
         when(() => mockFishBox.values).thenReturn([fish1, fish2, fish3]);
 
@@ -160,8 +157,9 @@ void main() {
     group('saveFish', () {
       test('should save fish to Hive box', () async {
         final fish = createTestFish();
-        when(() => mockFishBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFishBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await fishDs.saveFish(fish);
 
@@ -183,8 +181,9 @@ void main() {
         );
 
         when(() => mockFishBox.get('fish_1')).thenReturn(fish);
-        when(() => mockFishBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFishBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         final result = await fishDs.updateFish(updatedFish);
 
@@ -239,10 +238,7 @@ void main() {
           speciesId: 'species_1',
           addedAt: DateTime(2025, 6, 15, 12, 0),
         );
-        final fish3 = createTestFish(
-          id: 'fish_3',
-          speciesId: 'species_2',
-        );
+        final fish3 = createTestFish(id: 'fish_3', speciesId: 'species_2');
 
         when(() => mockFishBox.values).thenReturn([fish1, fish2, fish3]);
 
@@ -380,8 +376,9 @@ void main() {
         final fish2 = createTestFish(id: 'fish_2');
         final fish3 = createTestFish(id: 'fish_3');
 
-        when(() => mockFishBox.put(any<dynamic>(), any<dynamic>()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockFishBox.put(any<dynamic>(), any<dynamic>()),
+        ).thenAnswer((_) async {});
 
         await fishDs.saveMultipleFish([fish1, fish2, fish3]);
 

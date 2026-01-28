@@ -47,11 +47,7 @@ Future<void> main() async {
       );
       await BackgroundSyncService.instance.registerPeriodicSync();
 
-      runApp(
-        const ProviderScope(
-          child: FishFeedApp(),
-        ),
-      );
+      runApp(const ProviderScope(child: FishFeedApp()));
     },
   );
 }

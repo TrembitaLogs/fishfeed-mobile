@@ -46,7 +46,8 @@ class FcmService {
   /// Lazy-initialized FirebaseMessaging instance.
   /// Only accessed after Firebase.initializeApp() is called.
   FirebaseMessaging? _messaging;
-  FirebaseMessaging get _getMessaging => _messaging ??= FirebaseMessaging.instance;
+  FirebaseMessaging get _getMessaging =>
+      _messaging ??= FirebaseMessaging.instance;
 
   bool _isInitialized = false;
 
@@ -97,9 +98,7 @@ class FcmService {
   ///
   /// [showForegroundNotifications] - Whether to display notifications
   /// when app is in foreground (default: true).
-  Future<void> initialize({
-    bool showForegroundNotifications = true,
-  }) async {
+  Future<void> initialize({bool showForegroundNotifications = true}) async {
     if (_isInitialized) return;
 
     try {
@@ -239,7 +238,8 @@ class FcmService {
     if (initialMessage != null) {
       if (kDebugMode) {
         print(
-            'FCM notification tapped (terminated): ${initialMessage.messageId}');
+          'FCM notification tapped (terminated): ${initialMessage.messageId}',
+        );
       }
 
       // Delay to ensure listeners are set up

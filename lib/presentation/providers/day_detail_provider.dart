@@ -86,8 +86,8 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
   DayDetailNotifier({
     required FeedingLocalDataSource feedingDataSource,
     required DateTime initialDate,
-  })  : _feedingDataSource = feedingDataSource,
-        super(DayDetailState(selectedDate: initialDate)) {
+  }) : _feedingDataSource = feedingDataSource,
+       super(DayDetailState(selectedDate: initialDate)) {
     loadFeedings();
   }
 
@@ -104,8 +104,9 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 
       // Get completed feeding events from Hive
       final completedEvents = _feedingDataSource.getFeedingEventsByDate(today);
-      final completedIds =
-          completedEvents.map((e) => e.localId ?? e.id).toSet();
+      final completedIds = completedEvents
+          .map((e) => e.localId ?? e.id)
+          .toSet();
 
       // Generate schedule for the day
       final feedings = _generateDaySchedule(today, completedIds, now);
@@ -113,10 +114,7 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
       // Sort by scheduled time
       feedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
 
-      state = state.copyWith(
-        feedings: feedings,
-        isLoading: false,
-      );
+      state = state.copyWith(feedings: feedings, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -258,10 +256,7 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 /// ```
 final dayDetailProvider = StateNotifierProvider.autoDispose
     .family<DayDetailNotifier, DayDetailState, DateTime>((ref, date) {
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
+      final feedingDs = ref.watch(feedingLocalDataSourceProvider);
 
-  return DayDetailNotifier(
-    feedingDataSource: feedingDs,
-    initialDate: date,
-  );
-});
+      return DayDetailNotifier(feedingDataSource: feedingDs, initialDate: date);
+    });

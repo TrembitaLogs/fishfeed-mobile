@@ -74,18 +74,20 @@ void main() {
     testWidgets('returns goPremium when Go Premium is tapped', (tester) async {
       PaywallAction? result;
 
-      await tester.pumpWidget(buildTestWidget(
-        child: Builder(
-          builder: (context) {
-            return ElevatedButton(
-              onPressed: () async {
-                result = await AiScanPaywallBottomSheet.show(context);
-              },
-              child: const Text('Show Paywall'),
-            );
-          },
+      await tester.pumpWidget(
+        buildTestWidget(
+          child: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await AiScanPaywallBottomSheet.show(context);
+                },
+                child: const Text('Show Paywall'),
+              );
+            },
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Show Paywall'));
       await tester.pumpAndSettle();
@@ -96,21 +98,25 @@ void main() {
       expect(result, equals(PaywallAction.goPremium));
     });
 
-    testWidgets('returns addManually when Add manually is tapped', (tester) async {
+    testWidgets('returns addManually when Add manually is tapped', (
+      tester,
+    ) async {
       PaywallAction? result;
 
-      await tester.pumpWidget(buildTestWidget(
-        child: Builder(
-          builder: (context) {
-            return ElevatedButton(
-              onPressed: () async {
-                result = await AiScanPaywallBottomSheet.show(context);
-              },
-              child: const Text('Show Paywall'),
-            );
-          },
+      await tester.pumpWidget(
+        buildTestWidget(
+          child: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await AiScanPaywallBottomSheet.show(context);
+                },
+                child: const Text('Show Paywall'),
+              );
+            },
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Show Paywall'));
       await tester.pumpAndSettle();
@@ -128,18 +134,20 @@ void main() {
     testWidgets('returns dismissed when Maybe later is tapped', (tester) async {
       PaywallAction? result;
 
-      await tester.pumpWidget(buildTestWidget(
-        child: Builder(
-          builder: (context) {
-            return ElevatedButton(
-              onPressed: () async {
-                result = await AiScanPaywallBottomSheet.show(context);
-              },
-              child: const Text('Show Paywall'),
-            );
-          },
+      await tester.pumpWidget(
+        buildTestWidget(
+          child: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await AiScanPaywallBottomSheet.show(context);
+                },
+                child: const Text('Show Paywall'),
+              );
+            },
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Show Paywall'));
       await tester.pumpAndSettle();
@@ -154,23 +162,27 @@ void main() {
       expect(result, equals(PaywallAction.dismissed));
     });
 
-    testWidgets('returns null when dismissed by tapping outside', (tester) async {
+    testWidgets('returns null when dismissed by tapping outside', (
+      tester,
+    ) async {
       PaywallAction? result;
       var showCompleted = false;
 
-      await tester.pumpWidget(buildTestWidget(
-        child: Builder(
-          builder: (context) {
-            return ElevatedButton(
-              onPressed: () async {
-                result = await AiScanPaywallBottomSheet.show(context);
-                showCompleted = true;
-              },
-              child: const Text('Show Paywall'),
-            );
-          },
+      await tester.pumpWidget(
+        buildTestWidget(
+          child: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await AiScanPaywallBottomSheet.show(context);
+                  showCompleted = true;
+                },
+                child: const Text('Show Paywall'),
+              );
+            },
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Show Paywall'));
       await tester.pumpAndSettle();

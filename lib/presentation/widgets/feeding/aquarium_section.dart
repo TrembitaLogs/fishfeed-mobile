@@ -40,10 +40,7 @@ class AquariumSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Aquarium header
-        _AquariumHeader(
-          aquarium: aquarium,
-          feedingsCount: feedings.length,
-        ),
+        _AquariumHeader(aquarium: aquarium, feedingsCount: feedings.length),
         // Feedings list or empty state
         if (feedings.isEmpty)
           _EmptyFeedingsState(theme: theme, l10n: l10n)
@@ -62,10 +59,7 @@ class AquariumSection extends StatelessWidget {
 
 /// Header for aquarium section showing name and icon.
 class _AquariumHeader extends StatelessWidget {
-  const _AquariumHeader({
-    required this.aquarium,
-    required this.feedingsCount,
-  });
+  const _AquariumHeader({required this.aquarium, required this.feedingsCount});
 
   final Aquarium aquarium;
   final int feedingsCount;
@@ -127,10 +121,7 @@ class _AquariumHeader extends StatelessWidget {
 
 /// Empty state when aquarium has no feedings for today.
 class _EmptyFeedingsState extends StatelessWidget {
-  const _EmptyFeedingsState({
-    required this.theme,
-    required this.l10n,
-  });
+  const _EmptyFeedingsState({required this.theme, required this.l10n});
 
   final ThemeData theme;
   final AppLocalizations l10n;

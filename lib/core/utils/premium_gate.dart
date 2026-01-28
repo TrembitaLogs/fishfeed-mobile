@@ -76,7 +76,10 @@ bool requiresPremium(PremiumFeature feature) {
 ///   // Show extended statistics
 /// }
 /// ```
-final featureAccessProvider = Provider.family<bool, PremiumFeature>((ref, feature) {
+final featureAccessProvider = Provider.family<bool, PremiumFeature>((
+  ref,
+  feature,
+) {
   final isPremium = ref.watch(isPremiumProvider);
   final hasRemoveAds = ref.watch(hasRemoveAdsProvider);
 

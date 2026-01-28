@@ -109,13 +109,10 @@ void main() {
       );
 
       expect(result.isRight(), true);
-      result.fold(
-        (_) => fail('Should be Right'),
-        (user) {
-          expect(user.id, 'user-123');
-          expect(user.email, 'test@example.com');
-        },
-      );
+      result.fold((_) => fail('Should be Right'), (user) {
+        expect(user.id, 'user-123');
+        expect(user.email, 'test@example.com');
+      });
 
       verify(
         () => mockSecureStorageService.setTokens(
@@ -171,12 +168,14 @@ void main() {
           email: any(named: 'email'),
           password: any(named: 'password'),
         ),
-      ).thenThrow(const ValidationException(
-        message: 'Validation failed',
-        errors: {
-          'email': ['Invalid email format']
-        },
-      ));
+      ).thenThrow(
+        const ValidationException(
+          message: 'Validation failed',
+          errors: {
+            'email': ['Invalid email format'],
+          },
+        ),
+      );
 
       final result = await repository.login(
         email: 'invalid-email',
@@ -184,14 +183,14 @@ void main() {
       );
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          final validationFailure = failure as ValidationFailure;
-          expect(validationFailure.errors['email'], contains('Invalid email format'));
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        final validationFailure = failure as ValidationFailure;
+        expect(
+          validationFailure.errors['email'],
+          contains('Invalid email format'),
+        );
+      }, (_) => fail('Should be Left'));
     });
   });
 
@@ -289,12 +288,12 @@ void main() {
         () => mockSecureStorageService.clearTokens(),
       ).thenAnswer((_) async {});
 
-      when(
-        () => mockLocalDataSource.clearAll(),
-      ).thenAnswer((_) async {});
+      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
 
       when(
-        () => mockRemoteDataSource.logout(refreshToken: any(named: 'refreshToken')),
+        () => mockRemoteDataSource.logout(
+          refreshToken: any(named: 'refreshToken'),
+        ),
       ).thenAnswer((_) async {});
 
       final result = await repository.logout();
@@ -313,12 +312,12 @@ void main() {
         () => mockSecureStorageService.clearTokens(),
       ).thenAnswer((_) async {});
 
-      when(
-        () => mockLocalDataSource.clearAll(),
-      ).thenAnswer((_) async {});
+      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
 
       when(
-        () => mockRemoteDataSource.logout(refreshToken: any(named: 'refreshToken')),
+        () => mockRemoteDataSource.logout(
+          refreshToken: any(named: 'refreshToken'),
+        ),
       ).thenThrow(const ServerException());
 
       final result = await repository.logout();
@@ -331,7 +330,9 @@ void main() {
 
   group('getCurrentUser', () {
     test('should return User when cached user exists', () async {
-      when(() => mockLocalDataSource.getCurrentUser()).thenReturn(testUserModel);
+      when(
+        () => mockLocalDataSource.getCurrentUser(),
+      ).thenReturn(testUserModel);
 
       final result = await repository.getCurrentUser();
 
@@ -357,8 +358,9 @@ void main() {
 
   group('isAuthenticated', () {
     test('should return true when tokens exist', () async {
-      when(() => mockSecureStorageService.hasTokens())
-          .thenAnswer((_) async => true);
+      when(
+        () => mockSecureStorageService.hasTokens(),
+      ).thenAnswer((_) async => true);
 
       final result = await repository.isAuthenticated();
 
@@ -366,8 +368,9 @@ void main() {
     });
 
     test('should return false when no tokens', () async {
-      when(() => mockSecureStorageService.hasTokens())
-          .thenAnswer((_) async => false);
+      when(
+        () => mockSecureStorageService.hasTokens(),
+      ).thenAnswer((_) async => false);
 
       final result = await repository.isAuthenticated();
 

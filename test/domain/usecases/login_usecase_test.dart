@@ -37,10 +37,9 @@ void main() {
         ),
       ).thenAnswer((_) async => Right(testUser));
 
-      final result = await useCase(const LoginParams(
-        email: 'test@example.com',
-        password: 'password123',
-      ));
+      final result = await useCase(
+        const LoginParams(email: 'test@example.com', password: 'password123'),
+      );
 
       expect(result.isRight(), true);
       result.fold(
@@ -50,20 +49,16 @@ void main() {
     });
 
     test('should return ValidationFailure when email is empty', () async {
-      final result = await useCase(const LoginParams(
-        email: '',
-        password: 'password123',
-      ));
+      final result = await useCase(
+        const LoginParams(email: '', password: 'password123'),
+      );
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          final validationFailure = failure as ValidationFailure;
-          expect(validationFailure.errors['email'], isNotEmpty);
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        final validationFailure = failure as ValidationFailure;
+        expect(validationFailure.errors['email'], isNotEmpty);
+      }, (_) => fail('Should be Left'));
 
       verifyNever(
         () => mockRepository.login(
@@ -74,37 +69,32 @@ void main() {
     });
 
     test('should return ValidationFailure when email is invalid', () async {
-      final result = await useCase(const LoginParams(
-        email: 'invalid-email',
-        password: 'password123',
-      ));
+      final result = await useCase(
+        const LoginParams(email: 'invalid-email', password: 'password123'),
+      );
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          final validationFailure = failure as ValidationFailure;
-          expect(validationFailure.errors['email'], contains('Invalid email format'));
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        final validationFailure = failure as ValidationFailure;
+        expect(
+          validationFailure.errors['email'],
+          contains('Invalid email format'),
+        );
+      }, (_) => fail('Should be Left'));
     });
 
     test('should return ValidationFailure when password is empty', () async {
-      final result = await useCase(const LoginParams(
-        email: 'test@example.com',
-        password: '',
-      ));
+      final result = await useCase(
+        const LoginParams(email: 'test@example.com', password: ''),
+      );
 
       expect(result.isLeft(), true);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          final validationFailure = failure as ValidationFailure;
-          expect(validationFailure.errors['password'], isNotEmpty);
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        final validationFailure = failure as ValidationFailure;
+        expect(validationFailure.errors['password'], isNotEmpty);
+      }, (_) => fail('Should be Left'));
     });
 
     test('should trim email before validation', () async {
@@ -115,10 +105,12 @@ void main() {
         ),
       ).thenAnswer((_) async => Right(testUser));
 
-      await useCase(const LoginParams(
-        email: '  test@example.com  ',
-        password: 'password123',
-      ));
+      await useCase(
+        const LoginParams(
+          email: '  test@example.com  ',
+          password: 'password123',
+        ),
+      );
 
       verify(
         () => mockRepository.login(
@@ -136,10 +128,12 @@ void main() {
         ),
       ).thenAnswer((_) async => const Left(AuthenticationFailure()));
 
-      final result = await useCase(const LoginParams(
-        email: 'test@example.com',
-        password: 'wrong-password',
-      ));
+      final result = await useCase(
+        const LoginParams(
+          email: 'test@example.com',
+          password: 'wrong-password',
+        ),
+      );
 
       expect(result.isLeft(), true);
       result.fold(

@@ -22,9 +22,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -36,9 +34,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -50,9 +46,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -64,9 +58,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -78,9 +70,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -92,9 +82,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -107,9 +95,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -143,9 +129,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -158,9 +142,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -172,9 +154,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: unlockedAchievement),
-            ),
+            body: Center(child: ShareCard(achievement: unlockedAchievement)),
           ),
         ),
       );
@@ -194,9 +174,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Center(
-                child: ShareCard(achievement: achievement),
-              ),
+              body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
@@ -216,9 +194,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Center(
-                child: ShareCard(achievement: achievement),
-              ),
+              body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
@@ -238,9 +214,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Center(
-                child: ShareCard(achievement: achievement),
-              ),
+              body: Center(child: ShareCard(achievement: achievement)),
             ),
           ),
         );
@@ -261,9 +235,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: ShareCard(achievement: achievement),
-            ),
+            body: Center(child: ShareCard(achievement: achievement)),
           ),
         ),
       );

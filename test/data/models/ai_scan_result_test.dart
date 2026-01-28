@@ -47,10 +47,7 @@ void main() {
       });
 
       test('should handle empty recommendations array', () {
-        final json = {
-          ...minimalJson,
-          'recommendations': <String>[],
-        };
+        final json = {...minimalJson, 'recommendations': <String>[]};
         final result = AiScanResult.fromJson(json);
 
         expect(result.recommendations, isEmpty);
@@ -185,10 +182,7 @@ void main() {
 
       test('should not be equal for different confidence', () {
         final result1 = AiScanResult.fromJson(testJson);
-        final result2 = AiScanResult.fromJson({
-          ...testJson,
-          'confidence': 0.5,
-        });
+        final result2 = AiScanResult.fromJson({...testJson, 'confidence': 0.5});
 
         expect(result1, isNot(equals(result2)));
       });

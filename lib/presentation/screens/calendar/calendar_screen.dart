@@ -30,7 +30,9 @@ class CalendarScreen extends ConsumerWidget {
 
     // Load data for the focused month
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(calendarDataProvider.notifier).loadMonth(
+      ref
+          .read(calendarDataProvider.notifier)
+          .loadMonth(
             calendarState.focusedDay.year,
             calendarState.focusedDay.month,
           );
@@ -59,13 +61,12 @@ class CalendarScreen extends ConsumerWidget {
             ref.read(calendarProvider.notifier).onFormatChanged(format);
           },
           startingDayOfWeek: StartingDayOfWeek.monday,
-          availableCalendarFormats: const {
-            CalendarFormat.month: 'Month',
-          },
+          availableCalendarFormats: const {CalendarFormat.month: 'Month'},
           headerStyle: HeaderStyle(
             titleCentered: true,
             formatButtonVisible: false,
-            titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+            titleTextStyle:
+                theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ) ??
                 const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
@@ -80,12 +81,14 @@ class CalendarScreen extends ConsumerWidget {
             headerPadding: const EdgeInsets.symmetric(vertical: 16),
           ),
           daysOfWeekStyle: DaysOfWeekStyle(
-            weekdayStyle: theme.textTheme.bodySmall?.copyWith(
+            weekdayStyle:
+                theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ) ??
                 const TextStyle(),
-            weekendStyle: theme.textTheme.bodySmall?.copyWith(
+            weekendStyle:
+                theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ) ??
@@ -134,8 +137,10 @@ class CalendarScreen extends ConsumerWidget {
           Expanded(
             child: ErrorStateWidget(
               title: l10n.errorStateGenericTitle,
-              description: calendarDataState.error ?? l10n.errorStateGenericDescription,
-              onRetry: () async => ref.read(calendarDataProvider.notifier).refresh(),
+              description:
+                  calendarDataState.error ?? l10n.errorStateGenericDescription,
+              onRetry: () async =>
+                  ref.read(calendarDataProvider.notifier).refresh(),
               retryLabel: l10n.errorStateTryAgain,
             ),
           )
@@ -151,10 +156,7 @@ class CalendarScreen extends ConsumerWidget {
 
 /// Widget displaying information about the selected day.
 class _SelectedDayInfo extends StatelessWidget {
-  const _SelectedDayInfo({
-    required this.selectedDay,
-    this.isLoading = false,
-  });
+  const _SelectedDayInfo({required this.selectedDay, this.isLoading = false});
 
   final DateTime selectedDay;
   final bool isLoading;
@@ -171,9 +173,7 @@ class _SelectedDayInfo extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(16),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +244,7 @@ class _SelectedDayInfo extends StatelessWidget {
       'Thursday',
       'Friday',
       'Saturday',
-      'Sunday'
+      'Sunday',
     ];
     final months = [
       'January',
@@ -258,7 +258,7 @@ class _SelectedDayInfo extends StatelessWidget {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
 
     final weekday = weekdays[date.weekday - 1];
@@ -267,4 +267,3 @@ class _SelectedDayInfo extends StatelessWidget {
     return '$weekday, $month ${date.day}';
   }
 }
-

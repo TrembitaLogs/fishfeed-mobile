@@ -8,11 +8,7 @@ part 'sync_metadata_model.g.dart';
 /// to enable delta sync (only fetching changes since last sync).
 @HiveType(typeId: 22)
 class SyncMetadataModel extends HiveObject {
-  SyncMetadataModel({
-    this.lastSyncAt,
-    this.syncToken,
-    this.cursor,
-  });
+  SyncMetadataModel({this.lastSyncAt, this.syncToken, this.cursor});
 
   /// Timestamp of the last successful sync.
   ///
