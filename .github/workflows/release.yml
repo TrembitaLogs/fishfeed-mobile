@@ -26,6 +26,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Create .env from example
+        run: cp .env.example .env
+
       - name: Check formatting
         run: dart format lib test --set-exit-if-changed
 
@@ -73,6 +76,9 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Create .env from example
+        run: cp .env.example .env
 
       - name: Decode keystore
         run: |
