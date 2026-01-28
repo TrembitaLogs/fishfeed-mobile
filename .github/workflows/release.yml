@@ -1,0 +1,160 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  FLUTTER_VERSION: "3.24.x"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format lib test --set-exit-if-changed
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+  build_and_deploy:
+    name: Build & Deploy APK
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get tag name and commit message
+        id: tag_info
+        run: |
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          # Get the tag annotation or commit message
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/} | head -20)
+          if [ -z "$TAG_MESSAGE" ]; then
+            TAG_MESSAGE=$(git log -1 --pretty=%B)
+          fi
+          # Save multiline message to file
+          echo "$TAG_MESSAGE" > tag_message.txt
+          echo "Generated tag message file"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Build signed APK
+        run: flutter build apk --release
+
+      - name: Rename APK with version
+        run: |
+          mkdir -p release
+          cp build/app/outputs/flutter-apk/app-release.apk release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
+          cp tag_message.txt release/
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          # Create release directory on server
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "mkdir -p ${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}"
+
+          # Upload APK
+          scp -i ~/.ssh/deploy_key \
+            release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}/
+
+          # Upload release notes
+          scp -i ~/.ssh/deploy_key \
+            release/tag_message.txt \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/${{ steps.tag_info.outputs.TAG_NAME }}/release-notes.txt
+
+          # Create/update latest symlink
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && rm -f latest && ln -s ${{ steps.tag_info.outputs.TAG_NAME }} latest"
+
+          # Create index.json with all releases
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'SCRIPT'
+            cd ${{ secrets.DEPLOY_PATH }}
+            echo '{"releases": [' > index.json.tmp
+            first=true
+            for dir in $(ls -d v* 2>/dev/null | sort -V -r); do
+              if [ "$first" = true ]; then
+                first=false
+              else
+                echo ',' >> index.json.tmp
+              fi
+              notes=""
+              if [ -f "$dir/release-notes.txt" ]; then
+                notes=$(cat "$dir/release-notes.txt" | head -5 | tr '\n' ' ' | sed 's/"/\\"/g')
+              fi
+              echo "{\"version\": \"$dir\", \"apk\": \"$dir/FishFeed-$dir.apk\", \"notes\": \"$notes\"}" >> index.json.tmp
+            done
+            echo ']}' >> index.json.tmp
+            mv index.json.tmp index.json
+          SCRIPT
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk-${{ steps.tag_info.outputs.TAG_NAME }}
+          path: release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
+          retention-days: 90
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
