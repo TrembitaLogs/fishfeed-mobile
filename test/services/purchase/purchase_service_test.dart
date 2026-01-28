@@ -293,10 +293,11 @@ REVENUECAT_API_KEY_ANDROID=
 
   group('configureDio', () {
     test('should accept Dio instance without error', () {
-      final service = PurchaseService.instance;
+      // Verify the service instance is accessible
       // Note: We don't have access to Dio in tests without additional setup,
       // but we can verify the method exists and is callable.
       // Integration tests with real Dio would be in integration test suite.
+      expect(PurchaseService.instance, isNotNull);
     });
   });
 }

@@ -317,7 +317,6 @@ void main() {
     group('purchase flow', () {
       testWidgets('CTA button calls purchasePackage', (tester) async {
         // Setup with premium entitlement so pop succeeds
-        final mockEntitlements = <String, dynamic>{'premium': {}};
         when(() => mockEntitlementInfos.active).thenReturn({});
         when(
           () => mockCustomerInfo.entitlements,

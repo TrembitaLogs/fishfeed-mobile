@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
-import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/settings/settings_screen.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';

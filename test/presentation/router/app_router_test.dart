@@ -129,7 +129,6 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
   @override
   Future<bool> deleteAquarium(String aquariumId) async => true;
 
-  @override
   Aquarium? getAquariumById(String id) {
     try {
       return state.aquariums.firstWhere((a) => a.id == id);

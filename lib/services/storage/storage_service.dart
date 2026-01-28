@@ -88,7 +88,7 @@ class StorageService {
         fractionDigits: 1,
       );
       // Convert bytes to MB
-      return (storageSpace.free ?? 0) / (1024 * 1024);
+      return storageSpace.free / (1024 * 1024);
     } catch (e) {
       debugPrint('StorageService: Error getting free space: $e');
       return double.infinity;

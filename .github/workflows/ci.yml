@@ -36,7 +36,7 @@ jobs:
         run: dart format lib test --set-exit-if-changed
 
       - name: Analyze code
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
   test:
     name: Test

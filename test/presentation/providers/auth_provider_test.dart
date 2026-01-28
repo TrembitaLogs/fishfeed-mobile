@@ -16,7 +16,6 @@ import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
-import 'package:fishfeed/services/sync/sync_service.dart';
 
 import '../../helpers/test_helpers.dart';
 

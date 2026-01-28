@@ -9,11 +9,8 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
-import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
-
-import '../../helpers/test_helpers.dart' show createMockSyncService;
 
 // ============================================================================
 // Mocks

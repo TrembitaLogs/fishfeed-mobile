@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/app.dart';
-import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
