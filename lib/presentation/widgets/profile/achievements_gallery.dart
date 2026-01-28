@@ -211,9 +211,9 @@ class _AchievementTile extends StatelessWidget {
                   Text(
                     isUnlocked
                         ? (achievementType?.localizedTitle(
-                              AppLocalizations.of(context)!,
-                            ) ??
-                            achievement.title)
+                                AppLocalizations.of(context)!,
+                              ) ??
+                              achievement.title)
                         : '???',
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -364,8 +364,7 @@ class _AchievementDetailModalState extends State<_AchievementDetailModal> {
             // Achievement title
             Text(
               isUnlocked
-                  ? (achievementType?.localizedTitle(l10n) ??
-                      achievement.title)
+                  ? (achievementType?.localizedTitle(l10n) ?? achievement.title)
                   : '???',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,

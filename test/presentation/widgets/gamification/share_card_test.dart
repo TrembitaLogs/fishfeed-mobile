@@ -32,9 +32,7 @@ void main() {
 
       final l10n = lookupAppLocalizations(const Locale('en'));
       expect(
-        find.text(
-          unlockedAchievement.achievementType!.localizedTitle(l10n),
-        ),
+        find.text(unlockedAchievement.achievementType!.localizedTitle(l10n)),
         findsOneWidget,
       );
     });

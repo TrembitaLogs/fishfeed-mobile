@@ -256,8 +256,8 @@ class _AchievementUnlockOverlayState extends State<AchievementUnlockOverlay>
                       Text(
                         widget.achievement.achievementType
                                 ?.localizedDescription(
-                              AppLocalizations.of(context)!,
-                            ) ??
+                                  AppLocalizations.of(context)!,
+                                ) ??
                             widget.achievement.description!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(

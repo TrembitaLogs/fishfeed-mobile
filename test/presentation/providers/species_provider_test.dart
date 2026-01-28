@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
 
 // ============================================================================
