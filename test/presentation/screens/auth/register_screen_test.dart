@@ -18,9 +18,10 @@ import 'package:fishfeed/presentation/screens/auth/register_screen.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
 
 import '../../../helpers/test_helpers.dart'
-    show createMockAquariumRemoteDataSource;
+    show createMockAquariumRemoteDataSource, createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -66,6 +67,7 @@ void main() {
         aquariumRemoteDataSourceProvider.overrideWithValue(
           createMockAquariumRemoteDataSource(),
         ),
+        syncServiceProvider.overrideWithValue(createMockSyncService()),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
