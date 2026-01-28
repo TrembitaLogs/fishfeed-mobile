@@ -1,0 +1,658 @@
+{
+  "@@locale": "de",
+  "appTitle": "FishFeed",
+  "welcomeMessage": "Willkommen bei FishFeed",
+  "loginButton": "Anmelden",
+  "registerButton": "Registrieren",
+  "settings": "Einstellungen",
+  "profile": "Profil",
+  "calendar": "Kalender",
+  "home": "Startseite",
+  "email": "E-Mail",
+  "password": "Passwort",
+  "logout": "Abmelden",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "delete": "Löschen",
+  "edit": "Bearbeiten",
+  "loading": "Laden...",
+  "error": "Fehler",
+  "retry": "Wiederholen",
+  "language": "Sprache",
+  "theme": "Design",
+  "darkMode": "Dunkelmodus",
+  "lightMode": "Hellmodus",
+  "systemMode": "System",
+  "fieldRequired": "Dieses Feld ist erforderlich",
+  "invalidEmailFormat": "Ungültiges E-Mail-Format",
+  "invalidPasswordFormat": "Passwort muss mindestens 8 Zeichen mit 1 Zahl und 1 Großbuchstaben haben",
+  "noAccount": "Noch kein Konto?",
+  "orContinueWith": "Oder fortfahren mit",
+  "confirmPassword": "Passwort bestätigen",
+  "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+  "createAccountButton": "Konto erstellen",
+  "alreadyHaveAccount": "Bereits ein Konto?",
+  "agreeToTermsPrefix": "Ich stimme den ",
+  "termsOfService": "Nutzungsbedingungen",
+  "tosCheckboxRequired": "Sie müssen den Nutzungsbedingungen zustimmen",
+  "passwordWeak": "Schwach",
+  "passwordMedium": "Mittel",
+  "passwordStrong": "Stark",
+  "createAccount": "Konto erstellen",
+  "errorNoConnection": "Keine Internetverbindung. Bitte überprüfen Sie Ihr Netzwerk.",
+  "errorServer": "Serverfehler. Bitte versuchen Sie es später erneut.",
+  "errorInvalidCredentials": "Ungültige E-Mail oder Passwort. Bitte versuchen Sie es erneut.",
+  "errorValidation": "Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+  "errorOAuth": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "errorGoogleSignIn": "Google-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "errorAppleSignIn": "Apple-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "errorOperationCancelled": "Vorgang wurde abgebrochen.",
+  "errorLocalStorage": "Lokaler Speicherfehler. Bitte starten Sie die App neu.",
+  "errorUnexpected": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+  "successLogin": "Willkommen zurück!",
+  "successRegister": "Konto erfolgreich erstellt!",
+  "successLogout": "Sie wurden abgemeldet.",
+  "notificationPermissionTitle": "Benachrichtigungen aktivieren",
+  "notificationPermissionDescription": "Erhalten Sie rechtzeitige Erinnerungen, Ihre Fische zu füttern. Wir benachrichtigen Sie zu geplanten Fütterungszeiten, damit Sie keine Mahlzeit verpassen.",
+  "notificationPermissionEnable": "Benachrichtigungen aktivieren",
+  "notificationPermissionLater": "Später",
+  "notificationsBannerTitle": "Benachrichtigungen deaktiviert",
+  "notificationsBannerDescription": "Aktivieren Sie Benachrichtigungen, um Fütterungserinnerungen zu erhalten",
+  "notificationsBannerAction": "Aktivieren",
+  "notificationsSettingsTitle": "Benachrichtigungen",
+  "notificationsSettingsOpenSettings": "Einstellungen öffnen",
+  "notificationsSettingsDisabledHint": "Benachrichtigungen sind deaktiviert. Tippen Sie, um die Einstellungen zu öffnen und sie zu aktivieren.",
+  "freezeDayDialogTitle": "Fütterung verpasst",
+  "freezeDayDialogDescription": "Sie haben heute die Fütterung Ihrer Fische verpasst. Verwenden Sie einen Freeze-Tag, um Ihre Serie zu schützen!",
+  "freezeDayDialogNoFreezeDescription": "Sie haben heute die Fütterung Ihrer Fische verpasst und haben keine Freeze-Tage mehr. Ihre Serie wird zurückgesetzt.",
+  "freezeDayDialogStreakAtRisk": "{count}-Tage-Serie in Gefahr",
+  "freezeDayDialogUseFreeze": "Freeze-Tag verwenden ({count} übrig)",
+  "freezeDayDialogLoseStreak": "Serie verlieren",
+  "freezeIndicatorTooltipNone": "Keine Freeze-Tage mehr diesen Monat",
+  "freezeIndicatorTooltipOne": "1 Freeze-Tag verfügbar",
+  "freezeIndicatorTooltipMany": "{count} Freeze-Tage verfügbar",
+  "freezeWarningNotificationTitle": "Serie in Gefahr!",
+  "freezeWarningNotificationBody": "Sie haben {freezeCount} Freeze-Tag(e) verfügbar, um Ihre {streakCount}-Tage-Serie zu schützen!",
+
+  "emptyStateTodayTitle": "Keine Ereignisse heute",
+  "emptyStateTodayDescription": "Alle Ihre Fische sind gefüttert! Genießen Sie den Tag.",
+  "emptyStateFishListTitle": "Noch keine Fische",
+  "emptyStateFishListDescription": "Fügen Sie Ihren ersten Fisch hinzu, um Fütterungspläne zu verfolgen.",
+  "emptyStateFishListAction": "Fisch hinzufügen",
+  "emptyStateAchievementsTitle": "Noch keine Erfolge",
+  "emptyStateAchievementsDescription": "Füttern Sie Ihre Fische regelmäßig, um Erfolge freizuschalten!",
+  "emptyStateCalendarTitle": "Keine Fütterungshistorie",
+  "emptyStateCalendarDescription": "Beginnen Sie mit der Fütterungsverfolgung, um Ihre Historie hier zu sehen.",
+
+  "errorStateNetworkTitle": "Keine Verbindung",
+  "errorStateNetworkDescription": "Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  "errorStateServerTitle": "Etwas ist schiefgelaufen",
+  "errorStateServerDescription": "Wir haben Verbindungsprobleme. Bitte versuchen Sie es später erneut.",
+  "errorStateTimeoutTitle": "Server antwortet nicht",
+  "errorStateTimeoutDescription": "Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.",
+  "errorStateGenericTitle": "Ups!",
+  "errorStateGenericDescription": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+  "errorStateTryAgain": "Erneut versuchen",
+  "errorStateContactSupport": "Support kontaktieren",
+
+  "offlineBannerTitle": "Sie sind offline",
+  "@offlineBannerTitle": {
+    "description": "Title for the offline banner"
+  },
+  "offlineBannerDescription": "Einige Funktionen sind möglicherweise nicht verfügbar",
+  "@offlineBannerDescription": {
+    "description": "Description for the offline banner"
+  },
+
+  "lowStorageTitle": "Speicherplatz niedrig",
+  "@lowStorageTitle": {
+    "description": "Title for low storage warning dialog"
+  },
+  "lowStorageDescription": "Ihr Gerät hat weniger als {size} MB freien Speicher. Einige Funktionen funktionieren möglicherweise nicht richtig.",
+  "@lowStorageDescription": {
+    "description": "Description for low storage warning",
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "lowStorageClearCache": "Cache leeren",
+  "@lowStorageClearCache": {
+    "description": "Button to clear cache"
+  },
+  "lowStorageDismiss": "Verstanden",
+  "@lowStorageDismiss": {
+    "description": "Button to dismiss low storage warning"
+  },
+  "cacheCleared": "Cache erfolgreich geleert",
+  "@cacheCleared": {
+    "description": "Success message when cache is cleared"
+  },
+
+  "fishCount": "{count, plural, =0{Keine Fische} =1{1 Fisch} other{{count} Fische}}",
+  "@fishCount": {
+    "description": "Pluralized fish count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayCount": "{count, plural, =0{0 Tage} =1{1 Tag} other{{count} Tage}}",
+  "@dayCount": {
+    "description": "Pluralized day count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementCount": "{count, plural, =0{Keine Erfolge} =1{1 Erfolg} other{{count} Erfolge}}",
+  "@achievementCount": {
+    "description": "Pluralized achievement count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "{count, plural, =0{0 Tage Serie} =1{1 Tag Serie} other{{count} Tage Serie}}",
+  "@streakDays": {
+    "description": "Pluralized streak days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "syncStatusOffline": "Offline",
+  "syncStatusSyncing": "Synchronisierung...",
+  "syncStatusSynced": "Synchronisiert",
+  "syncStatusError": "Sync fehlgeschlagen",
+  "syncStatusJustNow": "Gerade eben",
+  "syncStatusMinutesAgo": "{count, plural, =1{vor 1 Min.} other{vor {count} Min.}}",
+  "@syncStatusMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusHoursAgo": "{count, plural, =1{vor 1 Stunde} other{vor {count} Stunden}}",
+  "@syncStatusHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusDaysAgo": "{count, plural, =1{vor 1 Tag} other{vor {count} Tagen}}",
+  "@syncStatusDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCannotSyncOffline": "Synchronisierung offline nicht möglich",
+
+  "conflictDialogTitle": "Sync-Konflikt",
+  "conflictDialogDescription": "Dieses Element wurde auf einem anderen Gerät geändert. Wählen Sie, welche Version behalten werden soll.",
+  "conflictDifferingFields": "Geänderte Felder:",
+  "conflictLocalVersion": "Ihre Version",
+  "conflictServerVersion": "Server-Version",
+  "conflictKeepMyVersion": "Meine behalten",
+  "conflictUseServerVersion": "Server verwenden",
+  "conflictDeletionTitle": "Löschkonflikt",
+  "conflictDeletionDescription": "Dieses Element wurde auf einem anderen Gerät gelöscht, aber Sie haben lokale Änderungen vorgenommen. Wählen Sie, ob Sie es wiederherstellen oder löschen möchten.",
+  "conflictRestoreItem": "Wiederherstellen",
+  "conflictDeleteItem": "Löschen",
+  "conflictDeletedOn": "Gelöscht am {date}",
+
+  "myAquarium": "Mein Aquarium",
+  "manageFish": "Verwalten",
+  "addFish": "Fisch hinzufügen",
+  "editFish": "Fisch bearbeiten",
+  "deleteFish": "Löschen",
+  "deleteFishTitle": "{name} löschen?",
+  "@deleteFishTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeleteFish": "Dies entfernt den Fisch und seinen Fütterungsplan.",
+  "fishQuantity": "Anzahl",
+  "customName": "Eigener Name",
+  "customNameHint": "Geben Sie Ihrem Fisch einen Namen",
+  "customNameOptional": "Optional - leer lassen für Artnamen",
+  "emptyAquarium": "Noch keine Fische",
+  "addFirstFish": "Fügen Sie Ihren ersten Fisch hinzu",
+  "addFirstFishDescription": "Fügen Sie Ihren ersten Fisch hinzu, um die Fütterung zu verfolgen",
+  "fishAddedSuccessfully": "{name} erfolgreich hinzugefügt",
+  "@fishAddedSuccessfully": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fishDeletedSuccessfully": "Fisch gelöscht",
+  "fishUpdatedSuccessfully": "Änderungen gespeichert",
+  "moreCount": "+{count} weitere",
+  "@moreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addFishTooltip": "Fisch hinzufügen",
+  "editFishDetails": "Fischdetails bearbeiten",
+  "fishNotFound": "Fisch nicht gefunden",
+  "fishNotFoundDescription": "Der Fisch, den Sie bearbeiten möchten, existiert nicht mehr.",
+  "goBack": "Zurück",
+  "failedToSaveChanges": "Speichern fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "scanWithAiCamera": "Mit AI-Kamera scannen",
+  "takePhotoToIdentify": "Foto machen, um Fischart zu identifizieren",
+  "selectFromList": "Aus Liste auswählen",
+  "chooseFromSpeciesList": "Aus verfügbaren Arten auswählen",
+
+  "statisticsTitle": "Statistiken",
+  "feedingsLabel": "Fütterungen",
+  "daysWithApp": "Tage mit FishFeed",
+  "onTimeLabel": "Pünktlich",
+  "levelLabel": "Level",
+  "experienceLabel": "Erfahrung",
+
+  "streakTitle": "Serie",
+  "currentStreakLabel": "Aktuelle Serie",
+  "bestStreakLabel": "Beste",
+  "freezeLabel": "Freeze",
+  "freezeDaysTitle": "Freeze-Tage",
+  "freezeDaysDescription": "Freeze-Tage schützen Ihre Serie, wenn Sie eine Fütterung verpassen.",
+  "freezeDaysPerMonth": "Sie erhalten {count} Freeze-Tage pro Monat",
+  "freezeDaysAutoUsed": "Freeze wird automatisch verwendet, wenn Sie einen Tag verpassen",
+  "freezeDaysAvailable": "Verfügbare Freeze-Tage: {count}",
+  "gotItButton": "Verstanden",
+  "milestoneDays": "{count} Tage",
+  "streakDaysInRow": "{count} Tage hintereinander!",
+  "continueButton": "Weiter",
+
+  "achievementsTitle": "Erfolge",
+  "achievementFailedToLoad": "Erfolge konnten nicht geladen werden",
+  "achievementCompleteToUnlock": "Schließen Sie die Herausforderung ab, um freizuschalten",
+  "progressLabel": "Fortschritt",
+  "shareButton": "Teilen",
+  "sharingButton": "Teilen...",
+  "achievementUnlocked": "Erfolg freigeschaltet!",
+  "tapToClose": "Tippen zum Schließen",
+  "achievementProgress": "Fortschritt: {percent}%",
+  "notUnlockedYet": "Noch nicht freigeschaltet",
+  "locked": "Gesperrt",
+  "achievementProgressTitle": "Erfolgsfortschritt",
+  "unlockedOn": "Freigeschaltet am {date}",
+
+  "feedingLabel": "Fütterung",
+  "feedingCompleted": "Fütterung abgeschlossen!",
+  "feedingMissed": "Verpasst",
+  "statusGreatJob": "Gut gemacht!",
+  "statusNextTime": "Nächstes Mal klappt es!",
+  "statusPendingFeeding": "Ausstehende Fütterung",
+
+  "levelBeginner": "Anfänger",
+  "levelCaretaker": "Pfleger",
+  "levelMaster": "Meister",
+  "levelPro": "Profi",
+  "levelBeginnerTooltip": "Anfänger-Aquarianer - erste Schritte in der Fischpflege",
+  "levelCaretakerTooltip": "Pfleger - kümmern sich regelmäßig um Ihre Fische",
+  "levelMasterTooltip": "Meister - erfahrener Aquarianer",
+  "levelProTooltip": "Profi - Experte in der Fischpflege!",
+  "maxLevel": "Max. Level",
+
+  "familyAccess": "Familienzugang",
+  "familyMode": "Familienmodus",
+  "familyModeDescription": "Laden Sie Familienmitglieder ein, gemeinsam für Ihre Fische zu sorgen. Jeder kann füttern und sehen, wer gefüttert hat.",
+  "activeInvitations": "Aktive Einladungen",
+  "familyMembers": "Familienmitglieder",
+  "membersCount": "Mitglieder: {current} / {max}",
+  "limitReached": "Limit erreicht",
+  "freePlanLimitReached": "Kostenlos-Plan-Limit erreicht",
+  "upgradeToPremiumFamily": "Upgrade auf Premium, um bis zu {count} Familienmitglieder hinzuzufügen und auf Fütterungsstatistiken zuzugreifen.",
+  "upToMembers": "Bis zu {count} Mitglieder",
+  "statisticsFeature": "Statistiken",
+  "managementFeature": "Verwaltung",
+  "goToPremium": "Zu Premium",
+  "inviteFamilyMember": "Familienmitglied einladen",
+  "youAreOnlyMember": "Sie sind das einzige Familienmitglied",
+  "inviteSomeone": "Laden Sie jemanden ein, gemeinsam das Aquarium zu pflegen",
+  "joinMyAquarium": "Tritt meinem Aquarium in FishFeed bei!\n\nFolge dem Link: {link}\n\nOder gib den Code ein: {code}",
+  "invitationToFishFeed": "Einladung zu FishFeed",
+  "linkCopied": "Link kopiert",
+  "cancelInvitation": "Einladung stornieren?",
+  "cancelInvitationDescription": "Diese Einladung kann nicht mehr verwendet werden.",
+  "no": "Nein",
+  "removeMember": "Mitglied entfernen?",
+  "removeMemberDescription": "Sind Sie sicher, dass Sie {name} entfernen möchten?",
+  "remove": "Entfernen",
+  "invitationCreated": "Einladung erstellt!",
+  "validForHours": "Gültig für {hours} Stunden",
+  "invitationCode": "Einladungscode",
+  "copy": "Kopieren",
+  "share": "Teilen",
+  "validForHoursShort": "Gültig für {hours}h",
+  "validForMinutesShort": "Gültig für {minutes}m",
+  "expiring": "Läuft ab",
+  "user": "Benutzer",
+  "owner": "Besitzer",
+  "member": "Mitglied",
+  "joinedDate": "Beigetreten: {date}",
+  "feedingsThisWeek": "{count} diese Woche",
+  "feedingsThisMonth": "{count} diesen Monat",
+  "errorOccurred": "Ein Fehler ist aufgetreten",
+
+  "joiningFamily": "Familie beitreten...",
+  "processingInvitation": "Bitte warten Sie, während wir Ihre Einladung verarbeiten",
+  "congratulations": "Herzlichen Glückwunsch!",
+  "joinedFamilySuccess": "Sie sind dem Familienaquarium erfolgreich beigetreten",
+  "redirecting": "Weiterleitung...",
+  "loginRequired": "Anmeldung erforderlich",
+  "invitationError": "Einladungsfehler",
+  "loginToAcceptInvitation": "Melden Sie sich an, um die Einladung anzunehmen",
+  "logIn": "Anmelden",
+  "toHome": "Zur Startseite",
+
+  "feedingCompletedByUser": "Fütterung abgeschlossen: {userName}",
+  "familyMember": "Familienmitglied",
+  "feedingDone": "Fütterung erledigt",
+
+  "feedingTime": "Fütterungszeit!",
+  "timeToFeed": "Zeit, {fishName} zu füttern",
+  "yourFish": "Ihre Fische",
+  "eventOverdue": "Ereignis überfällig",
+  "eventOverdueFor": "Ereignis überfällig für {fishName}",
+  "confirmStatus": "Status bestätigen",
+  "confirmFeedingStatus": "Fütterungsstatus bestätigen",
+  "fedAction": "Gefüttert ✓",
+  "snoozeAction": "15 Min. später",
+
+  "shareAchievementGeneric": "Ich habe den Erfolg \"{title}\" in FishFeed erhalten! 🐟🏆",
+  "shareFirstFeeding": "Ich habe angefangen, mich um Fische in FishFeed zu kümmern! 🐟 Erste Fütterung erledigt! 🎉",
+  "shareStreak7": "Eine Woche ohne Auslassen! 🔥 Meine Serie in FishFeed: 7 Tage! 🏆",
+  "shareStreak30": "Ein Monat Perfektion! 🌟 30 Tage Fütterungen in Folge in FishFeed! 🔥",
+  "shareStreak100": "Legendäre Serie! 💎 100 Tage Fütterungen ohne Auslassen in FishFeed! 🏆🔥",
+  "sharePerfectWeek": "Perfekte Woche! ✨ Keine verpassten Fütterungen in FishFeed! 🐟",
+  "shareFeedings100": "Hundert Fütterungen! 🎯 100 Mal meine Fische in FishFeed gefüttert! 🐟",
+  "shareFeedings500": "Fütterungsmeister! 👑 500 Fütterungen in FishFeed! Meine Fische sind in guten Händen! 🐟🏆",
+  "shareStreakLong": "Unglaublich! 💎 Meine Serie in {appName}: {days} Tage! 🔥🏆",
+  "shareStreakMedium": "Erstaunlich! 🌟 Meine Serie in {appName}: {days} Tage! 🔥",
+  "shareStreakShort": "Toll! 🔥 Meine Serie in {appName}: {days} Tage!",
+  "shareStreakDefault": "Meine Serie in {appName}: {days} Tage! 🐟",
+  "achievementUnlockedCard": "ERFOLG FREIGESCHALTET",
+
+  "today": "Heute",
+  "yesterday": "Gestern",
+  "tomorrow": "Morgen",
+  "monday": "Montag",
+  "tuesday": "Dienstag",
+  "wednesday": "Mittwoch",
+  "thursday": "Donnerstag",
+  "friday": "Freitag",
+  "saturday": "Samstag",
+  "sunday": "Sonntag",
+  "monthJan": "Jan",
+  "monthFeb": "Feb",
+  "monthMar": "Mär",
+  "monthApr": "Apr",
+  "monthMay": "Mai",
+  "monthJun": "Jun",
+  "monthJul": "Jul",
+  "monthAug": "Aug",
+  "monthSep": "Sep",
+  "monthOct": "Okt",
+  "monthNov": "Nov",
+  "monthDec": "Dez",
+  "noFeedingsScheduled": "Keine Fütterungen geplant",
+  "feedingsCompleted": "{completed} von {total} Fütterungen abgeschlossen",
+  "statusComplete": "Vollständig",
+  "statusMissed": "Verpasst",
+  "statusPartial": "Teilweise",
+  "statusNoData": "Keine Daten",
+  "loadingFeedings": "Lade Fütterungen...",
+  "allFeedingsCompleted": "Alle Fütterungen abgeschlossen",
+  "allFeedingsMissed": "Alle Fütterungen verpasst",
+  "someFeedingsCompleted": "Einige Fütterungen abgeschlossen",
+  "noFeedingData": "Keine Fütterungsdaten",
+
+  "logoutConfirmTitle": "Abmelden",
+  "logoutConfirmMessage": "Sind Sie sicher, dass Sie sich abmelden möchten?",
+  "deleteAccountTitle": "Konto löschen",
+  "deleteAccountConfirm": "Endgültige Bestätigung",
+  "deleteMyAccount": "Mein Konto löschen",
+  "subscription": "Abonnement",
+  "restorePurchases": "Käufe wiederherstellen",
+  "recoverPreviousPurchases": "Frühere Käufe wiederherstellen",
+
+  "takePhoto": "Foto aufnehmen",
+  "chooseFromGallery": "Aus Galerie wählen",
+  "nickname": "Spitzname",
+  "nicknameUpdated": "Spitzname erfolgreich aktualisiert",
+  "failedToShareProfile": "Profil konnte nicht geteilt werden",
+  "shareProfile": "Profil teilen",
+
+  "premiumFeature": "Premium-Funktion",
+  "upgrade": "Upgrade",
+  "upgradeToPremium": "Auf Premium upgraden",
+  "unlockAllFeatures": "Alle Funktionen freischalten",
+  "upgradeToUnlock": "Upgrade, um {feature} freizuschalten",
+  "noAds": "Keine Werbung",
+  "unlimitedAiScans": "Unbegrenzte AI-Scans",
+  "sixMonthsHistory": "6 Monate Historie",
+  "viewPlans": "Pläne ansehen",
+  "trial": "Testversion",
+  "premium": "Premium",
+  "free": "Kostenlos",
+
+  "goPremium": "Zu Premium",
+  "addManually": "Manuell hinzufügen",
+  "maybeLater": "Vielleicht später",
+  "removeAds": "Werbung entfernen",
+  "oneTimePurchase": "Einmaliger Kauf",
+  "tryPremiumFeatures": "Alle Premium-Funktionen testen. Jederzeit kündbar.",
+  "upgradePremiumAiScans": "Upgrade auf Premium für unbegrenzte AI-Fischerkennung",
+  "priorityProcessing": "Prioritätsverarbeitung",
+  "higherAccuracy": "Höhere Genauigkeit",
+
+  "analyzing": "Analysiere...",
+  "retake": "Neu aufnehmen",
+  "selectManually": "Manuell auswählen",
+  "confirmAnyway": "Trotzdem bestätigen",
+  "notCorrect": "Nicht korrekt?",
+  "confirm": "Bestätigen",
+  "noScansLeft": "Keine Scans mehr",
+
+  "back": "Zurück",
+  "foodType": "Futterart",
+  "portion": "Portion",
+  "from": "Von",
+  "to": "Bis",
+
+  "continueWithGoogle": "Mit Google fortfahren",
+  "signInWithApple": "Mit Apple anmelden",
+
+  "appearance": "Darstellung",
+  "welcomeToPremium": "Willkommen bei Premium!",
+  "adsRemovedSuccessfully": "Werbung erfolgreich entfernt!",
+  "noPreviousPurchases": "Keine früheren Käufe gefunden",
+  "premiumComingSoon": "Premium-Abonnement kommt bald!",
+
+  "thisWeek": "Diese Woche",
+  "thisMonth": "Diesen Monat",
+  "sixMonths": "6 Monate",
+
+  "achievementFirstFeeding": "Erste Fütterung",
+  "achievementFirstFeedingDesc": "Schließen Sie Ihre erste Fütterung ab",
+  "achievementStreak7": "Wöchentliche Serie",
+  "achievementStreak7Desc": "7 aufeinanderfolgende Fütterungstage",
+  "achievementStreak30": "Monatliche Serie",
+  "achievementStreak30Desc": "30 aufeinanderfolgende Fütterungstage",
+  "achievementStreak100": "Legendäre Serie",
+  "achievementStreak100Desc": "100 aufeinanderfolgende Fütterungstage",
+  "achievementPerfectWeek": "Perfekte Woche",
+  "achievementPerfectWeekDesc": "Keine verpassten Fütterungen für eine ganze Woche",
+  "achievementFeedings100": "Jahrhundert-Fütterer",
+  "achievementFeedings100Desc": "100 Fütterungen insgesamt abschließen",
+  "achievementFeedings500": "Fütterungsmeister",
+  "achievementFeedings500Desc": "500 Fütterungen insgesamt abschließen",
+
+  "achievementLocked": "Gesperrt",
+  "achievementNotYetUnlocked": "Noch nicht freigeschaltet",
+  "achievementUnlockedOn": "Freigeschaltet am {date}",
+  "tapToDismiss": "Tippen zum Schließen",
+
+  "settingsSubscriptionSection": "Abonnement",
+  "settingsAppSection": "App",
+  "settingsAccountSection": "Konto",
+  "settingsLegalSection": "Rechtliches",
+  "settingsSupportSection": "Hilfe",
+  "settingsNotificationsSubtitle": "Fütterungserinnerungen verwalten",
+  "settingsAppearanceSubtitle": "Design und Anzeigeoptionen",
+  "settingsFamilySubtitle": "Familienmitglieder zum Helfen einladen",
+  "settingsDeleteAccountSubtitle": "Konto dauerhaft löschen",
+  "settingsPrivacyPolicy": "Datenschutzrichtlinie",
+  "settingsPrivacyPolicySubtitle": "Wie wir Ihre Daten behandeln",
+  "settingsTermsSubtitle": "Nutzungsbedingungen",
+  "settingsLicenses": "Lizenzen",
+  "settingsLicensesSubtitle": "Open-Source-Lizenzen",
+  "settingsContactSupport": "Support kontaktieren",
+  "settingsContactSupportSubtitle": "Hilfe per E-Mail erhalten",
+  "settingsRateApp": "App bewerten",
+  "settingsRateAppSubtitle": "Teilen Sie Ihre Erfahrung",
+  "settingsAppVersion": "App-Version",
+  "loading": "Laden...",
+  "logoutConfirmTitle": "Abmelden",
+  "logoutConfirmMessage": "Möchten Sie sich wirklich abmelden?",
+  "deleteAccountMessage": "Möchten Sie Ihr Konto wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden und alle Ihre Daten werden dauerhaft gelöscht.",
+  "deleteAccountWillDelete": "Folgendes wird dauerhaft gelöscht:",
+  "deleteAccountDataAquariums": "Alle Ihre Aquarien und Fischdaten",
+  "deleteAccountDataHistory": "Ihre Fütterungshistorie und Serien",
+  "deleteAccountDataAccount": "Ihr Konto und persönliche Informationen",
+  "deleteAccountIrreversible": "Diese Aktion ist unwiderruflich.",
+  "deleteMyAccount": "Mein Konto löschen",
+  "continueButton": "Weiter",
+  "couldNotOpenLink": "Link konnte nicht geöffnet werden",
+  "couldNotOpenAppStore": "App Store konnte nicht geöffnet werden",
+  "purchasesRestoredSuccess": "Käufe erfolgreich wiederhergestellt",
+  "failedToRestorePurchases": "Käufe konnten nicht wiederhergestellt werden",
+  "restorePurchasesSubtitle": "Frühere Käufe wiederherstellen",
+  "subscriptionTrialActive": "Testversion aktiv",
+  "subscriptionTrialEndsIn": "Testversion endet in {days} Tagen",
+  "subscriptionRenewsOn": "Verlängert sich am {date}",
+  "subscriptionExpiresOn": "Läuft ab am {date}",
+  "subscriptionActive": "Aktives Abonnement",
+  "subscriptionAdsRemoved": "Werbung entfernt",
+  "subscriptionFreePlan": "Kostenloser Plan",
+  "choosePhoto": "Foto auswählen",
+  "chooseFromGallery": "Aus Galerie wählen",
+  "setYourNickname": "Spitznamen festlegen",
+  "editNickname": "Spitznamen bearbeiten",
+  "enterYourNickname": "Geben Sie Ihren Spitznamen ein",
+  "permissionDenied": "Kamera- oder Galerieberechtigung verweigert. Bitte in den Einstellungen aktivieren.",
+  "failedToPickImage": "Bild konnte nicht ausgewählt werden. Bitte erneut versuchen.",
+  "failedToShareProfile": "Profil konnte nicht geteilt werden",
+  "shareProfileText": "Schaut euch mein FishFeed-Profil an! Ich bin {userName} auf FishFeed - der besten Aquarium-Management-App.",
+  "viewPremium": "Premium anzeigen",
+  "removeAds": "Werbung entfernen",
+  "anErrorOccurred": "Ein Fehler ist aufgetreten",
+  "accountDeletionNotImplemented": "Kontolöschung ist noch nicht implementiert",
+
+  "syncNewEventsReceived": "{count, plural, =1{1 neues Ereignis vom Server empfangen} other{{count} neue Ereignisse vom Server empfangen}}",
+  "@syncNewEventsReceived": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncEventsDeleted": "{count, plural, =1{1 Ereignis vom Server gelöscht} other{{count} Ereignisse vom Server gelöscht}}",
+  "@syncEventsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncConflictsDetected": "{count, plural, =1{1 Konflikt erfordert Aufmerksamkeit} other{{count} Konflikte erfordern Aufmerksamkeit}}",
+  "@syncConflictsDetected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncServerWins": "Server-Version angewendet",
+  "syncLocalWins": "Ihre Version behalten",
+
+  "aquariumName": "Aquariumname",
+  "aquariumNameHint": "z.B. Wohnzimmer-Aquarium",
+  "aquariumNameTooLong": "Name darf maximal 50 Zeichen lang sein",
+  "aquariumNameDescription": "Geben Sie Ihrem Aquarium einen Namen zur einfachen Identifizierung",
+  "createYourFirstAquarium": "Erstellen Sie Ihr erstes Aquarium",
+  "addAnotherAquarium": "Weiteres Aquarium hinzufügen",
+  "waterType": "Wasserart",
+  "freshwater": "Süßwasser",
+  "saltwater": "Salzwasser",
+  "aquariumsCreated": "{count, plural, =1{1 Aquarium erstellt} other{{count} Aquarien erstellt}}",
+  "@aquariumsCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aquariumSetupComplete": "Aquarium-Einrichtung abgeschlossen!",
+  "addMoreAquariumQuestion": "Möchten Sie ein weiteres Aquarium hinzufügen?",
+  "previouslyCreated": "Zuvor erstellt",
+  "totalAquariums": "{count, plural, =1{1 Aquarium insgesamt} other{{count} Aquarien insgesamt}}",
+  "@totalAquariums": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "justCreated": "Neu",
+  "fishCountWithSpecies": "{fishCount} Fische ({speciesCount} Arten)",
+  "@fishCountWithSpecies": {
+    "placeholders": {
+      "fishCount": {
+        "type": "int"
+      },
+      "speciesCount": {
+        "type": "int"
+      }
+    }
+  },
+  "failedToCreateAquarium": "Aquarium konnte nicht erstellt werden. Bitte erneut versuchen.",
+  "enterAquariumName": "Geben Sie den Namen Ihres Aquariums ein",
+  "createAquarium": "Aquarium erstellen",
+  "finishSetup": "Einrichtung abschließen",
+  "myDefaultAquarium": "Mein Aquarium",
+  "addAquarium": "Aquarium hinzufügen",
+  "aquariumCreated": "Aquarium erstellt!",
+  "migratingData": "Ihre Daten werden migriert...",
+  "aquariumSummary": "{count, plural, =1{Sie haben 1 Aquarium erstellt} other{Sie haben {count} Aquarien erstellt}}",
+  "@aquariumSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noFeedingsForAquarium": "Keine Fütterungen geplant",
+  "selectAquarium": "Aquarium auswählen",
+  "newAquarium": "Neues Aquarium"
+}

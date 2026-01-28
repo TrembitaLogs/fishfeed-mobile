@@ -1,0 +1,2284 @@
+{
+  "@@locale": "en",
+  "appTitle": "FishFeed",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcomeMessage": "Welcome to FishFeed",
+  "@welcomeMessage": {
+    "description": "Welcome message shown on the home screen"
+  },
+  "loginButton": "Log In",
+  "@loginButton": {
+    "description": "Text for the login button"
+  },
+  "registerButton": "Register",
+  "@registerButton": {
+    "description": "Text for the register button"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile screen title"
+  },
+  "calendar": "Calendar",
+  "@calendar": {
+    "description": "Calendar screen title"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home screen title"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "logout": "Log Out",
+  "@logout": {
+    "description": "Logout button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button text"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Generic error title"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button text"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme setting label"
+  },
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark mode toggle label"
+  },
+  "lightMode": "Light Mode",
+  "@lightMode": {
+    "description": "Light mode toggle label"
+  },
+  "systemMode": "System",
+  "@systemMode": {
+    "description": "System theme mode label"
+  },
+  "fieldRequired": "This field is required",
+  "@fieldRequired": {
+    "description": "Validation error for required fields"
+  },
+  "invalidEmailFormat": "Invalid email format",
+  "@invalidEmailFormat": {
+    "description": "Validation error for invalid email"
+  },
+  "invalidPasswordFormat": "Password must be at least 8 characters with 1 number and 1 uppercase letter",
+  "@invalidPasswordFormat": {
+    "description": "Validation error for weak password"
+  },
+  "noAccount": "Don't have an account?",
+  "@noAccount": {
+    "description": "Text before register link"
+  },
+  "orContinueWith": "Or continue with",
+  "@orContinueWith": {
+    "description": "Divider text between form and OAuth buttons"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Validation error when passwords don't match"
+  },
+  "createAccountButton": "Create Account",
+  "@createAccountButton": {
+    "description": "Text for the create account button"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Text before login link on register screen"
+  },
+  "agreeToTermsPrefix": "I agree to the ",
+  "@agreeToTermsPrefix": {
+    "description": "Text before Terms of Service link"
+  },
+  "termsOfService": "Terms of Service",
+  "@termsOfService": {
+    "description": "Terms of Service link text"
+  },
+  "tosCheckboxRequired": "You must agree to the Terms of Service",
+  "@tosCheckboxRequired": {
+    "description": "Validation error when ToS checkbox is not checked"
+  },
+  "passwordWeak": "Weak",
+  "@passwordWeak": {
+    "description": "Password strength indicator - weak"
+  },
+  "passwordMedium": "Medium",
+  "@passwordMedium": {
+    "description": "Password strength indicator - medium"
+  },
+  "passwordStrong": "Strong",
+  "@passwordStrong": {
+    "description": "Password strength indicator - strong"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Register screen title"
+  },
+  "errorNoConnection": "No internet connection. Please check your network.",
+  "@errorNoConnection": {
+    "description": "Error message for network failures"
+  },
+  "errorServer": "Server error. Please try again later.",
+  "@errorServer": {
+    "description": "Error message for server failures"
+  },
+  "errorInvalidCredentials": "Invalid email or password. Please try again.",
+  "@errorInvalidCredentials": {
+    "description": "Error message for authentication failures"
+  },
+  "errorValidation": "Please check your input and try again.",
+  "@errorValidation": {
+    "description": "Error message for validation failures"
+  },
+  "errorOAuth": "Sign in failed. Please try again.",
+  "@errorOAuth": {
+    "description": "Error message for OAuth failures"
+  },
+  "errorGoogleSignIn": "Google sign in failed. Please try again.",
+  "@errorGoogleSignIn": {
+    "description": "Error message for Google OAuth failures"
+  },
+  "errorAppleSignIn": "Apple sign in failed. Please try again.",
+  "@errorAppleSignIn": {
+    "description": "Error message for Apple OAuth failures"
+  },
+  "errorOperationCancelled": "Operation was cancelled.",
+  "@errorOperationCancelled": {
+    "description": "Error message when user cancels an operation"
+  },
+  "errorLocalStorage": "Local storage error. Please restart the app.",
+  "@errorLocalStorage": {
+    "description": "Error message for cache/storage failures"
+  },
+  "errorUnexpected": "An unexpected error occurred. Please try again.",
+  "@errorUnexpected": {
+    "description": "Error message for unexpected failures"
+  },
+  "successLogin": "Welcome back!",
+  "@successLogin": {
+    "description": "Success message after login"
+  },
+  "successRegister": "Account created successfully!",
+  "@successRegister": {
+    "description": "Success message after registration"
+  },
+  "successLogout": "You have been logged out.",
+  "@successLogout": {
+    "description": "Success message after logout"
+  },
+  "notificationPermissionTitle": "Enable Notifications",
+  "@notificationPermissionTitle": {
+    "description": "Title for notification permission dialog"
+  },
+  "notificationPermissionDescription": "Get timely reminders to feed your fish. We'll notify you at scheduled feeding times so you never miss a meal.",
+  "@notificationPermissionDescription": {
+    "description": "Description explaining why notifications are needed"
+  },
+  "notificationPermissionEnable": "Enable Notifications",
+  "@notificationPermissionEnable": {
+    "description": "Button to enable notifications"
+  },
+  "notificationPermissionLater": "Later",
+  "@notificationPermissionLater": {
+    "description": "Button to decline notifications for now"
+  },
+  "notificationsBannerTitle": "Notifications Disabled",
+  "@notificationsBannerTitle": {
+    "description": "Title for the notifications disabled banner"
+  },
+  "notificationsBannerDescription": "Enable notifications to receive feeding reminders",
+  "@notificationsBannerDescription": {
+    "description": "Description for the notifications disabled banner"
+  },
+  "notificationsBannerAction": "Enable",
+  "@notificationsBannerAction": {
+    "description": "Action button on notifications banner"
+  },
+  "notificationsSettingsTitle": "Notifications",
+  "@notificationsSettingsTitle": {
+    "description": "Notifications section title in settings"
+  },
+  "notificationsSettingsOpenSettings": "Open Settings",
+  "@notificationsSettingsOpenSettings": {
+    "description": "Button to open system settings for notifications"
+  },
+  "notificationsSettingsDisabledHint": "Notifications are disabled. Tap to open settings and enable them.",
+  "@notificationsSettingsDisabledHint": {
+    "description": "Hint text when notifications are disabled"
+  },
+  "freezeDayDialogTitle": "Missed Feeding",
+  "@freezeDayDialogTitle": {
+    "description": "Title for the freeze day dialog"
+  },
+  "freezeDayDialogDescription": "You missed feeding your fish today. Use a freeze day to protect your streak!",
+  "@freezeDayDialogDescription": {
+    "description": "Description in the freeze day dialog when freeze is available"
+  },
+  "freezeDayDialogNoFreezeDescription": "You missed feeding your fish today and have no freeze days left. Your streak will be reset.",
+  "@freezeDayDialogNoFreezeDescription": {
+    "description": "Description in the freeze day dialog when no freeze is available"
+  },
+  "freezeDayDialogStreakAtRisk": "{count} day streak at risk",
+  "@freezeDayDialogStreakAtRisk": {
+    "description": "Shows the streak count at risk",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "freezeDayDialogUseFreeze": "Use Freeze Day ({count} left)",
+  "@freezeDayDialogUseFreeze": {
+    "description": "Button to use a freeze day",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "freezeDayDialogLoseStreak": "Lose Streak",
+  "@freezeDayDialogLoseStreak": {
+    "description": "Button to accept losing the streak"
+  },
+  "freezeIndicatorTooltipNone": "No freeze days left this month",
+  "@freezeIndicatorTooltipNone": {
+    "description": "Tooltip when no freeze days available"
+  },
+  "freezeIndicatorTooltipOne": "1 freeze day available",
+  "@freezeIndicatorTooltipOne": {
+    "description": "Tooltip when 1 freeze day available"
+  },
+  "freezeIndicatorTooltipMany": "{count} freeze days available",
+  "@freezeIndicatorTooltipMany": {
+    "description": "Tooltip when multiple freeze days available",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "freezeWarningNotificationTitle": "Streak at Risk!",
+  "@freezeWarningNotificationTitle": {
+    "description": "Title for freeze warning notification"
+  },
+  "freezeWarningNotificationBody": "You have {freezeCount} freeze day(s) available to protect your {streakCount} day streak!",
+  "@freezeWarningNotificationBody": {
+    "description": "Body for freeze warning notification",
+    "placeholders": {
+      "freezeCount": {
+        "type": "int"
+      },
+      "streakCount": {
+        "type": "int"
+      }
+    }
+  },
+
+  "emptyStateTodayTitle": "No events today",
+  "@emptyStateTodayTitle": {
+    "description": "Title for empty state on today view"
+  },
+  "emptyStateTodayDescription": "All your fish are fed! Enjoy the day.",
+  "@emptyStateTodayDescription": {
+    "description": "Description for empty state on today view"
+  },
+  "emptyStateFishListTitle": "No fish yet",
+  "@emptyStateFishListTitle": {
+    "description": "Title for empty state on fish list"
+  },
+  "emptyStateFishListDescription": "Add your first fish to start tracking feeding schedules.",
+  "@emptyStateFishListDescription": {
+    "description": "Description for empty state on fish list"
+  },
+  "emptyStateFishListAction": "Add Fish",
+  "@emptyStateFishListAction": {
+    "description": "Action button for empty state on fish list"
+  },
+  "emptyStateAchievementsTitle": "No achievements yet",
+  "@emptyStateAchievementsTitle": {
+    "description": "Title for empty state on achievements screen"
+  },
+  "emptyStateAchievementsDescription": "Start feeding your fish regularly to unlock achievements!",
+  "@emptyStateAchievementsDescription": {
+    "description": "Description for empty state on achievements screen"
+  },
+  "emptyStateCalendarTitle": "No feeding history",
+  "@emptyStateCalendarTitle": {
+    "description": "Title for empty state on calendar screen"
+  },
+  "emptyStateCalendarDescription": "Start tracking feedings to see your history here.",
+  "@emptyStateCalendarDescription": {
+    "description": "Description for empty state on calendar screen"
+  },
+
+  "errorStateNetworkTitle": "No connection",
+  "@errorStateNetworkTitle": {
+    "description": "Title for network error state"
+  },
+  "errorStateNetworkDescription": "Please check your internet connection and try again.",
+  "@errorStateNetworkDescription": {
+    "description": "Description for network error state"
+  },
+  "errorStateServerTitle": "Something went wrong",
+  "@errorStateServerTitle": {
+    "description": "Title for server error state"
+  },
+  "errorStateServerDescription": "We're having trouble connecting. Please try again later.",
+  "@errorStateServerDescription": {
+    "description": "Description for server error state"
+  },
+  "errorStateTimeoutTitle": "Server not responding",
+  "@errorStateTimeoutTitle": {
+    "description": "Title for timeout error state"
+  },
+  "errorStateTimeoutDescription": "The request took too long. Please try again.",
+  "@errorStateTimeoutDescription": {
+    "description": "Description for timeout error state"
+  },
+  "errorStateGenericTitle": "Oops!",
+  "@errorStateGenericTitle": {
+    "description": "Title for generic error state"
+  },
+  "errorStateGenericDescription": "Something went wrong. Please try again.",
+  "@errorStateGenericDescription": {
+    "description": "Description for generic error state"
+  },
+  "errorStateTryAgain": "Try Again",
+  "@errorStateTryAgain": {
+    "description": "Try again button text for error states"
+  },
+  "errorStateContactSupport": "Contact Support",
+  "@errorStateContactSupport": {
+    "description": "Contact support link text for error states"
+  },
+
+  "offlineBannerTitle": "You're offline",
+  "@offlineBannerTitle": {
+    "description": "Title for the offline banner"
+  },
+  "offlineBannerDescription": "Some features may not be available",
+  "@offlineBannerDescription": {
+    "description": "Description for the offline banner"
+  },
+
+  "lowStorageTitle": "Storage Low",
+  "@lowStorageTitle": {
+    "description": "Title for low storage warning dialog"
+  },
+  "lowStorageDescription": "Your device has less than {size} MB of free storage. Some features may not work properly.",
+  "@lowStorageDescription": {
+    "description": "Description for low storage warning",
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "lowStorageClearCache": "Clear Cache",
+  "@lowStorageClearCache": {
+    "description": "Button to clear cache"
+  },
+  "lowStorageDismiss": "Got it",
+  "@lowStorageDismiss": {
+    "description": "Button to dismiss low storage warning"
+  },
+  "cacheCleared": "Cache cleared successfully",
+  "@cacheCleared": {
+    "description": "Success message when cache is cleared"
+  },
+
+  "fishCount": "{count, plural, =0{No fish} =1{1 fish} other{{count} fish}}",
+  "@fishCount": {
+    "description": "Pluralized fish count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayCount": "{count, plural, =0{0 days} =1{1 day} other{{count} days}}",
+  "@dayCount": {
+    "description": "Pluralized day count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementCount": "{count, plural, =0{No achievements} =1{1 achievement} other{{count} achievements}}",
+  "@achievementCount": {
+    "description": "Pluralized achievement count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "{count, plural, =0{0 day streak} =1{1 day streak} other{{count} day streak}}",
+  "@streakDays": {
+    "description": "Pluralized streak days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "syncStatusOffline": "Offline",
+  "@syncStatusOffline": {
+    "description": "Sync status when device is offline"
+  },
+  "syncStatusSyncing": "Syncing...",
+  "@syncStatusSyncing": {
+    "description": "Sync status when sync is in progress"
+  },
+  "syncStatusSynced": "Synced",
+  "@syncStatusSynced": {
+    "description": "Sync status when sync is complete"
+  },
+  "syncStatusError": "Sync failed",
+  "@syncStatusError": {
+    "description": "Sync status when sync has failed"
+  },
+  "syncStatusJustNow": "Just now",
+  "@syncStatusJustNow": {
+    "description": "Relative time for less than a minute ago"
+  },
+  "syncStatusMinutesAgo": "{count, plural, =1{1 min ago} other{{count} min ago}}",
+  "@syncStatusMinutesAgo": {
+    "description": "Relative time for minutes ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@syncStatusHoursAgo": {
+    "description": "Relative time for hours ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@syncStatusDaysAgo": {
+    "description": "Relative time for days ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncCannotSyncOffline": "Cannot sync while offline",
+  "@syncCannotSyncOffline": {
+    "description": "Message when trying to sync while offline"
+  },
+
+  "conflictDialogTitle": "Sync Conflict",
+  "@conflictDialogTitle": {
+    "description": "Title for the conflict resolution dialog"
+  },
+  "conflictDialogDescription": "This item was modified on another device. Choose which version to keep.",
+  "@conflictDialogDescription": {
+    "description": "Description for the conflict resolution dialog"
+  },
+  "conflictDifferingFields": "Changed fields:",
+  "@conflictDifferingFields": {
+    "description": "Label for the list of conflicting fields"
+  },
+  "conflictLocalVersion": "Your version",
+  "@conflictLocalVersion": {
+    "description": "Label for the local version in conflict dialog"
+  },
+  "conflictServerVersion": "Server version",
+  "@conflictServerVersion": {
+    "description": "Label for the server version in conflict dialog"
+  },
+  "conflictKeepMyVersion": "Keep mine",
+  "@conflictKeepMyVersion": {
+    "description": "Button to keep local version"
+  },
+  "conflictUseServerVersion": "Use server",
+  "@conflictUseServerVersion": {
+    "description": "Button to use server version"
+  },
+  "conflictDeletionTitle": "Deletion Conflict",
+  "@conflictDeletionTitle": {
+    "description": "Title for deletion conflict dialog"
+  },
+  "conflictDeletionDescription": "This item was deleted on another device but you made changes locally. Choose whether to restore or delete it.",
+  "@conflictDeletionDescription": {
+    "description": "Description for deletion conflict dialog"
+  },
+  "conflictRestoreItem": "Restore",
+  "@conflictRestoreItem": {
+    "description": "Button to restore deleted item"
+  },
+  "conflictDeleteItem": "Delete",
+  "@conflictDeleteItem": {
+    "description": "Button to confirm deletion"
+  },
+  "conflictDeletedOn": "Deleted on {date}",
+  "@conflictDeletedOn": {
+    "description": "Shows when item was deleted on server",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "myAquarium": "My Aquarium",
+  "@myAquarium": {
+    "description": "My Aquarium section title"
+  },
+  "manageFish": "Manage",
+  "@manageFish": {
+    "description": "Button to manage fish in aquarium"
+  },
+  "addFish": "Add Fish",
+  "@addFish": {
+    "description": "Button to add a new fish"
+  },
+  "editFish": "Edit Fish",
+  "@editFish": {
+    "description": "Edit fish screen title"
+  },
+  "deleteFish": "Delete",
+  "@deleteFish": {
+    "description": "Delete fish action"
+  },
+  "deleteFishTitle": "Delete {name}?",
+  "@deleteFishTitle": {
+    "description": "Delete fish confirmation dialog title",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeleteFish": "This will remove the fish and its feeding schedule.",
+  "@confirmDeleteFish": {
+    "description": "Delete fish confirmation message"
+  },
+  "fishQuantity": "Quantity",
+  "@fishQuantity": {
+    "description": "Fish quantity label"
+  },
+  "customName": "Custom Name",
+  "@customName": {
+    "description": "Custom name field label"
+  },
+  "customNameHint": "Give your fish a name",
+  "@customNameHint": {
+    "description": "Custom name field hint"
+  },
+  "customNameOptional": "Optional - leave blank to use species name",
+  "@customNameOptional": {
+    "description": "Custom name field helper text"
+  },
+  "emptyAquarium": "No fish yet",
+  "@emptyAquarium": {
+    "description": "Empty aquarium state title"
+  },
+  "addFirstFish": "Add your first fish",
+  "@addFirstFish": {
+    "description": "Empty state call to action"
+  },
+  "addFirstFishDescription": "Add your first fish to start tracking feedings",
+  "@addFirstFishDescription": {
+    "description": "Empty state description on aquarium screen"
+  },
+  "fishAddedSuccessfully": "{name} added successfully",
+  "@fishAddedSuccessfully": {
+    "description": "Success message when fish is added",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fishDeletedSuccessfully": "Fish deleted",
+  "@fishDeletedSuccessfully": {
+    "description": "Success message when fish is deleted"
+  },
+  "fishUpdatedSuccessfully": "Changes saved",
+  "@fishUpdatedSuccessfully": {
+    "description": "Success message when fish is updated"
+  },
+  "moreCount": "+{count} more",
+  "@moreCount": {
+    "description": "Shows remaining count in preview",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addFishTooltip": "Add fish",
+  "@addFishTooltip": {
+    "description": "Tooltip for add fish FAB"
+  },
+  "editFishDetails": "Edit fish details",
+  "@editFishDetails": {
+    "description": "Subtitle on edit fish screen"
+  },
+  "fishNotFound": "Fish not found",
+  "@fishNotFound": {
+    "description": "Error title when fish not found"
+  },
+  "fishNotFoundDescription": "The fish you are trying to edit no longer exists.",
+  "@fishNotFoundDescription": {
+    "description": "Error description when fish not found"
+  },
+  "goBack": "Go back",
+  "@goBack": {
+    "description": "Button to go back"
+  },
+  "failedToSaveChanges": "Failed to save changes. Please try again.",
+  "@failedToSaveChanges": {
+    "description": "Error message when save fails"
+  },
+  "scanWithAiCamera": "Scan with AI Camera",
+  "@scanWithAiCamera": {
+    "description": "Option to add fish using AI camera"
+  },
+  "takePhotoToIdentify": "Take a photo to identify fish species",
+  "@takePhotoToIdentify": {
+    "description": "Subtitle for AI camera option"
+  },
+  "selectFromList": "Select from list",
+  "@selectFromList": {
+    "description": "Option to manually select fish from list"
+  },
+  "chooseFromSpeciesList": "Choose from available species",
+  "@chooseFromSpeciesList": {
+    "description": "Subtitle for manual selection option"
+  },
+
+  "statisticsTitle": "Statistics",
+  "@statisticsTitle": {
+    "description": "Statistics section title"
+  },
+  "feedingsLabel": "Feedings",
+  "@feedingsLabel": {
+    "description": "Label for feedings count"
+  },
+  "daysWithApp": "Days with FishFeed",
+  "@daysWithApp": {
+    "description": "Label for days using the app"
+  },
+  "onTimeLabel": "On time",
+  "@onTimeLabel": {
+    "description": "Label for on-time feeding percentage"
+  },
+  "levelLabel": "Level",
+  "@levelLabel": {
+    "description": "Label for user level"
+  },
+  "experienceLabel": "Experience",
+  "@experienceLabel": {
+    "description": "Label for XP/experience"
+  },
+
+  "streakTitle": "Streak",
+  "@streakTitle": {
+    "description": "Streak section title"
+  },
+  "currentStreakLabel": "Current streak",
+  "@currentStreakLabel": {
+    "description": "Label for current streak"
+  },
+  "bestStreakLabel": "Best",
+  "@bestStreakLabel": {
+    "description": "Label for best streak"
+  },
+  "freezeLabel": "Freeze",
+  "@freezeLabel": {
+    "description": "Label for freeze days"
+  },
+  "freezeDaysTitle": "Freeze Days",
+  "@freezeDaysTitle": {
+    "description": "Title for freeze days dialog"
+  },
+  "freezeDaysDescription": "Freeze days protect your streak when you miss a feeding.",
+  "@freezeDaysDescription": {
+    "description": "Description of freeze days"
+  },
+  "freezeDaysPerMonth": "You get {count} freeze days per month",
+  "@freezeDaysPerMonth": {
+    "description": "Info about monthly freeze days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "freezeDaysAutoUsed": "Freeze is used automatically when you miss a day",
+  "@freezeDaysAutoUsed": {
+    "description": "Info about automatic freeze usage"
+  },
+  "freezeDaysAvailable": "Available freeze days: {count}",
+  "@freezeDaysAvailable": {
+    "description": "Shows available freeze days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gotItButton": "Got it",
+  "@gotItButton": {
+    "description": "Got it button text"
+  },
+  "milestoneDays": "{count} days",
+  "@milestoneDays": {
+    "description": "Milestone badge text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDaysInRow": "{count} days in a row!",
+  "@streakDaysInRow": {
+    "description": "Streak tooltip text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button text"
+  },
+
+  "achievementsTitle": "Achievements",
+  "@achievementsTitle": {
+    "description": "Achievements screen/section title"
+  },
+  "achievementFailedToLoad": "Failed to load achievements",
+  "@achievementFailedToLoad": {
+    "description": "Error message when achievements fail to load"
+  },
+  "achievementCompleteToUnlock": "Complete the challenge to unlock",
+  "@achievementCompleteToUnlock": {
+    "description": "Hint for locked achievements"
+  },
+  "progressLabel": "Progress",
+  "@progressLabel": {
+    "description": "Label for progress indicator"
+  },
+  "shareButton": "Share",
+  "@shareButton": {
+    "description": "Share button text"
+  },
+  "sharingButton": "Sharing...",
+  "@sharingButton": {
+    "description": "Share button text while sharing"
+  },
+  "achievementUnlocked": "Achievement Unlocked!",
+  "@achievementUnlocked": {
+    "description": "Achievement unlock overlay title"
+  },
+  "tapToClose": "Tap to close",
+  "@tapToClose": {
+    "description": "Hint to close overlay"
+  },
+  "achievementProgress": "Progress: {percent}%",
+  "@achievementProgress": {
+    "description": "Achievement progress text",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notUnlockedYet": "Not unlocked yet",
+  "@notUnlockedYet": {
+    "description": "Text for locked achievements"
+  },
+  "locked": "Locked",
+  "@locked": {
+    "description": "Locked status label"
+  },
+  "achievementProgressTitle": "Achievement Progress",
+  "@achievementProgressTitle": {
+    "description": "Title for achievement progress section"
+  },
+  "unlockedOn": "Unlocked {date}",
+  "@unlockedOn": {
+    "description": "Text showing when achievement was unlocked",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "feedingLabel": "Feeding",
+  "@feedingLabel": {
+    "description": "Feeding card label"
+  },
+  "feedingCompleted": "Feeding completed!",
+  "@feedingCompleted": {
+    "description": "Snackbar message when feeding is completed"
+  },
+  "feedingMissed": "Missed",
+  "@feedingMissed": {
+    "description": "Missed feeding status label"
+  },
+  "statusGreatJob": "Great job!",
+  "@statusGreatJob": {
+    "description": "Status message for completed feeding"
+  },
+  "statusNextTime": "Next time will work!",
+  "@statusNextTime": {
+    "description": "Status message for missed feeding"
+  },
+  "statusPendingFeeding": "Pending feeding",
+  "@statusPendingFeeding": {
+    "description": "Status message for pending feeding"
+  },
+
+  "levelBeginner": "Beginner",
+  "@levelBeginner": {
+    "description": "Beginner level name"
+  },
+  "levelCaretaker": "Caretaker",
+  "@levelCaretaker": {
+    "description": "Caretaker level name"
+  },
+  "levelMaster": "Master",
+  "@levelMaster": {
+    "description": "Master level name"
+  },
+  "levelPro": "Pro",
+  "@levelPro": {
+    "description": "Pro level name"
+  },
+  "levelBeginnerTooltip": "Beginner Aquarist - first steps in fish care",
+  "@levelBeginnerTooltip": {
+    "description": "Tooltip for beginner level"
+  },
+  "levelCaretakerTooltip": "Caretaker - consistently caring for your fish",
+  "@levelCaretakerTooltip": {
+    "description": "Tooltip for caretaker level"
+  },
+  "levelMasterTooltip": "Master - experienced aquarist",
+  "@levelMasterTooltip": {
+    "description": "Tooltip for master level"
+  },
+  "levelProTooltip": "Professional - expert in fish care!",
+  "@levelProTooltip": {
+    "description": "Tooltip for pro level"
+  },
+  "maxLevel": "Max Level",
+  "@maxLevel": {
+    "description": "Text shown when user is at max level"
+  },
+
+  "familyAccess": "Family Access",
+  "@familyAccess": {
+    "description": "Family access screen title"
+  },
+  "familyMode": "Family Mode",
+  "@familyMode": {
+    "description": "Family mode section title"
+  },
+  "familyModeDescription": "Invite family members to care for your fish together. Everyone can feed and see who fed.",
+  "@familyModeDescription": {
+    "description": "Description of family mode"
+  },
+  "activeInvitations": "Active Invitations",
+  "@activeInvitations": {
+    "description": "Section title for active invitations"
+  },
+  "familyMembers": "Family Members",
+  "@familyMembers": {
+    "description": "Section title for family members"
+  },
+  "membersCount": "Members: {current} / {max}",
+  "@membersCount": {
+    "description": "Shows current and max member count",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "limitReached": "Limit reached",
+  "@limitReached": {
+    "description": "Text when member limit is reached"
+  },
+  "freePlanLimitReached": "Free plan limit reached",
+  "@freePlanLimitReached": {
+    "description": "Text when free plan limit is reached"
+  },
+  "upgradeToPremiumFamily": "Upgrade to Premium to add up to {count} family members and access feeding statistics.",
+  "@upgradeToPremiumFamily": {
+    "description": "Premium upgrade prompt for family",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "upToMembers": "Up to {count} members",
+  "@upToMembers": {
+    "description": "Premium benefit - members count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsFeature": "Statistics",
+  "@statisticsFeature": {
+    "description": "Premium feature name"
+  },
+  "managementFeature": "Management",
+  "@managementFeature": {
+    "description": "Premium feature name"
+  },
+  "goToPremium": "Go to Premium",
+  "@goToPremium": {
+    "description": "Button to go to premium"
+  },
+  "inviteFamilyMember": "Invite family member",
+  "@inviteFamilyMember": {
+    "description": "Button to invite family member"
+  },
+  "youAreOnlyMember": "You are the only family member",
+  "@youAreOnlyMember": {
+    "description": "Text when user is the only member"
+  },
+  "inviteSomeone": "Invite someone to care for the aquarium together",
+  "@inviteSomeone": {
+    "description": "Prompt to invite someone"
+  },
+  "joinMyAquarium": "Join my aquarium in FishFeed!\n\nFollow the link: {link}\n\nOr enter code: {code}",
+  "@joinMyAquarium": {
+    "description": "Share text for family invitation",
+    "placeholders": {
+      "link": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "invitationToFishFeed": "Invitation to FishFeed",
+  "@invitationToFishFeed": {
+    "description": "Subject for invitation share"
+  },
+  "linkCopied": "Link copied",
+  "@linkCopied": {
+    "description": "Snackbar when link is copied"
+  },
+  "cancelInvitation": "Cancel invitation?",
+  "@cancelInvitation": {
+    "description": "Cancel invitation dialog title"
+  },
+  "cancelInvitationDescription": "This invitation can no longer be used.",
+  "@cancelInvitationDescription": {
+    "description": "Cancel invitation dialog description"
+  },
+  "no": "No",
+  "@no": {
+    "description": "No button text"
+  },
+  "removeMember": "Remove member?",
+  "@removeMember": {
+    "description": "Remove member dialog title"
+  },
+  "removeMemberDescription": "Are you sure you want to remove {name}?",
+  "@removeMemberDescription": {
+    "description": "Remove member dialog description",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "invitationCreated": "Invitation created!",
+  "@invitationCreated": {
+    "description": "Title when invitation is created"
+  },
+  "validForHours": "Valid for {hours} hours",
+  "@validForHours": {
+    "description": "Shows invitation validity",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "invitationCode": "Invitation code",
+  "@invitationCode": {
+    "description": "Label for invitation code"
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Copy button text"
+  },
+  "share": "Share",
+  "@share": {
+    "description": "Share button text"
+  },
+  "validForHoursShort": "Valid for {hours}h",
+  "@validForHoursShort": {
+    "description": "Short validity text for hours",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "validForMinutesShort": "Valid for {minutes}m",
+  "@validForMinutesShort": {
+    "description": "Short validity text for minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "expiring": "Expiring",
+  "@expiring": {
+    "description": "Text when invitation is about to expire"
+  },
+  "user": "User",
+  "@user": {
+    "description": "Default user name"
+  },
+  "owner": "Owner",
+  "@owner": {
+    "description": "Owner role label"
+  },
+  "member": "Member",
+  "@member": {
+    "description": "Member role label"
+  },
+  "joinedDate": "Joined: {date}",
+  "@joinedDate": {
+    "description": "Shows when member joined",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "feedingsThisWeek": "{count} this week",
+  "@feedingsThisWeek": {
+    "description": "Feedings count this week",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedingsThisMonth": "{count} this month",
+  "@feedingsThisMonth": {
+    "description": "Feedings count this month",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorOccurred": "An error occurred",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+
+  "joiningFamily": "Joining family...",
+  "@joiningFamily": {
+    "description": "Loading text when joining family"
+  },
+  "processingInvitation": "Please wait while we process your invitation",
+  "@processingInvitation": {
+    "description": "Processing invitation message"
+  },
+  "congratulations": "Congratulations!",
+  "@congratulations": {
+    "description": "Success title"
+  },
+  "joinedFamilySuccess": "You have successfully joined the family aquarium",
+  "@joinedFamilySuccess": {
+    "description": "Success message after joining family"
+  },
+  "redirecting": "Redirecting...",
+  "@redirecting": {
+    "description": "Redirecting message"
+  },
+  "loginRequired": "Login required",
+  "@loginRequired": {
+    "description": "Title when login is required"
+  },
+  "invitationError": "Invitation error",
+  "@invitationError": {
+    "description": "Title for invitation error"
+  },
+  "loginToAcceptInvitation": "Log in to accept the invitation",
+  "@loginToAcceptInvitation": {
+    "description": "Message prompting login for invitation"
+  },
+  "logIn": "Log in",
+  "@logIn": {
+    "description": "Log in button text"
+  },
+  "toHome": "To home",
+  "@toHome": {
+    "description": "Go to home button text"
+  },
+
+  "feedingCompletedByUser": "Feeding completed: {userName}",
+  "@feedingCompletedByUser": {
+    "description": "Toast message when family member completes feeding",
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "familyMember": "Family member",
+  "@familyMember": {
+    "description": "Default name for family member"
+  },
+  "feedingDone": "Feeding done",
+  "@feedingDone": {
+    "description": "Feeding done message"
+  },
+
+  "feedingTime": "Feeding Time!",
+  "@feedingTime": {
+    "description": "Notification title for feeding time"
+  },
+  "timeToFeed": "Time to feed {fishName}",
+  "@timeToFeed": {
+    "description": "Notification body for feeding time",
+    "placeholders": {
+      "fishName": {
+        "type": "String"
+      }
+    }
+  },
+  "yourFish": "your fish",
+  "@yourFish": {
+    "description": "Generic fish name"
+  },
+  "eventOverdue": "Event overdue",
+  "@eventOverdue": {
+    "description": "Notification title for overdue event"
+  },
+  "eventOverdueFor": "Event overdue for {fishName}",
+  "@eventOverdueFor": {
+    "description": "Notification body for overdue event",
+    "placeholders": {
+      "fishName": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmStatus": "Confirm status",
+  "@confirmStatus": {
+    "description": "Notification title for status confirmation"
+  },
+  "confirmFeedingStatus": "Confirm feeding status",
+  "@confirmFeedingStatus": {
+    "description": "Notification body for status confirmation"
+  },
+  "fedAction": "Fed ✓",
+  "@fedAction": {
+    "description": "Notification action for marking as fed"
+  },
+  "snoozeAction": "Snooze 15m",
+  "@snoozeAction": {
+    "description": "Notification action for snoozing"
+  },
+
+  "shareAchievementGeneric": "I got the achievement \"{title}\" in FishFeed! 🐟🏆",
+  "@shareAchievementGeneric": {
+    "description": "Generic share text for achievement",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "shareFirstFeeding": "I started caring for fish in FishFeed! 🐟 First feeding done! 🎉",
+  "@shareFirstFeeding": {
+    "description": "Share text for first feeding achievement"
+  },
+  "shareStreak7": "A week without misses! 🔥 My streak in FishFeed: 7 days! 🏆",
+  "@shareStreak7": {
+    "description": "Share text for 7-day streak"
+  },
+  "shareStreak30": "A month of perfection! 🌟 30 days of feedings in a row in FishFeed! 🔥",
+  "@shareStreak30": {
+    "description": "Share text for 30-day streak"
+  },
+  "shareStreak100": "Legendary streak! 💎 100 days of feedings without misses in FishFeed! 🏆🔥",
+  "@shareStreak100": {
+    "description": "Share text for 100-day streak"
+  },
+  "sharePerfectWeek": "Perfect week! ✨ No missed feedings in FishFeed! 🐟",
+  "@sharePerfectWeek": {
+    "description": "Share text for perfect week achievement"
+  },
+  "shareFeedings100": "A hundred feedings! 🎯 Fed my fish 100 times in FishFeed! 🐟",
+  "@shareFeedings100": {
+    "description": "Share text for 100 feedings achievement"
+  },
+  "shareFeedings500": "Feeding master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆",
+  "@shareFeedings500": {
+    "description": "Share text for 500 feedings achievement"
+  },
+  "shareStreakLong": "Incredible! 💎 My streak in {appName}: {days} days! 🔥🏆",
+  "@shareStreakLong": {
+    "description": "Share text for long streak (50+)",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "shareStreakMedium": "Amazing! 🌟 My streak in {appName}: {days} days! 🔥",
+  "@shareStreakMedium": {
+    "description": "Share text for medium streak (20+)",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "shareStreakShort": "Awesome! 🔥 My streak in {appName}: {days} days!",
+  "@shareStreakShort": {
+    "description": "Share text for short streak (7+)",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "shareStreakDefault": "My streak in {appName}: {days} days! 🐟",
+  "@shareStreakDefault": {
+    "description": "Default share text for streak",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementUnlockedCard": "ACHIEVEMENT UNLOCKED",
+  "@achievementUnlockedCard": {
+    "description": "Text on share card for achievement"
+  },
+
+  "today": "Today",
+  "@today": {
+    "description": "Today date label"
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Yesterday date label"
+  },
+  "tomorrow": "Tomorrow",
+  "@tomorrow": {
+    "description": "Tomorrow date label"
+  },
+  "monday": "Monday",
+  "@monday": {
+    "description": "Monday weekday"
+  },
+  "tuesday": "Tuesday",
+  "@tuesday": {
+    "description": "Tuesday weekday"
+  },
+  "wednesday": "Wednesday",
+  "@wednesday": {
+    "description": "Wednesday weekday"
+  },
+  "thursday": "Thursday",
+  "@thursday": {
+    "description": "Thursday weekday"
+  },
+  "friday": "Friday",
+  "@friday": {
+    "description": "Friday weekday"
+  },
+  "saturday": "Saturday",
+  "@saturday": {
+    "description": "Saturday weekday"
+  },
+  "sunday": "Sunday",
+  "@sunday": {
+    "description": "Sunday weekday"
+  },
+  "monthJan": "Jan",
+  "@monthJan": {
+    "description": "January abbreviation"
+  },
+  "monthFeb": "Feb",
+  "@monthFeb": {
+    "description": "February abbreviation"
+  },
+  "monthMar": "Mar",
+  "@monthMar": {
+    "description": "March abbreviation"
+  },
+  "monthApr": "Apr",
+  "@monthApr": {
+    "description": "April abbreviation"
+  },
+  "monthMay": "May",
+  "@monthMay": {
+    "description": "May abbreviation"
+  },
+  "monthJun": "Jun",
+  "@monthJun": {
+    "description": "June abbreviation"
+  },
+  "monthJul": "Jul",
+  "@monthJul": {
+    "description": "July abbreviation"
+  },
+  "monthAug": "Aug",
+  "@monthAug": {
+    "description": "August abbreviation"
+  },
+  "monthSep": "Sep",
+  "@monthSep": {
+    "description": "September abbreviation"
+  },
+  "monthOct": "Oct",
+  "@monthOct": {
+    "description": "October abbreviation"
+  },
+  "monthNov": "Nov",
+  "@monthNov": {
+    "description": "November abbreviation"
+  },
+  "monthDec": "Dec",
+  "@monthDec": {
+    "description": "December abbreviation"
+  },
+  "noFeedingsScheduled": "No feedings scheduled",
+  "@noFeedingsScheduled": {
+    "description": "Text when no feedings for a day"
+  },
+  "feedingsCompleted": "{completed} of {total} feedings completed",
+  "@feedingsCompleted": {
+    "description": "Text showing feedings progress",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "statusComplete": "Complete",
+  "@statusComplete": {
+    "description": "Complete status label"
+  },
+  "statusMissed": "Missed",
+  "@statusMissed": {
+    "description": "Missed status label"
+  },
+  "statusPartial": "Partial",
+  "@statusPartial": {
+    "description": "Partial status label"
+  },
+  "statusNoData": "No data",
+  "@statusNoData": {
+    "description": "No data status label"
+  },
+  "loadingFeedings": "Loading feedings...",
+  "@loadingFeedings": {
+    "description": "Loading message for feedings"
+  },
+  "allFeedingsCompleted": "All feedings completed",
+  "@allFeedingsCompleted": {
+    "description": "Tooltip for all fed status"
+  },
+  "allFeedingsMissed": "All feedings missed",
+  "@allFeedingsMissed": {
+    "description": "Tooltip for all missed status"
+  },
+  "someFeedingsCompleted": "Some feedings completed",
+  "@someFeedingsCompleted": {
+    "description": "Tooltip for partial status"
+  },
+  "noFeedingData": "No feeding data",
+  "@noFeedingData": {
+    "description": "Tooltip for no data status"
+  },
+
+  "logoutConfirmTitle": "Log Out",
+  "@logoutConfirmTitle": {
+    "description": "Logout confirmation dialog title"
+  },
+  "logoutConfirmMessage": "Are you sure you want to log out?",
+  "@logoutConfirmMessage": {
+    "description": "Logout confirmation message"
+  },
+  "deleteAccountTitle": "Delete Account",
+  "@deleteAccountTitle": {
+    "description": "Delete account dialog title"
+  },
+  "deleteAccountConfirm": "Final Confirmation",
+  "@deleteAccountConfirm": {
+    "description": "Final delete account confirmation title"
+  },
+  "deleteMyAccount": "Delete My Account",
+  "@deleteMyAccount": {
+    "description": "Delete account button text"
+  },
+  "subscription": "Subscription",
+  "@subscription": {
+    "description": "Subscription section label"
+  },
+  "restorePurchases": "Restore Purchases",
+  "@restorePurchases": {
+    "description": "Restore purchases button"
+  },
+  "recoverPreviousPurchases": "Recover previous purchases",
+  "@recoverPreviousPurchases": {
+    "description": "Restore purchases subtitle"
+  },
+
+  "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Take photo option"
+  },
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {
+    "description": "Choose from gallery option"
+  },
+  "nickname": "Nickname",
+  "@nickname": {
+    "description": "Nickname field label"
+  },
+  "nicknameUpdated": "Nickname updated successfully",
+  "@nicknameUpdated": {
+    "description": "Success message for nickname update"
+  },
+  "failedToShareProfile": "Failed to share profile",
+  "@failedToShareProfile": {
+    "description": "Error message for profile share failure"
+  },
+  "shareProfile": "Share Profile",
+  "@shareProfile": {
+    "description": "Share profile button"
+  },
+
+  "premiumFeature": "Premium feature",
+  "@premiumFeature": {
+    "description": "Premium feature label"
+  },
+  "upgrade": "Upgrade",
+  "@upgrade": {
+    "description": "Upgrade button text"
+  },
+  "upgradeToPremium": "Upgrade to Premium",
+  "@upgradeToPremium": {
+    "description": "Upgrade to premium button"
+  },
+  "unlockAllFeatures": "Unlock all features",
+  "@unlockAllFeatures": {
+    "description": "Premium benefit description"
+  },
+  "upgradeToUnlock": "Upgrade to unlock {feature}",
+  "@upgradeToUnlock": {
+    "description": "Upgrade prompt with feature name",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "noAds": "No Ads",
+  "@noAds": {
+    "description": "No ads premium benefit"
+  },
+  "unlimitedAiScans": "Unlimited AI Scans",
+  "@unlimitedAiScans": {
+    "description": "Unlimited AI scans premium benefit"
+  },
+  "sixMonthsHistory": "6 Months History",
+  "@sixMonthsHistory": {
+    "description": "6 months history premium benefit"
+  },
+  "viewPlans": "View Plans",
+  "@viewPlans": {
+    "description": "View plans button"
+  },
+  "trial": "Trial",
+  "@trial": {
+    "description": "Trial badge label"
+  },
+  "premium": "Premium",
+  "@premium": {
+    "description": "Premium badge label"
+  },
+  "free": "Free",
+  "@free": {
+    "description": "Free badge label"
+  },
+
+  "goPremium": "Go Premium",
+  "@goPremium": {
+    "description": "Go premium button"
+  },
+  "addManually": "Add manually",
+  "@addManually": {
+    "description": "Add manually button"
+  },
+  "maybeLater": "Maybe later",
+  "@maybeLater": {
+    "description": "Maybe later button"
+  },
+  "removeAds": "Remove Ads",
+  "@removeAds": {
+    "description": "Remove ads title"
+  },
+  "oneTimePurchase": "One-time purchase",
+  "@oneTimePurchase": {
+    "description": "One-time purchase label"
+  },
+  "tryPremiumFeatures": "Try all premium features. Cancel anytime.",
+  "@tryPremiumFeatures": {
+    "description": "Trial banner description"
+  },
+  "upgradePremiumAiScans": "Upgrade to Premium for unlimited AI fish recognition",
+  "@upgradePremiumAiScans": {
+    "description": "AI scan paywall description"
+  },
+  "priorityProcessing": "Priority processing",
+  "@priorityProcessing": {
+    "description": "Premium benefit"
+  },
+  "higherAccuracy": "Higher accuracy",
+  "@higherAccuracy": {
+    "description": "Premium benefit"
+  },
+
+  "analyzing": "Analyzing...",
+  "@analyzing": {
+    "description": "AI camera analyzing text"
+  },
+  "retake": "Retake",
+  "@retake": {
+    "description": "Retake photo button"
+  },
+  "selectManually": "Select Manually",
+  "@selectManually": {
+    "description": "Select manually button"
+  },
+  "confirmAnyway": "Confirm Anyway",
+  "@confirmAnyway": {
+    "description": "Confirm anyway button"
+  },
+  "notCorrect": "Not correct?",
+  "@notCorrect": {
+    "description": "Not correct button"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button"
+  },
+  "noScansLeft": "No scans left",
+  "@noScansLeft": {
+    "description": "Text when no AI scans remaining"
+  },
+
+  "back": "Back",
+  "@back": {
+    "description": "Back button text"
+  },
+  "foodType": "Food type",
+  "@foodType": {
+    "description": "Food type label"
+  },
+  "portion": "Portion",
+  "@portion": {
+    "description": "Portion label"
+  },
+  "from": "From",
+  "@from": {
+    "description": "From time label"
+  },
+  "to": "To",
+  "@to": {
+    "description": "To time label"
+  },
+
+  "continueWithGoogle": "Continue with Google",
+  "@continueWithGoogle": {
+    "description": "Google sign in button"
+  },
+  "signInWithApple": "Sign in with Apple",
+  "@signInWithApple": {
+    "description": "Apple sign in button"
+  },
+
+  "appearance": "Appearance",
+  "@appearance": {
+    "description": "Appearance screen title"
+  },
+  "welcomeToPremium": "Welcome to Premium!",
+  "@welcomeToPremium": {
+    "description": "Premium purchase success message"
+  },
+  "adsRemovedSuccessfully": "Ads removed successfully!",
+  "@adsRemovedSuccessfully": {
+    "description": "Ads removal success message"
+  },
+  "noPreviousPurchases": "No previous purchases found",
+  "@noPreviousPurchases": {
+    "description": "No purchases to restore message"
+  },
+  "premiumComingSoon": "Premium subscription coming soon!",
+  "@premiumComingSoon": {
+    "description": "Premium coming soon message"
+  },
+
+  "thisWeek": "This Week",
+  "@thisWeek": {
+    "description": "This week label"
+  },
+  "thisMonth": "This Month",
+  "@thisMonth": {
+    "description": "This month label"
+  },
+  "sixMonths": "6 Months",
+  "@sixMonths": {
+    "description": "6 months label"
+  },
+
+  "achievementFirstFeeding": "First Feeding",
+  "@achievementFirstFeeding": {
+    "description": "First feeding achievement title"
+  },
+  "achievementFirstFeedingDesc": "Complete your first feeding",
+  "@achievementFirstFeedingDesc": {
+    "description": "First feeding achievement description"
+  },
+  "achievementStreak7": "Weekly Streak",
+  "@achievementStreak7": {
+    "description": "7-day streak achievement title"
+  },
+  "achievementStreak7Desc": "7 consecutive days of feeding",
+  "@achievementStreak7Desc": {
+    "description": "7-day streak achievement description"
+  },
+  "achievementStreak30": "Monthly Streak",
+  "@achievementStreak30": {
+    "description": "30-day streak achievement title"
+  },
+  "achievementStreak30Desc": "30 consecutive days of feeding",
+  "@achievementStreak30Desc": {
+    "description": "30-day streak achievement description"
+  },
+  "achievementStreak100": "Legendary Streak",
+  "@achievementStreak100": {
+    "description": "100-day streak achievement title"
+  },
+  "achievementStreak100Desc": "100 consecutive days of feeding",
+  "@achievementStreak100Desc": {
+    "description": "100-day streak achievement description"
+  },
+  "achievementPerfectWeek": "Perfect Week",
+  "@achievementPerfectWeek": {
+    "description": "Perfect week achievement title"
+  },
+  "achievementPerfectWeekDesc": "No missed feedings for a whole week",
+  "@achievementPerfectWeekDesc": {
+    "description": "Perfect week achievement description"
+  },
+  "achievementFeedings100": "Century Feeder",
+  "@achievementFeedings100": {
+    "description": "100 feedings achievement title"
+  },
+  "achievementFeedings100Desc": "Complete 100 total feedings",
+  "@achievementFeedings100Desc": {
+    "description": "100 feedings achievement description"
+  },
+  "achievementFeedings500": "Feeding Master",
+  "@achievementFeedings500": {
+    "description": "500 feedings achievement title"
+  },
+  "achievementFeedings500Desc": "Complete 500 total feedings",
+  "@achievementFeedings500Desc": {
+    "description": "500 feedings achievement description"
+  },
+  "achievementLocked": "Locked",
+  "@achievementLocked": {
+    "description": "Label for locked achievement"
+  },
+  "achievementNotYetUnlocked": "Not yet unlocked",
+  "@achievementNotYetUnlocked": {
+    "description": "Label for achievement that hasn't been unlocked yet"
+  },
+  "achievementUnlockedOn": "Unlocked {date}",
+  "@achievementUnlockedOn": {
+    "description": "Label showing when an achievement was unlocked",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "January 15, 2024"
+      }
+    }
+  },
+  "tapToDismiss": "Tap to dismiss",
+  "@tapToDismiss": {
+    "description": "Hint text telling user to tap to dismiss overlay"
+  },
+
+  "settingsSubscriptionSection": "Subscription",
+  "@settingsSubscriptionSection": {
+    "description": "Subscription section header in settings"
+  },
+  "settingsAppSection": "App",
+  "@settingsAppSection": {
+    "description": "App section header in settings"
+  },
+  "settingsAccountSection": "Account",
+  "@settingsAccountSection": {
+    "description": "Account section header in settings"
+  },
+  "settingsLegalSection": "Legal",
+  "@settingsLegalSection": {
+    "description": "Legal section header in settings"
+  },
+  "settingsSupportSection": "Support",
+  "@settingsSupportSection": {
+    "description": "Support section header in settings"
+  },
+  "settingsNotificationsSubtitle": "Manage feeding reminders",
+  "@settingsNotificationsSubtitle": {
+    "description": "Subtitle for notifications settings"
+  },
+  "settingsAppearanceSubtitle": "Theme and display options",
+  "@settingsAppearanceSubtitle": {
+    "description": "Subtitle for appearance settings"
+  },
+  "settingsFamilySubtitle": "Invite family members to help feed",
+  "@settingsFamilySubtitle": {
+    "description": "Subtitle for family settings"
+  },
+  "settingsDeleteAccountSubtitle": "Permanently delete your account",
+  "@settingsDeleteAccountSubtitle": {
+    "description": "Subtitle for delete account option"
+  },
+  "settingsPrivacyPolicy": "Privacy Policy",
+  "@settingsPrivacyPolicy": {
+    "description": "Privacy policy menu item"
+  },
+  "settingsPrivacyPolicySubtitle": "How we handle your data",
+  "@settingsPrivacyPolicySubtitle": {
+    "description": "Subtitle for privacy policy"
+  },
+  "settingsTermsSubtitle": "Usage terms and conditions",
+  "@settingsTermsSubtitle": {
+    "description": "Subtitle for terms of service"
+  },
+  "settingsLicenses": "Licenses",
+  "@settingsLicenses": {
+    "description": "Open source licenses menu item"
+  },
+  "settingsLicensesSubtitle": "Open source licenses",
+  "@settingsLicensesSubtitle": {
+    "description": "Subtitle for licenses"
+  },
+  "settingsContactSupport": "Contact Support",
+  "@settingsContactSupport": {
+    "description": "Contact support menu item"
+  },
+  "settingsContactSupportSubtitle": "Get help via email",
+  "@settingsContactSupportSubtitle": {
+    "description": "Subtitle for contact support"
+  },
+  "settingsRateApp": "Rate App",
+  "@settingsRateApp": {
+    "description": "Rate app menu item"
+  },
+  "settingsRateAppSubtitle": "Share your experience",
+  "@settingsRateAppSubtitle": {
+    "description": "Subtitle for rate app"
+  },
+  "settingsAppVersion": "App Version",
+  "@settingsAppVersion": {
+    "description": "App version menu item"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Generic loading text"
+  },
+  "logoutConfirmTitle": "Log Out",
+  "@logoutConfirmTitle": {
+    "description": "Logout confirmation dialog title"
+  },
+  "logoutConfirmMessage": "Are you sure you want to log out?",
+  "@logoutConfirmMessage": {
+    "description": "Logout confirmation message"
+  },
+  "deleteAccountMessage": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
+  "@deleteAccountMessage": {
+    "description": "Delete account confirmation message"
+  },
+  "deleteAccountWillDelete": "This will permanently delete:",
+  "@deleteAccountWillDelete": {
+    "description": "Header for list of things that will be deleted"
+  },
+  "deleteAccountDataAquariums": "All your aquariums and fish data",
+  "@deleteAccountDataAquariums": {
+    "description": "Aquariums data deletion warning"
+  },
+  "deleteAccountDataHistory": "Your feeding history and streaks",
+  "@deleteAccountDataHistory": {
+    "description": "History data deletion warning"
+  },
+  "deleteAccountDataAccount": "Your account and personal information",
+  "@deleteAccountDataAccount": {
+    "description": "Account data deletion warning"
+  },
+  "deleteAccountIrreversible": "This action is irreversible.",
+  "@deleteAccountIrreversible": {
+    "description": "Irreversible action warning"
+  },
+  "deleteMyAccount": "Delete My Account",
+  "@deleteMyAccount": {
+    "description": "Delete account button text"
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button text"
+  },
+  "couldNotOpenLink": "Could not open link",
+  "@couldNotOpenLink": {
+    "description": "Error when URL cannot be opened"
+  },
+  "couldNotOpenAppStore": "Could not open app store",
+  "@couldNotOpenAppStore": {
+    "description": "Error when app store cannot be opened"
+  },
+  "purchasesRestoredSuccess": "Purchases restored successfully",
+  "@purchasesRestoredSuccess": {
+    "description": "Success message for purchase restore"
+  },
+  "failedToRestorePurchases": "Failed to restore purchases",
+  "@failedToRestorePurchases": {
+    "description": "Error message for purchase restore failure"
+  },
+  "restorePurchasesSubtitle": "Recover previous purchases",
+  "@restorePurchasesSubtitle": {
+    "description": "Subtitle for restore purchases"
+  },
+  "subscriptionTrialActive": "Trial active",
+  "@subscriptionTrialActive": {
+    "description": "Label when trial is active"
+  },
+  "subscriptionTrialEndsIn": "Trial ends in {days} days",
+  "@subscriptionTrialEndsIn": {
+    "description": "Trial ending message",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "subscriptionRenewsOn": "Renews on {date}",
+  "@subscriptionRenewsOn": {
+    "description": "Subscription renewal date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionExpiresOn": "Expires on {date}",
+  "@subscriptionExpiresOn": {
+    "description": "Subscription expiration date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionActive": "Active subscription",
+  "@subscriptionActive": {
+    "description": "Label for active subscription"
+  },
+  "subscriptionAdsRemoved": "Ads removed",
+  "@subscriptionAdsRemoved": {
+    "description": "Label when ads are removed"
+  },
+  "subscriptionFreePlan": "Free plan",
+  "@subscriptionFreePlan": {
+    "description": "Label for free plan"
+  },
+  "choosePhoto": "Choose Photo",
+  "@choosePhoto": {
+    "description": "Choose photo modal title"
+  },
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {
+    "description": "Choose from gallery option"
+  },
+  "setYourNickname": "Set your nickname",
+  "@setYourNickname": {
+    "description": "Placeholder when no nickname is set"
+  },
+  "editNickname": "Edit nickname",
+  "@editNickname": {
+    "description": "Edit nickname tooltip"
+  },
+  "enterYourNickname": "Enter your nickname",
+  "@enterYourNickname": {
+    "description": "Nickname input hint"
+  },
+  "permissionDenied": "Camera or gallery permission denied. Please enable it in settings.",
+  "@permissionDenied": {
+    "description": "Permission denied error message"
+  },
+  "failedToPickImage": "Failed to pick image. Please try again.",
+  "@failedToPickImage": {
+    "description": "Image picker failure message"
+  },
+  "failedToShareProfile": "Failed to share profile",
+  "@failedToShareProfile": {
+    "description": "Profile share failure message"
+  },
+  "shareProfileText": "Check out my FishFeed profile! I'm {userName} on FishFeed - the best aquarium management app.",
+  "@shareProfileText": {
+    "description": "Text for sharing profile",
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "viewPremium": "View Premium",
+  "@viewPremium": {
+    "description": "View premium button"
+  },
+  "removeAds": "Remove Ads",
+  "@removeAds": {
+    "description": "Remove ads button"
+  },
+  "anErrorOccurred": "An error occurred",
+  "@anErrorOccurred": {
+    "description": "Generic error message"
+  },
+  "accountDeletionNotImplemented": "Account deletion is not yet implemented",
+  "@accountDeletionNotImplemented": {
+    "description": "Temporary message for unimplemented feature"
+  },
+
+  "syncNewEventsReceived": "{count, plural, =1{1 new event received from server} other{{count} new events received from server}}",
+  "@syncNewEventsReceived": {
+    "description": "Message when new events are received from server during sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncEventsDeleted": "{count, plural, =1{1 event deleted from server} other{{count} events deleted from server}}",
+  "@syncEventsDeleted": {
+    "description": "Message when events are deleted by server during sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncConflictsDetected": "{count, plural, =1{1 conflict requires attention} other{{count} conflicts require attention}}",
+  "@syncConflictsDetected": {
+    "description": "Message when sync conflicts are detected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncServerWins": "Server version applied",
+  "@syncServerWins": {
+    "description": "Message when server version is chosen in conflict resolution"
+  },
+  "syncLocalWins": "Your version kept",
+  "@syncLocalWins": {
+    "description": "Message when local version is chosen in conflict resolution"
+  },
+
+  "aquariumName": "Aquarium Name",
+  "@aquariumName": {
+    "description": "Label for aquarium name field"
+  },
+  "aquariumNameHint": "e.g., Living Room Tank",
+  "@aquariumNameHint": {
+    "description": "Hint for aquarium name input"
+  },
+  "aquariumNameTooLong": "Name must be 50 characters or less",
+  "@aquariumNameTooLong": {
+    "description": "Validation error for aquarium name too long"
+  },
+  "aquariumNameDescription": "Give your aquarium a name to easily identify it",
+  "@aquariumNameDescription": {
+    "description": "Description for aquarium name step"
+  },
+  "createYourFirstAquarium": "Create Your First Aquarium",
+  "@createYourFirstAquarium": {
+    "description": "Title for first aquarium creation step"
+  },
+  "addAnotherAquarium": "Add Another Aquarium",
+  "@addAnotherAquarium": {
+    "description": "Title/button for adding another aquarium"
+  },
+  "waterType": "Water Type",
+  "@waterType": {
+    "description": "Label for water type selector"
+  },
+  "freshwater": "Freshwater",
+  "@freshwater": {
+    "description": "Freshwater option"
+  },
+  "saltwater": "Saltwater",
+  "@saltwater": {
+    "description": "Saltwater option"
+  },
+  "aquariumsCreated": "{count, plural, =1{1 aquarium created} other{{count} aquariums created}}",
+  "@aquariumsCreated": {
+    "description": "Count of created aquariums",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aquariumSetupComplete": "Aquarium Setup Complete!",
+  "@aquariumSetupComplete": {
+    "description": "Title for completion step"
+  },
+  "addMoreAquariumQuestion": "Would you like to add another aquarium?",
+  "@addMoreAquariumQuestion": {
+    "description": "Question asking if user wants to add more aquariums"
+  },
+  "previouslyCreated": "Previously created",
+  "@previouslyCreated": {
+    "description": "Label for previously created aquariums"
+  },
+  "totalAquariums": "{count, plural, =1{1 aquarium total} other{{count} aquariums total}}",
+  "@totalAquariums": {
+    "description": "Total aquarium count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "justCreated": "New",
+  "@justCreated": {
+    "description": "Badge for just created aquarium"
+  },
+  "fishCountWithSpecies": "{fishCount} fish ({speciesCount} species)",
+  "@fishCountWithSpecies": {
+    "description": "Fish count with species count",
+    "placeholders": {
+      "fishCount": {
+        "type": "int"
+      },
+      "speciesCount": {
+        "type": "int"
+      }
+    }
+  },
+  "failedToCreateAquarium": "Failed to create aquarium. Please try again.",
+  "@failedToCreateAquarium": {
+    "description": "Error message when aquarium creation fails"
+  },
+  "enterAquariumName": "Enter your aquarium name",
+  "@enterAquariumName": {
+    "description": "Placeholder text for aquarium name input"
+  },
+  "createAquarium": "Create Aquarium",
+  "@createAquarium": {
+    "description": "Button to create a new aquarium"
+  },
+  "finishSetup": "Finish Setup",
+  "@finishSetup": {
+    "description": "Button to finish the onboarding setup"
+  },
+  "myDefaultAquarium": "My Aquarium",
+  "@myDefaultAquarium": {
+    "description": "Default name for migrated aquarium"
+  },
+  "addAquarium": "Add Aquarium",
+  "@addAquarium": {
+    "description": "Button to add a new aquarium"
+  },
+  "aquariumCreated": "Aquarium created!",
+  "@aquariumCreated": {
+    "description": "Success message when aquarium is created"
+  },
+  "migratingData": "Migrating your data...",
+  "@migratingData": {
+    "description": "Loading message during data migration"
+  },
+  "aquariumSummary": "{count, plural, =1{You created 1 aquarium} other{You created {count} aquariums}}",
+  "@aquariumSummary": {
+    "description": "Summary of created aquariums",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noFeedingsForAquarium": "No feedings scheduled",
+  "@noFeedingsForAquarium": {
+    "description": "Empty state when aquarium has no scheduled feedings"
+  },
+  "selectAquarium": "Select Aquarium",
+  "@selectAquarium": {
+    "description": "Title for aquarium selection"
+  },
+  "newAquarium": "New Aquarium",
+  "@newAquarium": {
+    "description": "Label for a newly created aquarium"
+  },
+  "editAquarium": "Edit Aquarium",
+  "@editAquarium": {
+    "description": "Title for aquarium edit screen"
+  },
+  "editAquariumDetails": "Edit aquarium settings",
+  "@editAquariumDetails": {
+    "description": "Subtitle for aquarium edit screen"
+  },
+  "fishInAquarium": "Fish ({count})",
+  "@fishInAquarium": {
+    "description": "Section title showing fish count in aquarium",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAquarium": "Delete Aquarium",
+  "@deleteAquarium": {
+    "description": "Button to delete aquarium"
+  },
+  "deleteAquariumTitle": "Delete {name}?",
+  "@deleteAquariumTitle": {
+    "description": "Title for delete aquarium confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAquariumConfirmation": "This will remove all fish and feeding history. This action cannot be undone.",
+  "@deleteAquariumConfirmation": {
+    "description": "Confirmation message for deleting aquarium"
+  },
+  "aquariumDeleted": "Aquarium deleted",
+  "@aquariumDeleted": {
+    "description": "Success message when aquarium is deleted"
+  },
+  "aquariumUpdated": "Aquarium updated",
+  "@aquariumUpdated": {
+    "description": "Success message when aquarium is updated"
+  },
+  "failedToUpdateAquarium": "Failed to update aquarium",
+  "@failedToUpdateAquarium": {
+    "description": "Error message when aquarium update fails"
+  },
+  "failedToDeleteAquarium": "Failed to delete aquarium",
+  "@failedToDeleteAquarium": {
+    "description": "Error message when aquarium deletion fails"
+  },
+  "aquariumNotFound": "Aquarium not found",
+  "@aquariumNotFound": {
+    "description": "Error title when aquarium is not found"
+  },
+  "aquariumNotFoundDescription": "The aquarium you're looking for doesn't exist or has been deleted.",
+  "@aquariumNotFoundDescription": {
+    "description": "Error description when aquarium is not found"
+  },
+  "noFishInAquarium": "No fish in this aquarium",
+  "@noFishInAquarium": {
+    "description": "Empty state when aquarium has no fish"
+  },
+  "addFishToAquarium": "Add your first fish to get started",
+  "@addFishToAquarium": {
+    "description": "Description for empty fish state in aquarium"
+  }
+}

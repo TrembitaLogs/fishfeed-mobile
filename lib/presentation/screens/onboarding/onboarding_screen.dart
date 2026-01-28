@@ -1,0 +1,575 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
+
+import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/domain/usecases/generate_schedule_usecase.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
+import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/add_more_aquarium_step.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/aquarium_name_step.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/species_selection_step.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/quantity_step.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/schedule_preview_step.dart';
+import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
+
+/// Main onboarding screen with PageView navigation.
+///
+/// Guides new users through 5 steps (aquarium-first flow):
+/// 0. Aquarium name - create aquarium with name
+/// 1. Species selection - choose fish species (1-3)
+/// 2. Quantity - set quantity for each species
+/// 3. Schedule preview - review and confirm generated schedule
+/// 4. Add more? - option to add another aquarium or finish
+///
+/// Uses [OnboardingNotifier] for state management and
+/// [PageController] for smooth page transitions.
+///
+/// When [isAddMode] is true, the screen is used for adding new fish
+/// to an existing aquarium (not first-time onboarding).
+///
+/// When [isAddAquariumMode] is true, the screen is used for adding a new
+/// aquarium with fish from an existing home screen (not first-time onboarding).
+class OnboardingScreen extends ConsumerStatefulWidget {
+  const OnboardingScreen({
+    super.key,
+    this.isAddMode = false,
+    this.isAddAquariumMode = false,
+    this.aquariumId,
+  });
+
+  /// Whether this is "add fish" mode (true) or first-time onboarding (false).
+  final bool isAddMode;
+
+  /// Whether this is "add aquarium" mode - creates new aquarium then adds fish.
+  /// Similar to full onboarding but without marking onboarding as completed.
+  final bool isAddAquariumMode;
+
+  /// Specific aquarium ID to add fish to (for add mode from aquarium edit screen).
+  /// If null in add mode, falls back to selectedAquariumIdProvider.
+  final String? aquariumId;
+
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  late final PageController _pageController;
+  bool _isCompletingOnboarding = false;
+
+  /// Animation duration for page transitions.
+  static const _pageTransitionDuration = Duration(milliseconds: 300);
+
+  /// Animation curve for page transitions.
+  static const _pageTransitionCurve = Curves.easeInOut;
+
+  static const _uuid = Uuid();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+
+    // Track onboarding start (only for first-time onboarding)
+    if (!widget.isAddMode && !widget.isAddAquariumMode) {
+      AnalyticsService.instance.trackOnboardingStart();
+    }
+
+    // Set up completion callback and reset state for add mode
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isAddMode || widget.isAddAquariumMode) {
+        // Reset onboarding state to start fresh for adding new fish/aquarium
+        ref.read(onboardingNotifierProvider.notifier).reset();
+      }
+      ref.read(onboardingNotifierProvider.notifier).onComplete = _onComplete;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onComplete() async {
+    if (_isCompletingOnboarding) return;
+
+    setState(() {
+      _isCompletingOnboarding = true;
+    });
+
+    try {
+      final state = ref.read(onboardingNotifierProvider);
+      final analytics = AnalyticsService.instance;
+
+      // Track schedule generated
+      final totalFeedingsPerDay = state.generatedSchedule.fold<int>(
+        0,
+        (sum, entry) => sum + entry.feedingTimes.length,
+      );
+      analytics.trackScheduleGenerated(timesPerDay: totalFeedingsPerDay);
+
+      // 1. Request notification permissions (only for first-time onboarding)
+      if (!widget.isAddMode && !widget.isAddAquariumMode) {
+        analytics.trackNotificationsPermissionPromptShown();
+        await NotificationService.instance.initialize();
+        final permissionGranted =
+            await NotificationService.instance.requestPermissions();
+        analytics.trackNotificationsPermissionResult(granted: permissionGranted);
+      }
+
+      // 2. Get aquarium ID (use current aquarium from onboarding or selected aquarium for add mode)
+      String? aquariumId;
+      if (widget.isAddMode) {
+        // For add mode: prefer explicit aquariumId, then selectedAquarium, then first available
+        aquariumId = widget.aquariumId ?? ref.read(selectedAquariumIdProvider);
+        if (aquariumId == null) {
+          final aquariums = ref.read(userAquariumsProvider).aquariums;
+          aquariumId = aquariums.isNotEmpty ? aquariums.first.id : null;
+        }
+      } else {
+        // For normal onboarding and addAquariumMode: use currentAquariumId set during aquarium creation
+        aquariumId = state.currentAquariumId;
+      }
+
+      if (aquariumId == null) {
+        debugPrint('Warning: No aquarium ID available for saving fish');
+        return;
+      }
+
+      // 3. Save fish to Hive (so they appear in My Aquarium)
+      // Feeding events are created by backend when fish are synced
+      await _saveFish(state.selectedSpecies, aquariumId);
+
+      // Track first feed event created (only for first-time onboarding)
+      if (!widget.isAddMode && !widget.isAddAquariumMode) {
+        analytics.trackFirstFeedEventCreated();
+      }
+
+      // 4. Schedule notifications for each feeding time
+      // Wrapped in try-catch to prevent notification errors from blocking onboarding
+      try {
+        await _scheduleNotifications(state.generatedSchedule);
+      } catch (e) {
+        // Log the error but don't block onboarding completion
+        debugPrint('Failed to schedule notifications: $e');
+      }
+
+      // 5. Complete flow
+      if (widget.isAddMode || widget.isAddAquariumMode) {
+        // In add mode or add aquarium mode, sync and go back
+        if (mounted) {
+          // Sync with backend first - this creates feeding events for new fish
+          // Wait for sync to complete so events appear immediately on home screen
+          await ref.read(syncServiceProvider).syncNow();
+
+          // Refresh fish list and aquariums list before going back
+          ref.invalidate(fishManagementProvider);
+          ref.invalidate(fishByAquariumIdProvider(aquariumId));
+          ref.invalidate(userAquariumsProvider);
+          // Also refresh today's feedings to show new schedule
+          // Note: _SyncCompletionRefreshListener will also call refresh()
+          ref.invalidate(todayFeedingsProvider);
+          context.pop();
+        }
+      } else {
+        // Mark onboarding as completed (also saves to Hive)
+        await ref.read(authNotifierProvider.notifier).completeOnboarding();
+
+        // Trigger initial sync in background (don't block navigation)
+        unawaited(ref.read(syncServiceProvider).syncAll());
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCompletingOnboarding = false;
+        });
+      }
+    }
+  }
+
+  /// Saves fish to Hive.
+  ///
+  /// If a fish of the same species already exists in the aquarium (add mode),
+  /// updates its quantity instead of creating a new record.
+  ///
+  /// Feeding events are created by the backend when fish are synced.
+  Future<void> _saveFish(
+    List<SpeciesSelection> selections,
+    String aquariumId,
+  ) async {
+    final now = DateTime.now();
+    final fishBox = HiveBoxes.fish;
+
+    // Get existing fish for this aquarium to check for duplicates
+    final existingFish = fishBox.values
+        .whereType<FishModel>()
+        .where((f) => f.aquariumId == aquariumId && f.deletedAt == null)
+        .toList();
+
+    for (final selection in selections) {
+      // Check if fish of this species already exists
+      final existing = existingFish
+          .where((f) => f.speciesId == selection.species.id)
+          .firstOrNull;
+
+      if (existing != null) {
+        // Update existing fish quantity
+        existing.quantity += selection.quantity;
+        existing.updatedAt = now;
+        existing.synced = false;
+        await existing.save();
+      } else {
+        // Create new fish
+        final model = FishModel(
+          id: _uuid.v4(),
+          aquariumId: aquariumId,
+          speciesId: selection.species.id,
+          name: selection.species.name,
+          quantity: selection.quantity,
+          addedAt: now,
+        );
+        await fishBox.put(model.id, model);
+      }
+    }
+  }
+
+  Future<void> _scheduleNotifications(List<GeneratedScheduleEntry> schedule) async {
+    // Use the merged time slots for scheduling notifications
+    const usecase = GenerateScheduleUseCase();
+    final mergedSlots = usecase.mergeToTimeSlots(schedule);
+
+    for (var i = 0; i < mergedSlots.length; i++) {
+      final slot = mergedSlots[i];
+      final parts = slot.time.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      final speciesNames = slot.species.map((s) => s.speciesName).toList();
+      final speciesText = speciesNames.length == 1
+          ? speciesNames.first
+          : '${speciesNames.length} species';
+
+      await NotificationService.instance.scheduleDailyFeeding(
+        id: 1000 + i,
+        title: 'Feeding Time!',
+        body: 'Time to feed your $speciesText',
+        hour: hour,
+        minute: minute,
+        payload: 'feeding_slot_$i',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(onboardingNotifierProvider);
+
+    // Sync PageController with state when step changes externally
+    ref.listen<int>(onboardingStepProvider, (previous, next) {
+      if (_pageController.hasClients && _pageController.page?.round() != next) {
+        _pageController.animateToPage(
+          next,
+          duration: _pageTransitionDuration,
+          curve: _pageTransitionCurve,
+        );
+      }
+    });
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildProgressIndicator(state.currentStep),
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _getTotalSteps(),
+                itemBuilder: (context, index) => _buildStep(index),
+              ),
+            ),
+            _buildNavigationButtons(state),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Returns total steps based on the mode.
+  int _getTotalSteps() {
+    if (widget.isAddMode) return 3;
+    if (widget.isAddAquariumMode) return 4; // Skip AddMoreAquariumStep
+    return OnboardingState.totalSteps;
+  }
+
+  Widget _buildProgressIndicator(int currentStep) {
+    final totalSteps = _getTotalSteps();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: List.generate(
+          totalSteps,
+          (index) => Expanded(
+            child: _ProgressDot(
+              isActive: index == currentStep,
+              isCompleted: index < currentStep,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep(int index) {
+    // In add mode, skip aquarium creation step (start from species selection)
+    if (widget.isAddMode) {
+      return switch (index) {
+        0 => const SpeciesSelectionStep(),
+        1 => const QuantityStep(),
+        2 => const SchedulePreviewStep(),
+        _ => const SizedBox.shrink(),
+      };
+    }
+
+    // In add aquarium mode, show 4 steps (skip AddMoreAquariumStep)
+    if (widget.isAddAquariumMode) {
+      return switch (index) {
+        0 => const AquariumNameStep(),
+        1 => const SpeciesSelectionStep(),
+        2 => const QuantityStep(),
+        3 => const SchedulePreviewStep(),
+        _ => const SizedBox.shrink(),
+      };
+    }
+
+    // Full onboarding flow with aquarium-first approach
+    return switch (index) {
+      0 => const AquariumNameStep(),
+      1 => const SpeciesSelectionStep(),
+      2 => const QuantityStep(),
+      3 => const SchedulePreviewStep(),
+      4 => AddMoreAquariumStep(onAddAnotherAquarium: _onAddAnotherAquarium),
+      _ => const SizedBox.shrink(),
+    };
+  }
+
+  /// Determines if user can proceed based on current step and mode.
+  ///
+  /// In add mode, steps are shifted (no aquarium name step), so we need
+  /// to check different conditions based on the actual step being shown.
+  bool _canProceed(OnboardingState state) {
+    if (widget.isAddMode) {
+      // Add mode: 0=Species, 1=Quantity, 2=Schedule
+      return switch (state.currentStep) {
+        0 => state.selectedSpecies.isNotEmpty,
+        1 => state.selectedSpecies.every((s) => s.quantity > 0),
+        2 => state.generatedSchedule.isNotEmpty,
+        _ => false,
+      };
+    }
+
+    // Normal onboarding and addAquariumMode use standard canProceed
+    return state.canProceed;
+  }
+
+  void _onCancelPressed() {
+    context.pop();
+  }
+
+  Widget _buildNavigationButtons(OnboardingState state) {
+    final theme = Theme.of(context);
+    final isLoading = _isCompletingOnboarding || state.isCreatingAquarium;
+    final isAddFlow = widget.isAddMode || widget.isAddAquariumMode;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          if (!state.isFirstStep)
+            // Back button for non-first steps
+            Expanded(
+              child: OutlinedButton(
+                onPressed: isLoading ? null : _onBackPressed,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text('Back'),
+              ),
+            )
+          else if (isAddFlow)
+            // Cancel button on first step in add mode
+            Expanded(
+              child: OutlinedButton(
+                onPressed: isLoading ? null : _onCancelPressed,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text('Cancel'),
+              ),
+            )
+          else
+            const Spacer(),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 2,
+            child: FilledButton(
+              onPressed: _canProceed(state) && !isLoading ? _onNextPressed : null,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: theme.colorScheme.primary,
+              ),
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(_getNextButtonText(state)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getNextButtonText(OnboardingState state) {
+    // Calculate if we're on the last step based on mode
+    final totalSteps = _getTotalSteps();
+    final isLast = state.currentStep >= totalSteps - 1;
+
+    if (isLast) {
+      return (widget.isAddMode || widget.isAddAquariumMode) ? 'Done' : 'Get Started';
+    }
+    return 'Next';
+  }
+
+  void _onBackPressed() {
+    ref.read(onboardingNotifierProvider.notifier).previousStep();
+  }
+
+  Future<void> _onNextPressed() async {
+    final notifier = ref.read(onboardingNotifierProvider.notifier);
+    final state = ref.read(onboardingNotifierProvider);
+
+    // Calculate if we're on the last step based on mode
+    final totalSteps = _getTotalSteps();
+    final isLast = state.currentStep >= totalSteps - 1;
+
+    if (isLast) {
+      notifier.completeOnboarding();
+      return;
+    }
+
+    // Handle aquarium creation when leaving step 0 (in full onboarding or addAquarium mode)
+    if (!widget.isAddMode && state.currentStep == 0) {
+      await _createAquariumAndProceed();
+      return;
+    }
+
+    notifier.nextStep();
+  }
+
+  /// Creates aquarium via API and proceeds to next step.
+  Future<void> _createAquariumAndProceed() async {
+    final notifier = ref.read(onboardingNotifierProvider.notifier);
+    final state = ref.read(onboardingNotifierProvider);
+    final aquariumName = state.currentAquariumName?.trim() ?? '';
+
+    if (aquariumName.isEmpty) return;
+
+    // Set loading state
+    notifier.setCreatingAquarium(true);
+
+    try {
+      // Create aquarium via provider
+      final aquariumsNotifier = ref.read(userAquariumsProvider.notifier);
+      final aquarium = await aquariumsNotifier.createAquarium(name: aquariumName);
+
+      if (aquarium != null) {
+        // Store aquarium ID and add to created list
+        notifier.setCurrentAquarium(aquarium.id, aquarium.name);
+        notifier.addCreatedAquarium(aquarium);
+        notifier.nextStep();
+      } else {
+        // Show error - aquarium creation failed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to create aquarium. Please try again.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } finally {
+      notifier.setCreatingAquarium(false);
+    }
+  }
+
+  /// Handles "Add Another Aquarium" action.
+  /// Saves fish and feeding events for current aquarium before resetting state.
+  Future<void> _onAddAnotherAquarium() async {
+    final state = ref.read(onboardingNotifierProvider);
+    final notifier = ref.read(onboardingNotifierProvider.notifier);
+    final aquariumId = state.currentAquariumId;
+
+    if (aquariumId != null && state.selectedSpecies.isNotEmpty) {
+      // Save fish to Hive - feeding events are created by backend when synced
+      await _saveFish(state.selectedSpecies, aquariumId);
+
+      // Schedule notifications for this aquarium's feedings
+      try {
+        await _scheduleNotifications(state.generatedSchedule);
+      } catch (e) {
+        debugPrint('Failed to schedule notifications: $e');
+      }
+    }
+
+    // Reset state for new aquarium (keeps createdAquariums list)
+    notifier.resetForNewAquarium();
+  }
+}
+
+/// Progress dot indicator for onboarding steps.
+class _ProgressDot extends StatelessWidget {
+  const _ProgressDot({
+    required this.isActive,
+    required this.isCompleted,
+  });
+
+  final bool isActive;
+  final bool isCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 4,
+        decoration: BoxDecoration(
+          color: isActive || isCompleted
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
