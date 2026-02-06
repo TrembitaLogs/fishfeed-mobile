@@ -1,18 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
-import 'package:fishfeed/data/models/fish_model.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
-import 'package:fishfeed/domain/usecases/mark_feeding_usecase.dart';
+import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
-import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/services/feeding/feeding_service.dart';
 
 // ============================================================================
 // Today Feedings Provider
@@ -27,8 +24,8 @@ class TodayFeedingsState {
     this.error,
   });
 
-  /// List of scheduled feedings for today.
-  final List<ScheduledFeeding> feedings;
+  /// List of computed feeding events for today.
+  final List<ComputedFeedingEvent> feedings;
 
   /// Whether data is currently loading (initial load).
   final bool isLoading;
@@ -46,20 +43,24 @@ class TodayFeedingsState {
   bool get isEmpty =>
       feedings.isEmpty && !isLoading && !isRefreshing && !hasError;
 
-  /// Count of completed feedings.
+  /// Count of completed feedings (fed or skipped).
   int get completedCount =>
-      feedings.where((f) => f.status == FeedingStatus.fed).length;
+      feedings.where((f) => f.status == EventStatus.fed).length;
 
   /// Count of pending feedings.
   int get pendingCount =>
-      feedings.where((f) => f.status == FeedingStatus.pending).length;
+      feedings.where((f) => f.status == EventStatus.pending).length;
 
-  /// Count of missed feedings.
-  int get missedCount =>
-      feedings.where((f) => f.status == FeedingStatus.missed).length;
+  /// Count of overdue/skipped feedings.
+  int get missedCount => feedings
+      .where(
+        (f) =>
+            f.status == EventStatus.skipped || f.status == EventStatus.overdue,
+      )
+      .length;
 
   TodayFeedingsState copyWith({
-    List<ScheduledFeeding>? feedings,
+    List<ComputedFeedingEvent>? feedings,
     bool? isLoading,
     bool? isRefreshing,
     String? error,
@@ -75,200 +76,78 @@ class TodayFeedingsState {
 
 /// Notifier for managing today's feedings state.
 ///
-/// Integrates with [MarkFeedingUseCase] for marking feedings as fed/missed.
-/// Updates streak automatically when feedings are marked.
+/// Uses [FeedingEventGenerator] to compute feeding events from schedules and logs.
+/// Uses [FeedingService] for marking feedings as fed/skipped.
 class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
   TodayFeedingsNotifier({
-    required FeedingLocalDataSource feedingDataSource,
-    required FishLocalDataSource fishDataSource,
+    required FeedingEventGenerator feedingEventGenerator,
+    required FeedingService feedingService,
     required AquariumLocalDataSource aquariumDataSource,
-    required StreakLocalDataSource streakDataSource,
-    required MarkFeedingUseCase markFeedingUseCase,
+    required FishLocalDataSource fishDataSource,
     required Ref ref,
-  }) : _feedingDataSource = feedingDataSource,
-       _fishDataSource = fishDataSource,
+  }) : _feedingEventGenerator = feedingEventGenerator,
+       _feedingService = feedingService,
        _aquariumDataSource = aquariumDataSource,
-       _streakDataSource = streakDataSource,
-       _markFeedingUseCase = markFeedingUseCase,
+       _fishDataSource = fishDataSource,
        _ref = ref,
        super(const TodayFeedingsState()) {
     loadFeedings();
   }
 
-  final FeedingLocalDataSource _feedingDataSource;
-  final FishLocalDataSource _fishDataSource;
+  final FeedingEventGenerator _feedingEventGenerator;
+  final FeedingService _feedingService;
   final AquariumLocalDataSource _aquariumDataSource;
-  final StreakLocalDataSource _streakDataSource;
-  final MarkFeedingUseCase _markFeedingUseCase;
+  final FishLocalDataSource _fishDataSource;
   final Ref _ref;
 
-  /// Loads today's feedings.
+  /// Loads today's feedings using FeedingEventGenerator.
   ///
-  /// Generates schedule based on user's fish and species,
-  /// then cross-references with completed FeedingEvents.
+  /// Generates computed events for all user's aquariums for today.
   Future<void> loadFeedings() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Get today's completed feeding events from Hive
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final todayEvents = _feedingDataSource.getFeedingEventsByDate(today);
+      // Get all user's aquariums
+      final aquariums = _aquariumDataSource.getAllAquariums();
+      final aquariumIds = aquariums.map((a) => a.id).toList();
 
-      // Create a map of COMPLETED feeding IDs to their event data for lookup
-      // Only events with completedBy set are actually completed
-      final completedEventsMap = <String, _CompletedEventInfo>{};
-      for (final event in todayEvents) {
-        // Only add to completed map if event was actually marked as fed
-        if (event.completedBy != null) {
-          final key = event.localId ?? event.id;
-          completedEventsMap[key] = _CompletedEventInfo(
-            completedBy: event.completedBy,
-            completedByName: event.completedByName,
-            completedByAvatar: event.completedByAvatar,
-          );
-        }
+      if (aquariumIds.isEmpty) {
+        state = state.copyWith(feedings: [], isLoading: false);
+        return;
       }
 
-      // Generate mock schedule for now
-      // In production, this would come from user's fish/species data
-      final mockFeedings = _generateTodaySchedule(
-        today,
-        completedEventsMap,
-        now,
-      );
+      // Build resolver functions for display names and quantity
+      final fishNameResolver = _buildFishNameResolver();
+      final fishQuantityResolver = _buildFishQuantityResolver();
+      final aquariumNameResolver = _buildAquariumNameResolver();
+      final avatarResolver = _buildAvatarResolver();
+
+      // Generate events for all aquariums for today
+      final eventsByAquarium = _feedingEventGenerator
+          .generateTodayEventsForAllAquariums(
+            aquariumIds: aquariumIds,
+            fishNameResolver: fishNameResolver,
+            fishQuantityResolver: fishQuantityResolver,
+            aquariumNameResolver: aquariumNameResolver,
+            avatarResolver: avatarResolver,
+          );
+
+      // Flatten all events
+      final allEvents = <ComputedFeedingEvent>[];
+      for (final events in eventsByAquarium.values) {
+        allEvents.addAll(events);
+      }
 
       // Sort by scheduled time
-      mockFeedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+      allEvents.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
 
-      state = state.copyWith(feedings: mockFeedings, isLoading: false);
+      state = state.copyWith(feedings: allEvents, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to load feedings: $e',
       );
     }
-  }
-
-  /// Generates today's feeding schedule based on user's fish and feeding events.
-  ///
-  /// Reads scheduled feeding events from Hive and maps them to user's fish.
-  /// Events for deleted fish are filtered out.
-  List<ScheduledFeeding> _generateTodaySchedule(
-    DateTime today,
-    Map<String, _CompletedEventInfo> completedEventsMap,
-    DateTime now,
-  ) {
-    // Get all feeding events scheduled for today
-    final todayEvents = _feedingDataSource.getFeedingEventsByDate(today);
-
-    // Get all aquariums to map names by ID
-    final aquariums = _aquariumDataSource.getAllAquariums();
-    final aquariumMap = <String, String>{};
-    for (final aquarium in aquariums) {
-      aquariumMap[aquarium.id] = aquarium.name;
-    }
-
-    // Get all user's fish - keyed by fish ID (getAllFish already filters deleted)
-    final allFish = _fishDataSource.getAllFish();
-    final fishByIdMap = <String, FishModel>{};
-    for (final fish in allFish) {
-      fishByIdMap[fish.id] = fish;
-    }
-
-    final scheduleList = <ScheduledFeeding>[];
-
-    for (final event in todayEvents) {
-      // Look up fish by actual fish ID (may be null for aquarium-level events)
-      final fish = event.fishId.isNotEmpty ? fishByIdMap[event.fishId] : null;
-
-      // Get species data for display name
-      String speciesName;
-      String? fishId;
-      if (fish != null) {
-        // Event linked to specific fish - use fish's custom name or species name
-        speciesName =
-            fish.name ?? _ref.read(speciesNameByIdProvider(fish.speciesId));
-        fishId = fish.id;
-      } else if (event.speciesId != null && event.speciesId!.isNotEmpty) {
-        // No fish linked, but we have species_id from server
-        speciesName = _ref.read(speciesNameByIdProvider(event.speciesId!));
-        fishId = null;
-      } else {
-        // Aquarium-level event (no specific fish or species) - use food type as name
-        speciesName = event.foodType ?? 'Feeding';
-        fishId = null;
-      }
-
-      // Get aquarium name from map or use default
-      final aquariumName = aquariumMap[event.aquariumId] ?? 'My Aquarium';
-
-      final feeding = _createScheduledFeeding(
-        id: event.localId ?? event.id,
-        time: event.feedingTime,
-        aquariumId: event.aquariumId,
-        aquariumName: aquariumName,
-        speciesName: speciesName,
-        foodType: event.foodType ?? 'Flakes',
-        portionGrams: event.amount ?? 0.5,
-        completedEventsMap: completedEventsMap,
-        now: now,
-        fishId: fishId,
-      );
-
-      scheduleList.add(feeding);
-    }
-
-    return scheduleList;
-  }
-
-  /// Creates a scheduled feeding with appropriate status.
-  ScheduledFeeding _createScheduledFeeding({
-    required String id,
-    required DateTime time,
-    required String aquariumId,
-    required String aquariumName,
-    required String speciesName,
-    required String foodType,
-    required double portionGrams,
-    required Map<String, _CompletedEventInfo> completedEventsMap,
-    required DateTime now,
-    String? fishId,
-  }) {
-    FeedingStatus status;
-    DateTime? completedAt;
-    String? completedBy;
-    String? completedByName;
-    String? completedByAvatar;
-
-    final eventInfo = completedEventsMap[id];
-    if (eventInfo != null) {
-      status = FeedingStatus.fed;
-      completedAt = now;
-      completedBy = eventInfo.completedBy;
-      completedByName = eventInfo.completedByName;
-      completedByAvatar = eventInfo.completedByAvatar;
-    } else if (time.isBefore(now)) {
-      status = FeedingStatus.missed;
-    } else {
-      status = FeedingStatus.pending;
-    }
-
-    return ScheduledFeeding(
-      id: id,
-      scheduledTime: time,
-      aquariumId: aquariumId,
-      aquariumName: aquariumName,
-      fishId: fishId,
-      speciesName: speciesName,
-      status: status,
-      foodType: foodType,
-      portionGrams: portionGrams,
-      completedAt: completedAt,
-      completedBy: completedBy,
-      completedByName: completedByName,
-      completedByAvatar: completedByAvatar,
-    );
   }
 
   /// Refreshes today's feedings (pull-to-refresh).
@@ -279,26 +158,36 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     await Future<void>.delayed(const Duration(milliseconds: 100));
 
     try {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final todayEvents = _feedingDataSource.getFeedingEventsByDate(today);
+      final aquariums = _aquariumDataSource.getAllAquariums();
+      final aquariumIds = aquariums.map((a) => a.id).toList();
 
-      final completedEventsMap = <String, _CompletedEventInfo>{};
-      for (final event in todayEvents) {
-        if (event.completedBy != null) {
-          final key = event.localId ?? event.id;
-          completedEventsMap[key] = _CompletedEventInfo(
-            completedBy: event.completedBy,
-            completedByName: event.completedByName,
-            completedByAvatar: event.completedByAvatar,
-          );
-        }
+      if (aquariumIds.isEmpty) {
+        state = state.copyWith(feedings: []);
+        return;
       }
 
-      final feedings = _generateTodaySchedule(today, completedEventsMap, now);
-      feedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+      final fishNameResolver = _buildFishNameResolver();
+      final fishQuantityResolver = _buildFishQuantityResolver();
+      final aquariumNameResolver = _buildAquariumNameResolver();
+      final avatarResolver = _buildAvatarResolver();
 
-      state = state.copyWith(feedings: feedings);
+      final eventsByAquarium = _feedingEventGenerator
+          .generateTodayEventsForAllAquariums(
+            aquariumIds: aquariumIds,
+            fishNameResolver: fishNameResolver,
+            fishQuantityResolver: fishQuantityResolver,
+            aquariumNameResolver: aquariumNameResolver,
+            avatarResolver: avatarResolver,
+          );
+
+      final allEvents = <ComputedFeedingEvent>[];
+      for (final events in eventsByAquarium.values) {
+        allEvents.addAll(events);
+      }
+
+      allEvents.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+
+      state = state.copyWith(feedings: allEvents);
     } catch (e) {
       state = state.copyWith(error: 'Failed to refresh feedings: $e');
     }
@@ -306,252 +195,181 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
   /// Marks a feeding as fed.
   ///
-  /// Updates the existing feeding event in Hive with completion info
-  /// and refreshes the UI state.
-  Future<void> markAsFed(String feedingId) async {
+  /// Delegates to [FeedingService] which handles:
+  /// - Creating FeedingLog
+  /// - Adding to sync queue
+  /// - Updating streak (increment only)
+  Future<void> markAsFed(String scheduleId) async {
     final feeding = state.feedings.firstWhere(
-      (f) => f.id == feedingId,
-      orElse: () => throw StateError('Feeding not found: $feedingId'),
+      (f) => f.scheduleId == scheduleId,
+      orElse: () => throw StateError('Feeding not found: $scheduleId'),
     );
 
     final user = _ref.read(currentUserProvider);
     final userId = user?.id ?? 'default_user';
-    final now = DateTime.now();
 
-    // Update existing feeding event in Hive with completion info
-    // feedingId is localId from UI, so search by localId
-    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(
-      feedingId,
-    );
-    if (existingEvent != null) {
-      existingEvent.completedBy = userId;
-      existingEvent.completedByName = user?.displayName;
-      existingEvent.completedByAvatar = user?.avatarUrl;
-      existingEvent.synced = false; // Mark for re-sync
-      existingEvent.updatedAt = now;
-      await _feedingDataSource.updateFeedingEvent(existingEvent);
-
-      // Track feed marked analytics event
-      AnalyticsService.instance.trackFeedMarked(
-        eventId: feedingId,
-        status: FeedStatus.fed,
-      );
-
-      // Update local state with user attribution
-      final updatedFeedings = state.feedings.map((f) {
-        if (f.id == feedingId) {
-          return f.copyWith(
-            status: FeedingStatus.fed,
-            completedAt: now,
-            completedBy: userId,
-            completedByName: user?.displayName,
-            completedByAvatar: user?.avatarUrl,
-          );
-        }
-        return f;
-      }).toList();
-
-      state = state.copyWith(feedings: updatedFeedings);
-
-      // Notify streak provider to refresh
-      _ref.invalidate(currentStreakProvider);
-      return;
-    }
-
-    // Fallback: create new event via MarkFeedingUseCase if no existing event
-    final result = await _markFeedingUseCase(
-      MarkFeedingParams(
-        scheduledFeedingId: feedingId,
-        newStatus: FeedingStatus.fed,
-        userId: userId,
-        aquariumId: feeding.aquariumId,
-        fishId: feeding.fishId,
-        amount: feeding.portionGrams,
-        foodType: feeding.foodType,
-        userDisplayName: user?.displayName,
-        userAvatarUrl: user?.avatarUrl,
-      ),
+    // Call FeedingService
+    final result = await _feedingService.markAsFed(
+      scheduleId: scheduleId,
+      scheduledFor: feeding.scheduledFor,
+      userId: userId,
+      userDisplayName: user?.displayName,
     );
 
-    result.fold(
-      (failure) {
-        state = state.copyWith(error: failure.message);
-      },
-      (markResult) {
-        // Track feed marked analytics event
+    switch (result) {
+      case FeedingSuccess(:final streak):
+        // Track analytics
         AnalyticsService.instance.trackFeedMarked(
-          eventId: feedingId,
+          eventId: scheduleId,
           status: FeedStatus.fed,
         );
 
-        // Update local state with user attribution
-        final updatedFeedings = state.feedings.map((f) {
-          if (f.id == feedingId) {
-            return f.copyWith(
-              status: FeedingStatus.fed,
-              completedAt: now,
-              completedBy: userId,
-              completedByName: user?.displayName,
-              completedByAvatar: user?.avatarUrl,
-            );
-          }
-          return f;
-        }).toList();
+        // Refresh to get updated state from generator
+        await refresh();
 
-        state = state.copyWith(feedings: updatedFeedings);
-
-        // Notify streak provider to refresh
+        // Refresh streak provider
         _ref.invalidate(currentStreakProvider);
-      },
-    );
-  }
 
-  /// Marks a feeding as missed (or reverts a completed feeding).
-  ///
-  /// If the feeding was previously completed, clears completion info
-  /// and marks for re-sync. Also resets the streak.
-  Future<void> markAsMissed(String feedingId) async {
-    final feeding = state.feedings.firstWhere(
-      (f) => f.id == feedingId,
-      orElse: () => throw StateError('Feeding not found: $feedingId'),
-    );
-
-    final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
-    final now = DateTime.now();
-
-    // Update existing feeding event in Hive - clear completion info
-    // feedingId is localId from UI, so search by localId
-    final existingEvent = _feedingDataSource.getFeedingEventByLocalId(
-      feedingId,
-    );
-    if (existingEvent != null) {
-      // Clear completion info to revert status to pending
-      existingEvent.completedBy = null;
-      existingEvent.completedByName = null;
-      existingEvent.completedByAvatar = null;
-      existingEvent.synced = false; // Mark for re-sync
-      existingEvent.updatedAt = now;
-      await _feedingDataSource.updateFeedingEvent(existingEvent);
-
-      // Track feed marked analytics event
-      AnalyticsService.instance.trackFeedMarked(
-        eventId: feedingId,
-        status: FeedStatus.missed,
-      );
-
-      // Update local state - show as missed in UI
-      final updatedFeedings = state.feedings.map((f) {
-        if (f.id == feedingId) {
-          return f.copyWith(
-            status: FeedingStatus.missed,
-            completedAt: null,
-            completedBy: null,
-            completedByName: null,
-            completedByAvatar: null,
+        // Track streak analytics if incremented
+        if (streak.currentStreak > 0) {
+          AnalyticsService.instance.trackStreakIncremented(
+            streakCount: streak.currentStreak,
           );
         }
-        return f;
-      }).toList();
 
-      state = state.copyWith(feedings: updatedFeedings);
-
-      // Reset streak for missed feeding
-      await _streakDataSource.resetStreak(userId);
-
-      // Notify streak provider to refresh
-      _ref.invalidate(currentStreakProvider);
-      return;
+      case FeedingAlreadyDone(:final message):
+        // Show conflict - feeding was already marked by another device
+        state = state.copyWith(error: message);
     }
+  }
 
-    // Fallback: use MarkFeedingUseCase if no existing event
-    final result = await _markFeedingUseCase(
-      MarkFeedingParams(
-        scheduledFeedingId: feedingId,
-        newStatus: FeedingStatus.missed,
-        userId: userId,
-        aquariumId: feeding.aquariumId,
-        fishId: feeding.fishId,
-      ),
+  /// Marks a feeding as skipped.
+  ///
+  /// Note: Skipping does NOT reset streak - streak is only reset
+  /// by the server when a day is completely missed (handled in _check_streak_breaks).
+  Future<void> markAsMissed(String scheduleId) async {
+    final feeding = state.feedings.firstWhere(
+      (f) => f.scheduleId == scheduleId,
+      orElse: () => throw StateError('Feeding not found: $scheduleId'),
     );
 
-    result.fold(
-      (failure) {
-        state = state.copyWith(error: failure.message);
-      },
-      (markResult) {
-        // Track feed marked analytics event
+    final user = _ref.read(currentUserProvider);
+    final userId = user?.id ?? 'default_user';
+
+    // Call FeedingService
+    final result = await _feedingService.markAsSkipped(
+      scheduleId: scheduleId,
+      scheduledFor: feeding.scheduledFor,
+      userId: userId,
+      userDisplayName: user?.displayName,
+    );
+
+    switch (result) {
+      case FeedingSuccess():
+        // Track analytics
         AnalyticsService.instance.trackFeedMarked(
-          eventId: feedingId,
+          eventId: scheduleId,
           status: FeedStatus.missed,
         );
 
-        // Update local state
-        final updatedFeedings = state.feedings.map((f) {
-          if (f.id == feedingId) {
-            return f.copyWith(status: FeedingStatus.missed);
-          }
-          return f;
-        }).toList();
+        // Refresh to get updated state from generator
+        await refresh();
 
-        state = state.copyWith(feedings: updatedFeedings);
+        // Note: NO streak reset here - server handles streak breaks
 
-        // Notify streak provider to refresh
+        // Notify streak provider to refresh (to get latest from sync)
         _ref.invalidate(currentStreakProvider);
-      },
-    );
+
+      case FeedingAlreadyDone(:final message):
+        state = state.copyWith(error: message);
+    }
   }
 
-  /// Updates the status of a feeding locally without use case.
+  /// Refreshes feedings to reflect updated status.
   ///
-  /// Used for quick UI updates when use case is not needed.
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {
-    final updatedFeedings = state.feedings.map((feeding) {
-      if (feeding.id == feedingId) {
-        return feeding.copyWith(
-          status: newStatus,
-          completedAt: newStatus == FeedingStatus.fed ? DateTime.now() : null,
-        );
-      }
-      return feeding;
-    }).toList();
-
-    state = state.copyWith(feedings: updatedFeedings);
+  /// Since ComputedFeedingEvent is computed from logs, we refresh
+  /// to regenerate events with updated status.
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {
+    // Trigger refresh to regenerate events from updated logs
+    refresh();
   }
 
   /// Clears any error state.
   void clearError() {
     state = state.copyWith(error: null);
   }
+
+  /// Builds a resolver for fish display names.
+  String? Function(String) _buildFishNameResolver() {
+    final allFish = _fishDataSource.getAllFish();
+    final fishMap = <String, String>{};
+    for (final fish in allFish) {
+      // Use custom name if available, otherwise use speciesId as fallback
+      // (species name should be resolved from species provider if needed)
+      fishMap[fish.id] = fish.name ?? 'Fish';
+    }
+    return (String fishId) => fishMap[fishId];
+  }
+
+  /// Builds a resolver for fish quantities.
+  int Function(String) _buildFishQuantityResolver() {
+    final allFish = _fishDataSource.getAllFish();
+    final quantityMap = <String, int>{};
+    for (final fish in allFish) {
+      quantityMap[fish.id] = fish.quantity;
+    }
+    return (String fishId) => quantityMap[fishId] ?? 1;
+  }
+
+  /// Builds a resolver for aquarium display names.
+  String? Function(String) _buildAquariumNameResolver() {
+    final aquariums = _aquariumDataSource.getAllAquariums();
+    final aquariumMap = <String, String>{};
+    for (final aquarium in aquariums) {
+      aquariumMap[aquarium.id] = aquarium.name;
+    }
+    return (String aquariumId) => aquariumMap[aquariumId];
+  }
+
+  /// Builds a resolver for user avatar URLs.
+  ///
+  /// Currently returns null - in future could resolve from family members cache.
+  String? Function(String) _buildAvatarResolver() {
+    // TODO: Implement family members avatar resolution
+    return (String userId) => null;
+  }
 }
 
-/// Provider for [MarkFeedingUseCase].
-final markFeedingUseCaseProvider = Provider<MarkFeedingUseCase>((ref) {
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-  final streakDs = ref.watch(streakLocalDataSourceProvider);
-  final syncQueueDs = ref.watch(syncQueueDataSourceProvider);
+// ============================================================================
+// Providers
+// ============================================================================
 
-  return MarkFeedingUseCase(
-    feedingDataSource: feedingDs,
-    streakDataSource: streakDs,
-    syncQueueDataSource: syncQueueDs,
+/// Provider for [FeedingEventGenerator].
+final feedingEventGeneratorProvider = Provider<FeedingEventGenerator>((ref) {
+  final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
+  final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
+  final fishDs = ref.watch(fishLocalDataSourceProvider);
+
+  return FeedingEventGenerator(
+    scheduleLocalDs: scheduleDs,
+    feedingLogLocalDs: feedingLogDs,
+    fishLocalDs: fishDs,
   );
 });
 
 /// Provider for today's feedings state.
 final todayFeedingsProvider =
     StateNotifierProvider<TodayFeedingsNotifier, TodayFeedingsState>((ref) {
-      final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-      final fishDs = ref.watch(fishLocalDataSourceProvider);
+      final generator = ref.watch(feedingEventGeneratorProvider);
+      final feedingService = ref.watch(feedingServiceProvider);
       final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
-      final streakDs = ref.watch(streakLocalDataSourceProvider);
-      final markFeedingUseCase = ref.watch(markFeedingUseCaseProvider);
+      final fishDs = ref.watch(fishLocalDataSourceProvider);
 
       return TodayFeedingsNotifier(
-        feedingDataSource: feedingDs,
-        fishDataSource: fishDs,
+        feedingEventGenerator: generator,
+        feedingService: feedingService,
         aquariumDataSource: aquariumDs,
-        streakDataSource: streakDs,
-        markFeedingUseCase: markFeedingUseCase,
+        fishDataSource: fishDs,
         ref: ref,
       );
     });
@@ -559,24 +377,35 @@ final todayFeedingsProvider =
 /// Provider for grouped feedings by time period.
 ///
 /// Returns a map with keys: 'morning', 'afternoon', 'evening'.
-final groupedFeedingsProvider = Provider<Map<String, List<ScheduledFeeding>>>((
-  ref,
-) {
-  final state = ref.watch(todayFeedingsProvider);
-  final feedings = state.feedings;
+final groupedFeedingsProvider =
+    Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
+      final state = ref.watch(todayFeedingsProvider);
+      final feedings = state.feedings;
 
-  final grouped = <String, List<ScheduledFeeding>>{
-    'morning': [],
-    'afternoon': [],
-    'evening': [],
-  };
+      final grouped = <String, List<ComputedFeedingEvent>>{
+        'morning': [],
+        'afternoon': [],
+        'evening': [],
+      };
 
-  for (final feeding in feedings) {
-    grouped[feeding.timePeriod]?.add(feeding);
+      for (final feeding in feedings) {
+        final period = _getTimePeriod(feeding.scheduledFor.hour);
+        grouped[period]?.add(feeding);
+      }
+
+      return grouped;
+    });
+
+/// Helper to determine time period from hour.
+String _getTimePeriod(int hour) {
+  if (hour < 12) {
+    return 'morning';
+  } else if (hour < 18) {
+    return 'afternoon';
+  } else {
+    return 'evening';
   }
-
-  return grouped;
-});
+}
 
 /// Provider for feedings filtered by aquarium ID.
 ///
@@ -587,7 +416,7 @@ final groupedFeedingsProvider = Provider<Map<String, List<ScheduledFeeding>>>((
 /// final feedings = ref.watch(aquariumFeedingsProvider('aquarium-123'));
 /// ```
 final aquariumFeedingsProvider =
-    Provider.family<List<ScheduledFeeding>, String>((ref, aquariumId) {
+    Provider.family<List<ComputedFeedingEvent>, String>((ref, aquariumId) {
       final state = ref.watch(todayFeedingsProvider);
       return state.feedings
           .where((feeding) => feeding.aquariumId == aquariumId)
@@ -598,11 +427,11 @@ final aquariumFeedingsProvider =
 ///
 /// Returns a map with aquarium IDs as keys and list of feedings as values.
 final feedingsGroupedByAquariumProvider =
-    Provider<Map<String, List<ScheduledFeeding>>>((ref) {
+    Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
       final state = ref.watch(todayFeedingsProvider);
       final feedings = state.feedings;
 
-      final grouped = <String, List<ScheduledFeeding>>{};
+      final grouped = <String, List<ComputedFeedingEvent>>{};
 
       for (final feeding in feedings) {
         grouped.putIfAbsent(feeding.aquariumId, () => []).add(feeding);
@@ -610,6 +439,99 @@ final feedingsGroupedByAquariumProvider =
 
       return grouped;
     });
+
+/// Provider for feedings grouped by exact schedule time for a specific aquarium.
+///
+/// Returns a sorted map where keys are time strings ("09:00", "12:00", "18:00")
+/// and values are lists of feedings for that time slot.
+///
+/// Usage:
+/// ```dart
+/// final grouped = ref.watch(feedingsGroupedByTimeProvider('aquarium-123'));
+/// // {'09:00': [...], '12:00': [...], '18:00': [...]}
+/// ```
+final feedingsGroupedByTimeProvider =
+    Provider.family<Map<String, List<ComputedFeedingEvent>>, String>((
+      ref,
+      aquariumId,
+    ) {
+      final feedings = ref.watch(aquariumFeedingsProvider(aquariumId));
+      final grouped = <String, List<ComputedFeedingEvent>>{};
+      for (final feeding in feedings) {
+        grouped.putIfAbsent(feeding.time, () => []).add(feeding);
+      }
+      // Sort by time key
+      final sortedKeys = grouped.keys.toList()..sort();
+      return Map.fromEntries(sortedKeys.map((k) => MapEntry(k, grouped[k]!)));
+    });
+
+/// Aquarium feeding status for the aquarium list screen.
+enum AquariumFeedingStatus {
+  /// Has overdue/pending feedings that need attention.
+  pendingFeeding,
+
+  /// All feedings for today are completed.
+  allFed,
+
+  /// Next feeding is scheduled in the future.
+  nextAt,
+}
+
+/// Provider for aquarium feeding status.
+///
+/// Returns a record with the status enum and optional next time string.
+/// Used by aquarium list screen to show status badges.
+///
+/// Status logic:
+/// - Has overdue feedings (scheduledFor < now, needsAttention) → pendingFeeding
+/// - All feedings completed (fed/skipped) → allFed
+/// - Has future pending feedings → nextAt with earliest time
+/// - No feedings at all → allFed
+final aquariumFeedingStatusProvider =
+    Provider.family<({AquariumFeedingStatus status, String? nextTime}), String>(
+      (ref, aquariumId) {
+        final feedings = ref.watch(aquariumFeedingsProvider(aquariumId));
+
+        if (feedings.isEmpty) {
+          return (status: AquariumFeedingStatus.allFed, nextTime: null);
+        }
+
+        final now = DateTime.now();
+
+        // Check for overdue feedings that need attention
+        final overdue = feedings
+            .where((f) => f.needsAttention && f.scheduledFor.isBefore(now))
+            .toList();
+        if (overdue.isNotEmpty) {
+          overdue.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+          return (
+            status: AquariumFeedingStatus.pendingFeeding,
+            nextTime: overdue.first.time,
+          );
+        }
+
+        // Check for future pending feedings
+        final futurePending = feedings
+            .where(
+              (f) =>
+                  f.status == EventStatus.pending &&
+                  !f.scheduledFor.isBefore(now),
+            )
+            .toList();
+        if (futurePending.isNotEmpty) {
+          futurePending.sort(
+            (a, b) => a.scheduledFor.compareTo(b.scheduledFor),
+          );
+          return (
+            status: AquariumFeedingStatus.nextAt,
+            nextTime: futurePending.first.time,
+          );
+        }
+
+        // All feedings are completed
+        return (status: AquariumFeedingStatus.allFed, nextTime: null);
+      },
+    );
 
 // ============================================================================
 // Current Streak Provider
@@ -654,6 +576,7 @@ class StreakState {
 /// Notifier for managing current streak state.
 ///
 /// Reads streak from Hive and provides methods to update it.
+/// Note: Streak reset is handled by server during sync, not client.
 class StreakNotifier extends StateNotifier<StreakState> {
   StreakNotifier({
     required StreakLocalDataSource streakDataSource,
@@ -733,29 +656,10 @@ class StreakNotifier extends StateNotifier<StreakState> {
     }
   }
 
-  /// Resets the current streak to zero.
-  ///
-  /// Called automatically when a feeding is marked as missed.
-  Future<void> resetStreak() async {
-    try {
-      final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
-      final previousStreak = state.streak?.currentStreak ?? 0;
-      final updatedModel = await _streakDataSource.resetStreak(userId);
-
-      if (updatedModel != null) {
-        state = state.copyWith(streak: updatedModel.toEntity());
-      }
-
-      // Track streak broken if there was an active streak
-      if (previousStreak > 0) {
-        AnalyticsService.instance.trackStreakBroken(
-          previousStreak: previousStreak,
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(error: 'Failed to reset streak: $e');
-    }
-  }
+  // Note: resetStreak() removed - streak reset is handled by server
+  // during POST /sync via _check_streak_breaks function.
+  // Client only increments streak on markAsFed and reads from Hive
+  // which is updated during sync with server values.
 }
 
 /// Provider for current streak state.
@@ -777,16 +681,3 @@ final currentStreakCountProvider = Provider<int>((ref) {
 final isStreakActiveProvider = Provider<bool>((ref) {
   return ref.watch(currentStreakProvider).isActive;
 });
-
-/// Helper class to hold completed event info for user attribution.
-class _CompletedEventInfo {
-  const _CompletedEventInfo({
-    this.completedBy,
-    this.completedByName,
-    this.completedByAvatar,
-  });
-
-  final String? completedBy;
-  final String? completedByName;
-  final String? completedByAvatar;
-}

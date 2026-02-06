@@ -1,11 +1,13 @@
 import 'package:dartz/dartz.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/domain/entities/calendar_day_data.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/calendar_month_stats.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 
 /// Parameters for [GetCalendarDataUseCase].
 class GetCalendarDataParams {
@@ -20,21 +22,22 @@ class GetCalendarDataParams {
 
 /// Use case for aggregating calendar data for a month.
 ///
-/// Retrieves feeding events from local storage and calculates:
+/// Uses [FeedingEventGenerator] to compute feeding events from schedules
+/// and logs, then calculates:
 /// - Daily feeding status (allFed, allMissed, partial, noData)
 /// - Monthly statistics (completion rate, streaks)
 ///
 /// Returns [Right(CalendarMonthData)] on success.
 /// Returns [Left(Failure)] on error.
 class GetCalendarDataUseCase {
-  GetCalendarDataUseCase({required FeedingLocalDataSource feedingDataSource})
-    : _feedingDataSource = feedingDataSource;
+  GetCalendarDataUseCase({
+    required FeedingEventGenerator feedingEventGenerator,
+    required AquariumLocalDataSource aquariumDataSource,
+  }) : _feedingEventGenerator = feedingEventGenerator,
+       _aquariumDataSource = aquariumDataSource;
 
-  final FeedingLocalDataSource _feedingDataSource;
-
-  /// Number of scheduled feedings per day (mock data).
-  /// In production, this would come from user's actual schedule.
-  static const int _feedingsPerDay = 4;
+  final FeedingEventGenerator _feedingEventGenerator;
+  final AquariumLocalDataSource _aquariumDataSource;
 
   /// Executes the get calendar data use case.
   Future<Either<Failure, CalendarMonthData>> call(
@@ -49,6 +52,50 @@ class GetCalendarDataUseCase {
       final firstDayOfMonth = DateTime(params.year, params.month, 1);
       final lastDayOfMonth = DateTime(params.year, params.month + 1, 0);
 
+      // Get all user's aquariums
+      final aquariums = _aquariumDataSource.getAllAquariums();
+      final aquariumIds = aquariums.map((a) => a.id).toList();
+
+      if (aquariumIds.isEmpty) {
+        // No aquariums - return empty calendar data
+        return Right(
+          CalendarMonthData(
+            year: params.year,
+            month: params.month,
+            days: {},
+            stats: const CalendarMonthStats(
+              totalScheduledFeedings: 0,
+              completedFeedings: 0,
+              missedFeedings: 0,
+              longestStreak: 0,
+              currentStreak: 0,
+            ),
+          ),
+        );
+      }
+
+      // Generate events for all aquariums for the entire month
+      final allEvents = <ComputedFeedingEvent>[];
+      for (final aquariumId in aquariumIds) {
+        final events = _feedingEventGenerator.generateEvents(
+          aquariumId: aquariumId,
+          from: firstDayOfMonth,
+          to: lastDayOfMonth,
+        );
+        allEvents.addAll(events);
+      }
+
+      // Group events by date
+      final eventsByDate = <DateTime, List<ComputedFeedingEvent>>{};
+      for (final event in allEvents) {
+        final dateKey = DateTime(
+          event.scheduledFor.year,
+          event.scheduledFor.month,
+          event.scheduledFor.day,
+        );
+        eventsByDate.putIfAbsent(dateKey, () => []).add(event);
+      }
+
       int totalScheduledFeedings = 0;
       int totalCompletedFeedings = 0;
       int totalMissedFeedings = 0;
@@ -61,12 +108,13 @@ class GetCalendarDataUseCase {
       ) {
         final normalizedDay = DateTime(day.year, day.month, day.day);
 
-        // Skip future days
+        // Skip future days (except today which may have pending events)
         if (normalizedDay.isAfter(today)) {
           continue;
         }
 
-        final dayData = _calculateDayData(normalizedDay, today);
+        final dayEvents = eventsByDate[normalizedDay] ?? [];
+        final dayData = _calculateDayData(normalizedDay, dayEvents, today);
         days[normalizedDay] = dayData;
 
         // Accumulate totals
@@ -99,17 +147,35 @@ class GetCalendarDataUseCase {
     }
   }
 
-  /// Calculates feeding data for a single day.
-  CalendarDayData _calculateDayData(DateTime day, DateTime today) {
-    // Get completed feeding events for this day
-    final completedEvents = _feedingDataSource.getFeedingEventsByDate(day);
-    final completedCount = completedEvents.length;
+  /// Calculates feeding data for a single day from computed events.
+  CalendarDayData _calculateDayData(
+    DateTime day,
+    List<ComputedFeedingEvent> events,
+    DateTime today,
+  ) {
+    if (events.isEmpty) {
+      return CalendarDayData(
+        date: day,
+        status: DayFeedingStatus.noData,
+        totalFeedings: 0,
+        completedFeedings: 0,
+        missedFeedings: 0,
+      );
+    }
 
-    // Use mock schedule: 4 feedings per day
-    const totalFeedings = _feedingsPerDay;
+    final totalFeedings = events.length;
+    final completedCount = events
+        .where((e) => e.status == EventStatus.fed)
+        .length;
+    final skippedCount = events
+        .where((e) => e.status == EventStatus.skipped)
+        .length;
+    final overdueCount = events
+        .where((e) => e.status == EventStatus.overdue)
+        .length;
 
-    // Calculate missed feedings
-    final missedCount = totalFeedings - completedCount;
+    // Missed = skipped + overdue
+    final missedCount = skippedCount + overdueCount;
 
     // Determine status
     final status = _calculateDayStatus(
@@ -123,7 +189,7 @@ class GetCalendarDataUseCase {
       status: status,
       totalFeedings: totalFeedings,
       completedFeedings: completedCount,
-      missedFeedings: missedCount > 0 ? missedCount : 0,
+      missedFeedings: missedCount,
     );
   }
 

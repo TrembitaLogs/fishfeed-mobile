@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/domain/entities/aquarium.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/widgets/feeding/feeding_card.dart';
 
@@ -16,20 +16,16 @@ class AquariumSection extends StatelessWidget {
     required this.aquarium,
     required this.feedings,
     required this.onMarkAsFed,
-    required this.onMarkAsMissed,
   });
 
   /// The aquarium to display.
   final Aquarium aquarium;
 
-  /// List of feedings for this aquarium.
-  final List<ScheduledFeeding> feedings;
+  /// List of computed feeding events for this aquarium.
+  final List<ComputedFeedingEvent> feedings;
 
   /// Callback when feeding is marked as fed.
-  final void Function(String feedingId) onMarkAsFed;
-
-  /// Callback when feeding is marked as missed.
-  final void Function(String feedingId) onMarkAsMissed;
+  final void Function(String scheduleId) onMarkAsFed;
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +42,8 @@ class AquariumSection extends StatelessWidget {
           _EmptyFeedingsState(theme: theme, l10n: l10n)
         else
           ...feedings.map(
-            (feeding) => FeedingCard(
-              feeding: feeding,
-              onMarkAsFed: onMarkAsFed,
-              onMarkAsMissed: onMarkAsMissed,
-            ),
+            (feeding) =>
+                FeedingCard(feeding: feeding, onMarkAsFed: onMarkAsFed),
           ),
       ],
     );
@@ -97,7 +90,9 @@ class _AquariumHeader extends StatelessWidget {
                 ),
                 if (feedingsCount > 0)
                   Text(
-                    '$feedingsCount feeding${feedingsCount == 1 ? '' : 's'} today',
+                    AppLocalizations.of(
+                      context,
+                    )!.feedingsTodayCount(feedingsCount),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -111,7 +106,7 @@ class _AquariumHeader extends StatelessWidget {
               Icons.settings_outlined,
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            tooltip: 'Edit aquarium',
+            tooltip: AppLocalizations.of(context)!.editAquarium,
           ),
         ],
       ),

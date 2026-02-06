@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:fishfeed/core/config/api_config.dart';
 import 'package:fishfeed/core/services/secure_storage_service.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/datasources/remote/interceptors/interceptors.dart';
@@ -78,7 +79,10 @@ void main() {
           baseUrl: testBaseUrl,
         );
 
-        expect(apiClient.dio.options.baseUrl, testBaseUrl);
+        expect(
+          apiClient.dio.options.baseUrl,
+          '$testBaseUrl${ApiVersion.pathPrefix}',
+        );
       });
     });
 
@@ -185,7 +189,10 @@ void main() {
           secureStorageService: mockSecureStorageService,
         );
 
-        expect(apiClient.dio.options.baseUrl, 'https://dotenv.api.com');
+        expect(
+          apiClient.dio.options.baseUrl,
+          'https://dotenv.api.com${ApiVersion.pathPrefix}',
+        );
       });
 
       test('should prefer explicit baseUrl over dotenv', () {
@@ -195,7 +202,10 @@ void main() {
           baseUrl: explicitUrl,
         );
 
-        expect(apiClient.dio.options.baseUrl, explicitUrl);
+        expect(
+          apiClient.dio.options.baseUrl,
+          '$explicitUrl${ApiVersion.pathPrefix}',
+        );
       });
     });
   });

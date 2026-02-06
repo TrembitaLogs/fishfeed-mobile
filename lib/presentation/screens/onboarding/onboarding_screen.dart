@@ -6,8 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
-import 'package:fishfeed/domain/usecases/generate_schedule_usecase.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
@@ -148,16 +149,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         return;
       }
 
-      // 3. Save fish to Hive (so they appear in My Aquarium)
-      // Feeding events are created by backend when fish are synced
-      await _saveFish(state.selectedSpecies, aquariumId);
+      // 3. Save fish and schedules to Hive (so they appear in My Aquarium)
+      // Schedules are created locally and synced to server (offline-first)
+      final speciesIdToFishId = await _saveFish(
+        state.selectedSpecies,
+        aquariumId,
+      );
+
+      // 4. Create schedules from generated schedule entries
+      await _saveSchedules(
+        generatedSchedule: state.generatedSchedule,
+        selectedSpecies: state.selectedSpecies,
+        speciesIdToFishId: speciesIdToFishId,
+        aquariumId: aquariumId,
+      );
 
       // Track first feed event created (only for first-time onboarding)
       if (!widget.isAddMode && !widget.isAddAquariumMode) {
         analytics.trackFirstFeedEventCreated();
       }
 
-      // 4. Schedule notifications for each feeding time
+      // 5. Schedule notifications for each feeding time
       // Wrapped in try-catch to prevent notification errors from blocking onboarding
       try {
         await _scheduleNotifications(state.generatedSchedule);
@@ -166,7 +178,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         debugPrint('Failed to schedule notifications: $e');
       }
 
-      // 5. Complete flow
+      // 6. Complete flow
       if (widget.isAddMode || widget.isAddAquariumMode) {
         // In add mode or add aquarium mode, sync and go back
         if (mounted) {
@@ -201,56 +213,110 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   /// Saves fish to Hive.
   ///
-  /// If a fish of the same species already exists in the aquarium (add mode),
-  /// updates its quantity instead of creating a new record.
+  /// Always creates a new Fish record for each selection, even if a fish
+  /// of the same species already exists. This allows users to have separate
+  /// feeding schedules for different groups of the same species.
   ///
-  /// Feeding events are created by the backend when fish are synced.
-  Future<void> _saveFish(
+  /// To update quantity of an existing fish group, use the edit fish screen.
+  ///
+  /// Returns a map of speciesId → fishId for schedule creation.
+  Future<Map<String, String>> _saveFish(
     List<SpeciesSelection> selections,
     String aquariumId,
   ) async {
     final now = DateTime.now();
     final fishBox = HiveBoxes.fish;
-
-    // Get existing fish for this aquarium to check for duplicates
-    final existingFish = fishBox.values
-        .whereType<FishModel>()
-        .where((f) => f.aquariumId == aquariumId && f.deletedAt == null)
-        .toList();
+    final speciesIdToFishId = <String, String>{};
 
     for (final selection in selections) {
-      // Check if fish of this species already exists
-      final existing = existingFish
-          .where((f) => f.speciesId == selection.species.id)
-          .firstOrNull;
+      // Always create a new Fish record (allows separate schedules per group)
+      final fishId = _uuid.v4();
+      final model = FishModel(
+        id: fishId,
+        aquariumId: aquariumId,
+        speciesId: selection.species.id,
+        name: selection.species.name,
+        quantity: selection.quantity,
+        addedAt: now,
+      );
+      await fishBox.put(model.id, model);
 
-      if (existing != null) {
-        // Update existing fish quantity
-        existing.quantity += selection.quantity;
-        existing.updatedAt = now;
-        existing.synced = false;
-        await existing.save();
-      } else {
-        // Create new fish
-        final model = FishModel(
-          id: _uuid.v4(),
-          aquariumId: aquariumId,
-          speciesId: selection.species.id,
-          name: selection.species.name,
-          quantity: selection.quantity,
-          addedAt: now,
+      // Track mapping for schedule creation
+      speciesIdToFishId[selection.species.id] = fishId;
+    }
+
+    return speciesIdToFishId;
+  }
+
+  /// Saves feeding schedules to Hive based on generated schedule entries.
+  ///
+  /// Creates ScheduleModel for each feeding time in the generated schedule.
+  /// Schedules are created locally and synced to server (offline-first).
+  Future<void> _saveSchedules({
+    required List<GeneratedScheduleEntry> generatedSchedule,
+    required List<SpeciesSelection> selectedSpecies,
+    required Map<String, String> speciesIdToFishId,
+    required String aquariumId,
+  }) async {
+    final scheduleDs = ref.read(scheduleLocalDataSourceProvider);
+    final userId = ref.read(currentUserProvider)?.id ?? 'default_user';
+    final now = DateTime.now();
+
+    // Build a map of speciesId → feedingFrequency for intervalDays calculation
+    final speciesFrequencyMap = <String, String>{};
+    for (final selection in selectedSpecies) {
+      speciesFrequencyMap[selection.species.id] =
+          selection.species.feedingFrequency ?? 'daily';
+    }
+
+    final schedulesToSave = <ScheduleModel>[];
+
+    for (final entry in generatedSchedule) {
+      final fishId = speciesIdToFishId[entry.speciesId];
+      if (fishId == null) {
+        debugPrint(
+          'Warning: No fish found for speciesId ${entry.speciesId}, skipping schedule',
         );
-        await fishBox.put(model.id, model);
+        continue;
       }
+
+      // Determine intervalDays from feeding frequency
+      final frequency = speciesFrequencyMap[entry.speciesId] ?? 'daily';
+      final intervalDays = frequency == 'every_other_day' ? 2 : 1;
+
+      // Create a schedule for each feeding time
+      for (final time in entry.feedingTimes) {
+        final schedule = ScheduleModel(
+          id: _uuid.v4(),
+          fishId: fishId,
+          aquariumId: aquariumId,
+          time: time,
+          intervalDays: intervalDays,
+          anchorDate: DateTime(now.year, now.month, now.day),
+          foodType: entry.foodType.name,
+          portionHint: '${entry.portionGrams.toStringAsFixed(1)}g',
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+          createdByUserId: userId,
+          synced: false, // Will be synced via ChangeTracker
+        );
+        schedulesToSave.add(schedule);
+      }
+    }
+
+    // Batch save all schedules
+    if (schedulesToSave.isNotEmpty) {
+      await scheduleDs.saveAll(schedulesToSave);
+      debugPrint('Created ${schedulesToSave.length} feeding schedules locally');
     }
   }
 
   Future<void> _scheduleNotifications(
     List<GeneratedScheduleEntry> schedule,
   ) async {
-    // Use the merged time slots for scheduling notifications
-    const usecase = GenerateScheduleUseCase();
-    final mergedSlots = usecase.mergeToTimeSlots(schedule);
+    // Merge schedule entries into unified time slots for notifications
+    final mergedSlots = _mergeToTimeSlots(schedule);
 
     for (var i = 0; i < mergedSlots.length; i++) {
       final slot = mergedSlots[i];
@@ -258,10 +324,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
 
-      final speciesNames = slot.species.map((s) => s.speciesName).toList();
-      final speciesText = speciesNames.length == 1
-          ? speciesNames.first
-          : '${speciesNames.length} species';
+      final speciesText = slot.speciesNames.length == 1
+          ? slot.speciesNames.first
+          : '${slot.speciesNames.length} species';
 
       await NotificationService.instance.scheduleDailyFeeding(
         id: 1000 + i,
@@ -272,6 +337,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         payload: 'feeding_slot_$i',
       );
     }
+  }
+
+  /// Merges schedule entries into unified time slots for notifications.
+  List<_MergedTimeSlot> _mergeToTimeSlots(
+    List<GeneratedScheduleEntry> schedule,
+  ) {
+    final timeSlotMap = <String, List<String>>{};
+
+    for (final entry in schedule) {
+      for (final time in entry.feedingTimes) {
+        timeSlotMap.putIfAbsent(time, () => []).add(entry.speciesName);
+      }
+    }
+
+    final slots = timeSlotMap.entries
+        .map((e) => _MergedTimeSlot(time: e.key, speciesNames: e.value))
+        .toList();
+
+    // Sort by time
+    slots.sort((a, b) => a.time.compareTo(b.time));
+
+    return slots;
   }
 
   @override
@@ -531,15 +618,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   /// Handles "Add Another Aquarium" action.
-  /// Saves fish and feeding events for current aquarium before resetting state.
+  /// Saves fish and feeding schedules for current aquarium before resetting state.
   Future<void> _onAddAnotherAquarium() async {
     final state = ref.read(onboardingNotifierProvider);
     final notifier = ref.read(onboardingNotifierProvider.notifier);
     final aquariumId = state.currentAquariumId;
 
     if (aquariumId != null && state.selectedSpecies.isNotEmpty) {
-      // Save fish to Hive - feeding events are created by backend when synced
-      await _saveFish(state.selectedSpecies, aquariumId);
+      // Save fish to Hive
+      final speciesIdToFishId = await _saveFish(
+        state.selectedSpecies,
+        aquariumId,
+      );
+
+      // Create schedules locally (offline-first)
+      await _saveSchedules(
+        generatedSchedule: state.generatedSchedule,
+        selectedSpecies: state.selectedSpecies,
+        speciesIdToFishId: speciesIdToFishId,
+        aquariumId: aquariumId,
+      );
 
       // Schedule notifications for this aquarium's feedings
       try {
@@ -579,4 +677,12 @@ class _ProgressDot extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Merged time slot for notification scheduling.
+class _MergedTimeSlot {
+  const _MergedTimeSlot({required this.time, required this.speciesNames});
+
+  final String time;
+  final List<String> speciesNames;
 }

@@ -1681,4 +1681,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFishToAquarium => 'Add your first fish to get started';
+
+  @override
+  String feedingsTodayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count feedings today',
+      one: '1 feeding today',
+      zero: 'No feedings today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get markAsFedQuestion => 'Mark as fed?';
+
+  @override
+  String get yesFed => 'Yes, Fed';
+
+  @override
+  String fedAtTime(String time) {
+    return 'Fed at $time';
+  }
+
+  @override
+  String get pendingSync => 'Syncing...';
+
+  @override
+  String pendingFeedingAt(String time) {
+    return 'Pending feeding at $time';
+  }
+
+  @override
+  String get allFedToday => 'All fed';
+
+  @override
+  String nextFeedingAt(String time) {
+    return 'Next at $time';
+  }
+
+  @override
+  String get portionHintLabel => 'Portion';
+
+  @override
+  String get feedingDetails => 'Feeding Details';
+
+  @override
+  String get closeButton => 'Close';
+
+  @override
+  String feedingAlreadyDoneByMember(String name, String time) {
+    return '$name already fed at $time';
+  }
 }

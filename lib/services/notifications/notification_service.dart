@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/presentation/dialogs/notification_permission_dialog.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
@@ -940,6 +941,185 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+      payload: payload,
+    );
+  }
+
+  // ============ Schedule-based Notifications ============
+
+  /// Schedules feeding notifications based on Schedule models.
+  ///
+  /// This method replaces server-event-based notifications with
+  /// client-computed schedule-based notifications.
+  ///
+  /// [schedules] - List of active schedules to create notifications for.
+  /// [fishNames] - Optional map of fishId to fish name for personalized messages.
+  /// [daysAhead] - Number of days to schedule notifications for (default: 7).
+  /// [existingLogKeys] - Set of existing log keys ("$scheduleId|$dateStr") to skip.
+  ///
+  /// Each notification is scheduled at the schedule's time on days where
+  /// [ScheduleModel.shouldFeedOn] returns true.
+  Future<int> scheduleFromSchedules({
+    required List<ScheduleModel> schedules,
+    Map<String, String>? fishNames,
+    int daysAhead = 7,
+    Set<String>? existingLogKeys,
+  }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final now = DateTime.now();
+    final endDate = now.add(Duration(days: daysAhead));
+    int scheduledCount = 0;
+
+    for (final schedule in schedules) {
+      // Skip inactive schedules
+      if (!schedule.active) continue;
+
+      // Get fish name for personalized notification
+      final fishName = fishNames?[schedule.fishId] ?? 'your fish';
+
+      // Iterate through days
+      for (
+        var date = now;
+        date.isBefore(endDate);
+        date = date.add(const Duration(days: 1))
+      ) {
+        // Check if feeding is needed on this day
+        if (!schedule.shouldFeedOn(date)) continue;
+
+        // Parse schedule time
+        final (:hour, :minute) = schedule.timeComponents;
+
+        // Create scheduled datetime
+        final scheduledAt = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          hour,
+          minute,
+        );
+
+        // Skip past times
+        if (scheduledAt.isBefore(now)) continue;
+
+        // Skip if already has a feeding log
+        if (existingLogKeys != null) {
+          final logKey = _makeScheduleLogKey(schedule.id, scheduledAt);
+          if (existingLogKeys.contains(logKey)) continue;
+        }
+
+        // Generate unique notification ID
+        final notificationId = _generateScheduleNotificationId(
+          schedule.id,
+          scheduledAt,
+        );
+
+        // Schedule the notification
+        await _scheduleNotificationInternal(
+          id: notificationId,
+          title: 'Feeding Time! 🐟',
+          body: 'Time to feed $fishName',
+          scheduledAt: scheduledAt,
+          payload:
+              'schedule_${schedule.id}_${scheduledAt.millisecondsSinceEpoch}',
+        );
+
+        scheduledCount++;
+      }
+    }
+
+    if (kDebugMode) {
+      print(
+        'NotificationService: Scheduled $scheduledCount notifications '
+        'from ${schedules.length} schedules',
+      );
+    }
+
+    return scheduledCount;
+  }
+
+  /// Cancels all notifications for a specific schedule.
+  ///
+  /// Useful when a schedule is deleted or deactivated.
+  Future<void> cancelScheduleNotifications(
+    String scheduleId, {
+    int daysAhead = 7,
+  }) async {
+    final now = DateTime.now();
+
+    for (var i = 0; i < daysAhead; i++) {
+      final date = now.add(Duration(days: i));
+      // Cancel for multiple possible times during the day
+      for (var hour = 0; hour < 24; hour++) {
+        for (var minute = 0; minute < 60; minute += 15) {
+          final scheduledAt = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            hour,
+            minute,
+          );
+          final notificationId = _generateScheduleNotificationId(
+            scheduleId,
+            scheduledAt,
+          );
+          await _plugin.cancel(notificationId);
+        }
+      }
+    }
+  }
+
+  /// Cancels notification for a specific schedule and time.
+  ///
+  /// Call this after a feeding is marked as done.
+  Future<void> cancelScheduleNotificationForTime(
+    String scheduleId,
+    DateTime scheduledFor,
+  ) async {
+    final notificationId = _generateScheduleNotificationId(
+      scheduleId,
+      scheduledFor,
+    );
+    await _plugin.cancel(notificationId);
+  }
+
+  /// Creates a log key for checking existing feeding logs.
+  ///
+  /// Format: "$scheduleId|YYYY-MM-DDTHH:MM"
+  String _makeScheduleLogKey(String scheduleId, DateTime scheduledFor) {
+    final dateStr = scheduledFor.toIso8601String().substring(0, 16);
+    return '$scheduleId|$dateStr';
+  }
+
+  /// Generates a unique notification ID from schedule ID and time.
+  ///
+  /// Uses hashCode to create a stable int32 ID.
+  int _generateScheduleNotificationId(String scheduleId, DateTime scheduledAt) {
+    final key = '$scheduleId|${scheduledAt.millisecondsSinceEpoch}';
+    return key.hashCode.abs() % 2147483647;
+  }
+
+  /// Internal method for scheduling a notification.
+  Future<void> _scheduleNotificationInternal({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+  }) async {
+    final tzScheduledAt = tz.TZDateTime.from(scheduledAt, tz.local);
+
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tzScheduledAt,
+      _getNotificationDetails(NotificationType.feedingReminder),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }

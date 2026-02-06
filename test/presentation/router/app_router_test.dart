@@ -11,7 +11,7 @@ import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/data/repositories/user_repository_impl.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
@@ -29,10 +29,7 @@ import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
-
-import '../../helpers/test_helpers.dart'
-    show createMockSyncService, createMockAquariumRemoteDataSource;
+import '../../helpers/test_helpers.dart' show createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -85,7 +82,7 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   Future<void> markAsMissed(String feedingId) async {}
 
   @override
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {}
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {}
 
   @override
   void clearError() {}
@@ -200,14 +197,23 @@ class MockFishManagementNotifier extends StateNotifier<FishManagementState>
 /// Test implementation of AuthStateListenable that doesn't require Riverpod.
 class TestAuthStateListenable extends ChangeNotifier
     implements AuthStateListenable {
+  bool _isInitializing = false;
   bool _isLoggedIn = false;
   bool _hasCompletedOnboarding = false;
+
+  @override
+  bool get isInitializing => _isInitializing;
 
   @override
   bool get isLoggedIn => _isLoggedIn;
 
   @override
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
+
+  void setInitializing(bool value) {
+    _isInitializing = value;
+    notifyListeners();
+  }
 
   void login() {
     _isLoggedIn = true;
@@ -276,6 +282,10 @@ void main() {
 
       test('editFish path is /aquarium/fish/:fishId/edit', () {
         expect(AppRouter.editFish, '/aquarium/fish/:fishId/edit');
+      });
+
+      test('aquariumFeedings path is /aquarium/:aquariumId/feedings', () {
+        expect(AppRouter.aquariumFeedings, '/aquarium/:aquariumId/feedings');
       });
     });
 
@@ -517,6 +527,24 @@ void main() {
           expect(find.text('My Aquarium'), findsOneWidget);
         });
 
+        testWidgets(
+          'can access /aquarium/:aquariumId/feedings with parameter',
+          (tester) async {
+            await tester.pumpWidget(_buildApp(router));
+            await tester.pumpAndSettle();
+
+            router.go('/aquarium/test-aquarium/feedings');
+            await tester.pumpAndSettle();
+
+            expect(
+              router.routerDelegate.currentConfiguration.uri.path,
+              '/aquarium/test-aquarium/feedings',
+            );
+            // FeedingCardsScreen shows aquarium name or Feeding label
+            expect(find.text('Test Aquarium'), findsOneWidget);
+          },
+        );
+
         testWidgets('can access /aquarium/fish/:fishId/edit with parameter', (
           tester,
         ) async {
@@ -666,10 +694,6 @@ Widget _buildApp(GoRouter router) {
       userRepositoryProvider.overrideWithValue(mockUserRepository),
       googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
       appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-      // Mock aquarium remote data source for authNotifierProvider
-      aquariumRemoteDataSourceProvider.overrideWithValue(
-        createMockAquariumRemoteDataSource(),
-      ),
       // Mock calendar and feeding providers to prevent infinite rebuild loops
       calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),
       todayFeedingsProvider.overrideWith((ref) => MockTodayFeedingsNotifier()),

@@ -11,6 +11,7 @@ import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Screen for editing an existing aquarium.
 ///
@@ -99,6 +100,8 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
 
       if (result != null) {
         _initialName = trimmedName;
+        // Trigger sync to push changes to server
+        unawaited(ref.read(syncServiceProvider).syncNow());
         if (showSuccessSnackbar) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -156,6 +159,8 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
 
     if (mounted) {
       if (success) {
+        // Trigger sync to push deletion to server
+        unawaited(ref.read(syncServiceProvider).syncNow());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l.aquariumDeleted),

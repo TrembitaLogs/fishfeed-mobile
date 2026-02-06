@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/sync_queue_ds.dart';
 
@@ -21,20 +21,6 @@ import 'package:fishfeed/data/datasources/local/sync_queue_ds.dart';
 /// ```
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
   return AuthLocalDataSource();
-});
-
-/// Provider for [FeedingLocalDataSource].
-///
-/// Provides singleton access to feeding events local data source
-/// for managing feeding event CRUD operations and sync status.
-///
-/// Example:
-/// ```dart
-/// final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-/// final events = feedingDs.getFeedingEvents(aquariumId);
-/// ```
-final feedingLocalDataSourceProvider = Provider<FeedingLocalDataSource>((ref) {
-  return FeedingLocalDataSource();
 });
 
 /// Provider for [SyncQueueDataSource].
@@ -111,17 +97,34 @@ final aquariumLocalDataSourceProvider = Provider<AquariumLocalDataSource>((
   return AquariumLocalDataSource();
 });
 
-/// Provider for [FeedingScheduleLocalDataSource].
+/// Provider for [ScheduleLocalDataSource].
 ///
-/// Provides singleton access to feeding schedule local data source
-/// for managing feeding schedule records in local storage.
+/// Provides singleton access to the new schedule local data source
+/// (Task 25 architecture) for managing ScheduleModel records.
 ///
 /// Example:
 /// ```dart
-/// final scheduleDs = ref.watch(feedingScheduleLocalDataSourceProvider);
-/// final schedule = scheduleDs.getScheduleByAquariumId(aquariumId);
+/// final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
+/// final schedules = scheduleDs.getActiveByAquariumId(aquariumId);
 /// ```
-final feedingScheduleLocalDataSourceProvider =
-    Provider<FeedingScheduleLocalDataSource>((ref) {
-      return FeedingScheduleLocalDataSource();
-    });
+final scheduleLocalDataSourceProvider = Provider<ScheduleLocalDataSource>((
+  ref,
+) {
+  return ScheduleLocalDataSource();
+});
+
+/// Provider for [FeedingLogLocalDataSource].
+///
+/// Provides singleton access to feeding log local data source
+/// (Task 25 architecture) for managing FeedingLogModel records.
+///
+/// Example:
+/// ```dart
+/// final logDs = ref.watch(feedingLogLocalDataSourceProvider);
+/// final logs = logDs.getByAquariumIdAndDateRange(aquariumId, from, to);
+/// ```
+final feedingLogLocalDataSourceProvider = Provider<FeedingLogLocalDataSource>((
+  ref,
+) {
+  return FeedingLogLocalDataSource();
+});

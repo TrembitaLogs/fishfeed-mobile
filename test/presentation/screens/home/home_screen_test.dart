@@ -15,8 +15,7 @@ import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/ad_provider.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
@@ -24,7 +23,7 @@ import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/home/home_screen.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -43,8 +42,8 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class MockAquariumRemoteDataSource extends Mock
-    implements AquariumRemoteDataSource {}
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
 
 /// Mock UserAquariumsNotifier that doesn't make async calls.
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
@@ -142,13 +141,10 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   Future<void> refresh() async {}
 
   @override
-  Future<void> markAsFed(String feedingId) async {
+  Future<void> markAsFed(String scheduleId) async {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
-        return f.copyWith(
-          status: FeedingStatus.fed,
-          completedAt: DateTime.now(),
-        );
+      if (f.scheduleId == scheduleId) {
+        return f.copyWith(status: EventStatus.fed);
       }
       return f;
     }).toList();
@@ -156,10 +152,10 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   }
 
   @override
-  Future<void> markAsMissed(String feedingId) async {
+  Future<void> markAsMissed(String scheduleId) async {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
-        return f.copyWith(status: FeedingStatus.missed);
+      if (f.scheduleId == scheduleId) {
+        return f.copyWith(status: EventStatus.skipped);
       }
       return f;
     }).toList();
@@ -167,9 +163,9 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   }
 
   @override
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
+      if (f.scheduleId == scheduleId) {
         return f.copyWith(status: newStatus);
       }
       return f;
@@ -188,7 +184,7 @@ void main() {
   late MockUserRepository mockUserRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late MockAquariumRemoteDataSource mockAquariumRemoteDs;
+  late MockAquariumLocalDataSource mockAquariumLocalDs;
 
   final testUser = User(
     id: 'user-123',
@@ -222,13 +218,14 @@ void main() {
     mockUserRepository = MockUserRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumRemoteDs = MockAquariumRemoteDataSource();
+    mockAquariumLocalDs = MockAquariumLocalDataSource();
 
     // Setup mock to return empty list by default
-    when(() => mockAquariumRemoteDs.getAquariums()).thenAnswer((_) async => []);
+    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
+    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
   });
 
-  Widget buildTestWidget({User? user, List<ScheduledFeeding>? feedings}) {
+  Widget buildTestWidget({User? user, List<ComputedFeedingEvent>? feedings}) {
     return ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(mockAuthRepository),
@@ -269,7 +266,7 @@ void main() {
               repository: mockAuthRepository,
               googleAuthService: mockGoogleAuthService,
               appleAuthService: mockAppleAuthService,
-              aquariumRemoteDataSource: mockAquariumRemoteDs,
+              aquariumLocalDataSource: mockAquariumLocalDs,
               syncService: createMockSyncService(),
             );
             // Manually set authenticated state with user
@@ -472,7 +469,7 @@ void main() {
                   repository: mockAuthRepository,
                   googleAuthService: mockGoogleAuthService,
                   appleAuthService: mockAppleAuthService,
-                  aquariumRemoteDataSource: mockAquariumRemoteDs,
+                  aquariumLocalDataSource: mockAquariumLocalDs,
                   syncService: createMockSyncService(),
                 );
                 return notifier;
@@ -508,24 +505,30 @@ void main() {
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 
-        // TodayView shows aquarium section with empty state for no feedings
-        // AquariumSection shows check_circle_outline icon and "No feedings scheduled"
-        expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
-        expect(find.text('No feedings scheduled'), findsOneWidget);
+        // TodayView shows AquariumStatusCard per aquarium with "No fish" and
+        // "All fed" status when there are no feedings
+        expect(find.text('No fish'), findsOneWidget);
+        expect(find.text('All fed'), findsOneWidget);
       });
 
-      testWidgets('TodayView shows feedings when available', (tester) async {
+      testWidgets('TodayView shows aquarium cards when feedings available', (
+        tester,
+      ) async {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
         final testFeedings = [
-          ScheduledFeeding(
-            id: '1',
-            scheduledTime: today.add(const Duration(hours: 8)),
+          ComputedFeedingEvent(
+            scheduleId: '1',
+            fishId: 'fish-1',
             // Use aquariumId that matches MockUserAquariumsNotifier's default aquarium
             aquariumId: 'test-aquarium',
+            scheduledFor: today.add(const Duration(hours: 8)),
+            time: '08:00',
+            foodType: 'Flakes',
+            status: EventStatus.pending,
+            fishName: 'Guppy',
             aquariumName: 'Test Aquarium',
-            speciesName: 'Guppy',
-            status: FeedingStatus.pending,
+            fishQuantity: 3,
           ),
         ];
 
@@ -534,9 +537,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // FeedingCard shows speciesName as displayName and aquariumName
-        expect(find.text('Guppy'), findsOneWidget);
-        expect(find.text('Test Aquarium'), findsAtLeastNWidgets(1));
+        // AquariumStatusCard shows aquarium name and fish count
+        expect(find.text('Test Aquarium'), findsOneWidget);
+        expect(find.text('3 fish'), findsOneWidget);
       });
 
       testWidgets('Calendar tab shows CalendarScreen', (tester) async {

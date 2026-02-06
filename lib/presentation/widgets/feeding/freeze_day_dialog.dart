@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
+
 /// Result of the freeze day dialog.
 enum FreezeDayDialogResult {
   /// User chose to use a freeze day.
@@ -105,6 +107,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final canUseFreeze = widget.freezeAvailable > 0;
 
     return Dialog(
@@ -121,7 +124,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
 
             // Title
             Text(
-              'Missed Feeding',
+              l10n.freezeDayDialogTitle,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -132,7 +135,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
 
             // Description
             Text(
-              _getDescription(canUseFreeze),
+              _getDescription(l10n, canUseFreeze),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -158,7 +161,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${widget.currentStreak} day streak at risk',
+                    l10n.freezeDayDialogStreakAtRisk(widget.currentStreak),
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: theme.colorScheme.onErrorContainer,
                       fontWeight: FontWeight.w600,
@@ -180,7 +183,7 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
                   ).pop(FreezeDayDialogResult.useFreeze),
                   icon: const Icon(Icons.ac_unit),
                   label: Text(
-                    'Use Freeze Day (${widget.freezeAvailable} left)',
+                    l10n.freezeDayDialogUseFreeze(widget.freezeAvailable),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.cyan.shade600,
@@ -198,13 +201,13 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
                       onPressed: () => Navigator.of(
                         context,
                       ).pop(FreezeDayDialogResult.loseStreak),
-                      child: const Text('Lose Streak'),
+                      child: Text(l10n.freezeDayDialogLoseStreak),
                     )
                   : FilledButton(
                       onPressed: () => Navigator.of(
                         context,
                       ).pop(FreezeDayDialogResult.loseStreak),
-                      child: const Text('Continue'),
+                      child: Text(l10n.continueButton),
                     ),
             ),
           ],
@@ -248,13 +251,10 @@ class _FreezeDayDialogState extends State<FreezeDayDialog>
     );
   }
 
-  String _getDescription(bool canUseFreeze) {
+  String _getDescription(AppLocalizations l10n, bool canUseFreeze) {
     if (canUseFreeze) {
-      return 'You missed feeding your fish today. '
-          'Use a freeze day to protect your streak!';
+      return l10n.freezeDayDialogDescription;
     }
-    return 'You missed feeding your fish today '
-        'and have no freeze days left. '
-        'Your streak will be reset.';
+    return l10n.freezeDayDialogNoFreezeDescription;
   }
 }

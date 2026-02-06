@@ -8,11 +8,13 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
@@ -26,14 +28,14 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class MockAquariumRemoteDataSource extends Mock
-    implements AquariumRemoteDataSource {}
+class _MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
 
 void main() {
   late MockAuthRepository mockRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late MockAquariumRemoteDataSource mockAquariumRemoteDs;
+  late _MockAquariumLocalDataSource mockAquariumLocalDs;
   late MockSyncService mockSyncService;
   late AuthNotifier authNotifier;
   late Directory tempDir;
@@ -65,14 +67,16 @@ void main() {
     mockRepository = MockAuthRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumRemoteDs = MockAquariumRemoteDataSource();
+    mockAquariumLocalDs = _MockAquariumLocalDataSource();
     mockSyncService = createMockSyncService();
+
+    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
 
     authNotifier = AuthNotifier(
       repository: mockRepository,
       googleAuthService: mockGoogleAuthService,
       appleAuthService: mockAppleAuthService,
-      aquariumRemoteDataSource: mockAquariumRemoteDs,
+      aquariumLocalDataSource: mockAquariumLocalDs,
       syncService: mockSyncService,
     );
   });
@@ -444,17 +448,13 @@ void main() {
 
   group('Riverpod providers', () {
     test('authNotifierProvider should create AuthNotifier', () {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -467,17 +467,13 @@ void main() {
     });
 
     test('authStateProvider should return current state', () {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -491,17 +487,13 @@ void main() {
     });
 
     test('currentUserProvider should return null when not authenticated', () {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -514,17 +506,13 @@ void main() {
     });
 
     test('isAuthenticatedProvider should return false initially', () {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -537,19 +525,236 @@ void main() {
     });
   });
 
+  group('sync and onboarding check', () {
+    final activeAquariumModel = AquariumModel(
+      id: 'aq-1',
+      userId: 'user-123',
+      name: 'Test Aquarium',
+      createdAt: DateTime(2024, 1, 15),
+    );
+
+    final deletedAquariumModel = AquariumModel(
+      id: 'aq-deleted',
+      userId: 'user-123',
+      name: 'Deleted Aquarium',
+      createdAt: DateTime(2024, 1, 15),
+      deletedAt: DateTime(2024, 2, 1),
+    );
+
+    setUp(() async {
+      // Reset onboarding flag before each test in this group
+      await HiveBoxes.setOnboardingCompleted(false);
+    });
+
+    test(
+      'login should mark onboarding complete when sync finds aquariums',
+      () async {
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        when(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).thenReturn([activeAquariumModel]);
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
+        verify(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).called(1);
+      },
+    );
+
+    test(
+      'login should not mark onboarding complete when no aquariums after sync',
+      () async {
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        when(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).thenReturn([]);
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, false);
+      },
+    );
+
+    test(
+      'login should ignore soft-deleted aquariums for onboarding check',
+      () async {
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        when(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).thenReturn([deletedAquariumModel]);
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.hasCompletedOnboarding, false);
+      },
+    );
+
+    test('login should fallback to local check when sync fails', () async {
+      when(
+        () => mockRepository.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => Right(testUser));
+
+      // Sync fails on first call, succeeds on subsequent (background sync)
+      var syncCallCount = 0;
+      when(() => mockSyncService.syncAll()).thenAnswer((_) async {
+        syncCallCount++;
+        if (syncCallCount == 1) throw Exception('Network error');
+        return 0;
+      });
+
+      // But local data has aquariums
+      when(
+        () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+      ).thenReturn([activeAquariumModel]);
+
+      await authNotifier.login(
+        email: 'test@example.com',
+        password: 'password123',
+      );
+
+      expect(authNotifier.state.isAuthenticated, true);
+      expect(authNotifier.state.hasCompletedOnboarding, true);
+    });
+
+    test(
+      'login should not mark onboarding when sync fails and no local aquariums',
+      () async {
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        // Sync fails — no background sync triggered (onboarding not completed)
+        when(
+          () => mockSyncService.syncAll(),
+        ).thenAnswer((_) async => throw Exception('Network error'));
+
+        when(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).thenReturn([]);
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, false);
+      },
+    );
+
+    test(
+      'login should skip sync check when onboarding already completed',
+      () async {
+        await HiveBoxes.setOnboardingCompleted(true);
+
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        // syncAll is called for background sync, but getAquariumsByUserId
+        // should NOT be called since we skip _syncAndCheckOnboarding
+        verifyNever(() => mockAquariumLocalDs.getAquariumsByUserId(any()));
+      },
+    );
+
+    test(
+      'initialize should sync and check onboarding when flag is false',
+      () async {
+        when(
+          () => mockRepository.isAuthenticated(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepository.getCurrentUser(),
+        ).thenAnswer((_) async => Right(testUser));
+        when(
+          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        ).thenReturn([activeAquariumModel]);
+
+        await authNotifier.initialize();
+
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
+      },
+    );
+
+    test(
+      'initialize should trigger background sync when onboarding complete',
+      () async {
+        await HiveBoxes.setOnboardingCompleted(true);
+
+        when(
+          () => mockRepository.isAuthenticated(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepository.getCurrentUser(),
+        ).thenAnswer((_) async => Right(testUser));
+
+        await authNotifier.initialize();
+
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        // Background sync should be triggered
+        verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
+      },
+    );
+  });
+
   group('AuthStateListenable', () {
     test('should provide isLoggedIn based on auth state', () {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -562,17 +767,13 @@ void main() {
     });
 
     test('should notify listeners on state change', () async {
-      when(
-        () => mockAquariumRemoteDs.getAquariums(),
-      ).thenAnswer((_) async => []);
-
       final container = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            mockAquariumRemoteDs,
+          aquariumLocalDataSourceProvider.overrideWithValue(
+            mockAquariumLocalDs,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],

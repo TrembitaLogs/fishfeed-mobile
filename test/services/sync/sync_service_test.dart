@@ -9,14 +9,14 @@ import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 // Mock classes
@@ -25,11 +25,11 @@ class MockAquariumLocalDataSource extends Mock
 
 class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingLogLocalDataSource extends Mock
+    implements FeedingLogLocalDataSource {}
 
-class MockFeedingScheduleLocalDataSource extends Mock
-    implements FeedingScheduleLocalDataSource {}
+class MockScheduleLocalDataSource extends Mock
+    implements ScheduleLocalDataSource {}
 
 class MockApiClient extends Mock implements ApiClient {}
 
@@ -43,8 +43,6 @@ class FakeAquariumModel extends Fake implements AquariumModel {}
 
 class FakeFishModel extends Fake implements FishModel {}
 
-class FakeFeedingEventModel extends Fake implements FeedingEventModel {}
-
 void main() {
   late Directory tempDir;
 
@@ -52,7 +50,6 @@ void main() {
     registerFallbackValue(FakeRequestOptions());
     registerFallbackValue(FakeAquariumModel());
     registerFallbackValue(FakeFishModel());
-    registerFallbackValue(FakeFeedingEventModel());
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(DateTime.now());
 
@@ -72,8 +69,8 @@ void main() {
 
   late MockAquariumLocalDataSource mockAquariumDs;
   late MockFishLocalDataSource mockFishDs;
-  late MockFeedingLocalDataSource mockFeedingDs;
-  late MockFeedingScheduleLocalDataSource mockScheduleDs;
+  late MockFeedingLogLocalDataSource mockFeedingLogDs;
+  late MockScheduleLocalDataSource mockScheduleDs;
   late MockApiClient mockApiClient;
   late MockDio mockDio;
   late MockConnectivity mockConnectivity;
@@ -82,8 +79,8 @@ void main() {
   setUp(() {
     mockAquariumDs = MockAquariumLocalDataSource();
     mockFishDs = MockFishLocalDataSource();
-    mockFeedingDs = MockFeedingLocalDataSource();
-    mockScheduleDs = MockFeedingScheduleLocalDataSource();
+    mockFeedingLogDs = MockFeedingLogLocalDataSource();
+    mockScheduleDs = MockScheduleLocalDataSource();
     mockApiClient = MockApiClient();
     mockDio = MockDio();
     mockConnectivity = MockConnectivity();
@@ -104,7 +101,7 @@ void main() {
       apiClient: mockApiClient,
       aquariumDs: mockAquariumDs,
       fishDs: mockFishDs,
-      feedingDs: mockFeedingDs,
+      feedingLogDs: mockFeedingLogDs,
       scheduleDs: mockScheduleDs,
       config: config ?? const SyncConfig(),
       connectivity: mockConnectivity,
@@ -131,6 +128,7 @@ void main() {
     when(
       () => mockAquariumDs.deleteAquarium(any()),
     ).thenAnswer((_) async => true);
+    when(() => mockAquariumDs.purgeSyncedDeletions()).thenAnswer((_) async {});
 
     // Fish mocks
     when(() => mockFishDs.getUnsyncedFish()).thenReturn([]);
@@ -141,23 +139,31 @@ void main() {
     ).thenAnswer((_) async => true);
     when(() => mockFishDs.applyServerUpdate(any())).thenAnswer((_) async {});
     when(() => mockFishDs.deleteFish(any())).thenAnswer((_) async => true);
+    when(() => mockFishDs.purgeSyncedDeletions()).thenAnswer((_) async {});
 
-    // Feeding mocks
-    when(() => mockFeedingDs.getUnsyncedEvents()).thenReturn([]);
-    when(() => mockFeedingDs.getUnsyncedCount()).thenReturn(0);
-    when(() => mockFeedingDs.getDeletedEvents()).thenReturn([]);
-    when(() => mockFeedingDs.markAsSynced(any())).thenAnswer((_) async => true);
-    when(() => mockFeedingDs.applyServerUpdate(any())).thenAnswer((_) async {});
-    when(() => mockFeedingDs.deleteEvent(any())).thenAnswer((_) async => true);
+    // FeedingLog mocks
+    when(() => mockFeedingLogDs.hasUnsyncedLogs()).thenReturn(false);
+    when(() => mockFeedingLogDs.getUnsynced()).thenReturn([]);
+    when(() => mockFeedingLogDs.getUnsyncedCount()).thenReturn(0);
+    when(
+      () => mockFeedingLogDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockFeedingLogDs.applyServerUpdate(any()),
+    ).thenAnswer((_) async {});
+    when(() => mockFeedingLogDs.delete(any())).thenAnswer((_) async => true);
 
     // Schedule mocks
-    when(() => mockScheduleDs.getUnsyncedSchedules()).thenReturn([]);
+    when(() => mockScheduleDs.hasUnsyncedSchedules()).thenReturn(false);
+    when(() => mockScheduleDs.getUnsynced()).thenReturn([]);
+    when(() => mockScheduleDs.getUnsyncedCount()).thenReturn(0);
     when(
       () => mockScheduleDs.markAsSynced(any(), any()),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => true);
     when(
       () => mockScheduleDs.applyServerUpdate(any()),
     ).thenAnswer((_) async {});
+    when(() => mockScheduleDs.delete(any())).thenAnswer((_) async => true);
   }
 
   group('SyncConfig', () {
@@ -552,6 +558,518 @@ void main() {
       final service = createSyncService();
 
       expect(service.pendingConflictCount, 0);
+    });
+  });
+
+  group('SyncService with new entity types', () {
+    test('should apply feeding_logs from server_state', () async {
+      setupDefaultMocks(isOnline: true);
+
+      final serverFeedingLogs = [
+        {
+          'id': 'log-1',
+          'schedule_id': 'schedule-1',
+          'action': 'fed',
+          'acted_at': '2025-01-15T09:00:00Z',
+        },
+        {
+          'id': 'log-2',
+          'schedule_id': 'schedule-2',
+          'action': 'skipped',
+          'acted_at': '2025-01-15T10:00:00Z',
+        },
+      ];
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': {'feeding_logs': serverFeedingLogs},
+          },
+        ),
+      );
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      expect(result.downloadedCount, 2);
+      verify(
+        () => mockFeedingLogDs.applyServerUpdate(serverFeedingLogs[0]),
+      ).called(1);
+      verify(
+        () => mockFeedingLogDs.applyServerUpdate(serverFeedingLogs[1]),
+      ).called(1);
+    });
+
+    test('should apply schedules from server_state', () async {
+      setupDefaultMocks(isOnline: true);
+
+      final serverSchedules = [
+        {
+          'id': 'schedule-1',
+          'aquarium_id': 'aquarium-1',
+          'fish_id': 'fish-1',
+          'feeding_time': '09:00:00',
+          'is_active': true,
+        },
+      ];
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': {'schedules': serverSchedules},
+          },
+        ),
+      );
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      expect(result.downloadedCount, 1);
+      verify(
+        () => mockScheduleDs.applyServerUpdate(serverSchedules[0]),
+      ).called(1);
+    });
+
+    test('should handle deleted feeding_logs from server', () async {
+      setupDefaultMocks(isOnline: true);
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': {
+              'deleted': {
+                'feeding_logs': ['log-1', 'log-2'],
+              },
+            },
+          },
+        ),
+      );
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      expect(result.deletedLocally, contains('log-1'));
+      expect(result.deletedLocally, contains('log-2'));
+    });
+
+    test('should handle deleted schedules from server', () async {
+      setupDefaultMocks(isOnline: true);
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': {
+              'deleted': {
+                'schedules': ['schedule-1'],
+              },
+            },
+          },
+        ),
+      );
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      expect(result.deletedLocally, contains('schedule-1'));
+      verify(() => mockScheduleDs.delete('schedule-1')).called(1);
+    });
+  });
+
+  group('SyncService conflict parsing', () {
+    test(
+      'should parse server_data + server_wins format as useServer conflict',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'conflicts': [
+                {
+                  'entity_type': 'feeding_log',
+                  'entity_id': 'log-conflict-1',
+                  'resolution': 'server_wins',
+                  'server_data': {
+                    'id': 'log-server-1',
+                    'schedule_id': 'schedule-1',
+                    'action': 'fed',
+                    'acted_at': '2025-01-15T09:00:00Z',
+                    'acted_by_user_name': 'Alice',
+                  },
+                },
+              ],
+            },
+          ),
+        );
+
+        final service = createSyncService();
+        final result = await service.syncAllWithResult();
+
+        expect(result.conflicts.length, 1);
+        expect(result.conflicts[0].entityType, 'feeding_log');
+        expect(result.conflicts[0].entityId, 'log-conflict-1');
+        expect(result.conflicts[0].resolution, ConflictResolution.useServer);
+        expect(
+          result.conflicts[0].serverVersion['acted_by_user_name'],
+          'Alice',
+        );
+      },
+    );
+
+    test(
+      'should parse local_version + server_version as requireManual',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'conflicts': [
+                {
+                  'entity_type': 'fish',
+                  'entity_id': 'fish-1',
+                  'local_version': {
+                    'name': 'Nemo',
+                    'updated_at': '2025-01-15T09:00:00Z',
+                  },
+                  'server_version': {
+                    'name': 'Dory',
+                    'updated_at': '2025-01-15T10:00:00Z',
+                  },
+                  'local_updated_at': '2025-01-15T09:00:00Z',
+                  'server_updated_at': '2025-01-15T10:00:00Z',
+                },
+              ],
+            },
+          ),
+        );
+
+        final service = createSyncService();
+        final result = await service.syncAllWithResult();
+
+        expect(result.conflicts.length, 1);
+        expect(result.conflicts[0].entityType, 'fish');
+        expect(result.conflicts[0].entityId, 'fish-1');
+        expect(
+          result.conflicts[0].resolution,
+          ConflictResolution.requireManual,
+        );
+      },
+    );
+
+    test('should return null for conflict with missing entity_id', () async {
+      setupDefaultMocks(isOnline: true);
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'conflicts': [
+              {
+                'entity_type': 'feeding_log',
+                // missing entity_id
+                'resolution': 'server_wins',
+                'server_data': {'id': 'log-1'},
+              },
+            ],
+          },
+        ),
+      );
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      // Invalid conflict should be skipped
+      expect(result.conflicts, isEmpty);
+    });
+  });
+
+  group('SyncService feeding_log conflict auto-resolution', () {
+    test(
+      'should auto-resolve feeding_log conflict by deleting local and applying server',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'conflicts': [
+                {
+                  'entity_type': 'feeding_log',
+                  'entity_id': 'log-local-1',
+                  'resolution': 'server_wins',
+                  'server_data': {
+                    'id': 'log-server-1',
+                    'schedule_id': 'schedule-1',
+                    'action': 'fed',
+                    'acted_at': '2025-01-15T09:00:00Z',
+                    'acted_by_user_name': 'Bob',
+                  },
+                },
+              ],
+            },
+          ),
+        );
+
+        final service = createSyncService();
+        await service.syncAllWithResult();
+
+        // Verify local log was deleted
+        verify(() => mockFeedingLogDs.delete('log-local-1')).called(1);
+
+        // Verify server version was applied
+        verify(
+          () => mockFeedingLogDs.applyServerUpdate({
+            'id': 'log-server-1',
+            'schedule_id': 'schedule-1',
+            'action': 'fed',
+            'acted_at': '2025-01-15T09:00:00Z',
+            'acted_by_user_name': 'Bob',
+          }),
+        ).called(1);
+
+        // Verify it was NOT added to pendingConflicts (auto-resolved)
+        expect(service.pendingConflicts, isEmpty);
+      },
+    );
+
+    test(
+      'should emit on feedingConflictStream when feeding_log conflict auto-resolved',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'conflicts': [
+                {
+                  'entity_type': 'feeding_log',
+                  'entity_id': 'log-local-2',
+                  'resolution': 'server_wins',
+                  'server_data': {
+                    'id': 'log-server-2',
+                    'schedule_id': 'schedule-1',
+                    'action': 'fed',
+                    'acted_at': '2025-01-15T10:00:00Z',
+                    'acted_by_user_name': 'Carol',
+                  },
+                },
+              ],
+            },
+          ),
+        );
+
+        final service = createSyncService();
+
+        // Listen for feeding conflict emission
+        final feedingConflicts = <SyncConflict<Map<String, dynamic>>>[];
+        final subscription = service.feedingConflictStream.listen(
+          feedingConflicts.add,
+        );
+
+        await service.syncAllWithResult();
+
+        // Wait for stream event
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(feedingConflicts.length, 1);
+        expect(feedingConflicts[0].entityId, 'log-local-2');
+        expect(feedingConflicts[0].entityType, 'feeding_log');
+        expect(
+          feedingConflicts[0].serverVersion['acted_by_user_name'],
+          'Carol',
+        );
+
+        await subscription.cancel();
+        service.dispose();
+      },
+    );
+
+    test('should NOT auto-resolve non-feeding_log conflicts', () async {
+      setupDefaultMocks(isOnline: true);
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'conflicts': [
+              {
+                'entity_type': 'fish',
+                'entity_id': 'fish-1',
+                'local_version': {'name': 'Nemo'},
+                'server_version': {'name': 'Dory'},
+                'local_updated_at': '2025-01-15T09:00:00Z',
+                'server_updated_at': '2025-01-15T10:00:00Z',
+              },
+            ],
+          },
+        ),
+      );
+
+      final service = createSyncService();
+
+      final feedingConflicts = <SyncConflict<Map<String, dynamic>>>[];
+      final subscription = service.feedingConflictStream.listen(
+        feedingConflicts.add,
+      );
+
+      await service.syncAllWithResult();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      // Should NOT emit on feedingConflictStream
+      expect(feedingConflicts, isEmpty);
+
+      // Should be added to pendingConflicts for manual resolution
+      expect(service.pendingConflicts.length, 1);
+      expect(service.pendingConflicts[0].entityType, 'fish');
+
+      // Should NOT call delete on feedingLogDs
+      verifyNever(() => mockFeedingLogDs.delete(any()));
+
+      await subscription.cancel();
+      service.dispose();
+    });
+
+    test(
+      'should handle feeding_log conflict with empty server_data gracefully',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'conflicts': [
+                {
+                  'entity_type': 'feeding_log',
+                  'entity_id': 'log-local-3',
+                  'resolution': 'server_wins',
+                  'server_data': <String, dynamic>{},
+                },
+              ],
+            },
+          ),
+        );
+
+        final service = createSyncService();
+        await service.syncAllWithResult();
+
+        // Should still delete local log
+        verify(() => mockFeedingLogDs.delete('log-local-3')).called(1);
+
+        // Should NOT apply server update when server_data is empty
+        verifyNever(() => mockFeedingLogDs.applyServerUpdate(any()));
+      },
+    );
+  });
+
+  group('SyncService offline to online sync', () {
+    test('should sync pending changes when connectivity restored', () async {
+      setupDefaultMocks(isOnline: false);
+
+      // Setup unsynced feeding logs
+      when(() => mockFeedingLogDs.hasUnsyncedLogs()).thenReturn(true);
+      when(() => mockFeedingLogDs.getUnsyncedCount()).thenReturn(1);
+
+      final service = createSyncService();
+      await service.startListening();
+
+      expect(service.isOnline, false);
+      // hasPendingChanges now includes feeding logs
+      expect(service.hasPendingChanges, true);
+
+      // Simulate going online
+      when(
+        () => mockConnectivity.checkConnectivity(),
+      ).thenAnswer((_) async => [ConnectivityResult.wifi]);
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'synced_ids': ['log-1'],
+          },
+        ),
+      );
+
+      connectivityController.add([ConnectivityResult.wifi]);
+
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+
+      expect(service.isOnline, true);
+      // Verify sync was triggered
+      verify(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).called(greaterThanOrEqualTo(1));
+
+      service.dispose();
     });
   });
 }

@@ -248,6 +248,47 @@ void main() {
       expect(state.error, contains('Failed to add fish'));
     });
 
+    test(
+      'addFish always creates new record even if same species exists',
+      () async {
+        // Arrange: Create existing fish of same species
+        final existingFish = _createFishModel('fish_1', 'guppy', 3);
+
+        when(
+          () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        ).thenReturn([existingFish]);
+        when(() => mockFishDs.saveFish(any())).thenAnswer((_) async {});
+
+        container = ProviderContainer(
+          overrides: [
+            fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
+            aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          ],
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        // Act: Add another fish of the same species
+        final result = await container
+            .read(fishManagementProvider.notifier)
+            .addFish(speciesId: 'guppy', quantity: 5);
+
+        // Assert: Should create NEW record, not merge with existing
+        expect(result, isNotNull);
+        expect(result!.id, isNot(equals('fish_1'))); // New ID, not existing
+        expect(result.speciesId, equals('guppy'));
+        expect(result.quantity, equals(5)); // New quantity, not merged (3+5=8)
+
+        final state = container.read(fishManagementProvider);
+        // Should have 2 fish records now
+        expect(state.userFish.length, equals(2));
+
+        // Verify saveFish was called (not updateFish)
+        verify(() => mockFishDs.saveFish(any())).called(1);
+        verifyNever(() => mockFishDs.updateFish(any()));
+      },
+    );
+
     test('updateFish updates fish and state', () async {
       final existingFish = _createFishModel('fish_1', 'guppy', 5);
 

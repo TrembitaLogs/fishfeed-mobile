@@ -10,7 +10,7 @@ import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/data/repositories/user_repository_impl.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
@@ -23,13 +23,11 @@ import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 
-import '../../helpers/test_helpers.dart'
-    show createMockSyncService, createMockAquariumRemoteDataSource;
+import '../../helpers/test_helpers.dart' show createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -135,7 +133,7 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   Future<void> markAsMissed(String feedingId) async {}
 
   @override
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {}
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {}
 
   @override
   void clearError() {}
@@ -144,14 +142,23 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
 /// Test implementation of AuthStateListenable for navigation flow tests.
 class TestAuthStateListenable extends ChangeNotifier
     implements AuthStateListenable {
+  bool _isInitializing = false;
   bool _isLoggedIn = false;
   bool _hasCompletedOnboarding = false;
+
+  @override
+  bool get isInitializing => _isInitializing;
 
   @override
   bool get isLoggedIn => _isLoggedIn;
 
   @override
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
+
+  void setInitializing(bool value) {
+    _isInitializing = value;
+    notifyListeners();
+  }
 
   void setAuthState({
     required bool isLoggedIn,
@@ -226,10 +233,6 @@ void main() {
           userRepositoryProvider.overrideWithValue(mockUserRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          // Mock aquarium remote data source for authNotifierProvider
-          aquariumRemoteDataSourceProvider.overrideWithValue(
-            createMockAquariumRemoteDataSource(),
-          ),
           // Mock calendar and feeding providers to prevent infinite rebuild loops
           calendarDataProvider.overrideWith(
             (ref) => MockCalendarDataNotifier(),

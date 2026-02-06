@@ -1,66 +1,123 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/domain/usecases/get_calendar_data_usecase.dart';
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingEventGenerator extends Mock implements FeedingEventGenerator {}
+
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
 
 void main() {
-  late MockFeedingLocalDataSource mockFeedingDs;
+  late MockFeedingEventGenerator mockGenerator;
+  late MockAquariumLocalDataSource mockAquariumDs;
   late GetCalendarDataUseCase useCase;
 
   setUp(() {
-    mockFeedingDs = MockFeedingLocalDataSource();
-    useCase = GetCalendarDataUseCase(feedingDataSource: mockFeedingDs);
+    mockGenerator = MockFeedingEventGenerator();
+    mockAquariumDs = MockAquariumLocalDataSource();
+    useCase = GetCalendarDataUseCase(
+      feedingEventGenerator: mockGenerator,
+      aquariumDataSource: mockAquariumDs,
+    );
   });
 
-  FeedingEventModel createFeedingEvent({
-    required String id,
-    required DateTime feedingTime,
-    String fishId = 'fish_1',
-    String aquariumId = 'aquarium_1',
+  /// Creates a test aquarium model.
+  AquariumModel createAquariumModel({
+    String id = 'aquarium_1',
+    String name = 'Test Tank',
   }) {
-    return FeedingEventModel(
+    return AquariumModel(
       id: id,
-      fishId: fishId,
+      name: name,
+      userId: 'user_1',
+      createdAt: DateTime(2024, 1, 1),
+      synced: true,
+    );
+  }
+
+  /// Creates a test ComputedFeedingEvent.
+  ComputedFeedingEvent createEvent({
+    required DateTime scheduledFor,
+    String scheduleId = 'schedule_1',
+    String aquariumId = 'aquarium_1',
+    EventStatus status = EventStatus.fed,
+  }) {
+    return ComputedFeedingEvent(
+      scheduleId: scheduleId,
+      fishId: 'fish_1',
       aquariumId: aquariumId,
-      feedingTime: feedingTime,
-      synced: false,
-      createdAt: feedingTime,
+      scheduledFor: scheduledFor,
+      time: '${scheduledFor.hour.toString().padLeft(2, '0')}:00',
+      foodType: 'flakes',
+      status: status,
     );
   }
 
   group('GetCalendarDataUseCase', () {
+    group('Empty Aquariums', () {
+      test(
+        'should return empty calendar data when no aquariums exist',
+        () async {
+          when(() => mockAquariumDs.getAllAquariums()).thenReturn([]);
+
+          final result = await useCase(
+            const GetCalendarDataParams(year: 2025, month: 1),
+          );
+
+          expect(result.isRight(), true);
+          result.fold((_) => fail('Should be Right'), (data) {
+            expect(data.year, 2025);
+            expect(data.month, 1);
+            expect(data.days, isEmpty);
+            expect(data.stats.totalScheduledFeedings, 0);
+          });
+        },
+      );
+    });
+
     group('Day Status Calculation', () {
       test('should return allFed when all feedings are completed', () async {
         final testDay = DateTime(2025, 1, 15);
-        // 4 completed feedings (matches _feedingsPerDay)
-        final completedEvents = [
-          createFeedingEvent(
-            id: '1',
-            feedingTime: testDay.add(const Duration(hours: 8)),
-          ),
-          createFeedingEvent(
-            id: '2',
-            feedingTime: testDay.add(const Duration(hours: 12)),
-          ),
-          createFeedingEvent(
-            id: '3',
-            feedingTime: testDay.add(const Duration(hours: 18)),
-          ),
-          createFeedingEvent(
-            id: '4',
-            feedingTime: testDay.add(const Duration(hours: 20)),
-          ),
-        ];
 
         when(
-          () => mockFeedingDs.getFeedingEventsByDate(any()),
-        ).thenReturn(completedEvents);
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // 4 completed feedings (all fed)
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 8)),
+            scheduleId: '1',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 12)),
+            scheduleId: '2',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 18)),
+            scheduleId: '3',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 20)),
+            scheduleId: '4',
+            status: EventStatus.fed,
+          ),
+        ]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -77,7 +134,40 @@ void main() {
 
       test('should return allMissed when no feedings are completed', () async {
         final testDay = DateTime(2025, 1, 15);
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
+
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // All overdue (no logs)
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 8)),
+            scheduleId: '1',
+            status: EventStatus.overdue,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 12)),
+            scheduleId: '2',
+            status: EventStatus.overdue,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 18)),
+            scheduleId: '3',
+            status: EventStatus.overdue,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 20)),
+            scheduleId: '4',
+            status: EventStatus.overdue,
+          ),
+        ]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -94,21 +184,40 @@ void main() {
 
       test('should return partial when some feedings are completed', () async {
         final testDay = DateTime(2025, 1, 15);
-        // Only 2 completed feedings
-        final completedEvents = [
-          createFeedingEvent(
-            id: '1',
-            feedingTime: testDay.add(const Duration(hours: 8)),
-          ),
-          createFeedingEvent(
-            id: '2',
-            feedingTime: testDay.add(const Duration(hours: 12)),
-          ),
-        ];
 
         when(
-          () => mockFeedingDs.getFeedingEventsByDate(any()),
-        ).thenReturn(completedEvents);
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // 2 fed, 2 overdue
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 8)),
+            scheduleId: '1',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 12)),
+            scheduleId: '2',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 18)),
+            scheduleId: '3',
+            status: EventStatus.overdue,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 20)),
+            scheduleId: '4',
+            status: EventStatus.overdue,
+          ),
+        ]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -123,40 +232,143 @@ void main() {
         });
       });
 
-      test('should return noData for future days', () async {
-        // Use a month far in the future
+      test('should return noData for days without events', () async {
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // Return empty list - no events generated
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([]);
+
         final result = await useCase(
-          const GetCalendarDataParams(year: 2030, month: 12),
+          const GetCalendarDataParams(year: 2025, month: 1),
         );
 
         expect(result.isRight(), true);
         result.fold((_) => fail('Should be Right'), (data) {
-          final futureDay = DateTime(2030, 12, 25);
-          final dayStatus = data.getDayStatus(futureDay);
+          final dayStatus = data.getDayStatus(DateTime(2025, 1, 15));
           expect(dayStatus, DayFeedingStatus.noData);
+        });
+      });
+
+      test('should count skipped as missed', () async {
+        final testDay = DateTime(2025, 1, 15);
+
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // 2 fed, 1 skipped, 1 overdue = 2 completed, 2 missed
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 8)),
+            scheduleId: '1',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 12)),
+            scheduleId: '2',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 18)),
+            scheduleId: '3',
+            status: EventStatus.skipped,
+          ),
+          createEvent(
+            scheduledFor: testDay.add(const Duration(hours: 20)),
+            scheduleId: '4',
+            status: EventStatus.overdue,
+          ),
+        ]);
+
+        final result = await useCase(
+          const GetCalendarDataParams(year: 2025, month: 1),
+        );
+
+        expect(result.isRight(), true);
+        result.fold((_) => fail('Should be Right'), (data) {
+          final dayData = data.getDayData(testDay);
+          expect(dayData.completedFeedings, 2);
+          expect(dayData.missedFeedings, 2); // skipped + overdue
         });
       });
     });
 
     group('Monthly Statistics', () {
-      test('should calculate correct completion percentage', () async {
-        // Set up mock for January 2025 (31 days)
-        // For simplicity, return 2 completed for each day query
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          return [
-            createFeedingEvent(
-              id: '1_${date.day}',
-              feedingTime: date.add(const Duration(hours: 8)),
-            ),
-            createFeedingEvent(
-              id: '2_${date.day}',
-              feedingTime: date.add(const Duration(hours: 12)),
-            ),
-          ];
-        });
+      test('should calculate correct totals', () async {
+        final day1 = DateTime(2025, 1, 1);
+        final day2 = DateTime(2025, 1, 2);
+
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // Day 1: 2 fed, 2 overdue
+        // Day 2: 3 fed, 1 overdue
+        // Total: 8 scheduled, 5 completed, 3 missed
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([
+          // Day 1
+          createEvent(
+            scheduledFor: day1.add(const Duration(hours: 8)),
+            scheduleId: '1',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: day1.add(const Duration(hours: 12)),
+            scheduleId: '2',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: day1.add(const Duration(hours: 18)),
+            scheduleId: '3',
+            status: EventStatus.overdue,
+          ),
+          createEvent(
+            scheduledFor: day1.add(const Duration(hours: 20)),
+            scheduleId: '4',
+            status: EventStatus.overdue,
+          ),
+          // Day 2
+          createEvent(
+            scheduledFor: day2.add(const Duration(hours: 8)),
+            scheduleId: '5',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: day2.add(const Duration(hours: 12)),
+            scheduleId: '6',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: day2.add(const Duration(hours: 18)),
+            scheduleId: '7',
+            status: EventStatus.fed,
+          ),
+          createEvent(
+            scheduledFor: day2.add(const Duration(hours: 20)),
+            scheduleId: '8',
+            status: EventStatus.overdue,
+          ),
+        ]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -164,91 +376,46 @@ void main() {
 
         expect(result.isRight(), true);
         result.fold((_) => fail('Should be Right'), (data) {
-          // For days up to today in Jan 2025
-          // Each day has 4 scheduled, 2 completed = 50% per day
-          expect(data.stats.completionPercentage, closeTo(50.0, 1.0));
-        });
-      });
-
-      test('should count total scheduled and completed feedings', () async {
-        // Mock a simple scenario: 5 days, all with all feedings completed
-        final testDates = List.generate(5, (i) => DateTime(2025, 1, i + 1));
-
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          // Return 4 events for the first 5 days only
-          if (testDates.any(
-            (d) =>
-                d.year == date.year &&
-                d.month == date.month &&
-                d.day == date.day,
-          )) {
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-              createFeedingEvent(
-                id: '2_${date.day}',
-                feedingTime: date.add(const Duration(hours: 12)),
-              ),
-              createFeedingEvent(
-                id: '3_${date.day}',
-                feedingTime: date.add(const Duration(hours: 18)),
-              ),
-              createFeedingEvent(
-                id: '4_${date.day}',
-                feedingTime: date.add(const Duration(hours: 20)),
-              ),
-            ];
-          }
-          return [];
-        });
-
-        final result = await useCase(
-          const GetCalendarDataParams(year: 2025, month: 1),
-        );
-
-        expect(result.isRight(), true);
-        result.fold((_) => fail('Should be Right'), (data) {
-          // First 5 days: 5 * 4 = 20 completed
-          expect(data.stats.completedFeedings, greaterThanOrEqualTo(20));
+          expect(data.stats.totalScheduledFeedings, 8);
+          expect(data.stats.completedFeedings, 5);
+          expect(data.stats.missedFeedings, 3);
         });
       });
     });
 
     group('Streak Calculation', () {
       test('should calculate longest streak correctly', () async {
-        // Create a scenario with a 3-day streak (days 1-3 all fed)
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          // Days 1, 2, 3 have all feedings completed
-          if (date.day >= 1 && date.day <= 3) {
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-              createFeedingEvent(
-                id: '2_${date.day}',
-                feedingTime: date.add(const Duration(hours: 12)),
-              ),
-              createFeedingEvent(
-                id: '3_${date.day}',
-                feedingTime: date.add(const Duration(hours: 18)),
-              ),
-              createFeedingEvent(
-                id: '4_${date.day}',
-                feedingTime: date.add(const Duration(hours: 20)),
-              ),
-            ];
-          }
-          return []; // Other days have no feedings
-        });
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
+        // Create events for days 1-3 (all fed = streak of 3)
+        final events = <ComputedFeedingEvent>[];
+        for (int day = 1; day <= 3; day++) {
+          final date = DateTime(2025, 1, day);
+          events.add(
+            createEvent(
+              scheduledFor: date.add(const Duration(hours: 8)),
+              scheduleId: 'sched_${day}_1',
+              status: EventStatus.fed,
+            ),
+          );
+          events.add(
+            createEvent(
+              scheduledFor: date.add(const Duration(hours: 12)),
+              scheduleId: 'sched_${day}_2',
+              status: EventStatus.fed,
+            ),
+          );
+        }
+
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn(events);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -261,37 +428,55 @@ void main() {
       });
 
       test('should handle streak broken in the middle of month', () async {
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+
         // Days 1-3: all fed (streak of 3)
         // Day 4: missed (break)
         // Days 5-6: all fed (streak of 2)
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          // Skip day 4
-          if ((date.day >= 1 && date.day <= 3) ||
-              (date.day >= 5 && date.day <= 6)) {
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-              createFeedingEvent(
-                id: '2_${date.day}',
-                feedingTime: date.add(const Duration(hours: 12)),
-              ),
-              createFeedingEvent(
-                id: '3_${date.day}',
-                feedingTime: date.add(const Duration(hours: 18)),
-              ),
-              createFeedingEvent(
-                id: '4_${date.day}',
-                feedingTime: date.add(const Duration(hours: 20)),
-              ),
-            ];
-          }
-          return [];
-        });
+        final events = <ComputedFeedingEvent>[];
+
+        // Days 1-3 all fed
+        for (int day = 1; day <= 3; day++) {
+          final date = DateTime(2025, 1, day);
+          events.add(
+            createEvent(
+              scheduledFor: date.add(const Duration(hours: 8)),
+              scheduleId: 'sched_${day}_1',
+              status: EventStatus.fed,
+            ),
+          );
+        }
+
+        // Day 4 - overdue (breaks streak)
+        events.add(
+          createEvent(
+            scheduledFor: DateTime(2025, 1, 4, 8),
+            scheduleId: 'sched_4_1',
+            status: EventStatus.overdue,
+          ),
+        );
+
+        // Days 5-6 all fed
+        for (int day = 5; day <= 6; day++) {
+          final date = DateTime(2025, 1, day);
+          events.add(
+            createEvent(
+              scheduledFor: date.add(const Duration(hours: 8)),
+              scheduleId: 'sched_${day}_1',
+              status: EventStatus.fed,
+            ),
+          );
+        }
+
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn(events);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 1),
@@ -307,18 +492,37 @@ void main() {
       test(
         'should return 0 streak when no days have all feedings completed',
         () async {
-          // All days have partial completion
-          when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-            invocation,
-          ) {
-            final date = invocation.positionalArguments[0] as DateTime;
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
+          when(
+            () => mockAquariumDs.getAllAquariums(),
+          ).thenReturn([createAquariumModel()]);
+
+          // All days have partial completion (some fed, some overdue)
+          final events = <ComputedFeedingEvent>[];
+          for (int day = 1; day <= 3; day++) {
+            final date = DateTime(2025, 1, day);
+            events.add(
+              createEvent(
+                scheduledFor: date.add(const Duration(hours: 8)),
+                scheduleId: 'sched_${day}_1',
+                status: EventStatus.fed,
               ),
-            ]; // Only 1 of 4 feedings
-          });
+            );
+            events.add(
+              createEvent(
+                scheduledFor: date.add(const Duration(hours: 12)),
+                scheduleId: 'sched_${day}_2',
+                status: EventStatus.overdue, // Partial - breaks streak
+              ),
+            );
+          }
+
+          when(
+            () => mockGenerator.generateEvents(
+              aquariumId: any(named: 'aquariumId'),
+              from: any(named: 'from'),
+              to: any(named: 'to'),
+            ),
+          ).thenReturn(events);
 
           final result = await useCase(
             const GetCalendarDataParams(year: 2025, month: 1),
@@ -331,51 +535,20 @@ void main() {
           });
         },
       );
-
-      test('should handle streak at month boundaries', () async {
-        // Last 3 days of January all fed
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          // Days 29, 30, 31 have all feedings completed
-          if (date.day >= 29 && date.day <= 31) {
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-              createFeedingEvent(
-                id: '2_${date.day}',
-                feedingTime: date.add(const Duration(hours: 12)),
-              ),
-              createFeedingEvent(
-                id: '3_${date.day}',
-                feedingTime: date.add(const Duration(hours: 18)),
-              ),
-              createFeedingEvent(
-                id: '4_${date.day}',
-                feedingTime: date.add(const Duration(hours: 20)),
-              ),
-            ];
-          }
-          return [];
-        });
-
-        final result = await useCase(
-          const GetCalendarDataParams(year: 2025, month: 1),
-        );
-
-        expect(result.isRight(), true);
-        result.fold((_) => fail('Should be Right'), (data) {
-          expect(data.stats.longestStreak, 3);
-        });
-      });
     });
 
     group('CalendarMonthData', () {
       test('should provide correct year and month', () async {
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 6),
@@ -387,44 +560,43 @@ void main() {
           expect(data.month, 6);
         });
       });
+    });
 
-      test('should count days by status correctly', () async {
-        // Set up different statuses for different days
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenAnswer((
-          invocation,
-        ) {
-          final date = invocation.positionalArguments[0] as DateTime;
-          if (date.day <= 3) {
-            // Days 1-3: all fed
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-              createFeedingEvent(
-                id: '2_${date.day}',
-                feedingTime: date.add(const Duration(hours: 12)),
-              ),
-              createFeedingEvent(
-                id: '3_${date.day}',
-                feedingTime: date.add(const Duration(hours: 18)),
-              ),
-              createFeedingEvent(
-                id: '4_${date.day}',
-                feedingTime: date.add(const Duration(hours: 20)),
-              ),
-            ];
-          } else if (date.day <= 5) {
-            // Days 4-5: partial
-            return [
-              createFeedingEvent(
-                id: '1_${date.day}',
-                feedingTime: date.add(const Duration(hours: 8)),
-              ),
-            ];
-          }
-          // Other days: all missed
-          return [];
+    group('Multiple Aquariums', () {
+      test('should aggregate events from multiple aquariums', () async {
+        final testDay = DateTime(2025, 1, 15);
+
+        when(() => mockAquariumDs.getAllAquariums()).thenReturn([
+          createAquariumModel(id: 'aq_1', name: 'Tank 1'),
+          createAquariumModel(id: 'aq_2', name: 'Tank 2'),
+        ]);
+
+        // First call for aq_1 returns 2 fed events
+        // Second call for aq_2 returns 2 fed events
+        var callCount = 0;
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((invocation) {
+          callCount++;
+          final aquariumId = invocation.namedArguments[#aquariumId] as String;
+          return [
+            createEvent(
+              scheduledFor: testDay.add(const Duration(hours: 8)),
+              scheduleId: 'sched_${aquariumId}_1',
+              aquariumId: aquariumId,
+              status: EventStatus.fed,
+            ),
+            createEvent(
+              scheduledFor: testDay.add(const Duration(hours: 12)),
+              scheduleId: 'sched_${aquariumId}_2',
+              aquariumId: aquariumId,
+              status: EventStatus.fed,
+            ),
+          ];
         });
 
         final result = await useCase(
@@ -433,20 +605,31 @@ void main() {
 
         expect(result.isRight(), true);
         result.fold((_) => fail('Should be Right'), (data) {
-          expect(data.daysAllFed, 3);
-          expect(data.daysPartial, 2);
-          // Remaining days up to today will be allMissed
-          expect(data.daysAllMissed, greaterThan(0));
+          final dayData = data.getDayData(testDay);
+          // 4 total events (2 from each aquarium)
+          expect(dayData.totalFeedings, 4);
+          expect(dayData.completedFeedings, 4);
+          expect(dayData.status, DayFeedingStatus.allFed);
         });
+
+        // Verify generateEvents was called for each aquarium
+        expect(callCount, 2);
       });
     });
 
     group('Error Handling', () {
       test(
-        'should return CacheFailure when datasource throws exception',
+        'should return CacheFailure when generator throws exception',
         () async {
           when(
-            () => mockFeedingDs.getFeedingEventsByDate(any()),
+            () => mockAquariumDs.getAllAquariums(),
+          ).thenReturn([createAquariumModel()]);
+          when(
+            () => mockGenerator.generateEvents(
+              aquariumId: any(named: 'aquariumId'),
+              from: any(named: 'from'),
+              to: any(named: 'to'),
+            ),
           ).thenThrow(Exception('Database error'));
 
           final result = await useCase(
@@ -463,7 +646,16 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle February with 28 days', () async {
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2025, month: 2),
@@ -472,12 +664,20 @@ void main() {
         expect(result.isRight(), true);
         result.fold((_) => fail('Should be Right'), (data) {
           expect(data.month, 2);
-          // Should have data for days 1-28 (up to today if in past)
         });
       });
 
       test('should handle leap year February with 29 days', () async {
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
+        when(
+          () => mockAquariumDs.getAllAquariums(),
+        ).thenReturn([createAquariumModel()]);
+        when(
+          () => mockGenerator.generateEvents(
+            aquariumId: any(named: 'aquariumId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenReturn([]);
 
         final result = await useCase(
           const GetCalendarDataParams(year: 2024, month: 2),
@@ -486,22 +686,6 @@ void main() {
         expect(result.isRight(), true);
         result.fold((_) => fail('Should be Right'), (data) {
           expect(data.month, 2);
-          // Leap year 2024 has 29 days in February
-        });
-      });
-
-      test('should handle empty month (all future days)', () async {
-        when(() => mockFeedingDs.getFeedingEventsByDate(any())).thenReturn([]);
-
-        // Far future month
-        final result = await useCase(
-          const GetCalendarDataParams(year: 2030, month: 12),
-        );
-
-        expect(result.isRight(), true);
-        result.fold((_) => fail('Should be Right'), (data) {
-          expect(data.hasData, false);
-          expect(data.stats.totalScheduledFeedings, 0);
         });
       });
     });

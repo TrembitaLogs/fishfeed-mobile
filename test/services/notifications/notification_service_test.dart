@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
 
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 
 class MockFlutterLocalNotificationsPlugin extends Mock
@@ -1251,4 +1252,396 @@ class TestableNotificationServiceV2 {
   void clearAllThrottleRecords() {
     _lastNotificationTimes.clear();
   }
+}
+
+// ============ Schedule-based notification tests ============
+
+/// Creates a test ScheduleModel for testing.
+ScheduleModel createTestSchedule({
+  required String id,
+  required String fishId,
+  required String time,
+  required int intervalDays,
+  required DateTime anchorDate,
+  bool active = true,
+}) {
+  return ScheduleModel(
+    id: id,
+    fishId: fishId,
+    aquariumId: 'aquarium-1',
+    time: time,
+    intervalDays: intervalDays,
+    anchorDate: anchorDate,
+    foodType: 'flakes',
+    active: active,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+    createdByUserId: 'user-1',
+  );
+}
+
+/// Testable version of NotificationService V3 with scheduleFromSchedules.
+class TestableNotificationServiceV3 {
+  TestableNotificationServiceV3(this._plugin);
+
+  final FlutterLocalNotificationsPlugin _plugin;
+  bool _isInitialized = false;
+
+  bool get isInitialized => _isInitialized;
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+      macOS: darwinSettings,
+    );
+
+    await _plugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (_) {},
+    );
+
+    _isInitialized = true;
+  }
+
+  /// Schedules notifications based on Schedule models.
+  Future<int> scheduleFromSchedules({
+    required List<ScheduleModel> schedules,
+    Map<String, String>? fishNames,
+    int daysAhead = 7,
+    Set<String>? existingLogKeys,
+  }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    final now = DateTime.now();
+    final endDate = now.add(Duration(days: daysAhead));
+    int scheduledCount = 0;
+
+    for (final schedule in schedules) {
+      // Skip inactive schedules
+      if (!schedule.active) continue;
+
+      // Get fish name
+      final fishName = fishNames?[schedule.fishId] ?? 'your fish';
+
+      // Iterate through days
+      for (
+        var date = now;
+        date.isBefore(endDate);
+        date = date.add(const Duration(days: 1))
+      ) {
+        // Check if feeding is needed on this day
+        if (!schedule.shouldFeedOn(date)) continue;
+
+        // Parse schedule time
+        final (:hour, :minute) = schedule.timeComponents;
+
+        // Create scheduled datetime
+        final scheduledAt = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          hour,
+          minute,
+        );
+
+        // Skip past times
+        if (scheduledAt.isBefore(now)) continue;
+
+        // Skip if already has a feeding log
+        if (existingLogKeys != null) {
+          final logKey = _makeScheduleLogKey(schedule.id, scheduledAt);
+          if (existingLogKeys.contains(logKey)) continue;
+        }
+
+        // Generate unique notification ID
+        final notificationId = _generateScheduleNotificationId(
+          schedule.id,
+          scheduledAt,
+        );
+
+        // Schedule the notification
+        final tzScheduledAt = tz.TZDateTime.from(scheduledAt, tz.local);
+
+        await _plugin.zonedSchedule(
+          notificationId,
+          'Feeding Time! 🐟',
+          'Time to feed $fishName',
+          tzScheduledAt,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              NotificationService.feedingChannelId,
+              NotificationService.feedingChannelName,
+              channelDescription: NotificationService.feedingChannelDescription,
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+            iOS: DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+            ),
+          ),
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload:
+              'schedule_${schedule.id}_${scheduledAt.millisecondsSinceEpoch}',
+        );
+
+        scheduledCount++;
+      }
+    }
+
+    return scheduledCount;
+  }
+
+  String _makeScheduleLogKey(String scheduleId, DateTime scheduledFor) {
+    final dateStr = scheduledFor.toIso8601String().substring(0, 16);
+    return '$scheduleId|$dateStr';
+  }
+
+  int _generateScheduleNotificationId(String scheduleId, DateTime scheduledAt) {
+    final key = '$scheduleId|${scheduledAt.millisecondsSinceEpoch}';
+    return key.hashCode.abs() % 2147483647;
+  }
+}
+
+void main_scheduleFromSchedules() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    tz_data.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('UTC'));
+  });
+
+  group('scheduleFromSchedules', () {
+    late MockFlutterLocalNotificationsPlugin mockPlugin;
+    late TestableNotificationServiceV3 service;
+
+    setUp(() {
+      mockPlugin = MockFlutterLocalNotificationsPlugin();
+      service = TestableNotificationServiceV3(mockPlugin);
+
+      when(
+        () => mockPlugin.initialize(
+          any(),
+          onDidReceiveNotificationResponse: any(
+            named: 'onDidReceiveNotificationResponse',
+          ),
+        ),
+      ).thenAnswer((_) async => true);
+
+      when(
+        () => mockPlugin.zonedSchedule(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          uiLocalNotificationDateInterpretation: any(
+            named: 'uiLocalNotificationDateInterpretation',
+          ),
+          payload: any(named: 'payload'),
+        ),
+      ).thenAnswer((_) async {});
+    });
+
+    tearDown(() {
+      reset(mockPlugin);
+    });
+
+    test(
+      'should schedule notifications only for days where shouldFeedOn returns true',
+      () async {
+        // Create schedule that feeds every 2 days starting from today
+        final now = DateTime.now();
+        final anchorDate = DateTime(now.year, now.month, now.day);
+
+        final schedule = createTestSchedule(
+          id: 'schedule-1',
+          fishId: 'fish-1',
+          time: '09:00',
+          intervalDays: 2, // Every 2 days
+          anchorDate: anchorDate,
+        );
+
+        await service.initialize();
+        final count = await service.scheduleFromSchedules(
+          schedules: [schedule],
+          daysAhead: 7,
+        );
+
+        // With intervalDays=2 over 7 days, should schedule for days 0, 2, 4, 6
+        // But day 0 might be skipped if current time is past 09:00
+        expect(count, lessThanOrEqualTo(4));
+        expect(count, greaterThan(0));
+      },
+    );
+
+    test('should skip inactive schedules', () async {
+      final now = DateTime.now();
+      final anchorDate = DateTime(now.year, now.month, now.day);
+
+      final inactiveSchedule = createTestSchedule(
+        id: 'schedule-inactive',
+        fishId: 'fish-1',
+        time: '09:00',
+        intervalDays: 1,
+        anchorDate: anchorDate,
+        active: false, // Inactive!
+      );
+
+      await service.initialize();
+      final count = await service.scheduleFromSchedules(
+        schedules: [inactiveSchedule],
+        daysAhead: 7,
+      );
+
+      expect(count, equals(0));
+      verifyNever(
+        () => mockPlugin.zonedSchedule(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          uiLocalNotificationDateInterpretation: any(
+            named: 'uiLocalNotificationDateInterpretation',
+          ),
+          payload: any(named: 'payload'),
+        ),
+      );
+    });
+
+    test('should skip events that already have feeding logs', () async {
+      final now = DateTime.now();
+      final tomorrow = now.add(const Duration(days: 1));
+      final tomorrowMorning = DateTime(
+        tomorrow.year,
+        tomorrow.month,
+        tomorrow.day,
+        9,
+        0,
+      );
+      final anchorDate = DateTime(now.year, now.month, now.day);
+
+      final schedule = createTestSchedule(
+        id: 'schedule-1',
+        fishId: 'fish-1',
+        time: '09:00',
+        intervalDays: 1,
+        anchorDate: anchorDate,
+      );
+
+      // Mark tomorrow's feeding as already logged
+      final logKey =
+          'schedule-1|${tomorrowMorning.toIso8601String().substring(0, 16)}';
+
+      await service.initialize();
+      final countWithoutExisting = await service.scheduleFromSchedules(
+        schedules: [schedule],
+        daysAhead: 7,
+      );
+
+      reset(mockPlugin);
+      when(
+        () => mockPlugin.zonedSchedule(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          uiLocalNotificationDateInterpretation: any(
+            named: 'uiLocalNotificationDateInterpretation',
+          ),
+          payload: any(named: 'payload'),
+        ),
+      ).thenAnswer((_) async {});
+
+      final countWithExisting = await service.scheduleFromSchedules(
+        schedules: [schedule],
+        daysAhead: 7,
+        existingLogKeys: {logKey},
+      );
+
+      // Should schedule one less notification
+      expect(countWithExisting, lessThan(countWithoutExisting));
+    });
+
+    test('should use fish name from fishNames map', () async {
+      final now = DateTime.now();
+      final anchorDate = DateTime(now.year, now.month, now.day);
+
+      final schedule = createTestSchedule(
+        id: 'schedule-1',
+        fishId: 'fish-1',
+        time: '09:00',
+        intervalDays: 1,
+        anchorDate: anchorDate,
+      );
+
+      await service.initialize();
+      await service.scheduleFromSchedules(
+        schedules: [schedule],
+        fishNames: {'fish-1': 'Nemo'},
+        daysAhead: 2,
+      );
+
+      verify(
+        () => mockPlugin.zonedSchedule(
+          any(),
+          'Feeding Time! 🐟',
+          'Time to feed Nemo',
+          any(),
+          any(),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          uiLocalNotificationDateInterpretation: any(
+            named: 'uiLocalNotificationDateInterpretation',
+          ),
+          payload: any(named: 'payload'),
+        ),
+      ).called(greaterThan(0));
+    });
+
+    test('should return count of scheduled notifications', () async {
+      final now = DateTime.now();
+      final anchorDate = DateTime(now.year, now.month, now.day);
+
+      final schedule = createTestSchedule(
+        id: 'schedule-1',
+        fishId: 'fish-1',
+        time: '23:59', // Late time to ensure it's in the future
+        intervalDays: 1, // Every day
+        anchorDate: anchorDate,
+      );
+
+      await service.initialize();
+      final count = await service.scheduleFromSchedules(
+        schedules: [schedule],
+        daysAhead: 3,
+      );
+
+      // Should schedule for 3 days (or 2-3 depending on current time)
+      expect(count, greaterThan(0));
+      expect(count, lessThanOrEqualTo(3));
+    });
+  });
 }

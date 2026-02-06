@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ignore: depend_on_referenced_packages
 import 'package:sentry_dio/sentry_dio.dart';
 
+import 'package:fishfeed/core/config/api_config.dart';
 import 'package:fishfeed/core/services/secure_storage_service.dart';
 import 'package:fishfeed/data/datasources/remote/interceptors/interceptors.dart';
 import 'package:fishfeed/services/sentry/sentry_service.dart';
@@ -98,13 +99,14 @@ class ApiClient {
   /// Configures the Dio instance with base options and interceptors.
   void _configure(String? baseUrl) {
     final resolvedBaseUrl = baseUrl ?? _resolveBaseUrl();
+    final versionedBaseUrl = '$resolvedBaseUrl${ApiVersion.pathPrefix}';
 
     if (kDebugMode) {
-      print('ApiClient: Using base URL: $resolvedBaseUrl');
+      print('ApiClient: Using base URL: $versionedBaseUrl');
     }
 
     _dio.options = BaseOptions(
-      baseUrl: resolvedBaseUrl,
+      baseUrl: versionedBaseUrl,
       connectTimeout: ApiTimeouts.connect,
       receiveTimeout: ApiTimeouts.receive,
       sendTimeout: ApiTimeouts.send,

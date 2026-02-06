@@ -1,3 +1,9 @@
+/// API versioning configuration.
+abstract final class ApiVersion {
+  /// The current API version path prefix.
+  static const String pathPrefix = '/api/v1';
+}
+
 /// API endpoint configuration.
 ///
 /// Contains all API endpoint paths used throughout the app.

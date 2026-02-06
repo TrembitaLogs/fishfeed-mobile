@@ -32,10 +32,8 @@ void main() {
   }) {
     return FeedingEvent(
       id: id,
-      fishId: 'fish_1',
       aquariumId: aquariumId,
       feedingTime: feedingTime ?? DateTime.now(),
-      createdAt: DateTime.now(),
       completedBy: completedBy,
       completedByName: completedByName,
       completedByAvatar: completedByAvatar,

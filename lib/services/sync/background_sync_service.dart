@@ -11,7 +11,7 @@ import 'package:workmanager/workmanager.dart';
 
 import 'package:fishfeed/core/services/secure_storage_service.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 
 /// Unique name for the periodic background sync task.
 const String kBackgroundSyncTaskName = 'fishfeed_background_sync';
@@ -110,24 +110,22 @@ Future<bool> _performBackgroundSync() async {
     // 1. Initialize Hive in background isolate
     await _initializeHiveForBackground();
 
-    // 2. Get unsynced feeding events
-    final feedingEventsBox = await Hive.openBox<dynamic>(
-      HiveBoxNames.feedingEvents,
+    // 2. Get unsynced feeding logs
+    final feedingLogsBox = await Hive.openBox<dynamic>(
+      HiveBoxNames.feedingLogs,
     );
-    final unsyncedEvents = feedingEventsBox.values
-        .whereType<FeedingEventModel>()
-        .where((event) => !event.synced)
+    final unsyncedLogs = feedingLogsBox.values
+        .whereType<FeedingLogModel>()
+        .where((log) => !log.synced)
         .toList();
 
-    if (unsyncedEvents.isEmpty) {
-      debugPrint('BackgroundSync: No unsynced events, skipping');
-      await feedingEventsBox.close();
+    if (unsyncedLogs.isEmpty) {
+      debugPrint('BackgroundSync: No unsynced logs, skipping');
+      await feedingLogsBox.close();
       return true;
     }
 
-    debugPrint(
-      'BackgroundSync: Found ${unsyncedEvents.length} unsynced events',
-    );
+    debugPrint('BackgroundSync: Found ${unsyncedLogs.length} unsynced logs');
 
     // 3. Get auth token from secure storage
     const secureStorage = FlutterSecureStorage();
@@ -137,7 +135,7 @@ Future<bool> _performBackgroundSync() async {
 
     if (accessToken == null || accessToken.isEmpty) {
       debugPrint('BackgroundSync: No auth token, skipping sync');
-      await feedingEventsBox.close();
+      await feedingLogsBox.close();
       return false;
     }
 
@@ -145,7 +143,7 @@ Future<bool> _performBackgroundSync() async {
     final baseUrl = _resolveBaseUrl();
     if (baseUrl.isEmpty) {
       debugPrint('BackgroundSync: No API base URL configured');
-      await feedingEventsBox.close();
+      await feedingLogsBox.close();
       return false;
     }
 
@@ -163,12 +161,12 @@ Future<bool> _performBackgroundSync() async {
     );
 
     // 5. Prepare payload (lightweight - only essential fields)
-    final payload = unsyncedEvents.map((e) => _feedingEventToJson(e)).toList();
+    final payload = unsyncedLogs.map((l) => _feedingLogToJson(l)).toList();
 
     final response = await dio.post<Map<String, dynamic>>(
       '/sync',
       data: {
-        'events': payload,
+        'feeding_logs': payload,
         'client_timestamp': DateTime.now().toIso8601String(),
       },
     );
@@ -186,26 +184,26 @@ Future<bool> _performBackgroundSync() async {
         syncedIds.addAll(ids);
       } else {
         // No explicit synced_ids, assume all synced
-        syncedIds.addAll(unsyncedEvents.map((e) => e.id));
+        syncedIds.addAll(unsyncedLogs.map((l) => l.id));
       }
 
-      // Mark events as synced in Hive
+      // Mark logs as synced in Hive
       for (final id in syncedIds) {
-        final event = feedingEventsBox.get(id);
-        if (event is FeedingEventModel) {
-          event.synced = true;
-          await feedingEventsBox.put(id, event);
+        final log = feedingLogsBox.get(id);
+        if (log is FeedingLogModel) {
+          log.synced = true;
+          await feedingLogsBox.put(id, log);
         }
       }
 
-      debugPrint('BackgroundSync: Synced ${syncedIds.length} events');
-      await feedingEventsBox.close();
+      debugPrint('BackgroundSync: Synced ${syncedIds.length} logs');
+      await feedingLogsBox.close();
       return true;
     } else {
       debugPrint(
         'BackgroundSync: Sync failed with status ${response.statusCode}',
       );
-      await feedingEventsBox.close();
+      await feedingLogsBox.close();
       return false;
     }
   } on DioException catch (e) {
@@ -225,28 +223,27 @@ Future<void> _initializeHiveForBackground() async {
   // Initialize Hive (safe to call multiple times)
   await Hive.initFlutter();
 
-  // Register FeedingEventModel adapter if not registered
-  if (!Hive.isAdapterRegistered(FeedingEventModelAdapter().typeId)) {
-    Hive.registerAdapter(FeedingEventModelAdapter());
+  // Register FeedingLogModel adapter if not registered
+  if (!Hive.isAdapterRegistered(FeedingLogModelAdapter().typeId)) {
+    Hive.registerAdapter(FeedingLogModelAdapter());
   }
 }
 
-/// Converts a FeedingEventModel to JSON for API sync.
-Map<String, dynamic> _feedingEventToJson(FeedingEventModel event) {
+/// Converts a FeedingLogModel to JSON for API sync.
+Map<String, dynamic> _feedingLogToJson(FeedingLogModel log) {
   return {
-    'id': event.id,
-    'local_id': event.localId,
-    'fish_id': event.fishId,
-    'aquarium_id': event.aquariumId,
-    'feeding_time': event.feedingTime.toIso8601String(),
-    'amount': event.amount,
-    'food_type': event.foodType,
-    'notes': event.notes,
-    'created_at': event.createdAt.toIso8601String(),
-    'updated_at': event.updatedAt?.toIso8601String(),
-    'completed_by': event.completedBy,
-    'completed_by_name': event.completedByName,
-    'completed_by_avatar': event.completedByAvatar,
+    'id': log.id,
+    'schedule_id': log.scheduleId,
+    'fish_id': log.fishId,
+    'aquarium_id': log.aquariumId,
+    'scheduled_for': log.scheduledFor.toIso8601String(),
+    'action': log.action,
+    'acted_at': log.actedAt.toIso8601String(),
+    'acted_by_user_id': log.actedByUserId,
+    'acted_by_user_name': log.actedByUserName,
+    'device_id': log.deviceId,
+    'notes': log.notes,
+    'created_at': log.createdAt.toIso8601String(),
   };
 }
 

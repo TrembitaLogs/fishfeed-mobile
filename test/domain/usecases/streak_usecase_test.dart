@@ -2,17 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/usecases/streak_usecase.dart';
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingLogLocalDataSource extends Mock
+    implements FeedingLogLocalDataSource {}
 
 class MockBox extends Mock implements Box<dynamic> {}
 
@@ -25,15 +25,15 @@ void main() {
   });
 
   late MockStreakLocalDataSource mockStreakDs;
-  late MockFeedingLocalDataSource mockFeedingDs;
+  late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late StreakUseCase useCase;
 
   setUp(() {
     mockStreakDs = MockStreakLocalDataSource();
-    mockFeedingDs = MockFeedingLocalDataSource();
+    mockFeedingLogDs = MockFeedingLogLocalDataSource();
     useCase = StreakUseCase(
       streakDataSource: mockStreakDs,
-      feedingDataSource: mockFeedingDs,
+      feedingLogDataSource: mockFeedingLogDs,
     );
   });
 
@@ -319,30 +319,48 @@ void main() {
   });
 
   group('isAllFedToday', () {
+    FeedingLogModel createTestLog({
+      required String id,
+      required String aquariumId,
+      required DateTime scheduledFor,
+      String action = 'fed',
+    }) {
+      return FeedingLogModel(
+        id: id,
+        scheduleId: 'schedule_1',
+        fishId: 'fish_1',
+        aquariumId: aquariumId,
+        scheduledFor: scheduledFor,
+        action: action,
+        actedAt: scheduledFor,
+        actedByUserId: 'user_1',
+        deviceId: 'device_1',
+        createdAt: scheduledFor,
+      );
+    }
+
     test('should return true when all aquarium feedings completed', () {
       final date = DateTime(2025, 6, 15);
-      final events = [
-        FeedingEventModel(
-          id: 'event_1',
-          fishId: 'fish_1',
+      final logs = [
+        createTestLog(
+          id: 'log_1',
           aquariumId: 'aquarium_1',
-          feedingTime: date,
-          synced: false,
-          createdAt: date,
-          localId: 'local_1',
+          scheduledFor: date,
         ),
-        FeedingEventModel(
-          id: 'event_2',
-          fishId: 'fish_2',
+        createTestLog(
+          id: 'log_2',
           aquariumId: 'aquarium_1',
-          feedingTime: date,
-          synced: false,
-          createdAt: date,
-          localId: 'local_2',
+          scheduledFor: date,
         ),
       ];
 
-      when(() => mockFeedingDs.getFeedingEventsByDate(date)).thenReturn(events);
+      when(
+        () => mockFeedingLogDs.getByAquariumIdAndDateRange(
+          'aquarium_1',
+          date,
+          date,
+        ),
+      ).thenReturn(logs);
 
       final result = useCase.isAllFedToday(
         aquariumId: 'aquarium_1',
@@ -355,19 +373,21 @@ void main() {
 
     test('should return false when not all feedings completed', () {
       final date = DateTime(2025, 6, 15);
-      final events = [
-        FeedingEventModel(
-          id: 'event_1',
-          fishId: 'fish_1',
+      final logs = [
+        createTestLog(
+          id: 'log_1',
           aquariumId: 'aquarium_1',
-          feedingTime: date,
-          synced: false,
-          createdAt: date,
-          localId: 'local_1',
+          scheduledFor: date,
         ),
       ];
 
-      when(() => mockFeedingDs.getFeedingEventsByDate(date)).thenReturn(events);
+      when(
+        () => mockFeedingLogDs.getByAquariumIdAndDateRange(
+          'aquarium_1',
+          date,
+          date,
+        ),
+      ).thenReturn(logs);
 
       final result = useCase.isAllFedToday(
         aquariumId: 'aquarium_1',
@@ -378,30 +398,29 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('should only count events for specific aquarium', () {
+    test('should only count fed actions, not skipped', () {
       final date = DateTime(2025, 6, 15);
-      final events = [
-        FeedingEventModel(
-          id: 'event_1',
-          fishId: 'fish_1',
+      final logs = [
+        createTestLog(
+          id: 'log_1',
           aquariumId: 'aquarium_1',
-          feedingTime: date,
-          synced: false,
-          createdAt: date,
-          localId: 'local_1',
+          scheduledFor: date,
         ),
-        FeedingEventModel(
-          id: 'event_2',
-          fishId: 'fish_2',
-          aquariumId: 'aquarium_2',
-          feedingTime: date,
-          synced: false,
-          createdAt: date,
-          localId: 'local_2',
+        createTestLog(
+          id: 'log_2',
+          aquariumId: 'aquarium_1',
+          scheduledFor: date,
+          action: 'skipped',
         ),
       ];
 
-      when(() => mockFeedingDs.getFeedingEventsByDate(date)).thenReturn(events);
+      when(
+        () => mockFeedingLogDs.getByAquariumIdAndDateRange(
+          'aquarium_1',
+          date,
+          date,
+        ),
+      ).thenReturn(logs);
 
       final result = useCase.isAllFedToday(
         aquariumId: 'aquarium_1',

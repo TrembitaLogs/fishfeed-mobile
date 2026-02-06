@@ -10,7 +10,7 @@ import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/data/repositories/user_repository_impl.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
@@ -29,14 +29,16 @@ import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:fishfeed/services/sync/sync_trigger_service.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
-
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 // ============ Mock Classes ============
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
-class MockAquariumRemoteDataSource extends Mock
-    implements AquariumRemoteDataSource {}
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
+
+class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
 class MockUserRepository extends Mock implements UserRepository {}
 
@@ -97,7 +99,7 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   Future<void> markAsMissed(String feedingId) async {}
 
   @override
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {}
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {}
 
   @override
   void clearError() {}
@@ -106,14 +108,23 @@ class MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
 /// Test implementation of AuthStateListenable that doesn't require Riverpod.
 class TestAuthStateListenable extends ChangeNotifier
     implements AuthStateListenable {
+  bool _isInitializing = false;
   bool _isLoggedIn = false;
   bool _hasCompletedOnboarding = false;
+
+  @override
+  bool get isInitializing => _isInitializing;
 
   @override
   bool get isLoggedIn => _isLoggedIn;
 
   @override
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
+
+  void setInitializing(bool value) {
+    _isInitializing = value;
+    notifyListeners();
+  }
 
   void login() {
     _isLoggedIn = true;
@@ -201,6 +212,9 @@ MockSyncService createMockSyncService() {
   when(() => service.dispose()).thenReturn(null);
   when(() => service.stateStream).thenAnswer((_) => const Stream.empty());
   when(() => service.conflictStream).thenAnswer((_) => const Stream.empty());
+  when(
+    () => service.feedingConflictStream,
+  ).thenAnswer((_) => const Stream.empty());
   return service;
 }
 
@@ -230,10 +244,20 @@ MockPushTokenManager createMockPushTokenManager() {
   return manager;
 }
 
-/// Creates a mock AquariumRemoteDataSource with default behavior.
-MockAquariumRemoteDataSource createMockAquariumRemoteDataSource() {
-  final dataSource = MockAquariumRemoteDataSource();
-  when(() => dataSource.getAquariums()).thenAnswer((_) async => []);
+/// Creates a mock AquariumLocalDataSource with default behavior.
+MockAquariumLocalDataSource createMockAquariumLocalDataSource() {
+  final dataSource = MockAquariumLocalDataSource();
+  when(() => dataSource.getAllAquariums()).thenReturn([]);
+  when(() => dataSource.getAquariumsByUserId(any())).thenReturn([]);
+  when(() => dataSource.getUnsyncedAquariums()).thenReturn([]);
+  when(() => dataSource.getDeletedAquariums()).thenReturn([]);
+  return dataSource;
+}
+
+/// Creates a mock AuthLocalDataSource with default behavior.
+MockAuthLocalDataSource createMockAuthLocalDataSource() {
+  final dataSource = MockAuthLocalDataSource();
+  when(() => dataSource.getCurrentUser()).thenReturn(null);
   return dataSource;
 }
 

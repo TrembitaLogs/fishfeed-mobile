@@ -2,20 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
 import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingLogLocalDataSource extends Mock
+    implements FeedingLogLocalDataSource {}
 
 void main() {
   late MockStreakLocalDataSource mockStreakDs;
-  late MockFeedingLocalDataSource mockFeedingDs;
+  late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late CalculateStreakUseCase useCase;
 
   setUpAll(() {
@@ -31,10 +31,10 @@ void main() {
 
   setUp(() {
     mockStreakDs = MockStreakLocalDataSource();
-    mockFeedingDs = MockFeedingLocalDataSource();
+    mockFeedingLogDs = MockFeedingLogLocalDataSource();
     useCase = CalculateStreakUseCase(
       streakDataSource: mockStreakDs,
-      feedingDataSource: mockFeedingDs,
+      feedingLogDataSource: mockFeedingLogDs,
     );
   });
 
@@ -55,17 +55,23 @@ void main() {
     );
   }
 
-  FeedingEventModel createTestFeedingEvent({
+  FeedingLogModel createTestFeedingLog({
     String id = 'event_1',
-    DateTime? feedingTime,
+    DateTime? scheduledFor,
+    String action = 'fed',
   }) {
-    return FeedingEventModel(
+    final now = DateTime.now();
+    return FeedingLogModel(
       id: id,
+      scheduleId: 'schedule_1',
       fishId: 'fish_1',
       aquariumId: 'aquarium_1',
-      feedingTime: feedingTime ?? DateTime.now(),
-      synced: false,
-      createdAt: DateTime.now(),
+      scheduledFor: scheduledFor ?? now,
+      action: action,
+      actedAt: scheduledFor ?? now,
+      actedByUserId: 'user_1',
+      deviceId: 'device_1',
+      createdAt: now,
     );
   }
 
@@ -173,35 +179,43 @@ void main() {
         });
       });
 
-      test('should reset streak when more than 1 day passed', () async {
-        final now = DateTime.now();
-        final twoDaysAgo = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(const Duration(days: 2));
-        final streak = createTestStreak(
-          currentStreak: 5,
-          lastFeedingDate: twoDaysAgo,
-        );
+      test(
+        'should return streak as-is when inactive (server handles resets)',
+        () async {
+          // Note: Streak reset logic moved to server in Task 25.5.
+          // Client no longer resets streaks - just returns existing value.
+          final now = DateTime.now();
+          final twoDaysAgo = DateTime(
+            now.year,
+            now.month,
+            now.day,
+          ).subtract(const Duration(days: 2));
+          final streak = createTestStreak(
+            currentStreak: 5,
+            lastFeedingDate: twoDaysAgo,
+          );
 
-        when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(streak);
-        when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
-        when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
+          when(
+            () => mockStreakDs.getStreakByUserId('user_1'),
+          ).thenReturn(streak);
+          when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
 
-        final result = await useCase(
-          const CalculateStreakParams(userId: 'user_1'),
-        );
+          final result = await useCase(
+            const CalculateStreakParams(userId: 'user_1'),
+          );
 
-        expect(result.isRight(), true);
-        result.fold((_) => fail('Should be Right'), (calcResult) {
-          expect(calcResult.streak.currentStreak, 0);
-          expect(calcResult.isActive, isFalse);
-          expect(calcResult.daysUntilExpiry, 0);
-        });
+          expect(result.isRight(), true);
+          result.fold((_) => fail('Should be Right'), (calcResult) {
+            // Streak is returned as-is - server will reset during sync
+            expect(calcResult.streak.currentStreak, 5);
+            expect(calcResult.isActive, isFalse);
+            expect(calcResult.daysUntilExpiry, 0);
+          });
 
-        verify(() => mockStreakDs.saveStreak(any())).called(1);
-      });
+          // No saveStreak call - client doesn't modify streak
+          verifyNever(() => mockStreakDs.saveStreak(any()));
+        },
+      );
 
       test(
         'should return daysUntilExpiry as 0 when streak is broken',
@@ -231,7 +245,7 @@ void main() {
 
     group('Recalculate from History', () {
       test('should return empty streak when no feeding events', () async {
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
         final result = await useCase.recalculateFromHistory('user_1');
@@ -250,12 +264,12 @@ void main() {
         final twoDaysAgo = today.subtract(const Duration(days: 2));
 
         final events = [
-          createTestFeedingEvent(id: 'event_1', feedingTime: today),
-          createTestFeedingEvent(id: 'event_2', feedingTime: yesterday),
-          createTestFeedingEvent(id: 'event_3', feedingTime: twoDaysAgo),
+          createTestFeedingLog(id: 'event_1', scheduledFor: today),
+          createTestFeedingLog(id: 'event_2', scheduledFor: yesterday),
+          createTestFeedingLog(id: 'event_3', scheduledFor: twoDaysAgo),
         ];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
@@ -276,10 +290,10 @@ void main() {
         ).subtract(const Duration(days: 5));
 
         final events = [
-          createTestFeedingEvent(id: 'event_1', feedingTime: fiveDaysAgo),
+          createTestFeedingLog(id: 'event_1', scheduledFor: fiveDaysAgo),
         ];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
         when(() => mockStreakDs.saveStreak(any())).thenAnswer((_) async {});
 
@@ -296,7 +310,7 @@ void main() {
         final today = DateTime(now.year, now.month, now.day);
 
         final events = [
-          createTestFeedingEvent(id: 'event_1', feedingTime: today),
+          createTestFeedingLog(id: 'event_1', scheduledFor: today),
         ];
 
         final existingStreak = createTestStreak(
@@ -304,7 +318,7 @@ void main() {
           longestStreak: 15,
         );
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockStreakDs.getStreakByUserId('user_1'),
         ).thenReturn(existingStreak);
@@ -341,7 +355,7 @@ void main() {
 
       test('should return CacheFailure on recalculate error', () async {
         when(
-          () => mockFeedingDs.getAllFeedingEvents(),
+          () => mockFeedingLogDs.getAll(),
         ).thenThrow(Exception('Hive error'));
 
         final result = await useCase.recalculateFromHistory('user_1');

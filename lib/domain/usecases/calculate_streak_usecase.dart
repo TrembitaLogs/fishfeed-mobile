@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/core/utils/date_time_utils.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
@@ -43,12 +43,12 @@ class StreakCalculationResult {
 class CalculateStreakUseCase {
   CalculateStreakUseCase({
     required StreakLocalDataSource streakDataSource,
-    required FeedingLocalDataSource feedingDataSource,
+    required FeedingLogLocalDataSource feedingLogDataSource,
   }) : _streakDataSource = streakDataSource,
-       _feedingDataSource = feedingDataSource;
+       _feedingLogDataSource = feedingLogDataSource;
 
   final StreakLocalDataSource _streakDataSource;
-  final FeedingLocalDataSource _feedingDataSource;
+  final FeedingLogLocalDataSource _feedingLogDataSource;
 
   /// Executes the calculate streak use case.
   Future<Either<Failure, StreakCalculationResult>> call(
@@ -99,29 +99,15 @@ class CalculateStreakUseCase {
     }
   }
 
-  /// Checks if streak should be reset based on last feeding date.
+  /// Returns the streak model without modification.
   ///
-  /// Uses [DateTimeUtils] for timezone-aware date comparison to handle
-  /// DST transitions and timezone changes correctly.
+  /// Note: Streak reset logic has been removed from client.
+  /// Streak breaks are now determined by the server during POST /sync
+  /// via the _check_streak_breaks function. The client only reads
+  /// streak values that are updated during sync.
   Future<StreakModel> _checkAndUpdateStreak(StreakModel streak) async {
-    final lastFeedingDate = streak.lastFeedingDate;
-    if (lastFeedingDate == null) {
-      return streak;
-    }
-
-    // Use DateTimeUtils for proper timezone-aware day calculation
-    final difference = DateTimeUtils.daysBetween(
-      lastFeedingDate,
-      DateTime.now(),
-    );
-
-    // If more than 1 day has passed, reset streak
-    if (difference > 1 && streak.currentStreak > 0) {
-      streak.currentStreak = 0;
-      streak.streakStartDate = null;
-      await _streakDataSource.saveStreak(streak);
-    }
-
+    // Server handles streak break detection during sync.
+    // Client no longer resets streak - just return as-is.
     return streak;
   }
 
@@ -146,15 +132,19 @@ class CalculateStreakUseCase {
   /// Recalculates streak from feeding history.
   ///
   /// This method can be used to rebuild streak data if it gets corrupted
-  /// or out of sync. It iterates through all feeding events and counts
+  /// or out of sync. It iterates through all feeding logs and counts
   /// consecutive days of feeding.
   ///
   /// Uses [DateTimeUtils] for timezone-aware date operations.
   Future<Either<Failure, Streak>> recalculateFromHistory(String userId) async {
     try {
-      final allEvents = _feedingDataSource.getAllFeedingEvents();
+      // Get all feeding logs with action="fed" (not skipped)
+      final allLogs = _feedingLogDataSource
+          .getAll()
+          .where((l) => l.isFed)
+          .toList();
 
-      if (allEvents.isEmpty) {
+      if (allLogs.isEmpty) {
         final streak = StreakModel(
           id: 'streak_$userId',
           userId: userId,
@@ -165,10 +155,10 @@ class CalculateStreakUseCase {
         return Right(streak.toEntity());
       }
 
-      // Group events by date using DateTimeUtils for timezone awareness
+      // Group logs by date using DateTimeUtils for timezone awareness
       final eventsByDate = <DateTime, bool>{};
-      for (final event in allEvents) {
-        final date = DateTimeUtils.startOfDay(event.feedingTime);
+      for (final log in allLogs) {
+        final date = DateTimeUtils.startOfDay(log.scheduledFor);
         eventsByDate[date] = true;
       }
 

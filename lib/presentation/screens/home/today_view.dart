@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/config/animation_config.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/presentation/providers/ad_provider.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
@@ -14,15 +17,16 @@ import 'package:fishfeed/presentation/widgets/ads/banner_ad_widget.dart';
 import 'package:fishfeed/presentation/widgets/common/error_state_widget.dart';
 import 'package:fishfeed/presentation/widgets/common/shimmer_widgets.dart';
 import 'package:fishfeed/presentation/widgets/feeding/add_aquarium_button.dart';
-import 'package:fishfeed/presentation/widgets/feeding/aquarium_section.dart';
+import 'package:fishfeed/presentation/widgets/feeding/aquarium_status_card.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_upsell_card.dart';
+import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Today View displaying scheduled feedings for the current day.
 ///
 /// Features:
 /// - Pull-to-refresh for data reload
-/// - Grouping by aquarium with AquariumSection widgets
+/// - Grouping by aquarium with AquariumStatusCard widgets
 /// - Empty state when no feedings scheduled
 /// - Shimmer loading placeholder
 /// - Staggered animation for card appearance using flutter_animate
@@ -37,6 +41,64 @@ class TodayView extends ConsumerStatefulWidget {
 class _TodayViewState extends ConsumerState<TodayView> {
   /// Key to trigger re-animation on refresh.
   Key _listKey = UniqueKey();
+
+  /// Subscription to feeding conflict stream for async conflict notifications.
+  StreamSubscription<SyncConflict<Map<String, dynamic>>>?
+  _feedingConflictSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for async feeding conflicts (offline scenario)
+    _feedingConflictSubscription = ref
+        .read(syncServiceProvider)
+        .feedingConflictStream
+        .listen(_onFeedingConflict);
+  }
+
+  @override
+  void dispose() {
+    _feedingConflictSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _onFeedingConflict(SyncConflict<Map<String, dynamic>> conflict) {
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+
+    final serverVersion = conflict.serverVersion;
+    final actedByName =
+        serverVersion['acted_by_user_name']?.toString() ?? l10n.familyMember;
+    final actedAtStr = serverVersion['acted_at']?.toString();
+    final actedAt = actedAtStr != null ? DateTime.tryParse(actedAtStr) : null;
+    final timeStr = actedAt != null
+        ? DateFormat.Hm().format(actedAt.toLocal())
+        : '?';
+
+    final message = l10n.feedingAlreadyDoneByMember(actedByName, timeStr);
+
+    // Styled toast for family mode conflicts
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.people_alt, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.blue.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // Refresh the feedings list to reflect the resolved conflict
+    ref.read(todayFeedingsProvider.notifier).refresh();
+  }
 
   Future<void> _onRefresh() async {
     // Trigger sync with server first (updates lastSyncTime)
@@ -96,7 +158,7 @@ class _FeedingsList extends ConsumerWidget {
     this.showEmptyMessage = false,
   });
 
-  final List<ScheduledFeeding> feedings;
+  final List<ComputedFeedingEvent> feedings;
   final bool showEmptyMessage;
 
   @override
@@ -108,14 +170,12 @@ class _FeedingsList extends ConsumerWidget {
     final aquariums = aquariumsState.aquariums;
 
     // Group feedings by aquarium ID
-    final groupedByAquarium = <String, List<ScheduledFeeding>>{};
+    final groupedByAquarium = <String, List<ComputedFeedingEvent>>{};
     for (final feeding in feedings) {
       groupedByAquarium.putIfAbsent(feeding.aquariumId, () => []).add(feeding);
     }
 
-    final notifier = ref.read(todayFeedingsProvider.notifier);
-
-    // Build list items: ads/upsell + aquarium sections + add button
+    // Build list items: ads/upsell + aquarium cards + add button
     final items = <_ListItem>[];
 
     // Add banner ad placeholder at the top for free users
@@ -209,13 +269,11 @@ class _FeedingsList extends ConsumerWidget {
               animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
         );
 
-        // Aquarium section
+        // Aquarium status card
         if (item.isAquariumSection) {
-          final Widget child = AquariumSection(
+          final Widget child = AquariumStatusCard(
             aquarium: item.aquarium!,
             feedings: item.aquariumFeedings!,
-            onMarkAsFed: notifier.markAsFed,
-            onMarkAsMissed: notifier.markAsMissed,
           );
 
           return child
@@ -284,7 +342,7 @@ class _ListItem {
       isEmptyMessage = true;
 
   final Aquarium? aquarium;
-  final List<ScheduledFeeding>? aquariumFeedings;
+  final List<ComputedFeedingEvent>? aquariumFeedings;
   final bool isBannerAd;
   final bool isUpsellCard;
   final bool isAquariumSection;

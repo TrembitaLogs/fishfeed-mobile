@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/widgets/feeding/freeze_indicator.dart';
 
 void main() {
@@ -23,6 +24,8 @@ void main() {
   }) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
           child: FreezeIndicator(

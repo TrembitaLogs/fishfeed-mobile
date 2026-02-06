@@ -143,10 +143,13 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
   /// [name] - Optional custom name for the fish.
   /// [aquariumId] - Optional aquarium ID (uses current aquarium if not provided).
   ///
-  /// If a fish of the same species already exists in the aquarium,
-  /// updates its quantity instead of creating a new record.
+  /// Always creates a new Fish record, even if a fish of the same species
+  /// already exists. This allows users to have separate feeding schedules
+  /// for different groups of the same species.
   ///
-  /// Returns the created or updated [Fish] entity on success, null on failure.
+  /// To update quantity of an existing fish group, use [updateFish] instead.
+  ///
+  /// Returns the created [Fish] entity on success, null on failure.
   Future<Fish?> addFish({
     required String speciesId,
     int quantity = 1,
@@ -160,57 +163,22 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
         return null;
       }
 
-      // Check if fish of this species already exists in the aquarium
-      final existingFish = state.userFish
-          .where(
-            (f) => f.aquariumId == targetAquariumId && f.speciesId == speciesId,
-          )
-          .firstOrNull;
+      // Always create a new Fish record (allows separate schedules per group)
+      final now = DateTime.now();
+      final fish = Fish(
+        id: _uuid.v4(),
+        aquariumId: targetAquariumId,
+        speciesId: speciesId,
+        name: name,
+        quantity: quantity,
+        addedAt: now,
+      );
 
-      Fish fish;
-      if (existingFish != null) {
-        // Update existing fish quantity
-        fish = Fish(
-          id: existingFish.id,
-          aquariumId: existingFish.aquariumId,
-          speciesId: existingFish.speciesId,
-          name: name ?? existingFish.name,
-          quantity: existingFish.quantity + quantity,
-          addedAt: existingFish.addedAt,
-          synced: false,
-          updatedAt: DateTime.now(),
-          serverUpdatedAt: existingFish.serverUpdatedAt,
-        );
+      final model = FishModel.fromEntity(fish);
+      await _fishDataSource.saveFish(model);
 
-        final model = FishModel.fromEntity(fish);
-        await _fishDataSource.updateFish(model);
-
-        // Update state
-        final updatedList = state.userFish.map((f) {
-          if (f.id == existingFish.id) {
-            return fish;
-          }
-          return f;
-        }).toList();
-        state = state.copyWith(userFish: updatedList);
-      } else {
-        // Create new fish record
-        final now = DateTime.now();
-        fish = Fish(
-          id: _uuid.v4(),
-          aquariumId: targetAquariumId,
-          speciesId: speciesId,
-          name: name,
-          quantity: quantity,
-          addedAt: now,
-        );
-
-        final model = FishModel.fromEntity(fish);
-        await _fishDataSource.saveFish(model);
-
-        // Update state
-        state = state.copyWith(userFish: [...state.userFish, fish]);
-      }
+      // Update state
+      state = state.copyWith(userFish: [...state.userFish, fish]);
 
       // Track analytics
       AnalyticsService.instance.trackFishAdded(
@@ -335,7 +303,8 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
   /// Triggers sync with backend.
   ///
-  /// Feeding events are created by the backend when fish are synced.
+  /// Schedules should be created locally before calling this method.
+  /// This sync uploads local changes (fish, schedules) to the server.
   /// UI refresh is handled by _SyncCompletionRefreshListener in app.dart
   /// which listens to sync state changes and calls refresh() on providers.
   Future<void> _syncAndRefreshFeedings() async {

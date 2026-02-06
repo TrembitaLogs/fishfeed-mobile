@@ -26,12 +26,13 @@ void main() {
       expect(HiveBoxNames.users, 'users');
       expect(HiveBoxNames.aquariums, 'aquariums');
       expect(HiveBoxNames.fish, 'fish');
-      expect(HiveBoxNames.feedingEvents, 'feedingEvents');
       expect(HiveBoxNames.species, 'species');
       expect(HiveBoxNames.streaks, 'streaks');
       expect(HiveBoxNames.achievements, 'achievements');
       expect(HiveBoxNames.syncQueue, 'syncQueue');
       expect(HiveBoxNames.appPreferences, 'appPreferences');
+      expect(HiveBoxNames.schedules, 'schedules');
+      expect(HiveBoxNames.feedingLogs, 'feedingLogs');
     });
   });
 
@@ -58,10 +59,6 @@ void main() {
 
     test('accessing fish box before init should throw StateError', () {
       expect(() => HiveBoxes.fish, throwsStateError);
-    });
-
-    test('accessing feedingEvents box before init should throw StateError', () {
-      expect(() => HiveBoxes.feedingEvents, throwsStateError);
     });
 
     test('accessing species box before init should throw StateError', () {
@@ -118,14 +115,6 @@ void main() {
     test('should provide access to fish box', () {
       expect(HiveBoxes.fish, isA<Box<dynamic>>());
       expect(HiveBoxes.fish.name, HiveBoxNames.fish);
-    });
-
-    test('should provide access to feedingEvents box', () {
-      expect(HiveBoxes.feedingEvents, isA<Box<dynamic>>());
-      expect(
-        HiveBoxes.feedingEvents.name.toLowerCase(),
-        HiveBoxNames.feedingEvents.toLowerCase(),
-      );
     });
 
     test('should provide access to species box', () {
@@ -197,10 +186,10 @@ void main() {
       expect(HiveBoxes.users.get('test_key'), 'test_value');
     });
 
-    test('should be able to write and read from feedingEvents box', () async {
-      final testData = {'id': '1', 'fishId': 'fish_1', 'timestamp': 123456};
-      await HiveBoxes.feedingEvents.put('event_1', testData);
-      expect(HiveBoxes.feedingEvents.get('event_1'), testData);
+    test('should be able to write and read from schedules box', () async {
+      final testData = {'id': '1', 'fishId': 'fish_1', 'time': '09:00'};
+      await HiveBoxes.schedules.put('schedule_1', testData);
+      expect(HiveBoxes.schedules.get('schedule_1'), testData);
     });
 
     test('clearAll should clear all boxes', () async {
@@ -208,6 +197,8 @@ void main() {
       await HiveBoxes.users.put('key1', 'value1');
       await HiveBoxes.aquariums.put('key2', 'value2');
       await HiveBoxes.fish.put('key3', 'value3');
+      await HiveBoxes.schedules.put('key4', 'value4');
+      await HiveBoxes.feedingLogs.put('key5', 'value5');
       await HiveBoxes.setOnboardingCompleted(true);
 
       // Clear all
@@ -217,12 +208,13 @@ void main() {
       expect(HiveBoxes.users.isEmpty, isTrue);
       expect(HiveBoxes.aquariums.isEmpty, isTrue);
       expect(HiveBoxes.fish.isEmpty, isTrue);
-      expect(HiveBoxes.feedingEvents.isEmpty, isTrue);
       expect(HiveBoxes.species.isEmpty, isTrue);
       expect(HiveBoxes.streaks.isEmpty, isTrue);
       expect(HiveBoxes.achievements.isEmpty, isTrue);
       expect(HiveBoxes.syncQueue.isEmpty, isTrue);
       expect(HiveBoxes.appPreferences.isEmpty, isTrue);
+      expect(HiveBoxes.schedules.isEmpty, isTrue);
+      expect(HiveBoxes.feedingLogs.isEmpty, isTrue);
       expect(HiveBoxes.getOnboardingCompleted(), isFalse);
     });
   });
@@ -306,6 +298,39 @@ void main() {
 
       expect(HiveBoxes.getPushToken(), isNull);
       expect(HiveBoxes.getPushTokenPlatform(), isNull);
+    });
+  });
+
+  group('HiveBoxes - clearUserData', () {
+    setUp(() async {
+      await HiveBoxes.initForTesting();
+    });
+
+    test(
+      'clearUserData should clear schedules and feedingLogs boxes',
+      () async {
+        // Add data to boxes
+        await HiveBoxes.schedules.put('schedule1', {'id': 'schedule1'});
+        await HiveBoxes.feedingLogs.put('log1', {'id': 'log1'});
+        await HiveBoxes.users.put('user1', {'id': 'user1'});
+
+        // Clear user data
+        await HiveBoxes.clearUserData();
+
+        // Verify all are cleared
+        expect(HiveBoxes.schedules.isEmpty, isTrue);
+        expect(HiveBoxes.feedingLogs.isEmpty, isTrue);
+        expect(HiveBoxes.users.isEmpty, isTrue);
+      },
+    );
+
+    test('clearUserData should reset onboarding', () async {
+      await HiveBoxes.setOnboardingCompleted(true);
+      expect(HiveBoxes.getOnboardingCompleted(), isTrue);
+
+      await HiveBoxes.clearUserData();
+
+      expect(HiveBoxes.getOnboardingCompleted(), isFalse);
     });
   });
 }

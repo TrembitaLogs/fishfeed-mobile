@@ -7,7 +7,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fishfeed/app.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
@@ -67,7 +66,6 @@ Future<void> _runMigrationIfNeeded() async {
   final migrationService = MigrationService(
     aquariumLocalDs: AquariumLocalDataSource(),
     fishLocalDs: FishLocalDataSource(),
-    feedingLocalDs: FeedingLocalDataSource(),
     authLocalDs: AuthLocalDataSource(),
   );
 

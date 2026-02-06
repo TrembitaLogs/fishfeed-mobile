@@ -20,7 +20,7 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/profile/profile_screen.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 
@@ -34,8 +34,8 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class MockAquariumRemoteDataSource extends Mock
-    implements AquariumRemoteDataSource {}
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
 
 class FakeFile extends Fake implements File {}
 
@@ -44,7 +44,7 @@ void main() {
   late MockUserRepository mockUserRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late MockAquariumRemoteDataSource mockAquariumRemoteDs;
+  late MockAquariumLocalDataSource mockAquariumLocalDs;
 
   // Use removeAdsOnly() so "View Premium" button appears in tests
   final testUser = User(
@@ -89,7 +89,11 @@ void main() {
     mockUserRepository = MockUserRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumRemoteDs = MockAquariumRemoteDataSource();
+    mockAquariumLocalDs = MockAquariumLocalDataSource();
+
+    // Setup default mock behavior
+    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
+    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
   });
 
   Widget buildTestWidget({User? user}) {
@@ -119,7 +123,7 @@ void main() {
             repository: mockAuthRepository,
             googleAuthService: mockGoogleAuthService,
             appleAuthService: mockAppleAuthService,
-            aquariumRemoteDataSource: mockAquariumRemoteDs,
+            aquariumLocalDataSource: mockAquariumLocalDs,
             syncService: createMockSyncService(),
           );
           // Set authenticated state with test user

@@ -4,13 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/presentation/providers/day_detail_provider.dart';
 import 'package:fishfeed/presentation/widgets/calendar/day_detail_sheet.dart';
 import 'package:fishfeed/presentation/widgets/common/loading_indicator.dart';
@@ -27,65 +23,90 @@ void main() {
 
   final testDate = DateTime(2024, 6, 15);
 
-  List<ScheduledFeeding> createMockFeedings({
+  List<ComputedFeedingEvent> createMockFeedings({
     int fedCount = 2,
     int missedCount = 1,
     int pendingCount = 1,
   }) {
-    final feedings = <ScheduledFeeding>[];
+    final feedings = <ComputedFeedingEvent>[];
     var id = 1;
 
     for (var i = 0; i < fedCount; i++) {
+      final scheduledFor = testDate.add(Duration(hours: 8 + i));
       feedings.add(
-        ScheduledFeeding(
-          id: 'feed_$id',
-          scheduledTime: testDate.add(Duration(hours: 8 + i)),
+        ComputedFeedingEvent(
+          scheduleId: 'schedule_$id',
+          fishId: 'fish_$id',
           aquariumId: 'aq1',
-          aquariumName: 'Living Room Tank',
-          speciesName: 'Guppy',
-          status: FeedingStatus.fed,
+          scheduledFor: scheduledFor,
+          time: '${(8 + i).toString().padLeft(2, '0')}:00',
           foodType: 'Flakes',
-          portionGrams: 0.5,
-          completedAt: testDate.add(Duration(hours: 8 + i)),
+          status: EventStatus.fed,
+          aquariumName: 'Living Room Tank',
+          fishName: 'Guppy',
         ),
       );
       id++;
     }
 
     for (var i = 0; i < missedCount; i++) {
+      final scheduledFor = testDate.add(Duration(hours: 12 + i));
       feedings.add(
-        ScheduledFeeding(
-          id: 'feed_$id',
-          scheduledTime: testDate.add(Duration(hours: 12 + i)),
+        ComputedFeedingEvent(
+          scheduleId: 'schedule_$id',
+          fishId: 'fish_$id',
           aquariumId: 'aq2',
-          aquariumName: 'Bedroom Aquarium',
-          speciesName: 'Betta',
-          status: FeedingStatus.missed,
+          scheduledFor: scheduledFor,
+          time: '${(12 + i).toString().padLeft(2, '0')}:00',
           foodType: 'Pellets',
-          portionGrams: 0.3,
+          status: EventStatus.skipped,
+          aquariumName: 'Bedroom Aquarium',
+          fishName: 'Betta',
         ),
       );
       id++;
     }
 
     for (var i = 0; i < pendingCount; i++) {
+      final scheduledFor = testDate.add(Duration(hours: 18 + i));
       feedings.add(
-        ScheduledFeeding(
-          id: 'feed_$id',
-          scheduledTime: testDate.add(Duration(hours: 18 + i)),
+        ComputedFeedingEvent(
+          scheduleId: 'schedule_$id',
+          fishId: 'fish_$id',
           aquariumId: 'aq1',
-          aquariumName: 'Living Room Tank',
-          speciesName: 'Goldfish',
-          status: FeedingStatus.pending,
+          scheduledFor: scheduledFor,
+          time: '${(18 + i).toString().padLeft(2, '0')}:00',
           foodType: 'Flakes',
-          portionGrams: 1.0,
+          status: EventStatus.pending,
+          aquariumName: 'Living Room Tank',
+          fishName: 'Goldfish',
         ),
       );
       id++;
     }
 
-    feedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+    feedings.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
     return feedings;
+  }
+
+  Widget buildSheetDirectly({
+    required DateTime date,
+    DayDetailState? initialState,
+  }) {
+    return ProviderScope(
+      overrides: [
+        if (initialState != null)
+          dayDetailProvider(
+            date,
+          ).overrideWith((ref) => TestDayDetailNotifier(initialState)),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: DayDetailSheet(date: date)),
+      ),
+    );
   }
 
   Widget buildTestWidget({
@@ -94,9 +115,6 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        feedingLocalDataSourceProvider.overrideWithValue(
-          MockFeedingLocalDataSource(),
-        ),
         if (initialState != null)
           dayDetailProvider(
             date,
@@ -114,29 +132,6 @@ void main() {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildSheetDirectly({
-    required DateTime date,
-    DayDetailState? initialState,
-  }) {
-    return ProviderScope(
-      overrides: [
-        feedingLocalDataSourceProvider.overrideWithValue(
-          MockFeedingLocalDataSource(),
-        ),
-        if (initialState != null)
-          dayDetailProvider(
-            date,
-          ).overrideWith((ref) => TestDayDetailNotifier(initialState)),
-      ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: DayDetailSheet(date: date)),
       ),
     );
   }
@@ -595,27 +590,22 @@ void main() {
 }
 
 /// Test notifier that returns a predefined state.
-class TestDayDetailNotifier extends DayDetailNotifier {
-  TestDayDetailNotifier(this._testState)
-    : super(
-        feedingDataSource: MockFeedingLocalDataSource(),
-        initialDate: _testState.selectedDate,
-      );
-
-  final DayDetailState _testState;
+class TestDayDetailNotifier extends StateNotifier<DayDetailState>
+    implements DayDetailNotifier {
+  TestDayDetailNotifier(DayDetailState testState) : super(testState);
 
   @override
   Future<void> loadFeedings() async {
-    state = _testState;
+    // No-op in test
   }
-}
-
-/// Mock feeding data source for testing.
-class MockFeedingLocalDataSource extends FeedingLocalDataSource {
-  MockFeedingLocalDataSource() : super(feedingEventsBox: null);
 
   @override
-  List<FeedingEventModel> getFeedingEventsByDate(DateTime date) {
-    return [];
+  Future<void> selectDate(DateTime date) async {
+    // No-op in test
+  }
+
+  @override
+  Future<void> refresh() async {
+    // No-op in test
   }
 }

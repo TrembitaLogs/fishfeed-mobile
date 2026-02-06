@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/services/feeding_event_generator.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 
 /// State for day detail bottom sheet.
 class DayDetailState {
@@ -18,8 +19,8 @@ class DayDetailState {
   /// The selected date to show details for.
   final DateTime selectedDate;
 
-  /// List of feedings for the selected date.
-  final List<ScheduledFeeding> feedings;
+  /// List of computed feedings for the selected date.
+  final List<ComputedFeedingEvent> feedings;
 
   /// Whether data is currently loading.
   final bool isLoading;
@@ -33,17 +34,21 @@ class DayDetailState {
   /// Whether feedings list is empty (after loading).
   bool get isEmpty => feedings.isEmpty && !isLoading && !hasError;
 
-  /// Count of completed feedings.
+  /// Count of completed feedings (fed).
   int get completedCount =>
-      feedings.where((f) => f.status == FeedingStatus.fed).length;
+      feedings.where((f) => f.status == EventStatus.fed).length;
 
-  /// Count of missed feedings.
-  int get missedCount =>
-      feedings.where((f) => f.status == FeedingStatus.missed).length;
+  /// Count of missed feedings (skipped or overdue).
+  int get missedCount => feedings
+      .where(
+        (f) =>
+            f.status == EventStatus.skipped || f.status == EventStatus.overdue,
+      )
+      .length;
 
   /// Count of pending feedings.
   int get pendingCount =>
-      feedings.where((f) => f.status == FeedingStatus.pending).length;
+      feedings.where((f) => f.status == EventStatus.pending).length;
 
   /// Overall day feeding status based on feedings.
   DayFeedingStatus get dayStatus {
@@ -66,7 +71,7 @@ class DayDetailState {
 
   DayDetailState copyWith({
     DateTime? selectedDate,
-    List<ScheduledFeeding>? feedings,
+    List<ComputedFeedingEvent>? feedings,
     bool? isLoading,
     String? error,
   }) {
@@ -81,17 +86,26 @@ class DayDetailState {
 
 /// Notifier for managing day detail state.
 ///
-/// Loads feedings for a specific date and calculates day status.
+/// Loads feedings for a specific date using FeedingEventGenerator.
 class DayDetailNotifier extends StateNotifier<DayDetailState> {
   DayDetailNotifier({
-    required FeedingLocalDataSource feedingDataSource,
+    required FeedingEventGenerator eventGenerator,
+    required List<String> aquariumIds,
+    required String? Function(String fishId) fishNameResolver,
+    required String? Function(String aquariumId) aquariumNameResolver,
     required DateTime initialDate,
-  }) : _feedingDataSource = feedingDataSource,
+  }) : _eventGenerator = eventGenerator,
+       _aquariumIds = aquariumIds,
+       _fishNameResolver = fishNameResolver,
+       _aquariumNameResolver = aquariumNameResolver,
        super(DayDetailState(selectedDate: initialDate)) {
     loadFeedings();
   }
 
-  final FeedingLocalDataSource _feedingDataSource;
+  final FeedingEventGenerator _eventGenerator;
+  final List<String> _aquariumIds;
+  final String? Function(String fishId) _fishNameResolver;
+  final String? Function(String aquariumId) _aquariumNameResolver;
 
   /// Loads feedings for the selected date.
   Future<void> loadFeedings() async {
@@ -99,22 +113,27 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 
     try {
       final date = state.selectedDate;
-      final today = DateTime(date.year, date.month, date.day);
-      final now = DateTime.now();
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
 
-      // Get completed feeding events from Hive
-      final completedEvents = _feedingDataSource.getFeedingEventsByDate(today);
-      final completedIds = completedEvents
-          .map((e) => e.localId ?? e.id)
-          .toSet();
+      // Generate events for all aquariums for this date
+      final allEvents = <ComputedFeedingEvent>[];
 
-      // Generate schedule for the day
-      final feedings = _generateDaySchedule(today, completedIds, now);
+      for (final aquariumId in _aquariumIds) {
+        final events = _eventGenerator.generateEvents(
+          aquariumId: aquariumId,
+          from: startOfDay,
+          to: endOfDay,
+          fishNameResolver: _fishNameResolver,
+          aquariumNameResolver: _aquariumNameResolver,
+        );
+        allEvents.addAll(events);
+      }
 
       // Sort by scheduled time
-      feedings.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+      allEvents.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
 
-      state = state.copyWith(feedings: feedings, isLoading: false);
+      state = state.copyWith(feedings: allEvents, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -127,117 +146,6 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
   Future<void> selectDate(DateTime date) async {
     state = state.copyWith(selectedDate: date);
     await loadFeedings();
-  }
-
-  /// Generates feeding schedule for a specific day.
-  ///
-  /// In production, this would be based on user's aquariums and fish.
-  /// Currently uses mock data matching TodayFeedingsNotifier.
-  List<ScheduledFeeding> _generateDaySchedule(
-    DateTime day,
-    Set<String> completedIds,
-    DateTime now,
-  ) {
-    // Only generate schedule for today and past days
-    final today = DateTime(now.year, now.month, now.day);
-    final selectedDay = DateTime(day.year, day.month, day.day);
-
-    // Future days have no data
-    if (selectedDay.isAfter(today)) {
-      return [];
-    }
-
-    final mockSchedule = [
-      _createScheduledFeeding(
-        id: 'feed_${day.year}${day.month}${day.day}_1',
-        time: day.add(const Duration(hours: 8)),
-        aquariumId: 'aq1',
-        aquariumName: 'Living Room Tank',
-        speciesName: 'Guppy',
-        foodType: 'Flakes',
-        portionGrams: 0.5,
-        completedIds: completedIds,
-        now: now,
-        isHistorical: selectedDay.isBefore(today),
-      ),
-      _createScheduledFeeding(
-        id: 'feed_${day.year}${day.month}${day.day}_2',
-        time: day.add(const Duration(hours: 12)),
-        aquariumId: 'aq1',
-        aquariumName: 'Living Room Tank',
-        speciesName: 'Betta',
-        foodType: 'Pellets',
-        portionGrams: 0.3,
-        completedIds: completedIds,
-        now: now,
-        isHistorical: selectedDay.isBefore(today),
-      ),
-      _createScheduledFeeding(
-        id: 'feed_${day.year}${day.month}${day.day}_3',
-        time: day.add(const Duration(hours: 18)),
-        aquariumId: 'aq2',
-        aquariumName: 'Bedroom Aquarium',
-        speciesName: 'Goldfish',
-        foodType: 'Flakes',
-        portionGrams: 1.0,
-        completedIds: completedIds,
-        now: now,
-        isHistorical: selectedDay.isBefore(today),
-      ),
-      _createScheduledFeeding(
-        id: 'feed_${day.year}${day.month}${day.day}_4',
-        time: day.add(const Duration(hours: 20)),
-        aquariumId: 'aq1',
-        aquariumName: 'Living Room Tank',
-        speciesName: 'Guppy',
-        foodType: 'Flakes',
-        portionGrams: 0.5,
-        completedIds: completedIds,
-        now: now,
-        isHistorical: selectedDay.isBefore(today),
-      ),
-    ];
-
-    return mockSchedule;
-  }
-
-  /// Creates a scheduled feeding with appropriate status.
-  ScheduledFeeding _createScheduledFeeding({
-    required String id,
-    required DateTime time,
-    required String aquariumId,
-    required String aquariumName,
-    required String speciesName,
-    required String foodType,
-    required double portionGrams,
-    required Set<String> completedIds,
-    required DateTime now,
-    required bool isHistorical,
-  }) {
-    FeedingStatus status;
-    DateTime? completedAt;
-
-    if (completedIds.contains(id)) {
-      status = FeedingStatus.fed;
-      completedAt = time;
-    } else if (isHistorical || time.isBefore(now)) {
-      // Historical days or past time = missed
-      status = FeedingStatus.missed;
-    } else {
-      status = FeedingStatus.pending;
-    }
-
-    return ScheduledFeeding(
-      id: id,
-      scheduledTime: time,
-      aquariumId: aquariumId,
-      aquariumName: aquariumName,
-      speciesName: speciesName,
-      status: status,
-      foodType: foodType,
-      portionGrams: portionGrams,
-      completedAt: completedAt,
-    );
   }
 
   /// Refreshes feedings for the current date.
@@ -256,7 +164,34 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 /// ```
 final dayDetailProvider = StateNotifierProvider.autoDispose
     .family<DayDetailNotifier, DayDetailState, DateTime>((ref, date) {
-      final feedingDs = ref.watch(feedingLocalDataSourceProvider);
+      final eventGenerator = ref.watch(feedingEventGeneratorProvider);
+      final aquariumsState = ref.watch(userAquariumsProvider);
+      final aquariumIds = aquariumsState.aquariums.map((a) => a.id).toList();
 
-      return DayDetailNotifier(feedingDataSource: feedingDs, initialDate: date);
+      // Build fish name lookup from local data source
+      final fishDs = ref.watch(fishLocalDataSourceProvider);
+      final allFish = fishDs.getAllFish();
+      final fishNameMap = <String, String>{};
+      for (final fish in allFish) {
+        fishNameMap[fish.id] = fish.name ?? 'Fish';
+      }
+
+      String? fishNameResolver(String fishId) {
+        return fishNameMap[fishId];
+      }
+
+      String? aquariumNameResolver(String aquariumId) {
+        final aquarium = aquariumsState.aquariums
+            .where((a) => a.id == aquariumId)
+            .firstOrNull;
+        return aquarium?.name;
+      }
+
+      return DayDetailNotifier(
+        eventGenerator: eventGenerator,
+        aquariumIds: aquariumIds,
+        fishNameResolver: fishNameResolver,
+        aquariumNameResolver: aquariumNameResolver,
+        initialDate: date,
+      );
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/feeding_status.dart';
 
 /// Animated circular status indicator for feeding events.
@@ -71,6 +72,37 @@ class StatusIndicator extends StatelessWidget {
       FeedingStatus.missed => Colors.red,
       FeedingStatus.pending => Colors.amber.shade700,
     };
+  }
+
+  /// Returns the color for the given EventStatus.
+  static Color getEventStatusColor(EventStatus status) {
+    return switch (status) {
+      EventStatus.fed => Colors.green,
+      EventStatus.skipped => Colors.red,
+      EventStatus.overdue => Colors.red,
+      EventStatus.pending => Colors.amber.shade700,
+    };
+  }
+
+  /// Factory constructor from EventStatus.
+  static StatusIndicator fromEventStatus({
+    Key? key,
+    required EventStatus status,
+    StatusIndicatorSize size = StatusIndicatorSize.medium,
+    bool showTooltip = false,
+  }) {
+    final feedingStatus = switch (status) {
+      EventStatus.fed => FeedingStatus.fed,
+      EventStatus.skipped => FeedingStatus.missed,
+      EventStatus.overdue => FeedingStatus.missed,
+      EventStatus.pending => FeedingStatus.pending,
+    };
+    return StatusIndicator(
+      key: key,
+      status: feedingStatus,
+      size: size,
+      showTooltip: showTooltip,
+    );
   }
 
   /// Returns the icon for the given status.

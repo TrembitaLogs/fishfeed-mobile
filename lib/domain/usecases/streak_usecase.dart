@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
@@ -64,12 +64,12 @@ class StreakUpdateResult {
 class StreakUseCase {
   StreakUseCase({
     required StreakLocalDataSource streakDataSource,
-    required FeedingLocalDataSource feedingDataSource,
+    required FeedingLogLocalDataSource feedingLogDataSource,
   }) : _streakDataSource = streakDataSource,
-       _feedingDataSource = feedingDataSource;
+       _feedingLogDataSource = feedingLogDataSource;
 
   final StreakLocalDataSource _streakDataSource;
-  final FeedingLocalDataSource _feedingDataSource;
+  final FeedingLogLocalDataSource _feedingLogDataSource;
 
   /// Checks if all feedings for the day are completed and updates streak accordingly.
   ///
@@ -291,12 +291,15 @@ class StreakUseCase {
       return false;
     }
 
-    final events = _feedingDataSource.getFeedingEventsByDate(date);
-    final aquariumEvents = events
-        .where((e) => e.aquariumId == aquariumId)
-        .length;
+    // Get feeding logs for the date (only "fed" actions count)
+    final logs = _feedingLogDataSource.getByAquariumIdAndDateRange(
+      aquariumId,
+      date,
+      date,
+    );
+    final fedCount = logs.where((log) => log.isFed).length;
 
-    return aquariumEvents >= scheduledCount;
+    return fedCount >= scheduledCount;
   }
 
   /// Gets the current streak for a user.

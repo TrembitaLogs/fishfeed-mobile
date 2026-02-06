@@ -4,11 +4,11 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/models/achievement_model.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
 import 'package:fishfeed/data/models/user_progress_model.dart';
 import 'package:fishfeed/domain/usecases/achievement_usecase.dart';
@@ -16,8 +16,8 @@ import 'package:fishfeed/domain/usecases/achievement_usecase.dart';
 class MockAchievementLocalDataSource extends Mock
     implements AchievementLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingLogLocalDataSource extends Mock
+    implements FeedingLogLocalDataSource {}
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
@@ -35,20 +35,20 @@ void main() {
   });
 
   late MockAchievementLocalDataSource mockAchievementDs;
-  late MockFeedingLocalDataSource mockFeedingDs;
+  late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockStreakLocalDataSource mockStreakDs;
   late MockUserProgressLocalDataSource mockProgressDs;
   late AchievementUseCase useCase;
 
   setUp(() {
     mockAchievementDs = MockAchievementLocalDataSource();
-    mockFeedingDs = MockFeedingLocalDataSource();
+    mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockStreakDs = MockStreakLocalDataSource();
     mockProgressDs = MockUserProgressLocalDataSource();
 
     useCase = AchievementUseCase(
       achievementDataSource: mockAchievementDs,
-      feedingDataSource: mockFeedingDs,
+      feedingLogDataSource: mockFeedingLogDs,
       streakDataSource: mockStreakDs,
       progressDataSource: mockProgressDs,
     );
@@ -85,18 +85,26 @@ void main() {
     );
   }
 
-  FeedingEventModel createTestFeedingEvent({
+  FeedingLogModel createTestFeedingLog({
     required String id,
+    String scheduleId = 'schedule_1',
     String fishId = 'fish_1',
     String aquariumId = 'aq1',
-    DateTime? feedingTime,
+    DateTime? scheduledFor,
+    String action = 'fed',
   }) {
-    return FeedingEventModel(
+    final now = DateTime.now();
+    return FeedingLogModel(
       id: id,
+      scheduleId: scheduleId,
       fishId: fishId,
       aquariumId: aquariumId,
-      feedingTime: feedingTime ?? DateTime.now(),
-      createdAt: DateTime.now(),
+      scheduledFor: scheduledFor ?? now,
+      action: action,
+      actedAt: now,
+      actedByUserId: 'user_1',
+      deviceId: 'device_1',
+      createdAt: now,
     );
   }
 
@@ -126,8 +134,8 @@ void main() {
     test('should unlock firstFeeding when user has 1 feeding', () async {
       // Arrange
       when(
-        () => mockFeedingDs.getAllFeedingEvents(),
-      ).thenReturn([createTestFeedingEvent(id: 'feed_1')]);
+        () => mockFeedingLogDs.getAll(),
+      ).thenReturn([createTestFeedingLog(id: 'feed_1')]);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       // All achievements initially locked
@@ -183,7 +191,7 @@ void main() {
 
     test('should unlock streak7 when streak reaches 7 days', () async {
       // Arrange
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+      when(() => mockFeedingLogDs.getAll()).thenReturn([]);
       when(
         () => mockStreakDs.getStreakByUserId('user_1'),
       ).thenReturn(createTestStreak(currentStreak: 7));
@@ -247,8 +255,8 @@ void main() {
     test('should not unlock achievement that is already unlocked', () async {
       // Arrange
       when(
-        () => mockFeedingDs.getAllFeedingEvents(),
-      ).thenReturn([createTestFeedingEvent(id: 'feed_1')]);
+        () => mockFeedingLogDs.getAll(),
+      ).thenReturn([createTestFeedingLog(id: 'feed_1')]);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       // firstFeeding is already unlocked
@@ -300,9 +308,9 @@ void main() {
       // Arrange
       final feedings = List.generate(
         100,
-        (i) => createTestFeedingEvent(id: 'feed_$i'),
+        (i) => createTestFeedingLog(id: 'feed_$i'),
       );
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(feedings);
+      when(() => mockFeedingLogDs.getAll()).thenReturn(feedings);
       when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
 
       for (final type in AchievementType.values) {
@@ -386,7 +394,7 @@ void main() {
         ),
       ).thenReturn(null);
 
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+      when(() => mockFeedingLogDs.getAll()).thenReturn([]);
       when(
         () => mockStreakDs.getStreakByUserId('user_1'),
       ).thenReturn(createTestStreak(currentStreak: 3));

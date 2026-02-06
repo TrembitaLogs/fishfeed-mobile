@@ -654,5 +654,145 @@
   },
   "noFeedingsForAquarium": "Keine Fütterungen geplant",
   "selectAquarium": "Aquarium auswählen",
-  "newAquarium": "Neues Aquarium"
+  "newAquarium": "Neues Aquarium",
+  "editAquarium": "Aquarium bearbeiten",
+  "@editAquarium": {
+    "description": "Title for aquarium edit screen"
+  },
+  "editAquariumDetails": "Aquarium-Einstellungen bearbeiten",
+  "@editAquariumDetails": {
+    "description": "Subtitle for aquarium edit screen"
+  },
+  "fishInAquarium": "Fische ({count})",
+  "@fishInAquarium": {
+    "description": "Section title showing fish count in aquarium",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAquarium": "Aquarium löschen",
+  "@deleteAquarium": {
+    "description": "Button to delete aquarium"
+  },
+  "deleteAquariumTitle": "{name} löschen?",
+  "@deleteAquariumTitle": {
+    "description": "Title for delete aquarium confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAquariumConfirmation": "Alle Fische und die Fütterungshistorie werden entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@deleteAquariumConfirmation": {
+    "description": "Confirmation message for deleting aquarium"
+  },
+  "aquariumDeleted": "Aquarium gelöscht",
+  "@aquariumDeleted": {
+    "description": "Success message when aquarium is deleted"
+  },
+  "aquariumUpdated": "Aquarium aktualisiert",
+  "@aquariumUpdated": {
+    "description": "Success message when aquarium is updated"
+  },
+  "failedToUpdateAquarium": "Aquarium konnte nicht aktualisiert werden",
+  "@failedToUpdateAquarium": {
+    "description": "Error message when aquarium update fails"
+  },
+  "failedToDeleteAquarium": "Aquarium konnte nicht gelöscht werden",
+  "@failedToDeleteAquarium": {
+    "description": "Error message when aquarium deletion fails"
+  },
+  "aquariumNotFound": "Aquarium nicht gefunden",
+  "@aquariumNotFound": {
+    "description": "Error title when aquarium is not found"
+  },
+  "aquariumNotFoundDescription": "Das gesuchte Aquarium existiert nicht oder wurde gelöscht.",
+  "@aquariumNotFoundDescription": {
+    "description": "Error description when aquarium is not found"
+  },
+  "noFishInAquarium": "Keine Fische in diesem Aquarium",
+  "@noFishInAquarium": {
+    "description": "Empty state when aquarium has no fish"
+  },
+  "addFishToAquarium": "Fügen Sie Ihren ersten Fisch hinzu, um zu beginnen",
+  "@addFishToAquarium": {
+    "description": "Description for empty fish state in aquarium"
+  },
+  "feedingsTodayCount": "{count, plural, =0{Keine Fütterungen heute} =1{1 Fütterung heute} other{{count} Fütterungen heute}}",
+  "@feedingsTodayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markAsFedQuestion": "Als gefüttert markieren?",
+  "@markAsFedQuestion": {
+    "description": "Confirmation dialog title when marking feeding as done"
+  },
+  "yesFed": "Ja, gefüttert",
+  "@yesFed": {
+    "description": "Confirmation button text for marking feeding as done"
+  },
+  "fedAtTime": "Gefüttert um {time}",
+  "@fedAtTime": {
+    "description": "Label showing when a feeding was completed",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingSync": "Synchronisieren...",
+  "@pendingSync": {
+    "description": "Label shown when a feeding log is pending sync"
+  },
+  "pendingFeedingAt": "Ausstehende Fütterung um {time}",
+  "@pendingFeedingAt": {
+    "description": "Status text for aquarium with overdue feeding",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "allFedToday": "Alle gefüttert",
+  "@allFedToday": {
+    "description": "Status text when all feedings for today are completed"
+  },
+  "nextFeedingAt": "Nächste um {time}",
+  "@nextFeedingAt": {
+    "description": "Status text showing next scheduled feeding time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "portionHintLabel": "Portion",
+  "@portionHintLabel": {
+    "description": "Label for portion hint in feeding detail sheet"
+  },
+  "feedingDetails": "Fütterungsdetails",
+  "@feedingDetails": {
+    "description": "Title for feeding detail bottom sheet"
+  },
+  "closeButton": "Schließen",
+  "@closeButton": {
+    "description": "Close button text for bottom sheets and dialogs"
+  },
+  "feedingAlreadyDoneByMember": "{name} hat bereits um {time} gefüttert",
+  "@feedingAlreadyDoneByMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

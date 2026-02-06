@@ -4,8 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
@@ -25,15 +26,19 @@ class AuthenticationState {
   const AuthenticationState({
     this.user,
     this.isLoading = false,
+    this.isInitializing = false,
     this.error,
     this.isAuthenticated = false,
     this.hasCompletedOnboarding = false,
   });
 
   /// Creates initial unauthenticated state.
+  ///
+  /// [isInitializing] is true because we haven't checked local storage yet.
   const AuthenticationState.initial()
     : user = null,
       isLoading = false,
+      isInitializing = true,
       error = null,
       isAuthenticated = false,
       hasCompletedOnboarding = false;
@@ -42,6 +47,7 @@ class AuthenticationState {
   const AuthenticationState.loading()
     : user = null,
       isLoading = true,
+      isInitializing = false,
       error = null,
       isAuthenticated = false,
       hasCompletedOnboarding = false;
@@ -54,6 +60,7 @@ class AuthenticationState {
     return AuthenticationState(
       user: user,
       isLoading: false,
+      isInitializing: false,
       error: null,
       isAuthenticated: true,
       hasCompletedOnboarding: hasCompletedOnboarding,
@@ -65,6 +72,7 @@ class AuthenticationState {
     return AuthenticationState(
       user: null,
       isLoading: false,
+      isInitializing: false,
       error: failure,
       isAuthenticated: false,
       hasCompletedOnboarding: false,
@@ -76,6 +84,12 @@ class AuthenticationState {
 
   /// Whether an auth operation is in progress.
   final bool isLoading;
+
+  /// Whether auth state is being initialized from local storage.
+  ///
+  /// True on app startup until [initialize] completes.
+  /// Used to show splash screen instead of login flash.
+  final bool isInitializing;
 
   /// Current auth error, if any.
   final Failure? error;
@@ -90,6 +104,7 @@ class AuthenticationState {
   AuthenticationState copyWith({
     User? user,
     bool? isLoading,
+    bool? isInitializing,
     Failure? error,
     bool? isAuthenticated,
     bool? hasCompletedOnboarding,
@@ -99,6 +114,7 @@ class AuthenticationState {
     return AuthenticationState(
       user: clearUser ? null : (user ?? this.user),
       isLoading: isLoading ?? this.isLoading,
+      isInitializing: isInitializing ?? this.isInitializing,
       error: clearError ? null : (error ?? this.error),
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       hasCompletedOnboarding:
@@ -112,6 +128,7 @@ class AuthenticationState {
     return other is AuthenticationState &&
         other.user == user &&
         other.isLoading == isLoading &&
+        other.isInitializing == isInitializing &&
         other.error == error &&
         other.isAuthenticated == isAuthenticated &&
         other.hasCompletedOnboarding == hasCompletedOnboarding;
@@ -121,6 +138,7 @@ class AuthenticationState {
   int get hashCode => Object.hash(
     user,
     isLoading,
+    isInitializing,
     error,
     isAuthenticated,
     hasCompletedOnboarding,
@@ -136,12 +154,12 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     required AuthRepository repository,
     required GoogleAuthService googleAuthService,
     required AppleAuthService appleAuthService,
-    required AquariumRemoteDataSource aquariumRemoteDataSource,
+    required AquariumLocalDataSource aquariumLocalDataSource,
     required SyncService syncService,
   }) : _repository = repository,
        _googleAuthService = googleAuthService,
        _appleAuthService = appleAuthService,
-       _aquariumRemoteDataSource = aquariumRemoteDataSource,
+       _aquariumLocalDataSource = aquariumLocalDataSource,
        _syncService = syncService,
        _loginUseCase = LoginUseCase(repository),
        _registerUseCase = RegisterUseCase(repository),
@@ -152,7 +170,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   final AuthRepository _repository;
   final GoogleAuthService _googleAuthService;
   final AppleAuthService _appleAuthService;
-  final AquariumRemoteDataSource _aquariumRemoteDataSource;
+  final AquariumLocalDataSource _aquariumLocalDataSource;
   final SyncService _syncService;
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
@@ -165,20 +183,29 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   /// Initializes auth state from local storage.
   ///
   /// Call this on app startup to restore session.
+  /// Sets [isInitializing] to false when complete.
   Future<void> initialize() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
     final isAuthenticated = await _repository.isAuthenticated();
 
     if (!isAuthenticated) {
-      state = const AuthenticationState.initial();
+      // Not authenticated - set initial state with isInitializing = false
+      state = const AuthenticationState(
+        isInitializing: false,
+        isAuthenticated: false,
+      );
       return;
     }
 
     final userResult = await _repository.getCurrentUser();
     await userResult.fold(
       (failure) async {
-        state = const AuthenticationState.initial();
+        // Failed to get user - not authenticated, initialization complete
+        state = const AuthenticationState(
+          isInitializing: false,
+          isAuthenticated: false,
+        );
       },
       (user) async {
         var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
@@ -187,20 +214,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           '[AuthNotifier] Initialize: Hive flag=$hasCompletedOnboarding',
         );
 
-        // Check server data BEFORE setting authenticated state
         if (!hasCompletedOnboarding) {
-          try {
-            final aquariums = await _aquariumRemoteDataSource.getAquariums();
-            debugPrint(
-              '[AuthNotifier] Initialize: got ${aquariums.length} aquariums',
-            );
-            if (aquariums.isNotEmpty) {
-              await HiveBoxes.setOnboardingCompleted(true);
-              hasCompletedOnboarding = true;
-            }
-          } catch (e) {
-            debugPrint('[AuthNotifier] Initialize: failed to check server: $e');
-          }
+          hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
         }
 
         state = AuthenticationState.authenticated(
@@ -208,9 +223,13 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           hasCompletedOnboarding: hasCompletedOnboarding,
         );
 
-        // Trigger full sync after session restore to ensure fresh data
-        debugPrint('[AuthNotifier] Triggering full sync after session restore');
-        unawaited(_syncService.syncAll());
+        // If onboarding was already completed, still trigger background sync
+        if (hasCompletedOnboarding) {
+          debugPrint(
+            '[AuthNotifier] Triggering background sync after session restore',
+          );
+          unawaited(_syncService.syncAll());
+        }
       },
     );
   }
@@ -228,36 +247,14 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         state = state.copyWith(isLoading: false, error: failure);
       },
       (user) async {
-        // Check if user has completed onboarding (stored locally)
         var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
         debugPrint('[AuthNotifier] Login success for ${user.email}');
         debugPrint(
           '[AuthNotifier] Local Hive onboarding flag: $hasCompletedOnboarding',
         );
 
-        // Check server data BEFORE setting authenticated state to avoid
-        // premature redirect to onboarding
         if (!hasCompletedOnboarding) {
-          debugPrint(
-            '[AuthNotifier] Local flag false, checking server data BEFORE setting state...',
-          );
-          try {
-            final aquariums = await _aquariumRemoteDataSource.getAquariums();
-            debugPrint(
-              '[AuthNotifier] Got ${aquariums.length} aquariums from server',
-            );
-            if (aquariums.isNotEmpty) {
-              debugPrint(
-                '[AuthNotifier] User has aquariums, marking onboarding completed',
-              );
-              await HiveBoxes.setOnboardingCompleted(true);
-              hasCompletedOnboarding = true;
-            }
-          } catch (e) {
-            debugPrint('[AuthNotifier] Failed to check server data: $e');
-          }
-        } else {
-          debugPrint('[AuthNotifier] Local flag true, skipping server check');
+          hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
         }
 
         debugPrint(
@@ -268,9 +265,11 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           hasCompletedOnboarding: hasCompletedOnboarding,
         );
 
-        // Trigger full sync after login to fetch fresh data from server
-        debugPrint('[AuthNotifier] Triggering full sync after login');
-        unawaited(_syncService.syncAll());
+        // If onboarding was already completed, still trigger background sync
+        if (hasCompletedOnboarding) {
+          debugPrint('[AuthNotifier] Triggering background sync after login');
+          unawaited(_syncService.syncAll());
+        }
       },
     );
   }
@@ -323,17 +322,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Google login success for ${user.email}');
 
-          // Check server data BEFORE setting authenticated state
           if (!hasCompletedOnboarding) {
-            try {
-              final aquariums = await _aquariumRemoteDataSource.getAquariums();
-              if (aquariums.isNotEmpty) {
-                await HiveBoxes.setOnboardingCompleted(true);
-                hasCompletedOnboarding = true;
-              }
-            } catch (e) {
-              debugPrint('[AuthNotifier] Failed to check server data: $e');
-            }
+            hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
           state = AuthenticationState.authenticated(
@@ -341,9 +331,12 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
-          // Trigger full sync after login to fetch fresh data from server
-          debugPrint('[AuthNotifier] Triggering full sync after Google login');
-          unawaited(_syncService.syncAll());
+          if (hasCompletedOnboarding) {
+            debugPrint(
+              '[AuthNotifier] Triggering background sync after Google login',
+            );
+            unawaited(_syncService.syncAll());
+          }
         },
       );
     } on GoogleAuthException catch (e) {
@@ -383,17 +376,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Apple login success for ${user.email}');
 
-          // Check server data BEFORE setting authenticated state
           if (!hasCompletedOnboarding) {
-            try {
-              final aquariums = await _aquariumRemoteDataSource.getAquariums();
-              if (aquariums.isNotEmpty) {
-                await HiveBoxes.setOnboardingCompleted(true);
-                hasCompletedOnboarding = true;
-              }
-            } catch (e) {
-              debugPrint('[AuthNotifier] Failed to check server data: $e');
-            }
+            hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
           state = AuthenticationState.authenticated(
@@ -401,9 +385,12 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
-          // Trigger full sync after login to fetch fresh data from server
-          debugPrint('[AuthNotifier] Triggering full sync after Apple login');
-          unawaited(_syncService.syncAll());
+          if (hasCompletedOnboarding) {
+            debugPrint(
+              '[AuthNotifier] Triggering background sync after Apple login',
+            );
+            unawaited(_syncService.syncAll());
+          }
         },
       );
     } on AppleAuthException catch (e) {
@@ -446,48 +433,6 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     state = state.copyWith(hasCompletedOnboarding: true);
   }
 
-  /// Check if user has data on server and update onboarding status.
-  ///
-  /// Called after login to determine if user should skip onboarding.
-  /// If user has aquariums on server, marks onboarding as completed.
-  Future<void> checkServerDataAndUpdateOnboarding() async {
-    debugPrint('[AuthNotifier] checkServerDataAndUpdateOnboarding called');
-    debugPrint('[AuthNotifier] isAuthenticated: ${state.isAuthenticated}');
-
-    if (!state.isAuthenticated) {
-      debugPrint('[AuthNotifier] Not authenticated, skipping server check');
-      return;
-    }
-
-    try {
-      debugPrint('[AuthNotifier] Fetching aquariums from server...');
-      final aquariums = await _aquariumRemoteDataSource.getAquariums();
-      debugPrint(
-        '[AuthNotifier] Got ${aquariums.length} aquariums from server',
-      );
-
-      if (aquariums.isNotEmpty) {
-        // User has aquariums on server - mark onboarding as completed
-        debugPrint(
-          '[AuthNotifier] User has aquariums, marking onboarding completed',
-        );
-        await HiveBoxes.setOnboardingCompleted(true);
-        state = state.copyWith(hasCompletedOnboarding: true);
-        debugPrint(
-          '[AuthNotifier] State updated: hasCompletedOnboarding=${state.hasCompletedOnboarding}',
-        );
-      } else {
-        debugPrint(
-          '[AuthNotifier] No aquariums on server, keeping onboarding incomplete',
-        );
-      }
-    } catch (e, stackTrace) {
-      // If server check fails, use local Hive flag (already set during login)
-      debugPrint('[AuthNotifier] Failed to check server data: $e');
-      debugPrint('[AuthNotifier] Stack trace: $stackTrace');
-    }
-  }
-
   /// Clear any authentication errors.
   void clearError() {
     state = state.copyWith(clearError: true);
@@ -502,22 +447,53 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
     state = state.copyWith(user: updatedUser);
   }
+
+  /// Syncs with server and checks if user has aquariums for onboarding.
+  ///
+  /// Returns true if onboarding should be marked as completed.
+  Future<bool> _syncAndCheckOnboarding(String userId) async {
+    try {
+      debugPrint('[AuthNotifier] Syncing to check onboarding status...');
+      await _syncService.syncAll();
+
+      final localAquariums = _aquariumLocalDataSource.getAquariumsByUserId(
+        userId,
+      );
+      final hasAquariums = localAquariums.any((a) => !a.isDeleted);
+      debugPrint(
+        '[AuthNotifier] After sync: ${localAquariums.length} aquariums, '
+        'active: $hasAquariums',
+      );
+
+      if (hasAquariums) {
+        await HiveBoxes.setOnboardingCompleted(true);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('[AuthNotifier] Sync failed during onboarding check: $e');
+
+      // Fallback: check local data even without sync
+      final localAquariums = _aquariumLocalDataSource.getAquariumsByUserId(
+        userId,
+      );
+      final hasAquariums = localAquariums.any((a) => !a.isDeleted);
+      if (hasAquariums) {
+        await HiveBoxes.setOnboardingCompleted(true);
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /// Provider for [AuthNotifier].
-///
-/// Usage:
-/// ```dart
-/// final authNotifier = ref.watch(authNotifierProvider.notifier);
-/// await authNotifier.login(email: email, password: password);
-/// ```
 final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AuthenticationState>((ref) {
       final repository = ref.watch(authRepositoryProvider);
       final googleAuthService = ref.watch(googleAuthServiceProvider);
       final appleAuthService = ref.watch(appleAuthServiceProvider);
-      final aquariumRemoteDataSource = ref.watch(
-        aquariumRemoteDataSourceProvider,
+      final aquariumLocalDataSource = ref.watch(
+        aquariumLocalDataSourceProvider,
       );
       final syncService = ref.watch(syncServiceProvider);
 
@@ -525,7 +501,7 @@ final authNotifierProvider =
         repository: repository,
         googleAuthService: googleAuthService,
         appleAuthService: appleAuthService,
-        aquariumRemoteDataSource: aquariumRemoteDataSource,
+        aquariumLocalDataSource: aquariumLocalDataSource,
         syncService: syncService,
       );
     });
@@ -533,14 +509,6 @@ final authNotifierProvider =
 /// Provider for current authentication state.
 ///
 /// Convenience provider for accessing just the state.
-///
-/// Usage:
-/// ```dart
-/// final authState = ref.watch(authStateProvider);
-/// if (authState.isAuthenticated) {
-///   print('User: ${authState.user?.email}');
-/// }
-/// ```
 final authStateProvider = Provider<AuthenticationState>((ref) {
   return ref.watch(authNotifierProvider);
 });
@@ -561,16 +529,6 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 ///
 /// Bridges Riverpod state to Flutter's Listenable interface
 /// required by GoRouter's refreshListenable.
-///
-/// Usage:
-/// ```dart
-/// final authListenable = AuthStateListenable(ref);
-/// GoRouter(
-///   refreshListenable: authListenable,
-///   redirect: (context, state) => authListenable.redirect(state),
-///   ...
-/// );
-/// ```
 class AuthStateListenable extends ChangeNotifier {
   AuthStateListenable(this._ref) {
     _subscription = _ref.listen(authNotifierProvider, (previous, next) {
@@ -581,6 +539,9 @@ class AuthStateListenable extends ChangeNotifier {
 
   final Ref _ref;
   ProviderSubscription<AuthenticationState>? _subscription;
+
+  /// Whether auth state is still being initialized.
+  bool get isInitializing => _ref.read(authNotifierProvider).isInitializing;
 
   /// Whether user is logged in.
   bool get isLoggedIn => _ref.read(authNotifierProvider).isAuthenticated;
@@ -597,13 +558,6 @@ class AuthStateListenable extends ChangeNotifier {
 }
 
 /// Provider for GoRouter-compatible auth listenable.
-///
-/// Usage:
-/// ```dart
-/// final container = ProviderContainer();
-/// final authListenable = container.read(authListenableProvider);
-/// final router = GoRouter(refreshListenable: authListenable, ...);
-/// ```
 final authListenableProvider = Provider<AuthStateListenable>((ref) {
   final listenable = AuthStateListenable(ref);
   ref.onDispose(listenable.dispose);

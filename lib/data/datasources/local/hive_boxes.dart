@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:fishfeed/data/models/achievement_model.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
-import 'package:fishfeed/data/models/feeding_schedule_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/species_model.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
@@ -24,7 +25,6 @@ abstract final class HiveBoxNames {
   static const String users = 'users';
   static const String aquariums = 'aquariums';
   static const String fish = 'fish';
-  static const String feedingEvents = 'feedingEvents';
   static const String species = 'species';
   static const String streaks = 'streaks';
   static const String achievements = 'achievements';
@@ -33,7 +33,8 @@ abstract final class HiveBoxNames {
   static const String userProgress = 'userProgress';
   static const String subscriptionCache = 'subscriptionCache';
   static const String syncMetadata = 'syncMetadata';
-  static const String feedingSchedules = 'feedingSchedules';
+  static const String schedules = 'schedules';
+  static const String feedingLogs = 'feedingLogs';
 }
 
 /// Keys for app preferences stored in the appPreferences box.
@@ -41,6 +42,7 @@ abstract final class AppPreferenceKeys {
   static const String onboardingCompleted = 'onboardingCompleted';
   static const String pushToken = 'pushToken';
   static const String pushTokenPlatform = 'pushTokenPlatform';
+  static const String deviceId = 'deviceId';
 
   // User settings keys
   static const String userSettings = 'userSettings';
@@ -81,7 +83,6 @@ class HiveBoxes {
   static late Box<dynamic> _usersBox;
   static late Box<dynamic> _aquariumsBox;
   static late Box<dynamic> _fishBox;
-  static late Box<dynamic> _feedingEventsBox;
   static late Box<dynamic> _speciesBox;
   static late Box<dynamic> _streaksBox;
   static late Box<dynamic> _achievementsBox;
@@ -90,7 +91,8 @@ class HiveBoxes {
   static late Box<dynamic> _userProgressBox;
   static late Box<dynamic> _subscriptionCacheBox;
   static late Box<dynamic> _syncMetadataBox;
-  static late Box<dynamic> _feedingSchedulesBox;
+  static late Box<dynamic> _schedulesBox;
+  static late Box<dynamic> _feedingLogsBox;
 
   /// Users box for storing user data.
   static Box<dynamic> get users {
@@ -108,12 +110,6 @@ class HiveBoxes {
   static Box<dynamic> get fish {
     _ensureInitialized();
     return _fishBox;
-  }
-
-  /// Feeding events box for storing feeding records.
-  static Box<dynamic> get feedingEvents {
-    _ensureInitialized();
-    return _feedingEventsBox;
   }
 
   /// Species box for storing fish species reference data.
@@ -164,10 +160,16 @@ class HiveBoxes {
     return _syncMetadataBox;
   }
 
-  /// Feeding schedules box for storing feeding schedule data.
-  static Box<dynamic> get feedingSchedules {
+  /// Schedules box for storing new schedule model data (typeId: 24).
+  static Box<dynamic> get schedules {
     _ensureInitialized();
-    return _feedingSchedulesBox;
+    return _schedulesBox;
+  }
+
+  /// Feeding logs box for storing feeding log entries (typeId: 25).
+  static Box<dynamic> get feedingLogs {
+    _ensureInitialized();
+    return _feedingLogsBox;
   }
 
   /// Initializes Hive and opens all required boxes.
@@ -250,10 +252,7 @@ class HiveBoxes {
       Hive.registerAdapter(FishModelAdapter());
     }
 
-    // Register additional model adapters (typeId: 4-7)
-    if (!Hive.isAdapterRegistered(FeedingEventModelAdapter().typeId)) {
-      Hive.registerAdapter(FeedingEventModelAdapter());
-    }
+    // Register additional model adapters (typeId: 5-7)
     if (!Hive.isAdapterRegistered(StreakModelAdapter().typeId)) {
       Hive.registerAdapter(StreakModelAdapter());
     }
@@ -285,9 +284,14 @@ class HiveBoxes {
       Hive.registerAdapter(SyncMetadataModelAdapter());
     }
 
-    // Register feeding schedule adapter (typeId: 23)
-    if (!Hive.isAdapterRegistered(FeedingScheduleModelAdapter().typeId)) {
-      Hive.registerAdapter(FeedingScheduleModelAdapter());
+    // Register schedule model adapter (typeId: 24)
+    if (!Hive.isAdapterRegistered(ScheduleModelAdapter().typeId)) {
+      Hive.registerAdapter(ScheduleModelAdapter());
+    }
+
+    // Register feeding log model adapter (typeId: 25)
+    if (!Hive.isAdapterRegistered(FeedingLogModelAdapter().typeId)) {
+      Hive.registerAdapter(FeedingLogModelAdapter());
     }
   }
 
@@ -296,7 +300,6 @@ class HiveBoxes {
     _usersBox = await Hive.openBox(HiveBoxNames.users);
     _aquariumsBox = await Hive.openBox(HiveBoxNames.aquariums);
     _fishBox = await Hive.openBox(HiveBoxNames.fish);
-    _feedingEventsBox = await Hive.openBox(HiveBoxNames.feedingEvents);
     _speciesBox = await Hive.openBox(HiveBoxNames.species);
     _streaksBox = await Hive.openBox(HiveBoxNames.streaks);
     _achievementsBox = await Hive.openBox(HiveBoxNames.achievements);
@@ -305,7 +308,8 @@ class HiveBoxes {
     _userProgressBox = await Hive.openBox(HiveBoxNames.userProgress);
     _subscriptionCacheBox = await Hive.openBox(HiveBoxNames.subscriptionCache);
     _syncMetadataBox = await Hive.openBox(HiveBoxNames.syncMetadata);
-    _feedingSchedulesBox = await Hive.openBox(HiveBoxNames.feedingSchedules);
+    _schedulesBox = await Hive.openBox(HiveBoxNames.schedules);
+    _feedingLogsBox = await Hive.openBox(HiveBoxNames.feedingLogs);
   }
 
   /// Ensures Hive has been initialized before accessing boxes.
@@ -337,7 +341,6 @@ class HiveBoxes {
       _usersBox.clear(),
       _aquariumsBox.clear(),
       _fishBox.clear(),
-      _feedingEventsBox.clear(),
       _speciesBox.clear(),
       _streaksBox.clear(),
       _achievementsBox.clear(),
@@ -346,14 +349,15 @@ class HiveBoxes {
       _userProgressBox.clear(),
       _subscriptionCacheBox.clear(),
       _syncMetadataBox.clear(),
-      _feedingSchedulesBox.clear(),
+      _schedulesBox.clear(),
+      _feedingLogsBox.clear(),
     ]);
   }
 
   /// Clears user-specific data on logout.
   ///
-  /// Clears fish, feeding events, aquariums, streaks, achievements,
-  /// sync queue, user progress, and resets onboarding status.
+  /// Clears fish, aquariums, streaks, achievements, sync queue,
+  /// user progress, schedules, feeding logs, and resets onboarding status.
   /// Preserves app settings (theme, language, notifications) and species cache.
   static Future<void> clearUserData() async {
     _ensureInitialized();
@@ -362,14 +366,14 @@ class HiveBoxes {
       _usersBox.clear(),
       _aquariumsBox.clear(),
       _fishBox.clear(),
-      _feedingEventsBox.clear(),
       _streaksBox.clear(),
       _achievementsBox.clear(),
       _syncQueueBox.clear(),
       _userProgressBox.clear(),
       _subscriptionCacheBox.clear(),
       _syncMetadataBox.clear(),
-      _feedingSchedulesBox.clear(),
+      _schedulesBox.clear(),
+      _feedingLogsBox.clear(),
     ]);
 
     // Reset onboarding so user goes through it again
@@ -428,6 +432,32 @@ class HiveBoxes {
       _appPreferencesBox.delete(AppPreferenceKeys.pushToken),
       _appPreferencesBox.delete(AppPreferenceKeys.pushTokenPlatform),
     ]);
+  }
+
+  /// Gets the device ID, generating one if it doesn't exist.
+  ///
+  /// The device ID is a stable UUID generated once per device installation.
+  /// Used for conflict detection in family mode when multiple devices
+  /// log the same feeding event.
+  ///
+  /// Returns the existing device ID or generates a new one.
+  static Future<String> getDeviceId() async {
+    _ensureInitialized();
+    var deviceId =
+        _appPreferencesBox.get(AppPreferenceKeys.deviceId) as String?;
+
+    if (deviceId == null) {
+      // Generate a new UUID for this device
+      deviceId = _generateUuid();
+      await _appPreferencesBox.put(AppPreferenceKeys.deviceId, deviceId);
+    }
+
+    return deviceId;
+  }
+
+  /// Generates a UUID v4 string.
+  static String _generateUuid() {
+    return const Uuid().v4();
   }
 
   /// Gets the cached subscription status.

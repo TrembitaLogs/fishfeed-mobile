@@ -2,47 +2,53 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/constants/levels.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/user_progress_model.dart';
 import 'package:fishfeed/domain/usecases/calculate_statistics_usecase.dart';
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
+class MockFeedingLogLocalDataSource extends Mock
+    implements FeedingLogLocalDataSource {}
 
 class MockUserProgressLocalDataSource extends Mock
     implements UserProgressLocalDataSource {}
 
 void main() {
-  late MockFeedingLocalDataSource mockFeedingDs;
+  late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockUserProgressLocalDataSource mockProgressDs;
   late CalculateStatisticsUseCase useCase;
 
   const testUserId = 'user_123';
 
   setUp(() {
-    mockFeedingDs = MockFeedingLocalDataSource();
+    mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockProgressDs = MockUserProgressLocalDataSource();
     useCase = CalculateStatisticsUseCase(
-      feedingDataSource: mockFeedingDs,
+      feedingLogDataSource: mockFeedingLogDs,
       userProgressDataSource: mockProgressDs,
     );
   });
 
-  FeedingEventModel createFeedingEvent({
+  FeedingLogModel createFeedingLog({
     required String id,
-    required DateTime feedingTime,
+    required DateTime scheduledFor,
+    String scheduleId = 'schedule_1',
     String fishId = 'fish_1',
     String aquariumId = 'aquarium_1',
+    String action = 'fed',
   }) {
-    return FeedingEventModel(
+    return FeedingLogModel(
       id: id,
+      scheduleId: scheduleId,
       fishId: fishId,
       aquariumId: aquariumId,
-      feedingTime: feedingTime,
-      synced: false,
-      createdAt: feedingTime,
+      scheduledFor: scheduledFor,
+      action: action,
+      actedAt: scheduledFor,
+      actedByUserId: 'user_1',
+      deviceId: 'device_1',
+      createdAt: scheduledFor,
     );
   }
 
@@ -57,7 +63,7 @@ void main() {
   group('CalculateStatisticsUseCase', () {
     group('Total Feedings', () {
       test('should return 0 when no feeding events exist', () async {
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -74,12 +80,12 @@ void main() {
 
       test('should count all feeding events', () async {
         final events = [
-          createFeedingEvent(id: '1', feedingTime: DateTime(2025, 1, 1, 8)),
-          createFeedingEvent(id: '2', feedingTime: DateTime(2025, 1, 1, 12)),
-          createFeedingEvent(id: '3', feedingTime: DateTime(2025, 1, 2, 8)),
+          createFeedingLog(id: '1', scheduledFor: DateTime(2025, 1, 1, 8)),
+          createFeedingLog(id: '2', scheduledFor: DateTime(2025, 1, 1, 12)),
+          createFeedingLog(id: '3', scheduledFor: DateTime(2025, 1, 2, 8)),
         ];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -97,7 +103,7 @@ void main() {
 
     group('Days With App', () {
       test('should return 0 when no feeding events exist', () async {
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -116,18 +122,18 @@ void main() {
         final now = DateTime.now();
         final daysAgo = now.subtract(const Duration(days: 10));
         final events = [
-          createFeedingEvent(id: '1', feedingTime: daysAgo),
-          createFeedingEvent(
+          createFeedingLog(id: '1', scheduledFor: daysAgo),
+          createFeedingLog(
             id: '2',
-            feedingTime: now.subtract(const Duration(days: 5)),
+            scheduledFor: now.subtract(const Duration(days: 5)),
           ),
-          createFeedingEvent(
+          createFeedingLog(
             id: '3',
-            feedingTime: now.subtract(const Duration(days: 1)),
+            scheduledFor: now.subtract(const Duration(days: 1)),
           ),
         ];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -145,9 +151,9 @@ void main() {
 
       test('should return 1 for first day of usage', () async {
         final now = DateTime.now();
-        final events = [createFeedingEvent(id: '1', feedingTime: now)];
+        final events = [createFeedingLog(id: '1', scheduledFor: now)];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -165,7 +171,7 @@ void main() {
 
     group('On-Time Percentage', () {
       test('should return 0 when no days with app', () async {
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -187,41 +193,41 @@ void main() {
           final yesterday = now.subtract(const Duration(days: 1));
           // 2 days * 4 feedings per day = 8 expected feedings
           final events = [
-            createFeedingEvent(
+            createFeedingLog(
               id: '1',
-              feedingTime: yesterday.add(const Duration(hours: 8)),
+              scheduledFor: yesterday.add(const Duration(hours: 8)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '2',
-              feedingTime: yesterday.add(const Duration(hours: 12)),
+              scheduledFor: yesterday.add(const Duration(hours: 12)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '3',
-              feedingTime: yesterday.add(const Duration(hours: 18)),
+              scheduledFor: yesterday.add(const Duration(hours: 18)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '4',
-              feedingTime: yesterday.add(const Duration(hours: 20)),
+              scheduledFor: yesterday.add(const Duration(hours: 20)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '5',
-              feedingTime: now.subtract(const Duration(hours: 4)),
+              scheduledFor: now.subtract(const Duration(hours: 4)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '6',
-              feedingTime: now.subtract(const Duration(hours: 3)),
+              scheduledFor: now.subtract(const Duration(hours: 3)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '7',
-              feedingTime: now.subtract(const Duration(hours: 2)),
+              scheduledFor: now.subtract(const Duration(hours: 2)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '8',
-              feedingTime: now.subtract(const Duration(hours: 1)),
+              scheduledFor: now.subtract(const Duration(hours: 1)),
             ),
           ];
 
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+          when(() => mockFeedingLogDs.getAll()).thenReturn(events);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenReturn(null);
@@ -252,22 +258,22 @@ void main() {
           );
           // 2 days * 4 feedings per day = 8 expected, only 4 completed = 50%
           final events = [
-            createFeedingEvent(id: '1', feedingTime: twoDaysAgo),
-            createFeedingEvent(
+            createFeedingLog(id: '1', scheduledFor: twoDaysAgo),
+            createFeedingLog(
               id: '2',
-              feedingTime: twoDaysAgo.add(const Duration(hours: 2)),
+              scheduledFor: twoDaysAgo.add(const Duration(hours: 2)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '3',
-              feedingTime: now.subtract(const Duration(hours: 2)),
+              scheduledFor: now.subtract(const Duration(hours: 2)),
             ),
-            createFeedingEvent(
+            createFeedingLog(
               id: '4',
-              feedingTime: now.subtract(const Duration(hours: 1)),
+              scheduledFor: now.subtract(const Duration(hours: 1)),
             ),
           ];
 
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+          when(() => mockFeedingLogDs.getAll()).thenReturn(events);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenReturn(null);
@@ -289,13 +295,13 @@ void main() {
         // 1 day but 10 feedings (more than expected 4)
         final events = List.generate(
           10,
-          (i) => createFeedingEvent(
+          (i) => createFeedingLog(
             id: '$i',
-            feedingTime: now.subtract(Duration(hours: i)),
+            scheduledFor: now.subtract(Duration(hours: i)),
           ),
         );
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -313,7 +319,7 @@ void main() {
       test('should return 0% when no feedings but days passed', () async {
         // This edge case shouldn't happen normally, but testing for robustness
         // Since we need events to calculate days, this will return 0 days and 0%
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -333,7 +339,7 @@ void main() {
       test(
         'should return beginner level with 0 XP when no progress exists',
         () async {
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+          when(() => mockFeedingLogDs.getAll()).thenReturn([]);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenReturn(null);
@@ -359,7 +365,7 @@ void main() {
         () async {
           final progress = createProgress(totalXp: 250);
 
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+          when(() => mockFeedingLogDs.getAll()).thenReturn([]);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenReturn(progress);
@@ -384,7 +390,7 @@ void main() {
         () async {
           final progress = createProgress(totalXp: 1000);
 
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+          when(() => mockFeedingLogDs.getAll()).thenReturn([]);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenReturn(progress);
@@ -407,7 +413,7 @@ void main() {
       test('should detect max level for aquariumPro (2000+ XP)', () async {
         final progress = createProgress(totalXp: 3000);
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(progress);
@@ -430,7 +436,7 @@ void main() {
         // At 50 XP: 50% of the way to level 2 (100 XP)
         final progress = createProgress(totalXp: 50);
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(progress);
@@ -451,7 +457,7 @@ void main() {
         'should return CacheFailure when feeding datasource throws',
         () async {
           when(
-            () => mockFeedingDs.getAllFeedingEvents(),
+            () => mockFeedingLogDs.getAll(),
           ).thenThrow(Exception('Database error'));
 
           final result = await useCase(
@@ -468,7 +474,7 @@ void main() {
       test(
         'should return CacheFailure when progress datasource throws',
         () async {
-          when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+          when(() => mockFeedingLogDs.getAll()).thenReturn([]);
           when(
             () => mockProgressDs.getProgressByUserId(testUserId),
           ).thenThrow(Exception('Database error'));
@@ -488,9 +494,9 @@ void main() {
     group('Edge Cases', () {
       test('should handle very old feeding events', () async {
         final longAgo = DateTime.now().subtract(const Duration(days: 365));
-        final events = [createFeedingEvent(id: '1', feedingTime: longAgo)];
+        final events = [createFeedingLog(id: '1', scheduledFor: longAgo)];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -508,25 +514,25 @@ void main() {
       test('should handle multiple events on the same day', () async {
         final now = DateTime.now();
         final events = [
-          createFeedingEvent(
+          createFeedingLog(
             id: '1',
-            feedingTime: now.subtract(const Duration(hours: 8)),
+            scheduledFor: now.subtract(const Duration(hours: 8)),
           ),
-          createFeedingEvent(
+          createFeedingLog(
             id: '2',
-            feedingTime: now.subtract(const Duration(hours: 6)),
+            scheduledFor: now.subtract(const Duration(hours: 6)),
           ),
-          createFeedingEvent(
+          createFeedingLog(
             id: '3',
-            feedingTime: now.subtract(const Duration(hours: 4)),
+            scheduledFor: now.subtract(const Duration(hours: 4)),
           ),
-          createFeedingEvent(
+          createFeedingLog(
             id: '4',
-            feedingTime: now.subtract(const Duration(hours: 2)),
+            scheduledFor: now.subtract(const Duration(hours: 2)),
           ),
         ];
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+        when(() => mockFeedingLogDs.getAll()).thenReturn(events);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(null);
@@ -550,21 +556,21 @@ void main() {
       final now = DateTime.now();
       // 3 feedings out of 4 expected = 75%
       final events = [
-        createFeedingEvent(
+        createFeedingLog(
           id: '1',
-          feedingTime: now.subtract(const Duration(hours: 8)),
+          scheduledFor: now.subtract(const Duration(hours: 8)),
         ),
-        createFeedingEvent(
+        createFeedingLog(
           id: '2',
-          feedingTime: now.subtract(const Duration(hours: 6)),
+          scheduledFor: now.subtract(const Duration(hours: 6)),
         ),
-        createFeedingEvent(
+        createFeedingLog(
           id: '3',
-          feedingTime: now.subtract(const Duration(hours: 4)),
+          scheduledFor: now.subtract(const Duration(hours: 4)),
         ),
       ];
 
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn(events);
+      when(() => mockFeedingLogDs.getAll()).thenReturn(events);
       when(
         () => mockProgressDs.getProgressByUserId(testUserId),
       ).thenReturn(null);
@@ -584,7 +590,7 @@ void main() {
       () async {
         final progress = createProgress(totalXp: 150);
 
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
         when(
           () => mockProgressDs.getProgressByUserId(testUserId),
         ).thenReturn(progress);
@@ -604,7 +610,7 @@ void main() {
     test('should format XP progress text correctly for max level', () async {
       final progress = createProgress(totalXp: 2500);
 
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
+      when(() => mockFeedingLogDs.getAll()).thenReturn([]);
       when(
         () => mockProgressDs.getProgressByUserId(testUserId),
       ).thenReturn(progress);

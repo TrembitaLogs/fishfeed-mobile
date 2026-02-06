@@ -27,26 +27,23 @@ abstract interface class AquariumRepository {
     double? capacity,
   });
 
-  /// Gets all aquariums for the current user.
+  /// Gets all aquariums for the current user from local storage.
   ///
-  /// Attempts to sync with server if online, otherwise returns cached data.
+  /// Reads from Hive only. Server data is fetched via [SyncService].
   ///
-  /// Returns [Right(List<Aquarium>)] on success.
+  /// Returns [Right(List<Aquarium>)] on success (may be empty).
   /// Returns [Left(Failure)] on error:
-  /// - [CacheFailure] if no cached data available
-  /// - [NetworkFailure] for connectivity issues (returns cached data if available)
+  /// - [AuthenticationFailure] if no user is logged in
   Future<Either<Failure, List<Aquarium>>> getAquariums();
 
-  /// Gets a specific aquarium by ID.
+  /// Gets a specific aquarium by ID from local storage.
   ///
-  /// First checks local cache, then fetches from server if not found.
+  /// Reads from Hive only. Server data is fetched via [SyncService].
   ///
   /// [aquariumId] - The unique identifier of the aquarium.
   ///
-  /// Returns [Right(Aquarium)] if found.
-  /// Returns [Left(Failure)] on error:
-  /// - [CacheFailure] if not found locally and offline
-  /// - [ServerFailure] if not found on server
+  /// Returns [Right(Aquarium)] if found locally.
+  /// Returns [Left(CacheFailure)] if not found.
   Future<Either<Failure, Aquarium>> getAquariumById(String aquariumId);
 
   /// Updates an existing aquarium.
@@ -79,16 +76,6 @@ abstract interface class AquariumRepository {
   /// - [NetworkFailure] for connectivity issues (deletion queued)
   /// - [ServerFailure] for server errors
   Future<Either<Failure, Unit>> deleteAquarium(String aquariumId);
-
-  /// Syncs local aquariums with the server.
-  ///
-  /// Fetches all aquariums from server and updates local cache.
-  ///
-  /// Returns [Right(List<Aquarium>)] with synced data on success.
-  /// Returns [Left(Failure)] on error:
-  /// - [NetworkFailure] for connectivity issues
-  /// - [ServerFailure] for server errors
-  Future<Either<Failure, List<Aquarium>>> syncAquariums();
 
   /// Gets aquariums from local cache only.
   ///

@@ -2,8 +2,93 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/species.dart';
-import 'package:fishfeed/domain/usecases/generate_schedule_usecase.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
+
+// ============================================================================
+// Schedule Preview Generator (for onboarding UI only)
+// ============================================================================
+
+/// Generates schedule preview based on selected species.
+///
+/// This is a UI helper for onboarding preview display.
+/// Actual ScheduleModel objects are created locally in onboarding_screen.dart
+/// when onboarding completes, then synced to server (offline-first architecture).
+class _SchedulePreviewGenerator {
+  const _SchedulePreviewGenerator();
+
+  /// First feeding time of the day (08:00).
+  static const int firstFeedingHour = 8;
+
+  /// Last feeding time of the day (20:00).
+  static const int lastFeedingHour = 20;
+
+  /// Generates preview schedule entries for selected species.
+  List<GeneratedScheduleEntry> generate(List<SpeciesSelection> selections) {
+    if (selections.isEmpty) return [];
+
+    return selections.map((selection) {
+      final species = selection.species;
+      final feedingCount = _getFeedingCount(species.feedingFrequency);
+      final feedingTimes = _distributeFeedingTimes(feedingCount);
+      final portionGrams = _calculatePortion(species, selection.quantity);
+
+      return GeneratedScheduleEntry(
+        speciesId: species.id,
+        speciesName: species.name,
+        feedingTimes: feedingTimes,
+        foodType: species.foodType ?? FoodType.flakes,
+        portionGrams: portionGrams,
+      );
+    }).toList();
+  }
+
+  int _getFeedingCount(String? frequency) {
+    return switch (frequency) {
+      'twice_daily' => 2,
+      'three_times_daily' => 3,
+      'daily' => 1,
+      'every_other_day' => 1,
+      _ => 1,
+    };
+  }
+
+  List<String> _distributeFeedingTimes(int count) {
+    if (count <= 0) return ['09:00'];
+    if (count == 1) return ['09:00'];
+
+    final times = <String>[];
+    const totalHours = lastFeedingHour - firstFeedingHour;
+    final interval = totalHours / (count - 1);
+
+    for (var i = 0; i < count; i++) {
+      final hour = firstFeedingHour + (interval * i).round();
+      times.add(_formatTime(hour, 0));
+    }
+
+    return times;
+  }
+
+  double _calculatePortion(Species species, int quantity) {
+    final basePortion =
+        species.defaultPortionGrams ?? _getDefaultPortion(species.portionHint);
+    return basePortion * quantity;
+  }
+
+  double _getDefaultPortion(PortionHint? hint) {
+    return switch (hint) {
+      PortionHint.small => 0.3,
+      PortionHint.medium => 0.5,
+      PortionHint.large => 1.0,
+      null => 0.5,
+    };
+  }
+
+  String _formatTime(int hour, int minute) {
+    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+}
+
+// ============================================================================
 
 /// Step 3: Schedule preview and confirmation.
 ///
@@ -38,11 +123,9 @@ class _SchedulePreviewStepState extends ConsumerState<SchedulePreviewStep> {
     final selectedSpecies = state.selectedSpecies;
     notifier.setGeneratingSchedule(true);
 
-    // Use the GenerateScheduleUseCase for schedule generation
-    const usecase = GenerateScheduleUseCase();
-    final schedule = usecase(
-      GenerateScheduleParams(speciesSelections: selectedSpecies),
-    );
+    // Generate schedule preview for UI display
+    const generator = _SchedulePreviewGenerator();
+    final schedule = generator.generate(selectedSpecies);
 
     notifier.setGeneratedSchedule(schedule);
   }

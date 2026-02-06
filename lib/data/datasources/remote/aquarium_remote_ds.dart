@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishfeed/core/config/api_config.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/aquarium_dto.dart';
-import 'package:fishfeed/data/models/feeding_event_dto.dart';
 import 'package:fishfeed/data/models/fish_dto.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 
@@ -64,22 +63,6 @@ abstract interface class AquariumRemoteDataSource {
   ///
   /// Throws [DioException] on network or server errors.
   Future<void> deleteAquarium(String aquariumId);
-
-  /// Gets all feeding events for an aquarium.
-  ///
-  /// [aquariumId] - The unique identifier of the aquarium.
-  ///
-  /// Returns list of [FeedingEventDto] for the aquarium.
-  /// Throws [DioException] on network or server errors.
-  Future<List<FeedingEventDto>> getFeedingEvents(String aquariumId);
-
-  /// Gets today's feeding events for an aquarium.
-  ///
-  /// [aquariumId] - The unique identifier of the aquarium.
-  ///
-  /// Returns list of [FeedingEventDto] scheduled for today.
-  /// Throws [DioException] on network or server errors.
-  Future<List<FeedingEventDto>> getTodayFeedingEvents(String aquariumId);
 
   /// Gets all fish for an aquarium.
   ///
@@ -202,28 +185,6 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
   @override
   Future<void> deleteAquarium(String aquariumId) async {
     await _dio.delete<void>('${ApiEndpoints.aquariums}/$aquariumId');
-  }
-
-  @override
-  Future<List<FeedingEventDto>> getFeedingEvents(String aquariumId) async {
-    final response = await _dio.get<List<dynamic>>(
-      '${ApiEndpoints.aquariums}/$aquariumId/events',
-    );
-
-    return (response.data ?? [])
-        .map((json) => FeedingEventDto.fromJson(json as Map<String, dynamic>))
-        .toList();
-  }
-
-  @override
-  Future<List<FeedingEventDto>> getTodayFeedingEvents(String aquariumId) async {
-    final response = await _dio.get<List<dynamic>>(
-      '${ApiEndpoints.aquariums}/$aquariumId/events/today',
-    );
-
-    return (response.data ?? [])
-        .map((json) => FeedingEventDto.fromJson(json as Map<String, dynamic>))
-        .toList();
   }
 
   @override

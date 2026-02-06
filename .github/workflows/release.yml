@@ -59,7 +59,7 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           # Get the tag annotation or commit message
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/} | head -20)
+          TAG_MESSAGE=$(git tag -l --format='%(contents)' ${GITHUB_REF#refs/tags/})
           if [ -z "$TAG_MESSAGE" ]; then
             TAG_MESSAGE=$(git log -1 --pretty=%B)
           fi
@@ -151,7 +151,7 @@ jobs:
               fi
               notes=""
               if [ -f "$dir/release-notes.txt" ]; then
-                notes=$(cat "$dir/release-notes.txt" | head -5 | tr '\n' ' ' | sed 's/"/\\"/g')
+                notes=$(cat "$dir/release-notes.txt" | tr '\n' ' ' | sed 's/"/\\"/g')
               fi
               echo "{\"version\": \"$dir\", \"apk\": \"$dir/FishFeed-$dir.apk\", \"notes\": \"$notes\"}" >> index.json.tmp
             done

@@ -9,7 +9,6 @@ export 'calendar_month_stats.dart';
 export 'day_feeding_status.dart';
 export 'feeding_event.dart';
 export 'feeding_status.dart';
-export 'scheduled_feeding.dart';
 export 'fish.dart';
 export 'species.dart';
 export 'streak.dart';

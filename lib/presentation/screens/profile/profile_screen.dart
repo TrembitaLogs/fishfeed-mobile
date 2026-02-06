@@ -18,7 +18,6 @@ import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_badge.dart';
 import 'package:fishfeed/presentation/widgets/profile/achievements_gallery.dart';
 import 'package:fishfeed/presentation/widgets/profile/extended_statistics_section.dart';
-import 'package:fishfeed/presentation/widgets/profile/my_aquarium_section.dart';
 import 'package:fishfeed/presentation/widgets/profile/statistics_section.dart';
 import 'package:fishfeed/presentation/widgets/profile/streak_section.dart';
 
@@ -195,10 +194,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               // Achievements gallery
               const AchievementsGallery(),
-              const SizedBox(height: 24),
-
-              // My Aquarium section
-              const MyAquariumSection(),
               const SizedBox(height: 24),
 
               // Error display

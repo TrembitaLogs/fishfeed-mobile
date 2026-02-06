@@ -19,7 +19,6 @@ final migrationServiceProvider = Provider<MigrationService>((ref) {
   return MigrationService(
     aquariumLocalDs: ref.watch(aquariumLocalDataSourceProvider),
     fishLocalDs: ref.watch(fishLocalDataSourceProvider),
-    feedingLocalDs: ref.watch(feedingLocalDataSourceProvider),
     authLocalDs: ref.watch(authLocalDataSourceProvider),
   );
 });
@@ -67,15 +66,13 @@ class MigrationNotifier extends StateNotifier<MigrationState> {
   /// Checks if migration is needed and performs it if necessary.
   ///
   /// This is typically called during app startup.
-  /// Runs two migrations in sequence:
-  /// 1. Default aquarium migration (legacy 'default' aquariumId → UUID)
-  /// 2. Fish ID migration (FeedingEvent.fishId from speciesId → actual fish UUID)
+  /// Runs the default aquarium migration (legacy 'default' aquariumId → UUID).
   Future<void> checkAndMigrate() async {
     state = const MigrationChecking();
 
     MigrationResult? lastResult;
 
-    // Migration 1: Default aquarium migration
+    // Default aquarium migration
     if (_migrationService.needsMigration()) {
       state = const MigrationInProgress();
       final result = await _migrationService.migrateDefaultAquarium();
@@ -86,16 +83,8 @@ class MigrationNotifier extends StateNotifier<MigrationState> {
       lastResult = result;
     }
 
-    // Migration 2: Fish ID migration (speciesId → actual fish UUID)
-    if (_migrationService.needsFishIdMigration()) {
-      state = const MigrationInProgress();
-      final result = await _migrationService.migrateFeedingEventFishIds();
-      if (result is MigrationError) {
-        state = MigrationFailed(error: result);
-        return;
-      }
-      lastResult = result;
-    }
+    // Clean up legacy sync queue (no longer used)
+    await _migrationService.clearLegacySyncQueue();
 
     state = MigrationCompleted(result: lastResult ?? const NoMigrationNeeded());
   }

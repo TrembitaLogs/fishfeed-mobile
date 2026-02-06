@@ -3,7 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
@@ -35,16 +35,16 @@ class AchievementCheckResult {
 class AchievementUseCase {
   AchievementUseCase({
     required AchievementLocalDataSource achievementDataSource,
-    required FeedingLocalDataSource feedingDataSource,
+    required FeedingLogLocalDataSource feedingLogDataSource,
     required StreakLocalDataSource streakDataSource,
     required UserProgressLocalDataSource progressDataSource,
   }) : _achievementDataSource = achievementDataSource,
-       _feedingDataSource = feedingDataSource,
+       _feedingLogDataSource = feedingLogDataSource,
        _streakDataSource = streakDataSource,
        _progressDataSource = progressDataSource;
 
   final AchievementLocalDataSource _achievementDataSource;
-  final FeedingLocalDataSource _feedingDataSource;
+  final FeedingLogLocalDataSource _feedingLogDataSource;
   final StreakLocalDataSource _streakDataSource;
   final UserProgressLocalDataSource _progressDataSource;
 
@@ -279,9 +279,9 @@ class AchievementUseCase {
 
   /// Gets the current user stats for achievement checking.
   Future<UserStats> _getUserStats(String userId) async {
-    // Get total feedings count
-    final allEvents = _feedingDataSource.getAllFeedingEvents();
-    final totalFeedings = allEvents.length;
+    // Get total feedings count (only "fed" actions, not "skipped")
+    final allLogs = _feedingLogDataSource.getAll();
+    final totalFeedings = allLogs.where((log) => log.isFed).length;
 
     // Get streak info
     final streakModel = _streakDataSource.getStreakByUserId(userId);

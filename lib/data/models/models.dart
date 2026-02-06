@@ -8,8 +8,6 @@ export 'token_pair_dto.dart';
 export 'user_dto.dart';
 export 'aquarium_model.dart';
 export 'base_hive_model.dart';
-export 'feeding_event_model.dart';
-export 'feeding_schedule_model.dart';
 export 'fish_model.dart';
 export 'species_model.dart';
 export 'streak_model.dart';

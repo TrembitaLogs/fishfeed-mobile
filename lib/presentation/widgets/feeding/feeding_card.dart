@@ -2,41 +2,37 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
+import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
+import 'package:fishfeed/presentation/widgets/feeding/feeding_detail_sheet.dart';
 import 'package:fishfeed/presentation/widgets/feeding/status_indicator.dart';
 
 /// Callback type for feeding status changes.
-typedef FeedingStatusCallback = void Function(String feedingId);
+typedef FeedingStatusCallback = void Function(String scheduleId);
 
-/// Card widget displaying a scheduled feeding with swipe actions.
+/// Card widget displaying a scheduled feeding with swipe and tap actions.
 ///
 /// Features:
-/// - Status indicator with colors (Fed/Missed/Pending)
-/// - One-tap to mark pending feeding as fed
-/// - Swipe right to mark as fed
-/// - Swipe left to mark as missed
+/// - Tap to open detail bottom sheet (all states)
+/// - Swipe right to show confirmation dialog before marking as fed
+/// - Card states: pending (normal), fed (green), syncing (cloud icon)
 /// - Haptic feedback on actions
-/// - Smooth animations for status changes
 class FeedingCard extends StatefulWidget {
   const FeedingCard({
     super.key,
     required this.feeding,
     required this.onMarkAsFed,
-    required this.onMarkAsMissed,
   });
 
-  /// The scheduled feeding to display.
-  final ScheduledFeeding feeding;
+  /// The computed feeding event to display.
+  final ComputedFeedingEvent feeding;
 
-  /// Callback when feeding is marked as fed.
+  /// Callback when feeding is confirmed as fed.
   final FeedingStatusCallback onMarkAsFed;
-
-  /// Callback when feeding is marked as missed.
-  final FeedingStatusCallback onMarkAsMissed;
 
   @override
   State<FeedingCard> createState() => _FeedingCardState();
@@ -65,21 +61,29 @@ class _FeedingCardState extends State<FeedingCard>
     super.dispose();
   }
 
+  /// Gets display name for the feeding (fish name or aquarium name).
+  String get _displayName =>
+      widget.feeding.fishName ?? widget.feeding.aquariumName ?? 'Fish';
+
   void _onTap() {
-    if (widget.feeding.status == FeedingStatus.pending) {
-      _animateAndMarkAsFed();
-    }
+    // Tap opens detail bottom sheet for ALL states
+    showFeedingDetailSheet(context, widget.feeding);
   }
 
-  Future<void> _animateAndMarkAsFed() async {
-    // Fire-and-forget haptic feedback (don't await to avoid blocking in tests)
+  Future<bool> _confirmDismiss(DismissDirection direction) async {
+    // Only handle swipe right (startToEnd)
+    if (widget.feeding.status == EventStatus.fed) return false;
+
     unawaited(HapticFeedback.mediumImpact());
-    await _scaleController.forward();
-    await _scaleController.reverse();
-    widget.onMarkAsFed(widget.feeding.id);
-    if (mounted) {
+
+    final confirmed = await showConfirmFeedingDialog(context, widget.feeding);
+    if (confirmed && mounted) {
+      widget.onMarkAsFed(widget.feeding.scheduleId);
       _showSuccessSnackBar(context);
     }
+
+    // Always return false to keep card in list
+    return false;
   }
 
   void _showSuccessSnackBar(BuildContext context) {
@@ -90,55 +94,10 @@ class _FeedingCardState extends State<FeedingCard>
           children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text('${widget.feeding.displayName} - ${l10n.feedingCompleted}'),
+            Text('$_displayName - ${l10n.feedingCompleted}'),
           ],
         ),
         backgroundColor: Colors.green.shade600,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  Future<bool> _confirmDismiss(DismissDirection direction) async {
-    // Fire-and-forget haptic feedback
-    unawaited(HapticFeedback.mediumImpact());
-
-    if (direction == DismissDirection.startToEnd) {
-      // Swipe right - mark as fed
-      if (widget.feeding.status != FeedingStatus.fed) {
-        widget.onMarkAsFed(widget.feeding.id);
-        if (mounted) {
-          _showSuccessSnackBar(context);
-        }
-      }
-    } else if (direction == DismissDirection.endToStart) {
-      // Swipe left - mark as missed
-      if (widget.feeding.status != FeedingStatus.missed) {
-        widget.onMarkAsMissed(widget.feeding.id);
-        if (mounted) {
-          _showMissedSnackBar(context);
-        }
-      }
-    }
-
-    // Return false to prevent actual dismissal (keep the card in list)
-    return false;
-  }
-
-  void _showMissedSnackBar(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text('${widget.feeding.displayName} - ${l10n.feedingMissed}'),
-          ],
-        ),
-        backgroundColor: Colors.orange.shade700,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -150,6 +109,7 @@ class _FeedingCardState extends State<FeedingCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final isFed = widget.feeding.status == EventStatus.fed;
 
     return AnimatedBuilder(
       animation: _scaleAnimation,
@@ -157,20 +117,13 @@ class _FeedingCardState extends State<FeedingCard>
         return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: Dismissible(
-        key: Key('feeding_card_${widget.feeding.id}'),
-        direction: DismissDirection.horizontal,
+        key: Key('feeding_card_${widget.feeding.scheduleId}'),
+        direction: isFed ? DismissDirection.none : DismissDirection.startToEnd,
         confirmDismiss: _confirmDismiss,
         background: _SwipeBackground(
-          direction: DismissDirection.startToEnd,
           color: Colors.green,
           icon: Icons.check_circle,
           label: l10n.feedingLabel,
-        ),
-        secondaryBackground: _SwipeBackground(
-          direction: DismissDirection.endToStart,
-          color: Colors.red.shade400,
-          icon: Icons.cancel,
-          label: l10n.feedingMissed,
         ),
         child: RepaintBoundary(
           child: _FeedingCardContent(
@@ -184,66 +137,47 @@ class _FeedingCardState extends State<FeedingCard>
   }
 }
 
-/// Background shown during swipe gesture.
+/// Background shown during swipe right gesture.
 class _SwipeBackground extends StatelessWidget {
   const _SwipeBackground({
-    required this.direction,
     required this.color,
     required this.icon,
     required this.label,
   });
 
-  final DismissDirection direction;
   final Color color;
   final IconData icon;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    final isStartToEnd = direction == DismissDirection.startToEnd;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(12),
       ),
-      alignment: isStartToEnd ? Alignment.centerLeft : Alignment.centerRight,
-      padding: EdgeInsets.only(
-        left: isStartToEnd ? 24 : 0,
-        right: isStartToEnd ? 0 : 24,
-      ),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.only(left: 24),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: isStartToEnd
-            ? [
-                Icon(icon, color: Colors.white, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ]
-            : [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(icon, color: Colors.white, size: 24),
-              ],
+        children: [
+          Icon(icon, color: Colors.white, size: 24),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Content of the feeding card.
+/// Content of the feeding card with status-dependent styling.
 class _FeedingCardContent extends StatelessWidget {
   const _FeedingCardContent({
     required this.feeding,
@@ -251,108 +185,188 @@ class _FeedingCardContent extends StatelessWidget {
     required this.theme,
   });
 
-  final ScheduledFeeding feeding;
+  final ComputedFeedingEvent feeding;
   final VoidCallback onTap;
   final ThemeData theme;
 
+  /// Gets display name for the feeding (fish name or aquarium name).
+  String get _displayName => feeding.fishName ?? feeding.aquariumName ?? 'Fish';
+
+  bool get _isFed => feeding.status == EventStatus.fed;
+  bool get _isSyncing =>
+      feeding.status == EventStatus.fed && feeding.log?.synced == false;
+
+  Color get _backgroundColor {
+    if (_isFed) {
+      return Colors.green.withValues(alpha: 0.08);
+    }
+    return theme.colorScheme.surfaceContainerLow;
+  }
+
+  BoxBorder? get _border {
+    if (_isFed) {
+      return const Border(left: BorderSide(color: Colors.green, width: 3));
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final statusColor = StatusIndicator.getStatusColor(feeding.status);
-    final canTap = feeding.status == FeedingStatus.pending;
+    final l10n = AppLocalizations.of(context)!;
+    final statusColor = StatusIndicator.getEventStatusColor(feeding.status);
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 8),
-      color: theme.colorScheme.surfaceContainerLow,
-      child: InkWell(
-        onTap: canTap ? onTap : null,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Status indicator
-              StatusIndicator(status: feeding.status),
-              const SizedBox(width: 12),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      color: Colors.transparent,
+      shadowColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: _backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: _border,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Status indicator or sync icon
+                if (_isSyncing)
+                  _SyncIcon(theme: theme)
+                else
+                  StatusIndicator.fromEventStatus(status: feeding.status),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Fish name + quantity
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _displayName,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                decoration: _isFed
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: _isFed
+                                    ? theme.colorScheme.onSurfaceVariant
+                                    : null,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (feeding.fishQuantity > 1) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.fishCount(feeding.fishQuantity),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        feeding.aquariumName ?? '',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      // Fed time or attribution
+                      if (_isFed && feeding.log?.actedAt != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.fedAtTime(
+                            DateFormat.Hm().format(
+                              feeding.log!.actedAt.toLocal(),
+                            ),
+                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                      // Fed by attribution (only for completed feedings with user info)
+                      if (_isFed && feeding.log?.actedByUserName != null) ...[
+                        const SizedBox(height: 4),
+                        _FedByLabel(
+                          name: feeding.log!.actedByUserName!,
+                          avatarUrl: feeding.avatarUrl,
+                          theme: theme,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Time and food type
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      feeding.displayName,
+                      feeding.time,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        decoration: feeding.status == FeedingStatus.fed
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: feeding.status == FeedingStatus.fed
-                            ? theme.colorScheme.onSurfaceVariant
-                            : null,
+                        color: statusColor,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Text(
-                      feeding.aquariumName,
+                      feeding.foodType,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    // Fed by attribution (only for completed feedings with user info)
-                    if (feeding.status == FeedingStatus.fed &&
-                        feeding.completedByName != null) ...[
-                      const SizedBox(height: 4),
-                      _FedByLabel(
-                        name: feeding.completedByName!,
-                        avatarUrl: feeding.completedByAvatar,
-                        theme: theme,
-                      ),
-                    ],
                   ],
                 ),
-              ),
-              // Time and food type
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    _formatTime(feeding.scheduledTime),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
-                    ),
-                  ),
-                  if (feeding.foodType != null)
-                    Text(
-                      feeding.foodType!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
-              // Chevron hint for pending items
-              if (canTap) ...[
+                // Chevron hint for detail sheet (all states)
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.touch_app_outlined,
+                  Icons.chevron_right,
                   size: 18,
                   color: theme.colorScheme.onSurfaceVariant.withValues(
                     alpha: 0.5,
                   ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+}
 
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+/// Sync icon displayed when feeding is fed but not yet synced.
+class _SyncIcon extends StatelessWidget {
+  const _SyncIcon({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.blue.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Icon(
+        Icons.cloud_upload_outlined,
+        color: Colors.blue,
+        size: 22,
+      ),
+    );
   }
 }
 

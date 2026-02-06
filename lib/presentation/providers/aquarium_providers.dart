@@ -4,6 +4,7 @@ import 'package:fishfeed/data/repositories/aquarium_repository_impl.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
 
 // ============================================================================
 // User Aquariums Provider
@@ -68,13 +69,17 @@ class UserAquariumsState {
 ///
 /// Integrates with [AquariumRepository] for CRUD operations.
 class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
-  UserAquariumsNotifier({required AquariumRepository aquariumRepository})
-    : _aquariumRepository = aquariumRepository,
-      super(const UserAquariumsState()) {
+  UserAquariumsNotifier({
+    required AquariumRepository aquariumRepository,
+    required SyncService syncService,
+  }) : _aquariumRepository = aquariumRepository,
+       _syncService = syncService,
+       super(const UserAquariumsState()) {
     loadAquariums();
   }
 
   final AquariumRepository _aquariumRepository;
+  final SyncService _syncService;
 
   /// Loads user's aquariums.
   ///
@@ -96,11 +101,18 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 
   /// Refreshes aquariums (pull-to-refresh).
   ///
+  /// Triggers a full sync via [SyncService], then reloads from local storage.
   /// Uses [isRefreshing] instead of [isLoading] to avoid showing shimmer.
   Future<void> refresh() async {
     state = state.copyWith(isRefreshing: true, error: null);
 
-    final result = await _aquariumRepository.syncAquariums();
+    try {
+      await _syncService.syncAll();
+    } catch (_) {
+      // Sync failure is non-fatal; we still reload local data below
+    }
+
+    final result = await _aquariumRepository.getAquariums();
 
     result.fold(
       (failure) {
@@ -237,8 +249,12 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 final userAquariumsProvider =
     StateNotifierProvider<UserAquariumsNotifier, UserAquariumsState>((ref) {
       final aquariumRepository = ref.watch(aquariumRepositoryProvider);
+      final syncService = ref.watch(syncServiceProvider);
 
-      return UserAquariumsNotifier(aquariumRepository: aquariumRepository);
+      return UserAquariumsNotifier(
+        aquariumRepository: aquariumRepository,
+        syncService: syncService,
+      );
     });
 
 // ============================================================================

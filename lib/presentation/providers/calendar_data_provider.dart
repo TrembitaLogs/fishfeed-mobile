@@ -4,6 +4,7 @@ import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
 import 'package:fishfeed/domain/usecases/get_calendar_data_usecase.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 
 /// State for calendar month data.
 class CalendarDataState {
@@ -99,8 +100,12 @@ class CalendarDataNotifier extends StateNotifier<CalendarDataState> {
 
 /// Provider for the GetCalendarDataUseCase.
 final getCalendarDataUseCaseProvider = Provider<GetCalendarDataUseCase>((ref) {
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-  return GetCalendarDataUseCase(feedingDataSource: feedingDs);
+  final generator = ref.watch(feedingEventGeneratorProvider);
+  final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
+  return GetCalendarDataUseCase(
+    feedingEventGenerator: generator,
+    aquariumDataSource: aquariumDs,
+  );
 });
 
 /// Provider for calendar data state and notifier.

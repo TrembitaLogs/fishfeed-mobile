@@ -18,6 +18,7 @@ import 'package:fishfeed/presentation/screens/settings/notification_settings_scr
 import 'package:fishfeed/presentation/screens/settings/settings_screen.dart';
 import 'package:fishfeed/presentation/screens/ai_camera/ai_camera_screen.dart';
 import 'package:fishfeed/presentation/screens/aquarium/aquarium.dart';
+import 'package:fishfeed/presentation/screens/feeding/feeding_cards_screen.dart';
 
 /// Application router configuration using GoRouter.
 ///
@@ -27,6 +28,7 @@ class AppRouter {
   AppRouter._();
 
   /// Route path constants.
+  static const String splash = '/splash';
   static const String auth = '/auth';
   static const String register = '/auth/register';
   static const String onboarding = '/onboarding';
@@ -45,6 +47,7 @@ class AppRouter {
   static const String addFish = '/add-fish';
   static const String addAquarium = '/add-aquarium';
   static const String editAquarium = '/aquarium/:aquariumId/edit';
+  static const String aquariumFeedings = '/aquarium/:aquariumId/feedings';
 
   /// Creates a GoRouter instance with the provided [AuthStateListenable].
   ///
@@ -82,18 +85,28 @@ class AppRouter {
 
   /// Redirect logic for authentication.
   ///
+  /// - During initialization: show splash screen
   /// - Unauthenticated users are redirected to [auth]
   /// - Authenticated users without onboarding go to [onboarding]
   /// - Authenticated users with onboarding can access all routes
   static String? _redirect(GoRouterState state, AuthStateListenable authState) {
+    final isInitializing = authState.isInitializing;
     final isLoggedIn = authState.isLoggedIn;
     final hasCompletedOnboarding = authState.hasCompletedOnboarding;
     final currentPath = state.matchedLocation;
+
+    // While initializing auth state, show splash screen
+    // This prevents login screen flash on app startup
+    if (isInitializing) {
+      if (currentPath == splash) return null;
+      return splash;
+    }
 
     // Public routes that don't require authentication
     final isAuthRoute = currentPath == auth || currentPath == register;
     final isOnboardingRoute = currentPath == onboarding;
     final isJoinRoute = currentPath.startsWith('/join/');
+    final isSplashRoute = currentPath == splash;
 
     // Not logged in
     if (!isLoggedIn) {
@@ -101,7 +114,7 @@ class AppRouter {
       if (isAuthRoute) return null;
       // Allow join route - it will handle auth requirement itself
       if (isJoinRoute) return null;
-      // Redirect to auth for all other routes
+      // Redirect to auth for all other routes (including splash after init)
       return auth;
     }
 
@@ -109,13 +122,13 @@ class AppRouter {
     if (!hasCompletedOnboarding) {
       // Allow staying on onboarding page
       if (isOnboardingRoute) return null;
-      // Redirect to onboarding (except from auth)
-      if (isAuthRoute) return onboarding;
+      // Redirect to onboarding (from auth, splash, or any other route)
+      if (isAuthRoute || isSplashRoute) return onboarding;
       return onboarding;
     }
 
-    // Logged in and completed onboarding - redirect away from auth/onboarding
-    if (isAuthRoute || isOnboardingRoute) {
+    // Logged in and completed onboarding - redirect away from auth/onboarding/splash
+    if (isAuthRoute || isOnboardingRoute || isSplashRoute) {
       return home;
     }
 
@@ -125,6 +138,15 @@ class AppRouter {
 
   /// All application routes.
   static final List<RouteBase> _routes = [
+    GoRoute(
+      path: splash,
+      name: 'splash',
+      pageBuilder: (context, state) => _buildPage(
+        state: state,
+        child: const _SplashScreen(),
+        transitionType: _PageTransitionType.fade,
+      ),
+    ),
     GoRoute(
       path: home,
       name: 'home',
@@ -288,6 +310,18 @@ class AppRouter {
       ),
     ),
     GoRoute(
+      path: aquariumFeedings,
+      name: 'aquariumFeedings',
+      pageBuilder: (context, state) {
+        final aquariumId = state.pathParameters['aquariumId']!;
+        return _buildPage(
+          state: state,
+          child: FeedingCardsScreen(aquariumId: aquariumId),
+          transitionType: _PageTransitionType.slideRight,
+        );
+      },
+    ),
+    GoRoute(
       path: editAquarium,
       name: 'editAquarium',
       pageBuilder: (context, state) {
@@ -414,5 +448,54 @@ class PlaceholderScreen extends StatelessWidget {
       'Settings' => Icons.settings,
       _ => Icons.pages,
     };
+  }
+}
+
+/// Splash screen shown during auth initialization.
+///
+/// Displays app logo and loading indicator while checking
+/// local storage for existing session.
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // App icon
+            Icon(
+              Icons.water_drop_rounded,
+              size: 80,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(height: 24),
+            // App name
+            Text(
+              'FishFeed',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 48),
+            // Loading indicator
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

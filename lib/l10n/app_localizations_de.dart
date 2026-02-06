@@ -1655,50 +1655,105 @@ class AppLocalizationsDe extends AppLocalizations {
   String get newAquarium => 'Neues Aquarium';
 
   @override
-  String get editAquarium => 'Edit Aquarium';
+  String get editAquarium => 'Aquarium bearbeiten';
 
   @override
-  String get editAquariumDetails => 'Edit aquarium settings';
+  String get editAquariumDetails => 'Aquarium-Einstellungen bearbeiten';
 
   @override
   String fishInAquarium(int count) {
-    return 'Fish ($count)';
+    return 'Fische ($count)';
   }
 
   @override
-  String get deleteAquarium => 'Delete Aquarium';
+  String get deleteAquarium => 'Aquarium löschen';
 
   @override
   String deleteAquariumTitle(String name) {
-    return 'Delete $name?';
+    return '$name löschen?';
   }
 
   @override
   String get deleteAquariumConfirmation =>
-      'This will remove all fish and feeding history. This action cannot be undone.';
+      'Alle Fische und die Fütterungshistorie werden entfernt. Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
-  String get aquariumDeleted => 'Aquarium deleted';
+  String get aquariumDeleted => 'Aquarium gelöscht';
 
   @override
-  String get aquariumUpdated => 'Aquarium updated';
+  String get aquariumUpdated => 'Aquarium aktualisiert';
 
   @override
-  String get failedToUpdateAquarium => 'Failed to update aquarium';
+  String get failedToUpdateAquarium =>
+      'Aquarium konnte nicht aktualisiert werden';
 
   @override
-  String get failedToDeleteAquarium => 'Failed to delete aquarium';
+  String get failedToDeleteAquarium => 'Aquarium konnte nicht gelöscht werden';
 
   @override
-  String get aquariumNotFound => 'Aquarium not found';
+  String get aquariumNotFound => 'Aquarium nicht gefunden';
 
   @override
   String get aquariumNotFoundDescription =>
-      'The aquarium you\'re looking for doesn\'t exist or has been deleted.';
+      'Das gesuchte Aquarium existiert nicht oder wurde gelöscht.';
 
   @override
-  String get noFishInAquarium => 'No fish in this aquarium';
+  String get noFishInAquarium => 'Keine Fische in diesem Aquarium';
 
   @override
-  String get addFishToAquarium => 'Add your first fish to get started';
+  String get addFishToAquarium =>
+      'Fügen Sie Ihren ersten Fisch hinzu, um zu beginnen';
+
+  @override
+  String feedingsTodayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Fütterungen heute',
+      one: '1 Fütterung heute',
+      zero: 'Keine Fütterungen heute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get markAsFedQuestion => 'Als gefüttert markieren?';
+
+  @override
+  String get yesFed => 'Ja, gefüttert';
+
+  @override
+  String fedAtTime(String time) {
+    return 'Gefüttert um $time';
+  }
+
+  @override
+  String get pendingSync => 'Synchronisieren...';
+
+  @override
+  String pendingFeedingAt(String time) {
+    return 'Ausstehende Fütterung um $time';
+  }
+
+  @override
+  String get allFedToday => 'Alle gefüttert';
+
+  @override
+  String nextFeedingAt(String time) {
+    return 'Nächste um $time';
+  }
+
+  @override
+  String get portionHintLabel => 'Portion';
+
+  @override
+  String get feedingDetails => 'Fütterungsdetails';
+
+  @override
+  String get closeButton => 'Schließen';
+
+  @override
+  String feedingAlreadyDoneByMember(String name, String time) {
+    return '$name hat bereits um $time gefüttert';
+  }
 }

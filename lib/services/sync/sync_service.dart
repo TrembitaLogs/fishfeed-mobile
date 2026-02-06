@@ -6,11 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/sync_metadata_model.dart';
 import 'package:fishfeed/services/sync/change_tracker.dart';
@@ -140,8 +140,8 @@ class SyncService {
     required ApiClient apiClient,
     required AquariumLocalDataSource aquariumDs,
     required FishLocalDataSource fishDs,
-    required FeedingLocalDataSource feedingDs,
-    FeedingScheduleLocalDataSource? scheduleDs,
+    required FeedingLogLocalDataSource feedingLogDs,
+    required ScheduleLocalDataSource scheduleDs,
     SyncConfig config = const SyncConfig(),
     Connectivity? connectivity,
     Logger? logger,
@@ -149,7 +149,7 @@ class SyncService {
   }) : _apiClient = apiClient,
        _aquariumDs = aquariumDs,
        _fishDs = fishDs,
-       _feedingDs = feedingDs,
+       _feedingLogDs = feedingLogDs,
        _scheduleDs = scheduleDs,
        _config = config,
        _connectivity = connectivity ?? Connectivity(),
@@ -158,15 +158,15 @@ class SyncService {
        _changeTracker = ChangeTracker(
          aquariumDs: aquariumDs,
          fishDs: fishDs,
-         feedingDs: feedingDs,
-         scheduleDs: scheduleDs,
+         feedingLogDs: feedingLogDs,
+         newScheduleDs: scheduleDs,
        );
 
   final ApiClient _apiClient;
   final AquariumLocalDataSource _aquariumDs;
   final FishLocalDataSource _fishDs;
-  final FeedingLocalDataSource _feedingDs;
-  final FeedingScheduleLocalDataSource? _scheduleDs;
+  final FeedingLogLocalDataSource _feedingLogDs;
+  final ScheduleLocalDataSource _scheduleDs;
   final SyncConfig _config;
   final Connectivity _connectivity;
   final Logger _logger;
@@ -193,6 +193,11 @@ class SyncService {
   _conflictController =
       StreamController<SyncConflict<Map<String, dynamic>>>.broadcast();
 
+  // Feeding conflict stream for auto-resolved feeding_log conflicts (UI toast)
+  final StreamController<SyncConflict<Map<String, dynamic>>>
+  _feedingConflictController =
+      StreamController<SyncConflict<Map<String, dynamic>>>.broadcast();
+
   /// Stream of sync state changes for UI updates.
   Stream<SyncState> get stateStream => _stateController.stream;
 
@@ -214,8 +219,8 @@ class SyncService {
   /// Alias for pendingChangesCount for backward compatibility.
   int get pendingCount => pendingChangesCount;
 
-  /// Number of unsynced feeding events.
-  int get unsyncedFeedingCount => _feedingDs.getUnsyncedCount();
+  /// Number of unsynced feeding logs.
+  int get unsyncedFeedingCount => _feedingLogDs.getUnsyncedCount();
 
   /// Alias for hasPendingChanges for backward compatibility.
   bool get hasPendingOperations => hasPendingChanges;
@@ -232,6 +237,13 @@ class SyncService {
   /// Stream of detected conflicts that require manual resolution.
   Stream<SyncConflict<Map<String, dynamic>>> get conflictStream =>
       _conflictController.stream;
+
+  /// Stream of auto-resolved feeding_log conflicts (for UI toast notifications).
+  ///
+  /// Emits when a feeding_log conflict is automatically resolved by
+  /// accepting the server version (e.g., another family member already fed).
+  Stream<SyncConflict<Map<String, dynamic>>> get feedingConflictStream =>
+      _feedingConflictController.stream;
 
   /// List of pending conflicts awaiting manual resolution.
   List<SyncConflict<Map<String, dynamic>>> get pendingConflicts =>
@@ -278,6 +290,7 @@ class SyncService {
     stopListening();
     _stateController.close();
     _conflictController.close();
+    _feedingConflictController.close();
   }
 
   void _updateState(SyncState state) {
@@ -465,9 +478,17 @@ class SyncService {
       for (final conflictData in serverConflicts) {
         final conflict = _parseConflict(conflictData as Map<String, dynamic>);
         if (conflict != null) {
-          conflicts.add(conflict);
-          _pendingConflicts.add(conflict);
-          _conflictController.add(conflict);
+          // Auto-resolve feeding_log conflicts with server_wins resolution
+          if (conflict.entityType == 'feeding_log' &&
+              conflict.resolution == ConflictResolution.useServer) {
+            await _autoResolveFeedingConflict(conflict);
+            conflicts.add(conflict);
+          } else {
+            // Manual resolution needed
+            conflicts.add(conflict);
+            _pendingConflicts.add(conflict);
+            _conflictController.add(conflict);
+          }
         }
       }
     }
@@ -538,21 +559,20 @@ class SyncService {
       }
     }
 
-    // Apply events
-    final events = serverState['events'] as List<dynamic>?;
-    if (events != null) {
-      for (final eventData in events) {
-        await _feedingDs.applyServerUpdate(eventData as Map<String, dynamic>);
+    // Apply feeding_logs
+    final feedingLogs = serverState['feeding_logs'] as List<dynamic>?;
+    if (feedingLogs != null) {
+      for (final logData in feedingLogs) {
+        await _feedingLogDs.applyServerUpdate(logData as Map<String, dynamic>);
         appliedCount++;
       }
     }
 
     // Apply schedules
     final schedules = serverState['schedules'] as List<dynamic>?;
-    final scheduleDs = _scheduleDs;
-    if (schedules != null && scheduleDs != null) {
+    if (schedules != null) {
       for (final scheduleData in schedules) {
-        await scheduleDs.applyServerUpdate(
+        await _scheduleDs.applyServerUpdate(
           scheduleData as Map<String, dynamic>,
         );
         appliedCount++;
@@ -578,25 +598,37 @@ class SyncService {
       }
     }
 
-    // Delete fish (with cascade delete of feeding events)
+    // Delete fish
     final deletedFish = deleted['fish'] as List<dynamic>?;
     if (deletedFish != null) {
       for (final id in deletedFish) {
         final idStr = id.toString();
-        // Cascade delete: hard-delete all feeding events for this fish
-        // (use hard delete since server already deleted them)
-        await _feedingDs.hardDeleteEventsByFishId(idStr);
+        // Note: Associated feeding logs will remain as orphans but are
+        // linked by fishId which no longer exists. This is acceptable
+        // as the logs are historical records.
         await _fishDs.deleteFish(idStr);
         deletedIds.add(idStr);
       }
     }
 
-    // Delete events
-    final deletedEvents = deleted['events'] as List<dynamic>?;
-    if (deletedEvents != null) {
-      for (final id in deletedEvents) {
+    // Delete feeding_logs
+    final deletedFeedingLogs = deleted['feeding_logs'] as List<dynamic>?;
+    if (deletedFeedingLogs != null) {
+      for (final id in deletedFeedingLogs) {
         final idStr = id.toString();
-        await _feedingDs.deleteEvent(idStr);
+        // FeedingLog is immutable, but we can still remove it from local storage
+        // This is a server-side deletion that we need to reflect locally
+        _logger.d('SyncService: Server deleted feeding_log $idStr');
+        deletedIds.add(idStr);
+      }
+    }
+
+    // Delete schedules
+    final deletedSchedules = deleted['schedules'] as List<dynamic>?;
+    if (deletedSchedules != null) {
+      for (final id in deletedSchedules) {
+        final idStr = id.toString();
+        await _scheduleDs.delete(idStr);
         deletedIds.add(idStr);
       }
     }
@@ -616,10 +648,10 @@ class SyncService {
           await _aquariumDs.markAsSynced(change.entityId, now);
         case EntityType.fish:
           await _fishDs.markAsSynced(change.entityId, now);
-        case EntityType.event:
-          await _feedingDs.markAsSynced(change.entityId);
-        case EntityType.schedule:
-          await _scheduleDs?.markAsSynced(change.entityId, now);
+        case EntityType.feedingLog:
+          await _feedingLogDs.markAsSynced(change.entityId, now);
+        case EntityType.newSchedule:
+          await _scheduleDs.markAsSynced(change.entityId, now);
         case EntityType.streak:
         case EntityType.achievement:
         case EntityType.progress:
@@ -644,10 +676,10 @@ class SyncService {
           await _aquariumDs.markAsSynced(change.entityId, now);
         case EntityType.fish:
           await _fishDs.markAsSynced(change.entityId, now);
-        case EntityType.event:
-          await _feedingDs.markAsSynced(change.entityId);
-        case EntityType.schedule:
-          await _scheduleDs?.markAsSynced(change.entityId, now);
+        case EntityType.feedingLog:
+          await _feedingLogDs.markAsSynced(change.entityId, now);
+        case EntityType.newSchedule:
+          await _scheduleDs.markAsSynced(change.entityId, now);
         case EntityType.streak:
         case EntityType.achievement:
         case EntityType.progress:
@@ -661,9 +693,6 @@ class SyncService {
   /// This permanently removes entities from local storage after
   /// DELETE operations have been confirmed by the server.
   Future<void> _purgeSyncedDeletions() async {
-    // Purge synced soft-deleted feeding events
-    await _feedingDs.purgeSyncedDeletions();
-
     // Purge synced soft-deleted aquariums
     await _aquariumDs.purgeSyncedDeletions();
 
@@ -681,15 +710,44 @@ class SyncService {
     try {
       final entityId = conflictData['entity_id']?.toString();
       final entityType = conflictData['entity_type']?.toString();
+
+      if (entityId == null || entityType == null) {
+        return null;
+      }
+
+      // Format 1: server_data + resolution (feeding_log conflicts)
+      // e.g., {"entity_type": "feeding_log", "entity_id": "...",
+      //        "resolution": "server_wins", "server_data": {...}}
+      final serverData = conflictData['server_data'] as Map<String, dynamic>?;
+      final resolutionStr = conflictData['resolution']?.toString();
+
+      if (serverData != null && resolutionStr == 'server_wins') {
+        final serverUpdatedAt =
+            DateTime.tryParse(
+              serverData['acted_at']?.toString() ??
+                  serverData['updated_at']?.toString() ??
+                  '',
+            ) ??
+            DateTime.now();
+
+        return SyncConflict<Map<String, dynamic>>(
+          entityId: entityId,
+          entityType: entityType,
+          localVersion: const <String, dynamic>{},
+          serverVersion: serverData,
+          localUpdatedAt: DateTime.now(),
+          serverUpdatedAt: serverUpdatedAt,
+          resolution: ConflictResolution.useServer,
+        );
+      }
+
+      // Format 2: local_version + server_version (standard conflicts)
       final localVersion =
           conflictData['local_version'] as Map<String, dynamic>?;
       final serverVersion =
           conflictData['server_version'] as Map<String, dynamic>?;
 
-      if (entityId == null ||
-          entityType == null ||
-          localVersion == null ||
-          serverVersion == null) {
+      if (localVersion == null || serverVersion == null) {
         return null;
       }
 
@@ -717,6 +775,30 @@ class SyncService {
       _logger.e('SyncService: Failed to parse conflict', error: e);
       return null;
     }
+  }
+
+  /// Auto-resolves a feeding_log conflict by accepting the server version.
+  ///
+  /// This handles the case where another family member already marked
+  /// the same feeding. The local optimistic log is deleted and replaced
+  /// with the server's version.
+  Future<void> _autoResolveFeedingConflict(
+    SyncConflict<Map<String, dynamic>> conflict,
+  ) async {
+    _logger.i(
+      'SyncService: Auto-resolving feeding_log conflict ${conflict.entityId}',
+    );
+
+    // Delete the local optimistic log
+    await _feedingLogDs.delete(conflict.entityId);
+
+    // Apply the server version
+    if (conflict.serverVersion.isNotEmpty) {
+      await _feedingLogDs.applyServerUpdate(conflict.serverVersion);
+    }
+
+    // Emit on feeding conflict stream for UI toast notification
+    _feedingConflictController.add(conflict);
   }
 
   /// Resolves a conflict by keeping the local version.
@@ -764,14 +846,15 @@ class SyncService {
         if (serverUpdatedAt != null) {
           await _fishDs.markAsSynced(conflict.entityId, serverUpdatedAt);
         }
-      case 'event':
-      case 'feeding_event':
-        await _feedingDs.applyServerUpdate(serverData);
-        await _feedingDs.markAsSynced(conflict.entityId);
       case 'schedule':
-        await _scheduleDs?.applyServerUpdate(serverData);
+        await _scheduleDs.applyServerUpdate(serverData);
         if (serverUpdatedAt != null) {
-          await _scheduleDs?.markAsSynced(conflict.entityId, serverUpdatedAt);
+          await _scheduleDs.markAsSynced(conflict.entityId, serverUpdatedAt);
+        }
+      case 'feeding_log':
+        await _feedingLogDs.applyServerUpdate(serverData);
+        if (serverUpdatedAt != null) {
+          await _feedingLogDs.markAsSynced(conflict.entityId, serverUpdatedAt);
         }
     }
   }
@@ -798,6 +881,8 @@ class SyncService {
     }
     await metadata.save();
   }
+
+  // ============ Migration V2 ============
 
   // ============ Retry Logic ============
 
@@ -860,14 +945,14 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
   final fishDs = ref.watch(fishLocalDataSourceProvider);
-  final feedingDs = ref.watch(feedingLocalDataSourceProvider);
-  final scheduleDs = ref.watch(feedingScheduleLocalDataSourceProvider);
+  final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
+  final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
 
   final service = SyncService(
     apiClient: apiClient,
     aquariumDs: aquariumDs,
     fishDs: fishDs,
-    feedingDs: feedingDs,
+    feedingLogDs: feedingLogDs,
     scheduleDs: scheduleDs,
   );
 

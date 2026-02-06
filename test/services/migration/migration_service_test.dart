@@ -4,10 +4,8 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
@@ -20,28 +18,22 @@ class MockAquariumLocalDataSource extends Mock
 
 class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
 
-class MockFeedingLocalDataSource extends Mock
-    implements FeedingLocalDataSource {}
-
 class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
 void main() {
   late MockAquariumLocalDataSource mockAquariumDs;
   late MockFishLocalDataSource mockFishDs;
-  late MockFeedingLocalDataSource mockFeedingDs;
   late MockAuthLocalDataSource mockAuthDs;
   late MigrationService migrationService;
 
   setUp(() {
     mockAquariumDs = MockAquariumLocalDataSource();
     mockFishDs = MockFishLocalDataSource();
-    mockFeedingDs = MockFeedingLocalDataSource();
     mockAuthDs = MockAuthLocalDataSource();
 
     migrationService = MigrationService(
       aquariumLocalDs: mockAquariumDs,
       fishLocalDs: mockFishDs,
-      feedingLocalDs: mockFeedingDs,
       authLocalDs: mockAuthDs,
     );
   });
@@ -64,15 +56,6 @@ void main() {
         addedAt: DateTime.now(),
       ),
     );
-    registerFallbackValue(
-      FeedingEventModel(
-        id: 'test',
-        fishId: 'test',
-        aquariumId: 'test',
-        feedingTime: DateTime.now(),
-        createdAt: DateTime.now(),
-      ),
-    );
   });
 
   FishModel createTestFish({
@@ -86,22 +69,6 @@ void main() {
       aquariumId: aquariumId,
       speciesId: speciesId,
       addedAt: addedAt ?? DateTime.now(),
-    );
-  }
-
-  FeedingEventModel createTestFeedingEvent({
-    String id = 'event_1',
-    String fishId = 'fish_1',
-    String aquariumId = 'default',
-    DateTime? feedingTime,
-    DateTime? createdAt,
-  }) {
-    return FeedingEventModel(
-      id: id,
-      fishId: fishId,
-      aquariumId: aquariumId,
-      feedingTime: feedingTime ?? DateTime.now(),
-      createdAt: createdAt ?? DateTime.now(),
     );
   }
 
@@ -172,7 +139,6 @@ void main() {
         when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
         when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
         when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
         final result = await migrationService.migrateDefaultAquarium();
 
@@ -187,43 +153,6 @@ void main() {
       },
     );
 
-    test('should migrate feeding events along with fish', () async {
-      final fish = createTestFish(id: 'fish_1', aquariumId: 'default');
-      final event1 = createTestFeedingEvent(
-        id: 'event_1',
-        aquariumId: 'default',
-      );
-      final event2 = createTestFeedingEvent(
-        id: 'event_2',
-        aquariumId: 'default',
-      );
-      final event3 = createTestFeedingEvent(
-        id: 'event_3',
-        aquariumId: 'other_uuid',
-      );
-      final user = createTestUser();
-
-      when(() => mockFishDs.getAllFish()).thenReturn([fish]);
-      when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
-      when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
-      when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(
-        () => mockFeedingDs.getAllFeedingEvents(),
-      ).thenReturn([event1, event2, event3]);
-      when(
-        () => mockFeedingDs.updateFeedingEvent(any()),
-      ).thenAnswer((_) async => true);
-
-      final result = await migrationService.migrateDefaultAquarium();
-
-      expect(result, isA<MigrationSuccess>());
-      final success = result as MigrationSuccess;
-      expect(success.migratedFishCount, 1);
-      expect(success.migratedEventsCount, 2);
-
-      verify(() => mockFeedingDs.updateFeedingEvent(any())).called(2);
-    });
-
     test('should use local userId when no user logged in', () async {
       final fish = createTestFish(aquariumId: 'default');
 
@@ -231,7 +160,6 @@ void main() {
       when(() => mockAuthDs.getCurrentUser()).thenReturn(null);
       when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
       when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
       final result = await migrationService.migrateDefaultAquarium();
 
@@ -269,7 +197,6 @@ void main() {
       when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
       when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
       when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
       final result = await migrationService.migrateDefaultAquarium();
 
@@ -293,7 +220,6 @@ void main() {
       when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
       when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
       when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-      when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
       final result = await migrationService.migrateDefaultAquarium();
 
@@ -317,7 +243,6 @@ void main() {
         when(() => mockAuthDs.getCurrentUser()).thenReturn(user);
         when(() => mockAquariumDs.saveAquarium(any())).thenAnswer((_) async {});
         when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
-        when(() => mockFeedingDs.getAllFeedingEvents()).thenReturn([]);
 
         final firstResult = await migrationService.migrateDefaultAquarium();
         expect(firstResult, isA<MigrationSuccess>());

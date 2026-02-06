@@ -13,10 +13,8 @@ void main() {
   }) {
     return FeedingEvent(
       id: id,
-      fishId: 'fish_1',
-      aquariumId: 'aq1',
       feedingTime: DateTime.now(),
-      createdAt: DateTime.now(),
+      aquariumId: 'aq1',
       completedBy: completedBy,
       completedByName: completedByName,
       completedByAvatar: completedByAvatar,

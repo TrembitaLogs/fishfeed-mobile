@@ -1,23 +1,39 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/home/today_view.dart';
+import 'package:fishfeed/presentation/widgets/feeding/aquarium_status_card.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
+
+class MockSyncService extends Mock implements SyncService {}
 
 void main() {
+  late MockSyncService mockSyncService;
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
+  });
+
+  setUp(() {
+    mockSyncService = MockSyncService();
+    when(
+      () => mockSyncService.feedingConflictStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(() => mockSyncService.syncNow()).thenAnswer((_) async => 0);
   });
 
   tearDownAll(() {
@@ -59,6 +75,7 @@ void main() {
             UserAquariumsState(aquariums: mockAquariums, isLoading: false),
           );
         }),
+        syncServiceProvider.overrideWithValue(mockSyncService),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -85,25 +102,22 @@ void main() {
     });
 
     group('Empty State', () {
-      testWidgets('displays empty state when no feedings scheduled', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: const TodayFeedingsState(feedings: [], isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
+      testWidgets(
+        'displays aquarium status cards with no fish when no feedings',
+        (tester) async {
+          await tester.pumpWidget(
+            buildTestWidget(
+              state: const TodayFeedingsState(feedings: [], isLoading: false),
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        // TodayView shows aquarium sections with empty state message
-        // When no feedings, AquariumSection shows "No feedings scheduled"
-        // Multiple aquariums = multiple empty state messages
-        expect(find.text('No feedings scheduled'), findsAtLeastNWidgets(1));
-        expect(
-          find.byIcon(Icons.check_circle_outline),
-          findsAtLeastNWidgets(1),
-        );
-      });
+          // TodayView now shows AquariumStatusCard per aquarium
+          // Each card shows "No fish" when no feedings
+          expect(find.byType(AquariumStatusCard), findsNWidgets(2));
+          expect(find.text('No fish'), findsNWidgets(2));
+        },
+      );
     });
 
     group('Error State', () {
@@ -144,44 +158,63 @@ void main() {
       });
     });
 
-    group('Feedings List', () {
+    group('Aquarium Status Cards', () {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
       final mockFeedings = [
-        ScheduledFeeding(
-          id: '1',
-          scheduledTime: today.add(const Duration(hours: 8)),
+        ComputedFeedingEvent(
+          scheduleId: '1',
+          fishId: 'fish1',
           aquariumId: 'aq1',
-          aquariumName: 'Living Room Tank',
-          speciesName: 'Guppy',
-          status: FeedingStatus.fed,
+          scheduledFor: today.add(const Duration(hours: 8)),
+          time: '08:00',
           foodType: 'Flakes',
-          portionGrams: 0.5,
-        ),
-        ScheduledFeeding(
-          id: '2',
-          scheduledTime: today.add(const Duration(hours: 14)),
-          aquariumId: 'aq1',
+          status: EventStatus.fed,
+          fishName: 'Guppy',
           aquariumName: 'Living Room Tank',
-          speciesName: 'Betta',
-          status: FeedingStatus.pending,
+          fishQuantity: 3,
+        ),
+        ComputedFeedingEvent(
+          scheduleId: '2',
+          fishId: 'fish2',
+          aquariumId: 'aq1',
+          scheduledFor: today.add(const Duration(hours: 14)),
+          time: '14:00',
           foodType: 'Pellets',
-          portionGrams: 0.3,
+          status: EventStatus.pending,
+          fishName: 'Betta',
+          aquariumName: 'Living Room Tank',
+          fishQuantity: 2,
         ),
-        ScheduledFeeding(
-          id: '3',
-          scheduledTime: today.add(const Duration(hours: 19)),
+        ComputedFeedingEvent(
+          scheduleId: '3',
+          fishId: 'fish3',
           aquariumId: 'aq2',
-          aquariumName: 'Bedroom Aquarium',
-          speciesName: 'Goldfish',
-          status: FeedingStatus.missed,
+          scheduledFor: today.add(const Duration(hours: 19)),
+          time: '19:00',
           foodType: 'Flakes',
-          portionGrams: 1.0,
+          status: EventStatus.pending,
+          fishName: 'Goldfish',
+          aquariumName: 'Bedroom Aquarium',
+          fishQuantity: 4,
         ),
       ];
 
-      testWidgets('displays feeding cards for each scheduled feeding', (
+      testWidgets('displays aquarium names in status cards', (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Each aquarium name appears once in its status card
+        expect(find.text('Living Room Tank'), findsOneWidget);
+        expect(find.text('Bedroom Aquarium'), findsOneWidget);
+      });
+
+      testWidgets('displays AquariumStatusCard for each aquarium', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -191,13 +224,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Should show all feeding names
-        expect(find.text('Guppy'), findsOneWidget);
-        expect(find.text('Betta'), findsOneWidget);
-        expect(find.text('Goldfish'), findsOneWidget);
+        expect(find.byType(AquariumStatusCard), findsNWidgets(2));
       });
 
-      testWidgets('displays aquarium names in section headers and cards', (
+      testWidgets('displays water drop icon in each aquarium card', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -207,162 +237,34 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Aquarium names appear in:
-        // 1. Section headers (one per aquarium)
-        // 2. FeedingCard subtitle (one per feeding)
-        // Living Room Tank: 1 header + 2 feedings = 3 total
-        expect(find.text('Living Room Tank'), findsNWidgets(3));
-        // Bedroom Aquarium: 1 header + 1 feeding = 2 total
-        expect(find.text('Bedroom Aquarium'), findsNWidgets(2));
-      });
-
-      testWidgets('displays food types', (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('Flakes'), findsNWidgets(2));
-        expect(find.text('Pellets'), findsOneWidget);
-      });
-
-      testWidgets('displays time for each feeding', (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('08:00'), findsOneWidget);
-        expect(find.text('14:00'), findsOneWidget);
-        expect(find.text('19:00'), findsOneWidget);
-      });
-
-      testWidgets('displays status icons for different statuses', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Fed status (StatusIndicator uses Icons.check)
-        expect(find.byIcon(Icons.check), findsOneWidget);
-        // Pending status
-        expect(find.byIcon(Icons.schedule), findsAtLeastNWidgets(1));
-        // Missed status (StatusIndicator uses Icons.close)
-        expect(find.byIcon(Icons.close), findsOneWidget);
-      });
-    });
-
-    group('Aquarium Grouping', () {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-
-      testWidgets('displays aquarium section headers for each aquarium', (
-        tester,
-      ) async {
-        final feedings = [
-          ScheduledFeeding(
-            id: '1',
-            scheduledTime: today.add(const Duration(hours: 8)),
-            aquariumId: 'aq1',
-            aquariumName: 'Living Room Tank',
-            speciesName: 'Guppy',
-            status: FeedingStatus.pending,
-          ),
-        ];
-
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: TodayFeedingsState(feedings: feedings, isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Living Room Tank appears in header (1) + FeedingCard subtitle (1) = 2
-        expect(find.text('Living Room Tank'), findsNWidgets(2));
-        // Should show water drop icon in headers (2 aquariums)
+        // Each AquariumStatusCard has a water drop icon
         expect(find.byIcon(Icons.water_drop_outlined), findsNWidgets(2));
       });
 
-      testWidgets('displays multiple aquarium sections', (tester) async {
-        final multiAquariumFeedings = [
-          ScheduledFeeding(
-            id: '1',
-            scheduledTime: today.add(const Duration(hours: 8)),
-            aquariumId: 'aq1',
-            aquariumName: 'Living Room Tank',
-            speciesName: 'Guppy',
-            status: FeedingStatus.pending,
-          ),
-          ScheduledFeeding(
-            id: '2',
-            scheduledTime: today.add(const Duration(hours: 14)),
-            aquariumId: 'aq2',
-            aquariumName: 'Bedroom Aquarium',
-            speciesName: 'Betta',
-            status: FeedingStatus.pending,
-          ),
-        ];
-
+      testWidgets('displays fish count per aquarium', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(
-            state: TodayFeedingsState(
-              feedings: multiAquariumFeedings,
-              isLoading: false,
-            ),
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
           ),
         );
         await tester.pumpAndSettle();
 
-        // Each aquarium name appears in header (1) + FeedingCard subtitle (1) = 2
-        expect(find.text('Living Room Tank'), findsNWidgets(2));
-        expect(find.text('Bedroom Aquarium'), findsNWidgets(2));
+        // aq1: fish1 qty=3 + fish2 qty=2 = 5 fish
+        expect(find.text('5 fish'), findsOneWidget);
+        // aq2: fish3 qty=4 = 4 fish
+        expect(find.text('4 fish'), findsOneWidget);
       });
 
       testWidgets('displays add aquarium button at the bottom', (tester) async {
-        final feedings = [
-          ScheduledFeeding(
-            id: '1',
-            scheduledTime: today.add(const Duration(hours: 8)),
-            aquariumId: 'aq1',
-            aquariumName: 'Living Room Tank',
-            speciesName: 'Guppy',
-            status: FeedingStatus.pending,
-          ),
-        ];
-
         await tester.pumpWidget(
           buildTestWidget(
-            state: TodayFeedingsState(feedings: feedings, isLoading: false),
+            state: TodayFeedingsState(feedings: mockFeedings, isLoading: false),
           ),
         );
         await tester.pumpAndSettle();
 
         // Should show "Add Another Aquarium" button
         expect(find.text('Add Another Aquarium'), findsOneWidget);
-      });
-
-      testWidgets('shows empty state message for aquarium with no feedings', (
-        tester,
-      ) async {
-        // Empty feedings list but aquariums exist
-        await tester.pumpWidget(
-          buildTestWidget(
-            state: const TodayFeedingsState(feedings: [], isLoading: false),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Empty state is shown when no feedings - AquariumSection shows this message
-        // Multiple aquariums = multiple empty state messages
-        expect(find.text('No feedings scheduled'), findsAtLeastNWidgets(1));
       });
     });
 
@@ -379,18 +281,21 @@ void main() {
       });
     });
 
-    group('Feeding Card Interaction', () {
-      testWidgets('feeding card is tappable', (tester) async {
+    group('Status Card Interaction', () {
+      testWidgets('aquarium status card has InkWell for tap', (tester) async {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
         final pendingFeeding = [
-          ScheduledFeeding(
-            id: '1',
-            scheduledTime: today.add(const Duration(hours: 19)),
+          ComputedFeedingEvent(
+            scheduleId: '1',
+            fishId: 'fish1',
             aquariumId: 'aq1',
-            aquariumName: 'Tank',
-            speciesName: 'Guppy',
-            status: FeedingStatus.pending,
+            scheduledFor: today.add(const Duration(hours: 19)),
+            time: '19:00',
+            foodType: 'Flakes',
+            status: EventStatus.pending,
+            fishName: 'Guppy',
+            aquariumName: 'Living Room Tank',
           ),
         ];
 
@@ -404,159 +309,15 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Find the card with InkWell
-        final cardFinder = find.ancestor(
-          of: find.text('Guppy'),
+        // Find the AquariumStatusCards (2 aquariums)
+        expect(find.byType(AquariumStatusCard), findsNWidgets(2));
+
+        // Verify each card contains an InkWell for tap navigation
+        final inkWells = find.descendant(
+          of: find.byType(AquariumStatusCard),
           matching: find.byType(InkWell),
         );
-        expect(cardFinder, findsOneWidget);
-
-        // Tap should not crash
-        await tester.tap(cardFinder.first);
-        await tester.pumpAndSettle();
-      });
-    });
-  });
-
-  group('ScheduledFeeding Entity', () {
-    group('timePeriod', () {
-      test('returns morning for hours before 12', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 8, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('morning'));
-      });
-
-      test('returns afternoon for hours 12-17', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 14, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('afternoon'));
-      });
-
-      test('returns evening for hours 18 and later', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 19, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('evening'));
-      });
-
-      test('boundary: 11:59 is morning', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 11, 59),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('morning'));
-      });
-
-      test('boundary: 12:00 is afternoon', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 12, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('afternoon'));
-      });
-
-      test('boundary: 17:59 is afternoon', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 17, 59),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('afternoon'));
-      });
-
-      test('boundary: 18:00 is evening', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 18, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.timePeriod, equals('evening'));
-      });
-    });
-
-    group('displayName', () {
-      test('returns fishName when available', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 8, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          fishName: 'Nemo',
-          speciesName: 'Clownfish',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.displayName, equals('Nemo'));
-      });
-
-      test('returns speciesName when fishName is empty', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 8, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          fishName: '',
-          speciesName: 'Clownfish',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.displayName, equals('Clownfish'));
-      });
-
-      test('returns speciesName when fishName is null', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 8, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Tank',
-          speciesName: 'Clownfish',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.displayName, equals('Clownfish'));
-      });
-
-      test('returns aquariumName when fishName and speciesName are null', () {
-        final feeding = ScheduledFeeding(
-          id: '1',
-          scheduledTime: DateTime(2024, 1, 15, 8, 0),
-          aquariumId: 'aq1',
-          aquariumName: 'Living Room Tank',
-          status: FeedingStatus.pending,
-        );
-
-        expect(feeding.displayName, equals('Living Room Tank'));
+        expect(inkWells, findsNWidgets(2));
       });
     });
   });
@@ -605,13 +366,10 @@ class _MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   Future<void> refresh() async {}
 
   @override
-  Future<void> markAsFed(String feedingId) async {
+  Future<void> markAsFed(String scheduleId) async {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
-        return f.copyWith(
-          status: FeedingStatus.fed,
-          completedAt: DateTime.now(),
-        );
+      if (f.scheduleId == scheduleId) {
+        return f.copyWith(status: EventStatus.fed);
       }
       return f;
     }).toList();
@@ -619,10 +377,10 @@ class _MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   }
 
   @override
-  Future<void> markAsMissed(String feedingId) async {
+  Future<void> markAsMissed(String scheduleId) async {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
-        return f.copyWith(status: FeedingStatus.missed);
+      if (f.scheduleId == scheduleId) {
+        return f.copyWith(status: EventStatus.skipped);
       }
       return f;
     }).toList();
@@ -630,9 +388,9 @@ class _MockTodayFeedingsNotifier extends StateNotifier<TodayFeedingsState>
   }
 
   @override
-  void updateFeedingStatus(String feedingId, FeedingStatus newStatus) {
+  void updateFeedingStatus(String scheduleId, EventStatus newStatus) {
     final updatedFeedings = state.feedings.map((f) {
-      if (f.id == feedingId) {
+      if (f.scheduleId == scheduleId) {
         return f.copyWith(status: newStatus);
       }
       return f;

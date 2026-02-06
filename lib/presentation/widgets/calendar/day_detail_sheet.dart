@@ -3,8 +3,7 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
-import 'package:fishfeed/domain/entities/feeding_status.dart';
-import 'package:fishfeed/domain/entities/scheduled_feeding.dart';
+import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/presentation/providers/day_detail_provider.dart';
 import 'package:fishfeed/presentation/widgets/calendar/calendar_day_cell.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
@@ -388,7 +387,7 @@ class _ErrorState extends StatelessWidget {
 class _FeedingsList extends StatelessWidget {
   const _FeedingsList({required this.feedings, required this.scrollController});
 
-  final List<ScheduledFeeding> feedings;
+  final List<ComputedFeedingEvent> feedings;
   final ScrollController scrollController;
 
   @override
@@ -408,13 +407,17 @@ class _FeedingsList extends StatelessWidget {
 class _FeedingListItem extends StatelessWidget {
   const _FeedingListItem({required this.feeding});
 
-  final ScheduledFeeding feeding;
+  final ComputedFeedingEvent feeding;
+
+  /// Gets display name for the feeding (fish name or aquarium name).
+  String get _displayName => feeding.fishName ?? feeding.aquariumName ?? 'Fish';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final statusColor = StatusIndicator.getStatusColor(feeding.status);
+    final statusColor = StatusIndicator.getEventStatusColor(feeding.status);
+    final isFed = feeding.status == EventStatus.fed;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -426,7 +429,7 @@ class _FeedingListItem extends StatelessWidget {
       child: Row(
         children: [
           // Status indicator
-          StatusIndicator(
+          StatusIndicator.fromEventStatus(
             status: feeding.status,
             size: StatusIndicatorSize.small,
           ),
@@ -437,38 +440,30 @@ class _FeedingListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  feeding.displayName,
+                  _displayName,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    decoration: feeding.status == FeedingStatus.fed
-                        ? TextDecoration.lineThrough
-                        : null,
-                    color: feeding.status == FeedingStatus.fed
-                        ? colorScheme.onSurfaceVariant
-                        : null,
+                    decoration: isFed ? TextDecoration.lineThrough : null,
+                    color: isFed ? colorScheme.onSurfaceVariant : null,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  feeding.aquariumName,
+                  feeding.aquariumName ?? '',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 // Fed by attribution (only for completed feedings with user info)
-                if (feeding.status == FeedingStatus.fed &&
-                    feeding.completedByName != null) ...[
+                if (isFed && feeding.log?.actedByUserName != null) ...[
                   const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      AppCachedAvatar(
-                        imageUrl: feeding.completedByAvatar,
-                        radius: 7,
-                      ),
+                      AppCachedAvatar(imageUrl: feeding.avatarUrl, radius: 7),
                       const SizedBox(width: 4),
                       Text(
-                        feeding.completedByName!,
+                        feeding.log!.actedByUserName!,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: colorScheme.secondary,
                         ),
@@ -484,29 +479,22 @@ class _FeedingListItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                _formatTime(feeding.scheduledTime),
+                feeding.time,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: statusColor,
                 ),
               ),
-              if (feeding.foodType != null)
-                Text(
-                  feeding.foodType!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+              Text(
+                feeding.foodType,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
+              ),
             ],
           ),
         ],
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
   }
 }

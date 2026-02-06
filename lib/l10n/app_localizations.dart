@@ -2953,6 +2953,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add your first fish to get started'**
   String get addFishToAquarium;
+
+  /// Count of feedings scheduled for today in aquarium section
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No feedings today} =1{1 feeding today} other{{count} feedings today}}'**
+  String feedingsTodayCount(int count);
+
+  /// Confirmation dialog title when marking feeding as done
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as fed?'**
+  String get markAsFedQuestion;
+
+  /// Confirmation button text for marking feeding as done
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, Fed'**
+  String get yesFed;
+
+  /// Label showing when a feeding was completed
+  ///
+  /// In en, this message translates to:
+  /// **'Fed at {time}'**
+  String fedAtTime(String time);
+
+  /// Label shown when a feeding log is pending sync
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get pendingSync;
+
+  /// Status text for aquarium with overdue feeding
+  ///
+  /// In en, this message translates to:
+  /// **'Pending feeding at {time}'**
+  String pendingFeedingAt(String time);
+
+  /// Status text when all feedings for today are completed
+  ///
+  /// In en, this message translates to:
+  /// **'All fed'**
+  String get allFedToday;
+
+  /// Status text showing next scheduled feeding time
+  ///
+  /// In en, this message translates to:
+  /// **'Next at {time}'**
+  String nextFeedingAt(String time);
+
+  /// Label for portion hint in feeding detail sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Portion'**
+  String get portionHintLabel;
+
+  /// Title for feeding detail bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Details'**
+  String get feedingDetails;
+
+  /// Close button text for bottom sheets and dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeButton;
+
+  /// Toast message when another family member already marked this feeding
+  ///
+  /// In en, this message translates to:
+  /// **'{name} already fed at {time}'**
+  String feedingAlreadyDoneByMember(String name, String time);
 }
 
 class _AppLocalizationsDelegate

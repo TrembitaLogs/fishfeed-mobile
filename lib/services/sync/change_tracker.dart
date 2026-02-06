@@ -1,21 +1,29 @@
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/feeding_schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
-import 'package:fishfeed/data/models/feeding_schedule_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 
 /// Types of entities that can be synced.
 enum EntityType {
   aquarium,
   fish,
-  event,
-  schedule,
+  feedingLog,
+  newSchedule,
   streak,
   achievement,
-  progress,
+  progress;
+
+  /// Returns the server-expected snake_case entity type string.
+  String get jsonValue {
+    return switch (this) {
+      EntityType.feedingLog => 'feeding_log',
+      EntityType.newSchedule => 'schedule',
+      _ => name,
+    };
+  }
 }
 
 /// Operations that can be performed on entities.
@@ -51,7 +59,7 @@ class SyncChange {
   /// Converts this change to JSON for the API.
   Map<String, dynamic> toJson() {
     return {
-      'entity_type': entityType.name,
+      'entity_type': entityType.jsonValue,
       'entity_id': entityId,
       'operation': operation.name,
       'data': data,
@@ -75,8 +83,8 @@ class SyncChange {
 /// final tracker = ChangeTracker(
 ///   aquariumDs: aquariumLocalDs,
 ///   fishDs: fishLocalDs,
-///   feedingDs: feedingLocalDs,
-///   scheduleDs: scheduleLocalDs,
+///   feedingLogDs: feedingLogLocalDs,
+///   newScheduleDs: scheduleLocalDs,
 /// );
 ///
 /// final changes = tracker.collectAllChanges();
@@ -86,17 +94,17 @@ class ChangeTracker {
   ChangeTracker({
     required AquariumLocalDataSource aquariumDs,
     required FishLocalDataSource fishDs,
-    required FeedingLocalDataSource feedingDs,
-    FeedingScheduleLocalDataSource? scheduleDs,
+    FeedingLogLocalDataSource? feedingLogDs,
+    ScheduleLocalDataSource? newScheduleDs,
   }) : _aquariumDs = aquariumDs,
        _fishDs = fishDs,
-       _feedingDs = feedingDs,
-       _scheduleDs = scheduleDs;
+       _feedingLogDs = feedingLogDs,
+       _newScheduleDs = newScheduleDs;
 
   final AquariumLocalDataSource _aquariumDs;
   final FishLocalDataSource _fishDs;
-  final FeedingLocalDataSource _feedingDs;
-  final FeedingScheduleLocalDataSource? _scheduleDs;
+  final FeedingLogLocalDataSource? _feedingLogDs;
+  final ScheduleLocalDataSource? _newScheduleDs;
 
   /// Collects all local changes that need to be synced.
   ///
@@ -113,11 +121,11 @@ class ChangeTracker {
     // Collect fish changes
     changes.addAll(_collectFishChanges());
 
-    // Collect feeding event changes
-    changes.addAll(_collectFeedingEventChanges());
+    // Collect feeding log changes
+    changes.addAll(_collectFeedingLogChanges());
 
     // Collect schedule changes
-    changes.addAll(_collectScheduleChanges());
+    changes.addAll(_collectNewScheduleChanges());
 
     return changes;
   }
@@ -129,10 +137,10 @@ class ChangeTracker {
         return _collectAquariumChanges();
       case EntityType.fish:
         return _collectFishChanges();
-      case EntityType.event:
-        return _collectFeedingEventChanges();
-      case EntityType.schedule:
-        return _collectScheduleChanges();
+      case EntityType.feedingLog:
+        return _collectFeedingLogChanges();
+      case EntityType.newSchedule:
+        return _collectNewScheduleChanges();
       case EntityType.streak:
       case EntityType.achievement:
       case EntityType.progress:
@@ -147,9 +155,8 @@ class ChangeTracker {
         _aquariumDs.getDeletedAquariums().isNotEmpty ||
         _fishDs.getUnsyncedFish().isNotEmpty ||
         _fishDs.getDeletedFish().isNotEmpty ||
-        _feedingDs.getUnsyncedEvents().isNotEmpty ||
-        _feedingDs.getDeletedEvents().isNotEmpty ||
-        (_scheduleDs?.getUnsyncedSchedules().isNotEmpty ?? false);
+        (_feedingLogDs?.hasUnsyncedLogs() ?? false) ||
+        (_newScheduleDs?.hasUnsyncedSchedules() ?? false);
   }
 
   /// Returns the count of pending changes.
@@ -159,9 +166,8 @@ class ChangeTracker {
     count += _aquariumDs.getDeletedAquariums().length;
     count += _fishDs.getUnsyncedFish().length;
     count += _fishDs.getDeletedFish().length;
-    count += _feedingDs.getUnsyncedEvents().length;
-    count += _feedingDs.getDeletedEvents().length;
-    count += _scheduleDs?.getUnsyncedSchedules().length ?? 0;
+    count += _feedingLogDs?.getUnsyncedCount() ?? 0;
+    count += _newScheduleDs?.getUnsyncedCount() ?? 0;
     return count;
   }
 
@@ -275,92 +281,51 @@ class ChangeTracker {
     };
   }
 
-  // ============ Feeding Event Changes ============
+  // ============ Feeding Log Changes ============
 
-  List<SyncChange> _collectFeedingEventChanges() {
+  List<SyncChange> _collectFeedingLogChanges() {
+    final feedingLogDs = _feedingLogDs;
+    if (feedingLogDs == null) return [];
+
     final changes = <SyncChange>[];
 
-    // Build set of deleted fish IDs to filter out their events
-    final deletedFishIds = _fishDs.getDeletedFish().map((f) => f.id).toSet();
-
-    // Get unsynced events (new or modified)
-    final unsyncedEvents = _feedingDs.getUnsyncedEvents();
-    for (final event in unsyncedEvents) {
-      // Skip events for deleted fish - they should not be synced
-      if (deletedFishIds.contains(event.fishId)) {
-        continue;
-      }
-
-      final operation = _determineEventOperation(event);
+    // Get unsynced feeding logs
+    final unsyncedLogs = feedingLogDs.getUnsynced();
+    for (final log in unsyncedLogs) {
+      // FeedingLog is immutable and only created (never updated or deleted)
       changes.add(
         SyncChange(
-          entityType: EntityType.event,
-          entityId: event.id,
-          operation: operation,
-          data: _eventToSyncData(event),
-          clientUpdatedAt: DateTime.now().toUtc(),
-        ),
-      );
-    }
-
-    // Get deleted events
-    final deletedEvents = _feedingDs.getDeletedEvents();
-    for (final event in deletedEvents) {
-      changes.add(
-        SyncChange(
-          entityType: EntityType.event,
-          entityId: event.id,
-          operation: SyncOperation.delete,
-          data: {'deleted_at': event.deletedAt?.toIso8601String()},
-          clientUpdatedAt: event.deletedAt ?? DateTime.now(),
+          entityType: EntityType.feedingLog,
+          entityId: log.id,
+          operation: SyncOperation.create,
+          data: log.toSyncJson(),
+          clientUpdatedAt: log.createdAt,
         ),
       );
     }
 
     return changes;
-  }
-
-  SyncOperation _determineEventOperation(FeedingEventModel event) {
-    if (event.serverUpdatedAt == null) {
-      return SyncOperation.create;
-    }
-    return SyncOperation.update;
-  }
-
-  Map<String, dynamic> _eventToSyncData(FeedingEventModel event) {
-    return {
-      'id': event.id,
-      'aquarium_id': event.aquariumId,
-      'fish_id': event.fishId.isNotEmpty ? event.fishId : null,
-      'scheduled_at': event.feedingTime.toIso8601String(),
-      'status': event.completedBy != null ? 'completed' : 'pending',
-      'completed_at': event.completedBy != null
-          ? event.feedingTime.toIso8601String()
-          : null,
-      'completed_by': event.completedBy,
-      'notes': event.notes,
-    };
   }
 
   // ============ Schedule Changes ============
 
-  List<SyncChange> _collectScheduleChanges() {
-    final scheduleDs = _scheduleDs;
-    if (scheduleDs == null) return [];
+  List<SyncChange> _collectNewScheduleChanges() {
+    final newScheduleDs = _newScheduleDs;
+    if (newScheduleDs == null) return [];
 
     final changes = <SyncChange>[];
 
     // Get unsynced schedules
-    final unsyncedSchedules = scheduleDs.getUnsyncedSchedules();
+    final unsyncedSchedules = newScheduleDs.getUnsynced();
     for (final schedule in unsyncedSchedules) {
-      final operation = _determineScheduleOperation(schedule);
+      final operation = _determineNewScheduleOperation(schedule);
       changes.add(
         SyncChange(
-          entityType: EntityType.schedule,
+          entityType: EntityType.newSchedule,
           entityId: schedule.id,
           operation: operation,
           data: schedule.toSyncJson(),
-          clientUpdatedAt: DateTime.now().toUtc(),
+          clientUpdatedAt: schedule.updatedAt,
         ),
       );
     }
@@ -368,7 +333,7 @@ class ChangeTracker {
     return changes;
   }
 
-  SyncOperation _determineScheduleOperation(FeedingScheduleModel schedule) {
+  SyncOperation _determineNewScheduleOperation(ScheduleModel schedule) {
     if (schedule.serverUpdatedAt == null) {
       return SyncOperation.create;
     }

@@ -90,10 +90,10 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
 /// Provider for [CalculateStatisticsUseCase].
 final calculateStatisticsUseCaseProvider = Provider<CalculateStatisticsUseCase>(
   (ref) {
-    final feedingDs = ref.watch(feedingLocalDataSourceProvider);
+    final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
     final userProgressDs = ref.watch(userProgressLocalDataSourceProvider);
     return CalculateStatisticsUseCase(
-      feedingDataSource: feedingDs,
+      feedingLogDataSource: feedingLogDs,
       userProgressDataSource: userProgressDs,
     );
   },

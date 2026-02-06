@@ -15,8 +15,6 @@ import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:fishfeed/services/sync/sync_trigger_service.dart';
-import 'package:fishfeed/data/datasources/remote/aquarium_remote_ds.dart';
-
 import 'helpers/test_helpers.dart';
 
 void main() {
@@ -28,7 +26,6 @@ void main() {
   late MockConnectivityService mockConnectivityService;
   late MockAppLifecycleService mockAppLifecycleService;
   late MockSyncTriggerService mockSyncTriggerService;
-  late MockAquariumRemoteDataSource mockAquariumRemoteDataSource;
 
   setUpAll(() {
     setupTestFonts();
@@ -47,7 +44,6 @@ void main() {
     mockConnectivityService = createMockConnectivityService();
     mockAppLifecycleService = createMockAppLifecycleService();
     mockSyncTriggerService = createMockSyncTriggerService();
-    mockAquariumRemoteDataSource = createMockAquariumRemoteDataSource();
 
     // Setup default mock behavior - unauthenticated user
     when(
@@ -66,9 +62,6 @@ void main() {
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
         pushTokenManagerProvider.overrideWithValue(mockPushTokenManager),
-        aquariumRemoteDataSourceProvider.overrideWithValue(
-          mockAquariumRemoteDataSource,
-        ),
 
         // Service mocks required by FishFeedApp listeners
         syncServiceProvider.overrideWithValue(mockSyncService),

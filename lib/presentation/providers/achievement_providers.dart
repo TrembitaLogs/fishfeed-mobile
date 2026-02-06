@@ -23,7 +23,7 @@ final userProgressLocalDataSourceProvider =
 final achievementUseCaseProvider = Provider<AchievementUseCase>((ref) {
   return AchievementUseCase(
     achievementDataSource: ref.watch(achievementLocalDataSourceProvider),
-    feedingDataSource: ref.watch(feedingLocalDataSourceProvider),
+    feedingLogDataSource: ref.watch(feedingLogLocalDataSourceProvider),
     streakDataSource: ref.watch(streakLocalDataSourceProvider),
     progressDataSource: ref.watch(userProgressLocalDataSourceProvider),
   );

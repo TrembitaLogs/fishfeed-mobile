@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
+
 /// A widget displaying the number of available freeze days.
 ///
 /// Shows snowflake icons to represent freeze days that can be used
@@ -138,13 +140,14 @@ class _FreezeIndicatorState extends State<FreezeIndicator>
   }
 
   String _getTooltipMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.available == 0) {
-      return 'No freeze days left this month';
+      return l10n.freezeIndicatorTooltipNone;
     }
     if (widget.available == 1) {
-      return '1 freeze day available';
+      return l10n.freezeIndicatorTooltipOne;
     }
-    return '${widget.available} freeze days available';
+    return l10n.freezeIndicatorTooltipMany(widget.available);
   }
 
   _FreezeDimensions _getDimensions(FreezeIndicatorSize size) {

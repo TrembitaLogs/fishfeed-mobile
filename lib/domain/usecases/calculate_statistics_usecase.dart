@@ -2,9 +2,9 @@ import 'package:dartz/dartz.dart';
 
 import 'package:fishfeed/core/constants/levels.dart';
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/feeding_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_event_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/domain/entities/user_statistics.dart';
 
 /// Parameters for [CalculateStatisticsUseCase].
@@ -24,12 +24,12 @@ class CalculateStatisticsParams {
 /// - Level and XP progress
 class CalculateStatisticsUseCase {
   CalculateStatisticsUseCase({
-    required FeedingLocalDataSource feedingDataSource,
+    required FeedingLogLocalDataSource feedingLogDataSource,
     required UserProgressLocalDataSource userProgressDataSource,
-  }) : _feedingDataSource = feedingDataSource,
+  }) : _feedingLogDataSource = feedingLogDataSource,
        _userProgressDataSource = userProgressDataSource;
 
-  final FeedingLocalDataSource _feedingDataSource;
+  final FeedingLogLocalDataSource _feedingLogDataSource;
   final UserProgressLocalDataSource _userProgressDataSource;
 
   /// Number of scheduled feedings per day (mock data).
@@ -41,14 +41,14 @@ class CalculateStatisticsUseCase {
     CalculateStatisticsParams params,
   ) async {
     try {
-      // Get all feeding events
-      final allEvents = _feedingDataSource.getAllFeedingEvents();
+      // Get all feeding logs (completed feedings)
+      final allLogs = _feedingLogDataSource.getAll();
 
-      // Calculate total feedings
-      final totalFeedings = allEvents.length;
+      // Calculate total feedings (only count "fed" actions, not "skipped")
+      final totalFeedings = allLogs.where((log) => log.isFed).length;
 
       // Calculate days with app
-      final daysWithApp = _calculateDaysWithApp(allEvents);
+      final daysWithApp = _calculateDaysWithApp(allLogs);
 
       // Calculate on-time percentage
       final onTimePercentage = _calculateOnTimePercentage(
@@ -92,16 +92,16 @@ class CalculateStatisticsUseCase {
     }
   }
 
-  /// Calculates the number of days since the first feeding event.
-  int _calculateDaysWithApp(List<FeedingEventModel> events) {
-    if (events.isEmpty) {
+  /// Calculates the number of days since the first feeding log.
+  int _calculateDaysWithApp(List<FeedingLogModel> logs) {
+    if (logs.isEmpty) {
       return 0;
     }
 
-    // Find the earliest feeding event
+    // Find the earliest feeding log
     DateTime? earliestDate;
-    for (final event in events) {
-      final feedingTime = event.feedingTime;
+    for (final log in logs) {
+      final feedingTime = log.scheduledFor;
       if (earliestDate == null || feedingTime.isBefore(earliestDate)) {
         earliestDate = feedingTime;
       }
@@ -111,7 +111,7 @@ class CalculateStatisticsUseCase {
       return 0;
     }
 
-    // Calculate days difference from earliest event to now
+    // Calculate days difference from earliest log to now
     final now = DateTime.now();
     final difference = now.difference(earliestDate);
     return difference.inDays + 1; // +1 to include the first day

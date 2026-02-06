@@ -77,33 +77,36 @@ class CalendarDayCell extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
-          child: Container(
-            margin: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(colorScheme),
-              borderRadius: BorderRadius.circular(8),
-              border: isToday && !isSelected
-                  ? Border.all(color: colorScheme.primary, width: 1.5)
-                  : null,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${day.day}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: _getTextColor(colorScheme),
-                    fontWeight: isSelected || isToday
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+          child: Center(
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: _getBackgroundColor(colorScheme),
+                borderRadius: BorderRadius.circular(8),
+                border: isToday && !isSelected
+                    ? Border.all(color: colorScheme.primary, width: 1.5)
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${day.day}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: _getTextColor(colorScheme),
+                      fontWeight: isSelected || isToday
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                _StatusDot(
-                  status: status,
-                  isVisible: status != DayFeedingStatus.noData,
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  _StatusDot(
+                    status: status,
+                    isVisible: status != DayFeedingStatus.noData,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
