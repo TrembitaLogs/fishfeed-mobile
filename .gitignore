@@ -41,10 +41,6 @@ coverage/
 *.ipa
 *.app
 
-# Firebase configs
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-
 # Claude Code
 .claude/
 .mcp.json
