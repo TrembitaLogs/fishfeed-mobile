@@ -180,58 +180,76 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   /// Callback triggered on logout for external cleanup (e.g., router redirect).
   VoidCallback? onLogout;
 
+  bool _isInitializing = false;
+
   /// Initializes auth state from local storage.
   ///
   /// Call this on app startup to restore session.
   /// Sets [isInitializing] to false when complete.
+  /// Guarded against re-entrant calls and wrapped in try-catch
+  /// to ensure splash screen never hangs on unexpected errors
+  /// (e.g., corrupted secure storage after Android auto-backup restore).
   Future<void> initialize() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    if (_isInitializing) return;
+    _isInitializing = true;
 
-    final isAuthenticated = await _repository.isAuthenticated();
+    try {
+      state = state.copyWith(isLoading: true, clearError: true);
 
-    if (!isAuthenticated) {
-      // Not authenticated - set initial state with isInitializing = false
-      state = const AuthenticationState(
-        isInitializing: false,
-        isAuthenticated: false,
-      );
-      return;
-    }
+      final isAuthenticated = await _repository.isAuthenticated();
 
-    final userResult = await _repository.getCurrentUser();
-    await userResult.fold(
-      (failure) async {
-        // Failed to get user - not authenticated, initialization complete
+      if (!isAuthenticated) {
+        // Not authenticated - set initial state with isInitializing = false
         state = const AuthenticationState(
           isInitializing: false,
           isAuthenticated: false,
         );
-      },
-      (user) async {
-        var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
-        debugPrint('[AuthNotifier] Initialize: restored user ${user.email}');
-        debugPrint(
-          '[AuthNotifier] Initialize: Hive flag=$hasCompletedOnboarding',
-        );
+        return;
+      }
 
-        if (!hasCompletedOnboarding) {
-          hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
-        }
-
-        state = AuthenticationState.authenticated(
-          user,
-          hasCompletedOnboarding: hasCompletedOnboarding,
-        );
-
-        // If onboarding was already completed, still trigger background sync
-        if (hasCompletedOnboarding) {
-          debugPrint(
-            '[AuthNotifier] Triggering background sync after session restore',
+      final userResult = await _repository.getCurrentUser();
+      await userResult.fold(
+        (failure) async {
+          // Failed to get user - not authenticated, initialization complete
+          state = const AuthenticationState(
+            isInitializing: false,
+            isAuthenticated: false,
           );
-          unawaited(_syncService.syncAll());
-        }
-      },
-    );
+        },
+        (user) async {
+          var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
+          debugPrint('[AuthNotifier] Initialize: restored user ${user.email}');
+          debugPrint(
+            '[AuthNotifier] Initialize: Hive flag=$hasCompletedOnboarding',
+          );
+
+          if (!hasCompletedOnboarding) {
+            hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
+          }
+
+          state = AuthenticationState.authenticated(
+            user,
+            hasCompletedOnboarding: hasCompletedOnboarding,
+          );
+
+          // If onboarding was already completed, still trigger background sync
+          if (hasCompletedOnboarding) {
+            debugPrint(
+              '[AuthNotifier] Triggering background sync after session restore',
+            );
+            unawaited(_syncService.syncAll());
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('[AuthNotifier] Initialize failed with error: $e');
+      state = const AuthenticationState(
+        isInitializing: false,
+        isAuthenticated: false,
+      );
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   /// Login with email and password.
