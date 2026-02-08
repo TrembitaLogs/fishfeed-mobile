@@ -423,23 +423,11 @@ void main() {
         expect(find.byIcon(Icons.add), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('FAB navigates to AI camera when pressed', (tester) async {
-        // Track navigation
-        String? navigatedRoute;
-
+      testWidgets('FAB shows coming soon dialog for AI camera', (tester) async {
         final router = GoRouter(
           initialLocation: '/',
           routes: [
             GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-            GoRoute(
-              path: '/ai-camera',
-              builder: (context, state) {
-                navigatedRoute = '/ai-camera';
-                return const Scaffold(
-                  body: Center(child: Text('AI Camera Screen')),
-                );
-              },
-            ),
           ],
         );
 
