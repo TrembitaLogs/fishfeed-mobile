@@ -31,3 +31,11 @@ import workmanager_apple
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
+
+// MARK: - MessagingDelegate
+
+extension AppDelegate: MessagingDelegate {
+  func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+    // Token is handled by firebase_messaging Flutter plugin via method channel
+  }
+}
