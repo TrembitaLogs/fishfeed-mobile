@@ -25,13 +25,15 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       subscriptionStatus: fields[5] as SubscriptionStatus,
       freeAiScansRemaining: fields[6] as int,
       settings: fields[7] as UserSettingsModel?,
+      synced: fields[8] == null ? true : fields[8] as bool,
+      serverUpdatedAt: fields[9] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +49,11 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..writeByte(6)
       ..write(obj.freeAiScansRemaining)
       ..writeByte(7)
-      ..write(obj.settings);
+      ..write(obj.settings)
+      ..writeByte(8)
+      ..write(obj.synced)
+      ..writeByte(9)
+      ..write(obj.serverUpdatedAt);
   }
 
   @override

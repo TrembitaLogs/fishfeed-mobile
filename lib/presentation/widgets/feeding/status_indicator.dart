@@ -35,22 +35,25 @@ class StatusIndicator extends StatelessWidget {
     final icon = getStatusIcon(status);
     final dimensions = _getDimensions(size);
 
-    final indicator = AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      width: dimensions.containerSize,
-      height: dimensions.containerSize,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(dimensions.borderRadius),
-      ),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: Icon(
-          icon,
-          key: ValueKey(status),
-          color: color,
-          size: dimensions.iconSize,
+    final indicator = Semantics(
+      label: getPositiveMessage(status, l10n),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: dimensions.containerSize,
+        height: dimensions.containerSize,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(dimensions.borderRadius),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            icon,
+            key: ValueKey(status),
+            color: color,
+            size: dimensions.iconSize,
+          ),
         ),
       ),
     );

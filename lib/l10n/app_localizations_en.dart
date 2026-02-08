@@ -1264,6 +1264,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumComingSoon => 'Premium subscription coming soon!';
 
   @override
+  String get comingSoon => 'Coming Soon';
+
+  @override
+  String get aiCameraComingSoonMessage =>
+      'AI fish recognition is coming soon! Stay tuned for updates.';
+
+  @override
   String get thisWeek => 'This Week';
 
   @override
@@ -1734,4 +1741,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String feedingAlreadyDoneByMember(String name, String time) {
     return '$name already fed at $time';
   }
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
+  String greetingWithName(String greeting, String name) {
+    return '$greeting, $name!';
+  }
+
+  @override
+  String get paywallUnlockPremium => 'Unlock Premium';
+
+  @override
+  String get paywallSubtitle =>
+      'Get the most out of FishFeed with premium features';
+
+  @override
+  String get paywallPremiumBenefits => 'Premium Benefits';
+
+  @override
+  String get paywallChooseYourPlan => 'Choose Your Plan';
+
+  @override
+  String get paywallAnnual => 'Annual';
+
+  @override
+  String get paywallMonthly => 'Monthly';
+
+  @override
+  String get paywallBestValue => 'Best Value';
+
+  @override
+  String get paywallMostFlexible => 'Most Flexible';
+
+  @override
+  String paywallSavePercent(int percent) {
+    return 'Save $percent%';
+  }
+
+  @override
+  String get paywallStartFreeTrial => 'Start 7-Day Free Trial';
+
+  @override
+  String get paywallTrialTerms =>
+      'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.';
+
+  @override
+  String get paywallFailedToLoadProducts => 'Failed to load products';
+
+  @override
+  String get paywallPurchaseFailed => 'Purchase failed';
+
+  @override
+  String get paywallOr => 'or';
+
+  @override
+  String paywallPerMonth(String price) {
+    return '$price/month';
+  }
+
+  @override
+  String get paywallExtendedStatistics => 'Extended Statistics (6 months)';
+
+  @override
+  String get paywallFamilyMode => 'Family Mode (5+ users)';
+
+  @override
+  String get paywallMultipleAquariums => 'Multiple Aquariums';
+
+  @override
+  String get paywallUnlimitedAiScans => 'Unlimited AI Fish Scans';
+
+  @override
+  String get feedingAlreadyCompleted =>
+      'This feeding has already been completed';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
 }

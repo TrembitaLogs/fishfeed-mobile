@@ -106,40 +106,43 @@ class _StreakBadgeState extends State<StreakBadge>
     final color = _getStreakColor(widget.streak);
     final dimensions = _getDimensions(widget.size);
 
-    return Tooltip(
-      message: l10n.streakDaysInRow(widget.streak),
-      child: AnimatedBuilder(
-        animation: _bounceAnimation,
-        builder: (context, child) {
-          return Transform.scale(scale: _bounceAnimation.value, child: child);
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: dimensions.horizontalPadding,
-            vertical: dimensions.verticalPadding,
-          ),
-          decoration: BoxDecoration(
-            gradient: _getStreakGradient(widget.streak, theme),
-            borderRadius: BorderRadius.circular(dimensions.borderRadius),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.local_fire_department,
-                size: dimensions.iconSize,
-                color: color,
-              ),
-              SizedBox(width: dimensions.spacing),
-              Text(
-                widget.streak.toString(),
-                style: theme.textTheme.labelLarge?.copyWith(
+    return Semantics(
+      label: l10n.streakDaysInRow(widget.streak),
+      child: Tooltip(
+        message: l10n.streakDaysInRow(widget.streak),
+        child: AnimatedBuilder(
+          animation: _bounceAnimation,
+          builder: (context, child) {
+            return Transform.scale(scale: _bounceAnimation.value, child: child);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: dimensions.horizontalPadding,
+              vertical: dimensions.verticalPadding,
+            ),
+            decoration: BoxDecoration(
+              gradient: _getStreakGradient(widget.streak, theme),
+              borderRadius: BorderRadius.circular(dimensions.borderRadius),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.local_fire_department,
+                  size: dimensions.iconSize,
                   color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: dimensions.fontSize,
                 ),
-              ),
-            ],
+                SizedBox(width: dimensions.spacing),
+                Text(
+                  widget.streak.toString(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: dimensions.fontSize,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -298,13 +298,20 @@ void main() {
     testWidgets('displays nextAt status when next feeding is in the future', (
       tester,
     ) async {
+      // Use a time guaranteed to be in the future to avoid flakiness
+      // when tests run late in the evening (e.g. after 23:00).
+      final futureScheduledFor = DateTime.now().add(const Duration(hours: 2));
+      final futureTimeStr =
+          '${futureScheduledFor.hour.toString().padLeft(2, '0')}:'
+          '${futureScheduledFor.minute.toString().padLeft(2, '0')}';
+
       final futureFeedings = [
         ComputedFeedingEvent(
           scheduleId: 's1',
           fishId: 'fish1',
           aquariumId: 'aq1',
-          scheduledFor: today.add(const Duration(hours: 23)),
-          time: '23:00',
+          scheduledFor: futureScheduledFor,
+          time: futureTimeStr,
           foodType: 'Flakes',
           status: EventStatus.pending,
           fishName: 'Guppy',
@@ -325,7 +332,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Next at 23:00'), findsOneWidget);
+      expect(find.text('Next at $futureTimeStr'), findsOneWidget);
       expect(find.byIcon(Icons.schedule), findsOneWidget);
     });
 

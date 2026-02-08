@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
@@ -24,6 +25,8 @@ class MockFeedingLogLocalDataSource extends Mock
 
 class MockScheduleLocalDataSource extends Mock
     implements ScheduleLocalDataSource {}
+
+class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
 void main() {
   late Directory tempDir;
@@ -46,18 +49,21 @@ void main() {
   late MockFishLocalDataSource mockFishDs;
   late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockScheduleLocalDataSource mockNewScheduleDs;
+  late MockAuthLocalDataSource mockAuthLocalDs;
 
   setUp(() {
     mockAquariumDs = MockAquariumLocalDataSource();
     mockFishDs = MockFishLocalDataSource();
     mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockNewScheduleDs = MockScheduleLocalDataSource();
+    mockAuthLocalDs = MockAuthLocalDataSource();
   });
 
   ChangeTracker createChangeTracker({bool includeNewDatasources = true}) {
     return ChangeTracker(
       aquariumDs: mockAquariumDs,
       fishDs: mockFishDs,
+      authLocalDs: mockAuthLocalDs,
       feedingLogDs: includeNewDatasources ? mockFeedingLogDs : null,
       newScheduleDs: includeNewDatasources ? mockNewScheduleDs : null,
     );
@@ -72,6 +78,7 @@ void main() {
     when(() => mockFeedingLogDs.getUnsynced()).thenReturn([]);
     when(() => mockNewScheduleDs.hasUnsyncedSchedules()).thenReturn(false);
     when(() => mockNewScheduleDs.getUnsynced()).thenReturn([]);
+    when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(null);
   }
 
   FeedingLogModel createTestFeedingLog({

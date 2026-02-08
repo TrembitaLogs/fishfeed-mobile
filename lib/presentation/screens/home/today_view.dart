@@ -276,6 +276,9 @@ class _FeedingsList extends ConsumerWidget {
             feedings: item.aquariumFeedings!,
           );
 
+          if (AnimationConfig.shouldReduceMotion(context)) {
+            return child;
+          }
           return child
               .animate(delay: staggerDelay)
               .fadeIn(

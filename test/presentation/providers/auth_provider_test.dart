@@ -7,6 +7,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
@@ -31,11 +33,16 @@ class MockAppleAuthService extends Mock implements AppleAuthService {}
 class _MockAquariumLocalDataSource extends Mock
     implements AquariumLocalDataSource {}
 
+class _MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
+
+class _FakeUserModel extends Fake implements UserModel {}
+
 void main() {
   late MockAuthRepository mockRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
   late _MockAquariumLocalDataSource mockAquariumLocalDs;
+  late _MockAuthLocalDataSource mockAuthLocalDs;
   late MockSyncService mockSyncService;
   late AuthNotifier authNotifier;
   late Directory tempDir;
@@ -50,6 +57,7 @@ void main() {
   );
 
   setUpAll(() async {
+    registerFallbackValue(_FakeUserModel());
     tempDir = await Directory.systemTemp.createTemp('auth_provider_test_');
     Hive.init(tempDir.path);
     await HiveBoxes.initForTesting();
@@ -68,15 +76,19 @@ void main() {
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
     mockAquariumLocalDs = _MockAquariumLocalDataSource();
+    mockAuthLocalDs = _MockAuthLocalDataSource();
     mockSyncService = createMockSyncService();
 
     when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
+    when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
+    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
 
     authNotifier = AuthNotifier(
       repository: mockRepository,
       googleAuthService: mockGoogleAuthService,
       appleAuthService: mockAppleAuthService,
       aquariumLocalDataSource: mockAquariumLocalDs,
+      authLocalDataSource: mockAuthLocalDs,
       syncService: mockSyncService,
     );
   });

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -19,19 +20,55 @@ import 'package:fishfeed/services/notifications/notification_permission_service.
 /// @pragma('vm:entry-point') to prevent tree-shaking.
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse response) {
-  if (kDebugMode) {
-    print('Background notification action: ${response.actionId}');
-    print('Background notification payload: ${response.payload}');
+  _handleBackgroundResponse(response);
+}
+
+/// Async handler for background notification actions.
+///
+/// Handles snooze directly via [NotificationService]. For "fed" actions,
+/// stores them in [NotificationActionStorage] for processing when the app
+/// opens with UI (navigation to feeding screen + confirmation dialog).
+Future<void> _handleBackgroundResponse(NotificationResponse response) async {
+  final actionId = response.actionId;
+  final payload = response.payload;
+
+  if (actionId == null) return;
+
+  // Handle snooze directly via service (doesn't need UI callback)
+  if (actionId == NotificationActionIds.snooze && payload != null) {
+    try {
+      final service = NotificationService.instance;
+      if (!service.isInitialized) {
+        await service.initialize();
+      }
+      service.handleNotificationAction(actionId, payload);
+      return;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Background handler: snooze failed: $e');
+      }
+    }
   }
 
-  // Store the action for processing when the app starts
-  if (response.actionId != null && response.payload != null) {
+  // For fed actions: store for processing when app opens with UI
+  if (actionId == NotificationActionIds.fed && payload != null) {
     final action = PendingNotificationAction(
-      actionId: response.actionId!,
-      payload: response.payload!,
+      actionId: actionId,
+      payload: payload,
       timestamp: DateTime.now(),
     );
-    NotificationActionStorage.addPendingAction(action);
+    await NotificationActionStorage.addPendingAction(action);
+    return;
+  }
+
+  // For other unknown actions: store for later processing
+  if (payload != null) {
+    final action = PendingNotificationAction(
+      actionId: actionId,
+      payload: payload,
+      timestamp: DateTime.now(),
+    );
+    await NotificationActionStorage.addPendingAction(action);
   }
 }
 
@@ -110,6 +147,9 @@ class NotificationService {
   static const String freezeChannelDescription =
       'Alerts when streak is at risk and freeze day is available';
 
+  /// Notification icon resource for Android notifications.
+  static const String _notificationIcon = '@drawable/ic_notification';
+
   /// Tracks the last notification time per type and event for throttling.
   ///
   /// Key format: "${notificationType.name}_$eventId"
@@ -121,7 +161,26 @@ class NotificationService {
   /// Callback for handling notification actions in foreground.
   ///
   /// Set this to process fed/snooze actions when app is in foreground.
-  void Function(String actionId, String? payload)? onActionReceived;
+  /// When set, any buffered action from cold start is delivered immediately.
+  void Function(String actionId, String? payload)? get onActionReceived =>
+      _onActionReceived;
+
+  set onActionReceived(
+    void Function(String actionId, String? payload)? callback,
+  ) {
+    _onActionReceived = callback;
+    // Deliver buffered action from cold start
+    if (callback != null && _pendingForegroundAction != null) {
+      final pending = _pendingForegroundAction!;
+      _pendingForegroundAction = null;
+      callback(pending.$1, pending.$2);
+    }
+  }
+
+  void Function(String actionId, String? payload)? _onActionReceived;
+
+  /// Buffered action received before [onActionReceived] was set (cold start).
+  (String, String?)? _pendingForegroundAction;
 
   /// Initializes the notification service.
   ///
@@ -132,10 +191,10 @@ class NotificationService {
 
     // Initialize timezone database
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation(_getLocalTimeZone()));
+    tz.setLocalLocation(tz.getLocation(await _getLocalTimeZone()));
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_notification',
     );
 
     // iOS notification categories with action buttons
@@ -181,20 +240,18 @@ class NotificationService {
     _isInitialized = true;
   }
 
-  /// Gets the local timezone identifier.
-  String _getLocalTimeZone() {
+  /// Returns details about the notification that launched the app.
+  ///
+  /// Must be called after [initialize]. Returns `null` if the app was not
+  /// launched from a notification.
+  Future<NotificationAppLaunchDetails?> getNotificationAppLaunchDetails() =>
+      _plugin.getNotificationAppLaunchDetails();
+
+  /// Gets the local timezone identifier from the OS.
+  Future<String> _getLocalTimeZone() async {
     try {
-      final now = DateTime.now();
-      final offset = now.timeZoneOffset;
-
-      // Map common offsets to timezone names
-      // This is a simplified approach; production apps might use a more robust solution
-      if (offset.inHours == 2) return 'Europe/Kiev';
-      if (offset.inHours == 0) return 'UTC';
-      if (offset.inHours == -5) return 'America/New_York';
-      if (offset.inHours == -8) return 'America/Los_Angeles';
-
-      return 'UTC';
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      return timezoneInfo.identifier;
     } catch (_) {
       return 'UTC';
     }
@@ -202,12 +259,6 @@ class NotificationService {
 
   /// Handles notification tap and action events in foreground.
   void _onNotificationResponse(NotificationResponse response) {
-    if (kDebugMode) {
-      print('Notification response: ${response.notificationResponseType}');
-      print('Notification actionId: ${response.actionId}');
-      print('Notification payload: ${response.payload}');
-    }
-
     final actionId = response.actionId;
     final payload = response.payload;
 
@@ -219,23 +270,16 @@ class NotificationService {
 
     // Handle notification actions (Fed/Snooze buttons)
     if (actionId != null && actionId.isNotEmpty) {
-      _handleNotificationAction(actionId, payload);
+      handleNotificationAction(actionId, payload);
       return;
     }
 
     // Handle regular notification tap (no action button)
-    // This is when user taps on the notification body itself
     if (response.notificationResponseType ==
         NotificationResponseType.selectedNotification) {
-      // Track app open from push
       AnalyticsService.instance.trackAppOpenFromPush(
         notificationType: notificationType,
       );
-      // Navigate to relevant screen based on payload
-      // This will be handled by the app's navigation system
-      if (kDebugMode) {
-        print('Notification tapped, payload: $payload');
-      }
     }
   }
 
@@ -251,13 +295,16 @@ class NotificationService {
   }
 
   /// Handles notification action button taps.
-  void _handleNotificationAction(String actionId, String? payload) {
-    if (kDebugMode) {
-      print('Handling action: $actionId with payload: $payload');
+  ///
+  /// Called from both foreground handler and background handler (when app is
+  /// alive). Notifies listeners and handles snooze internally.
+  void handleNotificationAction(String actionId, String? payload) {
+    if (_onActionReceived != null) {
+      _onActionReceived!(actionId, payload);
+    } else if (actionId == NotificationActionIds.fed) {
+      // Buffer fed action for delivery when onActionReceived is set (cold start)
+      _pendingForegroundAction = (actionId, payload);
     }
-
-    // Notify listeners about the action
-    onActionReceived?.call(actionId, payload);
 
     // Handle snooze action internally (reschedule notification)
     if (actionId == NotificationActionIds.snooze && payload != null) {
@@ -266,6 +313,8 @@ class NotificationService {
   }
 
   /// Handles the snooze action by rescheduling the notification.
+  ///
+  /// Preserves the original payload so that "Fed" action works after snooze.
   Future<void> _handleSnoozeAction(String payload) async {
     final eventId = parseEventIdFromPayload(payload);
     if (eventId == null) {
@@ -282,11 +331,8 @@ class NotificationService {
       time: snoozeTime,
       fishName: 'your fish', // Generic name for snoozed notification
       eventId: eventId,
+      customPayload: payload, // Preserve original payload for Fed action
     );
-
-    if (kDebugMode) {
-      print('Snoozed notification for eventId $eventId until $snoozeTime');
-    }
   }
 
   /// Requests notification permissions from the user.
@@ -315,6 +361,14 @@ class NotificationService {
     if (androidPlugin == null) return false;
 
     final granted = await androidPlugin.requestNotificationsPermission();
+
+    // Request exact alarm permission for Android 14+ (API 34+)
+    final canScheduleExact = await androidPlugin
+        .canScheduleExactNotifications();
+    if (canScheduleExact != null && !canScheduleExact) {
+      await androidPlugin.requestExactAlarmsPermission();
+    }
+
     return granted ?? false;
   }
 
@@ -448,21 +502,7 @@ class NotificationService {
       title,
       body,
       scheduledTime,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          feedingChannelId,
-          feedingChannelName,
-          channelDescription: feedingChannelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
+      _getNotificationDetails(NotificationType.feedingReminder),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -551,6 +591,7 @@ class NotificationService {
     required int eventId,
     String? title,
     String? body,
+    String? customPayload,
   }) async {
     if (!_isInitialized) {
       await initialize();
@@ -572,7 +613,7 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'feeding_reminder_$eventId',
+      payload: customPayload ?? 'feeding_reminder_$eventId',
     );
   }
 
@@ -773,7 +814,7 @@ class NotificationService {
     AndroidNotificationAction(
       NotificationActionIds.fed,
       'Fed ✓',
-      showsUserInterface: false,
+      showsUserInterface: true,
       cancelNotification: true,
     ),
     AndroidNotificationAction(
@@ -794,7 +835,7 @@ class NotificationService {
           channelDescription: feedingChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: _notificationIcon,
           category: AndroidNotificationCategory.reminder,
           actions: _feedingActions,
         ),
@@ -812,7 +853,7 @@ class NotificationService {
           channelDescription: missedChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: _notificationIcon,
           category: AndroidNotificationCategory.reminder,
           actions: _feedingActions,
         ),
@@ -830,7 +871,7 @@ class NotificationService {
           channelDescription: confirmChannelDescription,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: _notificationIcon,
           category: AndroidNotificationCategory.reminder,
           actions: _feedingActions,
         ),
@@ -848,7 +889,7 @@ class NotificationService {
           channelDescription: freezeChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: _notificationIcon,
           category: AndroidNotificationCategory.reminder,
         ),
         iOS: DarwinNotificationDetails(
@@ -933,7 +974,7 @@ class NotificationService {
           channelDescription: feedingChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: _notificationIcon,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

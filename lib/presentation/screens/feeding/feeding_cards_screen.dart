@@ -11,6 +11,7 @@ import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
 import 'package:fishfeed/presentation/widgets/feeding/feeding_card.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -27,10 +28,20 @@ import 'package:fishfeed/services/sync/sync_service.dart';
 /// - Staggered entrance animations for cards
 /// - Settings icon in AppBar for aquarium editing
 class FeedingCardsScreen extends ConsumerStatefulWidget {
-  const FeedingCardsScreen({super.key, required this.aquariumId});
+  const FeedingCardsScreen({
+    super.key,
+    required this.aquariumId,
+    this.autoFedScheduleId,
+  });
 
   /// The aquarium ID to display feedings for.
   final String aquariumId;
+
+  /// Optional schedule ID to automatically show the feeding confirmation dialog.
+  ///
+  /// When set (from notification "Fed" action), the screen will find the
+  /// matching feeding event and show the confirmation dialog automatically.
+  final String? autoFedScheduleId;
 
   @override
   ConsumerState<FeedingCardsScreen> createState() => _FeedingCardsScreenState();
@@ -44,6 +55,9 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
   StreamSubscription<SyncConflict<Map<String, dynamic>>>?
   _feedingConflictSubscription;
 
+  /// Whether the auto-fed dialog has already been shown (prevents duplicates).
+  bool _autoFedDialogShown = false;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +65,13 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
         .read(syncServiceProvider)
         .feedingConflictStream
         .listen(_onFeedingConflict);
+
+    // Schedule auto-fed dialog after first frame if needed
+    if (widget.autoFedScheduleId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tryShowAutoFedDialog();
+      });
+    }
   }
 
   @override
@@ -103,6 +124,65 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
     ref.read(todayFeedingsProvider.notifier).refresh();
   }
 
+  /// Attempts to show the auto-fed confirmation dialog.
+  ///
+  /// Searches for a feeding event matching [widget.autoFedScheduleId].
+  /// If already fed, shows a snackbar. Otherwise, shows the confirmation
+  /// dialog and marks as fed on user confirmation.
+  void _tryShowAutoFedDialog() {
+    if (_autoFedDialogShown || widget.autoFedScheduleId == null || !mounted) {
+      return;
+    }
+
+    final groupedByTime = ref.read(
+      feedingsGroupedByTimeProvider(widget.aquariumId),
+    );
+
+    // Find the matching feeding event
+    ComputedFeedingEvent? targetFeeding;
+    for (final feedings in groupedByTime.values) {
+      for (final feeding in feedings) {
+        if (feeding.scheduleId == widget.autoFedScheduleId) {
+          targetFeeding = feeding;
+          break;
+        }
+      }
+      if (targetFeeding != null) break;
+    }
+
+    // Data not loaded yet — will retry when provider updates
+    if (targetFeeding == null && groupedByTime.isEmpty) return;
+
+    _autoFedDialogShown = true;
+
+    if (targetFeeding == null) return;
+
+    // Already completed — show snackbar
+    if (targetFeeding.isCompleted) {
+      final l10n = AppLocalizations.of(context);
+      if (l10n != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.feedingAlreadyCompleted)));
+      }
+      return;
+    }
+
+    // Show confirmation dialog
+    _showAutoFedConfirmation(targetFeeding);
+  }
+
+  Future<void> _showAutoFedConfirmation(ComputedFeedingEvent feeding) async {
+    if (!mounted) return;
+
+    final confirmed = await showConfirmFeedingDialog(context, feeding);
+    if (confirmed && mounted) {
+      await ref
+          .read(todayFeedingsProvider.notifier)
+          .markAsFed(feeding.scheduleId);
+    }
+  }
+
   Future<void> _onRefresh() async {
     await ref.read(syncServiceProvider).syncNow();
     await ref.read(todayFeedingsProvider.notifier).refresh();
@@ -119,6 +199,13 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
     );
     final notifier = ref.read(todayFeedingsProvider.notifier);
     final l10n = AppLocalizations.of(context)!;
+
+    // Retry auto-fed dialog when data loads (provider rebuilds)
+    if (widget.autoFedScheduleId != null && !_autoFedDialogShown) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tryShowAutoFedDialog();
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -163,29 +250,35 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
       items.add(_TimeGroupHeader(time: time, isNow: isNow));
 
       // Feeding cards for this time group
+      final reduceMotion = AnimationConfig.shouldReduceMotion(context);
       for (final feeding in feedings) {
-        final delay = Duration(
-          milliseconds:
-              animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
+        final card = FeedingCard(
+          key: Key('feeding_${feeding.scheduleId}'),
+          feeding: feeding,
+          onMarkAsFed: notifier.markAsFed,
         );
-        items.add(
-          FeedingCard(
-                key: Key('feeding_${feeding.scheduleId}'),
-                feeding: feeding,
-                onMarkAsFed: notifier.markAsFed,
-              )
-              .animate(delay: delay)
-              .fadeIn(
-                duration: AnimationConfig.durationNormal,
-                curve: AnimationConfig.entranceCurve,
-              )
-              .slideY(
-                begin: 0.1,
-                end: 0,
-                duration: AnimationConfig.durationNormal,
-                curve: AnimationConfig.entranceCurve,
-              ),
-        );
+        if (reduceMotion) {
+          items.add(card);
+        } else {
+          final delay = Duration(
+            milliseconds:
+                animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
+          );
+          items.add(
+            card
+                .animate(delay: delay)
+                .fadeIn(
+                  duration: AnimationConfig.durationNormal,
+                  curve: AnimationConfig.entranceCurve,
+                )
+                .slideY(
+                  begin: 0.1,
+                  end: 0,
+                  duration: AnimationConfig.durationNormal,
+                  curve: AnimationConfig.entranceCurve,
+                ),
+          );
+        }
         animationIndex++;
       }
     }

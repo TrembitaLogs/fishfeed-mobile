@@ -1277,6 +1277,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get premiumComingSoon => 'Premium-Abonnement kommt bald!';
 
   @override
+  String get comingSoon => 'Demnächst verfügbar';
+
+  @override
+  String get aiCameraComingSoonMessage =>
+      'KI-Fischerkennung kommt bald! Bleiben Sie dran für Updates.';
+
+  @override
   String get thisWeek => 'Diese Woche';
 
   @override
@@ -1756,4 +1763,89 @@ class AppLocalizationsDe extends AppLocalizations {
   String feedingAlreadyDoneByMember(String name, String time) {
     return '$name hat bereits um $time gefüttert';
   }
+
+  @override
+  String get goodMorning => 'Guten Morgen';
+
+  @override
+  String get goodAfternoon => 'Guten Tag';
+
+  @override
+  String get goodEvening => 'Guten Abend';
+
+  @override
+  String greetingWithName(String greeting, String name) {
+    return '$greeting, $name!';
+  }
+
+  @override
+  String get paywallUnlockPremium => 'Premium freischalten';
+
+  @override
+  String get paywallSubtitle =>
+      'Hole das Beste aus FishFeed mit Premium-Funktionen';
+
+  @override
+  String get paywallPremiumBenefits => 'Premium-Vorteile';
+
+  @override
+  String get paywallChooseYourPlan => 'Wähle deinen Plan';
+
+  @override
+  String get paywallAnnual => 'Jährlich';
+
+  @override
+  String get paywallMonthly => 'Monatlich';
+
+  @override
+  String get paywallBestValue => 'Bester Wert';
+
+  @override
+  String get paywallMostFlexible => 'Am flexibelsten';
+
+  @override
+  String paywallSavePercent(int percent) {
+    return '$percent% sparen';
+  }
+
+  @override
+  String get paywallStartFreeTrial => '7-Tage-Testversion starten';
+
+  @override
+  String get paywallTrialTerms =>
+      'Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den App-Store-Einstellungen kündbar.';
+
+  @override
+  String get paywallFailedToLoadProducts =>
+      'Produkte konnten nicht geladen werden';
+
+  @override
+  String get paywallPurchaseFailed => 'Kauf fehlgeschlagen';
+
+  @override
+  String get paywallOr => 'oder';
+
+  @override
+  String paywallPerMonth(String price) {
+    return '$price/Monat';
+  }
+
+  @override
+  String get paywallExtendedStatistics => 'Erweiterte Statistiken (6 Monate)';
+
+  @override
+  String get paywallFamilyMode => 'Familienmodus (5+ Benutzer)';
+
+  @override
+  String get paywallMultipleAquariums => 'Mehrere Aquarien';
+
+  @override
+  String get paywallUnlimitedAiScans => 'Unbegrenzte KI-Fischscans';
+
+  @override
+  String get feedingAlreadyCompleted =>
+      'Diese Fütterung wurde bereits abgeschlossen';
+
+  @override
+  String get privacyPolicy => 'Datenschutzrichtlinie';
 }

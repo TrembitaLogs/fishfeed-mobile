@@ -27,6 +27,13 @@ import 'package:fishfeed/presentation/screens/feeding/feeding_cards_screen.dart'
 class AppRouter {
   AppRouter._();
 
+  /// The active GoRouter instance, set by [createRouter].
+  static GoRouter? _instance;
+
+  /// Returns the active GoRouter instance for navigation outside the
+  /// widget tree (e.g., from notification action handlers).
+  static GoRouter get router => _instance!;
+
   /// Route path constants.
   static const String splash = '/splash';
   static const String auth = '/auth';
@@ -53,7 +60,7 @@ class AppRouter {
   ///
   /// The router will automatically re-evaluate routes when auth state changes.
   static GoRouter createRouter(AuthStateListenable authStateListenable) {
-    return GoRouter(
+    _instance = GoRouter(
       initialLocation: home,
       debugLogDiagnostics: true,
       refreshListenable: authStateListenable,
@@ -61,6 +68,7 @@ class AppRouter {
       routes: _routes,
       observers: _createObservers(),
     );
+    return _instance!;
   }
 
   /// Creates navigation observers for the router.
@@ -314,9 +322,13 @@ class AppRouter {
       name: 'aquariumFeedings',
       pageBuilder: (context, state) {
         final aquariumId = state.pathParameters['aquariumId']!;
+        final autoFedScheduleId = state.uri.queryParameters['autoFed'];
         return _buildPage(
           state: state,
-          child: FeedingCardsScreen(aquariumId: aquariumId),
+          child: FeedingCardsScreen(
+            aquariumId: aquariumId,
+            autoFedScheduleId: autoFedScheduleId,
+          ),
           transitionType: _PageTransitionType.slideRight,
         );
       },

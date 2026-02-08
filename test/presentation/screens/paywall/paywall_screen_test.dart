@@ -12,6 +12,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/paywall/paywall_screen.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
@@ -135,6 +136,8 @@ void main() {
       ],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
     );

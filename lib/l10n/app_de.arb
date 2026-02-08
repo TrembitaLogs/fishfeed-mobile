@@ -488,6 +488,8 @@
   "adsRemovedSuccessfully": "Werbung erfolgreich entfernt!",
   "noPreviousPurchases": "Keine früheren Käufe gefunden",
   "premiumComingSoon": "Premium-Abonnement kommt bald!",
+  "comingSoon": "Demnächst verfügbar",
+  "aiCameraComingSoonMessage": "KI-Fischerkennung kommt bald! Bleiben Sie dran für Updates.",
 
   "thisWeek": "Diese Woche",
   "thisMonth": "Diesen Monat",
@@ -794,5 +796,56 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "goodMorning": "Guten Morgen",
+  "goodAfternoon": "Guten Tag",
+  "goodEvening": "Guten Abend",
+  "greetingWithName": "{greeting}, {name}!",
+  "@greetingWithName": {
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "paywallUnlockPremium": "Premium freischalten",
+  "paywallSubtitle": "Hole das Beste aus FishFeed mit Premium-Funktionen",
+  "paywallPremiumBenefits": "Premium-Vorteile",
+  "paywallChooseYourPlan": "Wähle deinen Plan",
+  "paywallAnnual": "Jährlich",
+  "paywallMonthly": "Monatlich",
+  "paywallBestValue": "Bester Wert",
+  "paywallMostFlexible": "Am flexibelsten",
+  "paywallSavePercent": "{percent}% sparen",
+  "@paywallSavePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "paywallStartFreeTrial": "7-Tage-Testversion starten",
+  "paywallTrialTerms": "Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den App-Store-Einstellungen kündbar.",
+  "paywallFailedToLoadProducts": "Produkte konnten nicht geladen werden",
+  "paywallPurchaseFailed": "Kauf fehlgeschlagen",
+  "paywallOr": "oder",
+  "paywallPerMonth": "{price}/Monat",
+  "@paywallPerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallExtendedStatistics": "Erweiterte Statistiken (6 Monate)",
+  "paywallFamilyMode": "Familienmodus (5+ Benutzer)",
+  "paywallMultipleAquariums": "Mehrere Aquarien",
+  "paywallUnlimitedAiScans": "Unbegrenzte KI-Fischscans",
+  "feedingAlreadyCompleted": "Diese Fütterung wurde bereits abgeschlossen",
+  "privacyPolicy": "Datenschutzrichtlinie"
 }

@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/api_exceptions.dart';
@@ -51,8 +52,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(_mapUserDtoToEntity(response.user));
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('AuthRepository.login failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -117,8 +119,9 @@ class AuthRepositoryImpl implements AuthRepository {
       if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
           await _remoteDataSource.logout(refreshToken: refreshToken);
-        } catch (_) {
+        } catch (e, st) {
           // Ignore server logout errors - local data is already cleared
+          debugPrint('AuthRepository.logout server call failed: $e\n$st');
         }
       }
 

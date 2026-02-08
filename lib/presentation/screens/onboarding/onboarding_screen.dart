@@ -328,13 +328,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ? slot.speciesNames.first
           : '${slot.speciesNames.length} species';
 
+      final paddedHour = hour.toString().padLeft(2, '0');
+      final paddedMinute = minute.toString().padLeft(2, '0');
+
       await NotificationService.instance.scheduleDailyFeeding(
         id: 1000 + i,
         title: 'Feeding Time!',
         body: 'Time to feed your $speciesText',
         hour: hour,
         minute: minute,
-        payload: 'feeding_slot_$i',
+        payload: 'feeding_daily_${paddedHour}_$paddedMinute',
       );
     }
   }

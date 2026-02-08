@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 
 /// A badge widget displaying the user's subscription status.
@@ -39,6 +40,7 @@ class PremiumBadge extends ConsumerWidget {
 
   Widget _buildBadge(BuildContext context, bool isPremium, bool isTrialActive) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
     final dimensions = _getDimensions(size);
 
     final Color backgroundColor;
@@ -53,48 +55,51 @@ class PremiumBadge extends ConsumerWidget {
         foregroundColor = Colors.purple.shade700;
         borderColor = Colors.purple.shade200;
         icon = Icons.hourglass_top;
-        label = 'Trial';
+        label = l.trial;
       } else {
         backgroundColor = Colors.amber.shade50;
         foregroundColor = Colors.amber.shade800;
         borderColor = Colors.amber.shade200;
         icon = Icons.workspace_premium;
-        label = 'Premium';
+        label = l.premium;
       }
     } else {
       backgroundColor = theme.colorScheme.surfaceContainerHighest;
       foregroundColor = theme.colorScheme.onSurfaceVariant;
       borderColor = theme.colorScheme.outlineVariant;
       icon = Icons.person_outline;
-      label = 'Free';
+      label = l.free;
     }
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: dimensions.horizontalPadding,
-        vertical: dimensions.verticalPadding,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(dimensions.borderRadius),
-        border: Border.all(color: borderColor, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: dimensions.iconSize, color: foregroundColor),
-          if (showLabel) ...[
-            SizedBox(width: dimensions.spacing),
-            Text(
-              label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: foregroundColor,
-                fontWeight: FontWeight.bold,
-                fontSize: dimensions.fontSize,
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: dimensions.horizontalPadding,
+          vertical: dimensions.verticalPadding,
+        ),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(dimensions.borderRadius),
+          border: Border.all(color: borderColor, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: dimensions.iconSize, color: foregroundColor),
+            if (showLabel) ...[
+              SizedBox(width: dimensions.spacing),
+              Text(
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: dimensions.fontSize,
+                ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

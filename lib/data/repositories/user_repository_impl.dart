@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/api_exceptions.dart';
@@ -55,8 +56,9 @@ class UserRepositoryImpl implements UserRepository {
       return Right(user);
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('UserRepository.updateDisplayName failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -86,8 +88,9 @@ class UserRepositoryImpl implements UserRepository {
       return Right(user);
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('UserRepository.updateAvatar failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 

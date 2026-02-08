@@ -69,24 +69,35 @@ class _SyncStatusIndicatorState extends ConsumerState<SyncStatusIndicator>
       }
     });
 
-    return InkWell(
-      onTap: () => _onTap(context, syncService, isOffline),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildIcon(syncState, isOffline, theme),
-            const SizedBox(width: 6),
-            _buildLabel(
-              syncState,
-              isOffline,
-              syncService.lastSyncTime,
-              l10n,
-              theme,
-            ),
-          ],
+    final statusLabel = _getSyncStatusLabel(
+      syncState,
+      isOffline,
+      syncService.lastSyncTime,
+      l10n,
+    );
+
+    return Semantics(
+      label: statusLabel,
+      button: true,
+      child: InkWell(
+        onTap: () => _onTap(context, syncService, isOffline),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildIcon(syncState, isOffline, theme),
+              const SizedBox(width: 6),
+              _buildLabel(
+                syncState,
+                isOffline,
+                syncService.lastSyncTime,
+                l10n,
+                theme,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -210,6 +221,27 @@ class _SyncStatusIndicatorState extends ConsumerState<SyncStatusIndicator>
           color: theme.colorScheme.error,
         ),
       ),
+    );
+  }
+
+  /// Returns a combined sync status label for screen readers.
+  String _getSyncStatusLabel(
+    AsyncValue<SyncState> syncState,
+    bool isOffline,
+    DateTime? lastSyncTime,
+    AppLocalizations l10n,
+  ) {
+    if (isOffline) return l10n.syncStatusOffline;
+    return syncState.maybeWhen(
+      data: (state) => switch (state) {
+        SyncState.syncing => l10n.syncStatusSyncing,
+        SyncState.success || SyncState.idle =>
+          lastSyncTime != null
+              ? _formatRelativeTime(lastSyncTime, l10n)
+              : l10n.syncStatusSynced,
+        SyncState.error => l10n.syncStatusError,
+      },
+      orElse: () => l10n.syncStatusSynced,
     );
   }
 

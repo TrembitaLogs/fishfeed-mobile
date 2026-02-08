@@ -99,6 +99,8 @@ class NotificationActionStorage {
   getAndClearPendingActions() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      // Reload from disk to pick up changes written by background isolate
+      await prefs.reload();
       final existingJson = prefs.getString(_pendingActionsKey);
 
       if (existingJson == null) {
@@ -139,6 +141,77 @@ class NotificationActionStorage {
       return false;
     }
   }
+}
+
+/// Parsed result from a schedule-based notification payload.
+///
+/// Contains the schedule ID and the scheduled feeding time.
+typedef SchedulePayload = ({String scheduleId, DateTime scheduledFor});
+
+/// Parsed result from a daily notification payload.
+///
+/// Contains the hour and minute of the scheduled feeding.
+typedef DailyPayload = ({int hour, int minute});
+
+/// Parses a schedule-based payload.
+///
+/// Payload format: "schedule_{scheduleId}_{timestampMs}"
+/// Returns null if the payload doesn't match the expected format.
+SchedulePayload? parseSchedulePayload(String? payload) {
+  if (payload == null || !payload.startsWith('schedule_')) {
+    return null;
+  }
+
+  // Format: schedule_{scheduleId}_{timestampMs}
+  // scheduleId can contain underscores (UUID), so find the last underscore
+  final withoutPrefix = payload.substring('schedule_'.length);
+  final lastUnderscore = withoutPrefix.lastIndexOf('_');
+  if (lastUnderscore == -1) {
+    return null;
+  }
+
+  final scheduleId = withoutPrefix.substring(0, lastUnderscore);
+  final timestampStr = withoutPrefix.substring(lastUnderscore + 1);
+  final timestampMs = int.tryParse(timestampStr);
+
+  if (scheduleId.isEmpty || timestampMs == null) {
+    return null;
+  }
+
+  return (
+    scheduleId: scheduleId,
+    scheduledFor: DateTime.fromMillisecondsSinceEpoch(timestampMs),
+  );
+}
+
+/// Parses a daily notification payload.
+///
+/// Payload format: "feeding_daily_{HH}_{mm}"
+/// Returns null if the payload doesn't match the expected format.
+DailyPayload? parseDailyPayload(String? payload) {
+  if (payload == null || !payload.startsWith('feeding_daily_')) {
+    return null;
+  }
+
+  final withoutPrefix = payload.substring('feeding_daily_'.length);
+  final parts = withoutPrefix.split('_');
+  if (parts.length != 2) {
+    return null;
+  }
+
+  final hour = int.tryParse(parts[0]);
+  final minute = int.tryParse(parts[1]);
+
+  if (hour == null ||
+      minute == null ||
+      hour < 0 ||
+      hour > 23 ||
+      minute < 0 ||
+      minute > 59) {
+    return null;
+  }
+
+  return (hour: hour, minute: minute);
 }
 
 /// Parses the event ID from a notification payload.

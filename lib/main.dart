@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,6 +12,8 @@ import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/migration/migration_service.dart';
+import 'package:fishfeed/services/notifications/fcm_service.dart';
+import 'package:fishfeed/services/notifications/notification_action_handler.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/sentry/sentry_service.dart';
@@ -40,8 +43,19 @@ Future<void> main() async {
         appVersion: packageInfo.version,
       );
 
+      // Initialize Firebase
+      await Firebase.initializeApp();
+
       // Initialize notification service
       await NotificationService.instance.initialize();
+
+      // Check if app was launched from a notification action (cold start).
+      // onDidReceiveNotificationResponse does not fire for launch actions,
+      // so we must check launch details explicitly.
+      await _handleNotificationLaunch();
+
+      // Initialize FCM for remote push notifications
+      await FcmService.instance.initialize();
 
       // Initialize purchase service (RevenueCat)
       await PurchaseService.instance.initialize();
@@ -55,6 +69,46 @@ Future<void> main() async {
       runApp(const ProviderScope(child: FishFeedApp()));
     },
   );
+}
+
+/// Checks if the app was launched from a notification action button.
+///
+/// When the user taps "Fed" on a notification while the app is terminated,
+/// [getNotificationAppLaunchDetails] is the only reliable way to capture
+/// the action. Stores it in [NotificationActionStorage] for processing
+/// by [_NotificationActionListener] once the widget tree is ready.
+Future<void> _handleNotificationLaunch() async {
+  try {
+    final details = await NotificationService.instance
+        .getNotificationAppLaunchDetails();
+
+    if (details == null || !details.didNotificationLaunchApp) return;
+
+    final response = details.notificationResponse;
+    if (response == null) return;
+
+    final actionId = response.actionId;
+    final payload = response.payload;
+
+    if (actionId == null ||
+        actionId.isEmpty ||
+        actionId != NotificationActionIds.fed ||
+        payload == null) {
+      return;
+    }
+
+    await NotificationActionStorage.addPendingAction(
+      PendingNotificationAction(
+        actionId: actionId,
+        payload: payload,
+        timestamp: DateTime.now(),
+      ),
+    );
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('_handleNotificationLaunch error: $e');
+    }
+  }
 }
 
 /// Runs data migration if needed.

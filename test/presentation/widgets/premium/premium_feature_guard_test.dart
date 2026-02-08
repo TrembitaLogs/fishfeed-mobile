@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/core/utils/premium_gate.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_feature_guard.dart';
 
@@ -35,6 +36,8 @@ void main() {
       ],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: GoRouter(
           routes: [
             GoRoute(
@@ -195,6 +198,8 @@ void main() {
     }) {
       return MaterialApp.router(
         theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: GoRouter(
           routes: [
             GoRoute(

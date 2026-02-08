@@ -1710,6 +1710,14 @@
   "@premiumComingSoon": {
     "description": "Premium coming soon message"
   },
+  "comingSoon": "Coming Soon",
+  "@comingSoon": {
+    "description": "Coming soon title for features not yet available"
+  },
+  "aiCameraComingSoonMessage": "AI fish recognition is coming soon! Stay tuned for updates.",
+  "@aiCameraComingSoonMessage": {
+    "description": "Message shown when user taps AI camera feature"
+  },
 
   "thisWeek": "This Week",
   "@thisWeek": {
@@ -2356,5 +2364,125 @@
         "type": "String"
       }
     }
+  },
+
+  "goodMorning": "Good morning",
+  "@goodMorning": {
+    "description": "Morning greeting (before noon)"
+  },
+  "goodAfternoon": "Good afternoon",
+  "@goodAfternoon": {
+    "description": "Afternoon greeting (noon to 6pm)"
+  },
+  "goodEvening": "Good evening",
+  "@goodEvening": {
+    "description": "Evening greeting (after 6pm)"
+  },
+  "greetingWithName": "{greeting}, {name}!",
+  "@greetingWithName": {
+    "description": "Greeting with user name",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "paywallUnlockPremium": "Unlock Premium",
+  "@paywallUnlockPremium": {
+    "description": "Paywall headline"
+  },
+  "paywallSubtitle": "Get the most out of FishFeed with premium features",
+  "@paywallSubtitle": {
+    "description": "Paywall subtitle"
+  },
+  "paywallPremiumBenefits": "Premium Benefits",
+  "@paywallPremiumBenefits": {
+    "description": "Paywall benefits section title"
+  },
+  "paywallChooseYourPlan": "Choose Your Plan",
+  "@paywallChooseYourPlan": {
+    "description": "Paywall plan selection title"
+  },
+  "paywallAnnual": "Annual",
+  "@paywallAnnual": {
+    "description": "Annual plan title"
+  },
+  "paywallMonthly": "Monthly",
+  "@paywallMonthly": {
+    "description": "Monthly plan title"
+  },
+  "paywallBestValue": "Best Value",
+  "@paywallBestValue": {
+    "description": "Badge for best value plan"
+  },
+  "paywallMostFlexible": "Most Flexible",
+  "@paywallMostFlexible": {
+    "description": "Subtitle for monthly plan"
+  },
+  "paywallSavePercent": "Save {percent}%",
+  "@paywallSavePercent": {
+    "description": "Savings percentage badge",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "paywallStartFreeTrial": "Start 7-Day Free Trial",
+  "@paywallStartFreeTrial": {
+    "description": "CTA button text for free trial"
+  },
+  "paywallTrialTerms": "Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.",
+  "@paywallTrialTerms": {
+    "description": "Trial terms disclaimer"
+  },
+  "paywallFailedToLoadProducts": "Failed to load products",
+  "@paywallFailedToLoadProducts": {
+    "description": "Error when products cannot be loaded"
+  },
+  "paywallPurchaseFailed": "Purchase failed",
+  "@paywallPurchaseFailed": {
+    "description": "Error when purchase fails"
+  },
+  "paywallOr": "or",
+  "@paywallOr": {
+    "description": "Divider text between premium and remove ads sections"
+  },
+  "paywallPerMonth": "{price}/month",
+  "@paywallPerMonth": {
+    "description": "Price per month display",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallExtendedStatistics": "Extended Statistics (6 months)",
+  "@paywallExtendedStatistics": {
+    "description": "Premium benefit: extended statistics"
+  },
+  "paywallFamilyMode": "Family Mode (5+ users)",
+  "@paywallFamilyMode": {
+    "description": "Premium benefit: family mode"
+  },
+  "paywallMultipleAquariums": "Multiple Aquariums",
+  "@paywallMultipleAquariums": {
+    "description": "Premium benefit: multiple aquariums"
+  },
+  "paywallUnlimitedAiScans": "Unlimited AI Fish Scans",
+  "@paywallUnlimitedAiScans": {
+    "description": "Premium benefit: unlimited AI scans"
+  },
+  "feedingAlreadyCompleted": "This feeding has already been completed",
+  "@feedingAlreadyCompleted": {
+    "description": "Snackbar message when trying to mark a feeding that is already done"
+  },
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Privacy policy link text"
   }
 }

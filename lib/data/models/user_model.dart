@@ -21,6 +21,8 @@ class UserModel extends HiveObject {
     this.subscriptionStatus = const SubscriptionStatus.free(),
     this.freeAiScansRemaining = 5,
     UserSettingsModel? settings,
+    this.synced = true,
+    this.serverUpdatedAt,
   }) : settings = settings ?? UserSettingsModel();
 
   /// Creates a model from a domain entity.
@@ -34,6 +36,7 @@ class UserModel extends HiveObject {
       subscriptionStatus: entity.subscriptionStatus,
       freeAiScansRemaining: entity.freeAiScansRemaining,
       settings: UserSettingsModel.fromEntity(entity.settings),
+      synced: true,
     );
   }
 
@@ -68,6 +71,30 @@ class UserModel extends HiveObject {
   /// User's application settings.
   @HiveField(7)
   UserSettingsModel settings;
+
+  /// Whether this user has been synced to the server.
+  @HiveField(8, defaultValue: true)
+  bool synced;
+
+  /// Server-side updated_at timestamp for delta sync.
+  @HiveField(9)
+  DateTime? serverUpdatedAt;
+
+  /// Converts this model to JSON for the sync endpoint.
+  Map<String, dynamic> toSyncJson() {
+    return {
+      'id': id,
+      'nickname': displayName,
+      'avatar_url': avatarUrl,
+      'settings': {
+        'notifications_enabled': settings.notificationsEnabled,
+        'feeding_reminder_minutes_before':
+            settings.feedingReminderMinutesBefore,
+        'dark_mode_enabled': settings.darkModeEnabled,
+        'language': settings.language,
+      },
+    };
+  }
 
   /// Converts this model to a domain entity.
   User toEntity() {

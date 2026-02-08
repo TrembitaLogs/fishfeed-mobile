@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -52,8 +53,9 @@ class AquariumRepositoryImpl implements AquariumRepository {
       await _localDataSource.saveAquarium(model);
 
       return Right(aquarium);
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('AquariumRepository.createAquarium failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -71,8 +73,9 @@ class AquariumRepositoryImpl implements AquariumRepository {
           .map((m) => m.toEntity())
           .toList();
       return Right(aquariums);
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('AquariumRepository.getAquariums failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -119,8 +122,9 @@ class AquariumRepositoryImpl implements AquariumRepository {
       await _localDataSource.updateAquarium(model);
 
       return Right(updated);
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('AquariumRepository.updateAquarium failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -130,8 +134,9 @@ class AquariumRepositoryImpl implements AquariumRepository {
       // Soft delete locally; sync mechanism will push deletion to server
       await _localDataSource.softDelete(aquariumId);
       return const Right(unit);
-    } catch (_) {
-      return const Left(UnexpectedFailure());
+    } catch (e, st) {
+      debugPrint('AquariumRepository.deleteAquarium failed: $e\n$st');
+      return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 

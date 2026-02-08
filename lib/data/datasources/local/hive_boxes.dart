@@ -80,58 +80,58 @@ class HiveBoxes {
   static bool get isInitialized => _isInitialized;
 
   // Box instances (lazy initialized after init)
-  static late Box<dynamic> _usersBox;
-  static late Box<dynamic> _aquariumsBox;
-  static late Box<dynamic> _fishBox;
-  static late Box<dynamic> _speciesBox;
-  static late Box<dynamic> _streaksBox;
-  static late Box<dynamic> _achievementsBox;
-  static late Box<dynamic> _syncQueueBox;
+  static late Box<UserModel> _usersBox;
+  static late Box<AquariumModel> _aquariumsBox;
+  static late Box<FishModel> _fishBox;
+  static late Box<SpeciesModel> _speciesBox;
+  static late Box<StreakModel> _streaksBox;
+  static late Box<AchievementModel> _achievementsBox;
+  static late Box<SyncOperationModel> _syncQueueBox;
   static late Box<dynamic> _appPreferencesBox;
-  static late Box<dynamic> _userProgressBox;
+  static late Box<UserProgressModel> _userProgressBox;
   static late Box<dynamic> _subscriptionCacheBox;
-  static late Box<dynamic> _syncMetadataBox;
-  static late Box<dynamic> _schedulesBox;
-  static late Box<dynamic> _feedingLogsBox;
+  static late Box<SyncMetadataModel> _syncMetadataBox;
+  static late Box<ScheduleModel> _schedulesBox;
+  static late Box<FeedingLogModel> _feedingLogsBox;
 
   /// Users box for storing user data.
-  static Box<dynamic> get users {
+  static Box<UserModel> get users {
     _ensureInitialized();
     return _usersBox;
   }
 
   /// Aquariums box for storing aquarium data.
-  static Box<dynamic> get aquariums {
+  static Box<AquariumModel> get aquariums {
     _ensureInitialized();
     return _aquariumsBox;
   }
 
   /// Fish box for storing fish data.
-  static Box<dynamic> get fish {
+  static Box<FishModel> get fish {
     _ensureInitialized();
     return _fishBox;
   }
 
   /// Species box for storing fish species reference data.
-  static Box<dynamic> get species {
+  static Box<SpeciesModel> get species {
     _ensureInitialized();
     return _speciesBox;
   }
 
   /// Streaks box for storing feeding streak data.
-  static Box<dynamic> get streaks {
+  static Box<StreakModel> get streaks {
     _ensureInitialized();
     return _streaksBox;
   }
 
   /// Achievements box for storing user achievements.
-  static Box<dynamic> get achievements {
+  static Box<AchievementModel> get achievements {
     _ensureInitialized();
     return _achievementsBox;
   }
 
   /// Sync queue box for storing offline operations pending synchronization.
-  static Box<dynamic> get syncQueue {
+  static Box<SyncOperationModel> get syncQueue {
     _ensureInitialized();
     return _syncQueueBox;
   }
@@ -143,7 +143,7 @@ class HiveBoxes {
   }
 
   /// User progress box for storing XP and level data.
-  static Box<dynamic> get userProgress {
+  static Box<UserProgressModel> get userProgress {
     _ensureInitialized();
     return _userProgressBox;
   }
@@ -155,19 +155,19 @@ class HiveBoxes {
   }
 
   /// Sync metadata box for storing sync state information.
-  static Box<dynamic> get syncMetadata {
+  static Box<SyncMetadataModel> get syncMetadata {
     _ensureInitialized();
     return _syncMetadataBox;
   }
 
   /// Schedules box for storing new schedule model data (typeId: 24).
-  static Box<dynamic> get schedules {
+  static Box<ScheduleModel> get schedules {
     _ensureInitialized();
     return _schedulesBox;
   }
 
   /// Feeding logs box for storing feeding log entries (typeId: 25).
-  static Box<dynamic> get feedingLogs {
+  static Box<FeedingLogModel> get feedingLogs {
     _ensureInitialized();
     return _feedingLogsBox;
   }
@@ -297,19 +297,29 @@ class HiveBoxes {
 
   /// Opens all Hive boxes.
   static Future<void> _openBoxes() async {
-    _usersBox = await Hive.openBox(HiveBoxNames.users);
-    _aquariumsBox = await Hive.openBox(HiveBoxNames.aquariums);
-    _fishBox = await Hive.openBox(HiveBoxNames.fish);
-    _speciesBox = await Hive.openBox(HiveBoxNames.species);
-    _streaksBox = await Hive.openBox(HiveBoxNames.streaks);
-    _achievementsBox = await Hive.openBox(HiveBoxNames.achievements);
-    _syncQueueBox = await Hive.openBox(HiveBoxNames.syncQueue);
+    _usersBox = await Hive.openBox<UserModel>(HiveBoxNames.users);
+    _aquariumsBox = await Hive.openBox<AquariumModel>(HiveBoxNames.aquariums);
+    _fishBox = await Hive.openBox<FishModel>(HiveBoxNames.fish);
+    _speciesBox = await Hive.openBox<SpeciesModel>(HiveBoxNames.species);
+    _streaksBox = await Hive.openBox<StreakModel>(HiveBoxNames.streaks);
+    _achievementsBox = await Hive.openBox<AchievementModel>(
+      HiveBoxNames.achievements,
+    );
+    _syncQueueBox = await Hive.openBox<SyncOperationModel>(
+      HiveBoxNames.syncQueue,
+    );
     _appPreferencesBox = await Hive.openBox(HiveBoxNames.appPreferences);
-    _userProgressBox = await Hive.openBox(HiveBoxNames.userProgress);
+    _userProgressBox = await Hive.openBox<UserProgressModel>(
+      HiveBoxNames.userProgress,
+    );
     _subscriptionCacheBox = await Hive.openBox(HiveBoxNames.subscriptionCache);
-    _syncMetadataBox = await Hive.openBox(HiveBoxNames.syncMetadata);
-    _schedulesBox = await Hive.openBox(HiveBoxNames.schedules);
-    _feedingLogsBox = await Hive.openBox(HiveBoxNames.feedingLogs);
+    _syncMetadataBox = await Hive.openBox<SyncMetadataModel>(
+      HiveBoxNames.syncMetadata,
+    );
+    _schedulesBox = await Hive.openBox<ScheduleModel>(HiveBoxNames.schedules);
+    _feedingLogsBox = await Hive.openBox<FeedingLogModel>(
+      HiveBoxNames.feedingLogs,
+    );
   }
 
   /// Ensures Hive has been initialized before accessing boxes.

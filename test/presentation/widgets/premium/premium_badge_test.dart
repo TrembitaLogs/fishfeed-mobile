@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_badge.dart';
 
@@ -28,6 +29,8 @@ void main() {
       overrides: [subscriptionStatusProvider.overrideWith((ref) => status)],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Center(
             child: PremiumBadge(size: size, showLabel: showLabel, onTap: onTap),

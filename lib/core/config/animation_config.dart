@@ -92,15 +92,35 @@ abstract final class AnimationConfig {
 
   /// Curve for page transitions
   static const Curve pageTransitionCurve = Curves.easeInOut;
+
+  // ============================================
+  // Accessibility Helpers
+  // ============================================
+
+  /// Returns true if the user has enabled "Reduce Motion" in system settings.
+  static bool shouldReduceMotion(BuildContext context) {
+    return MediaQuery.of(context).disableAnimations;
+  }
+
+  /// Returns [Duration.zero] if reduce motion is on, otherwise returns [duration].
+  static Duration resolveDuration(BuildContext context, Duration duration) {
+    return shouldReduceMotion(context) ? Duration.zero : duration;
+  }
 }
 
 /// Extension methods for applying common animations using flutter_animate.
+///
+/// All methods respect the user's "Reduce Motion" accessibility setting.
+/// When reduce motion is enabled, the widget is returned without animations.
 extension AnimateExtensions on Widget {
   /// Applies a fade-in and slide-up animation for list items.
-  Widget animateListItem({
+  /// Skips animation when reduce motion is enabled.
+  Widget animateListItem(
+    BuildContext context, {
     Duration? delay,
     Duration duration = AnimationConfig.durationNormal,
   }) {
+    if (AnimationConfig.shouldReduceMotion(context)) return this;
     return animate(delay: delay)
         .fadeIn(duration: duration, curve: AnimationConfig.entranceCurve)
         .slideY(
@@ -112,10 +132,13 @@ extension AnimateExtensions on Widget {
   }
 
   /// Applies a scale-in animation for cards and containers.
-  Widget animateScaleIn({
+  /// Skips animation when reduce motion is enabled.
+  Widget animateScaleIn(
+    BuildContext context, {
     Duration? delay,
     Duration duration = AnimationConfig.durationNormal,
   }) {
+    if (AnimationConfig.shouldReduceMotion(context)) return this;
     return animate(delay: delay)
         .fadeIn(duration: duration)
         .scale(
@@ -127,10 +150,13 @@ extension AnimateExtensions on Widget {
   }
 
   /// Applies a slide-in from left animation.
-  Widget animateSlideInLeft({
+  /// Skips animation when reduce motion is enabled.
+  Widget animateSlideInLeft(
+    BuildContext context, {
     Duration? delay,
     Duration duration = AnimationConfig.durationNormal,
   }) {
+    if (AnimationConfig.shouldReduceMotion(context)) return this;
     return animate(delay: delay)
         .fadeIn(duration: duration)
         .slideX(
@@ -142,10 +168,13 @@ extension AnimateExtensions on Widget {
   }
 
   /// Applies a slide-in from right animation.
-  Widget animateSlideInRight({
+  /// Skips animation when reduce motion is enabled.
+  Widget animateSlideInRight(
+    BuildContext context, {
     Duration? delay,
     Duration duration = AnimationConfig.durationNormal,
   }) {
+    if (AnimationConfig.shouldReduceMotion(context)) return this;
     return animate(delay: delay)
         .fadeIn(duration: duration)
         .slideX(
@@ -157,10 +186,13 @@ extension AnimateExtensions on Widget {
   }
 
   /// Applies a bounce-in animation for emphasis.
-  Widget animateBounceIn({
+  /// Skips animation when reduce motion is enabled.
+  Widget animateBounceIn(
+    BuildContext context, {
     Duration? delay,
     Duration duration = AnimationConfig.durationMedium,
   }) {
+    if (AnimationConfig.shouldReduceMotion(context)) return this;
     return animate(delay: delay)
         .fadeIn(duration: duration)
         .scale(

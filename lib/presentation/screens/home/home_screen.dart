@@ -34,7 +34,8 @@ class HomeScreen extends ConsumerWidget {
     } else {
       userName = '';
     }
-    final greeting = _getGreeting(userName);
+    final l = AppLocalizations.of(context)!;
+    final greeting = _getGreeting(l, userName);
 
     return Scaffold(
       appBar: AppBar(
@@ -59,21 +60,21 @@ class HomeScreen extends ConsumerWidget {
         onDestinationSelected: (index) {
           ref.read(homeTabProvider.notifier).state = HomeTab.values[index];
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: l.home,
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+            icon: const Icon(Icons.calendar_today_outlined),
+            selectedIcon: const Icon(Icons.calendar_today),
+            label: l.calendar,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person),
+            label: l.profile,
           ),
         ],
       ),
@@ -87,23 +88,23 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Returns a time-based greeting message.
-  String _getGreeting(String userName) {
+  String _getGreeting(AppLocalizations l, String userName) {
     final hour = DateTime.now().hour;
     final String timeGreeting;
 
     if (hour < 12) {
-      timeGreeting = 'Good morning';
+      timeGreeting = l.goodMorning;
     } else if (hour < 18) {
-      timeGreeting = 'Good afternoon';
+      timeGreeting = l.goodAfternoon;
     } else {
-      timeGreeting = 'Good evening';
+      timeGreeting = l.goodEvening;
     }
 
     if (userName.isEmpty) {
       return timeGreeting;
     }
 
-    return '$timeGreeting, $userName!';
+    return l.greetingWithName(timeGreeting, userName);
   }
 
   Future<void> _onAddFishPressed(BuildContext context) async {
@@ -138,7 +139,20 @@ class HomeScreen extends ConsumerWidget {
 
     switch (choice) {
       case _AddFishChoice.aiCamera:
-        context.push(AppRouter.aiCamera);
+        if (!context.mounted) return;
+        showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l.comingSoon),
+            content: Text(l.aiCameraComingSoonMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+              ),
+            ],
+          ),
+        );
         break;
       case _AddFishChoice.manual:
         context.push(AppRouter.addFish);

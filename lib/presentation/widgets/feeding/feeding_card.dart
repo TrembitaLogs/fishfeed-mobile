@@ -215,127 +215,134 @@ class _FeedingCardContent extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = StatusIndicator.getEventStatusColor(feeding.status);
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      color: Colors.transparent,
-      shadowColor: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: _backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: _border,
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Status indicator or sync icon
-                if (_isSyncing)
-                  _SyncIcon(theme: theme)
-                else
-                  StatusIndicator.fromEventStatus(status: feeding.status),
-                const SizedBox(width: 12),
-                // Content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Fish name + quantity
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              _displayName,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                decoration: _isFed
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: _isFed
-                                    ? theme.colorScheme.onSurfaceVariant
-                                    : null,
+    final semanticLabel =
+        '${_displayName}, ${feeding.time}, ${feeding.foodType}';
+
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      child: Card(
+        elevation: 0,
+        margin: const EdgeInsets.only(bottom: 8),
+        color: Colors.transparent,
+        shadowColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            border: _border,
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Status indicator or sync icon
+                  if (_isSyncing)
+                    _SyncIcon(theme: theme)
+                  else
+                    StatusIndicator.fromEventStatus(status: feeding.status),
+                  const SizedBox(width: 12),
+                  // Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Fish name + quantity
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _displayName,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  decoration: _isFed
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  color: _isFed
+                                      ? theme.colorScheme.onSurfaceVariant
+                                      : null,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (feeding.fishQuantity > 1) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                l10n.fishCount(feeding.fishQuantity),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          feeding.aquariumName ?? '',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        // Fed time or attribution
+                        if (_isFed && feeding.log?.actedAt != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.fedAtTime(
+                              DateFormat.Hm().format(
+                                feeding.log!.actedAt.toLocal(),
+                              ),
+                            ),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.green.shade700,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          if (feeding.fishQuantity > 1) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.fishCount(feeding.fishQuantity),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
                         ],
-                      ),
-                      const SizedBox(height: 2),
+                        // Fed by attribution (only for completed feedings with user info)
+                        if (_isFed && feeding.log?.actedByUserName != null) ...[
+                          const SizedBox(height: 4),
+                          _FedByLabel(
+                            name: feeding.log!.actedByUserName!,
+                            avatarUrl: feeding.avatarUrl,
+                            theme: theme,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // Time and food type
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
                       Text(
-                        feeding.aquariumName ?? '',
+                        feeding.time,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                      Text(
+                        feeding.foodType,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      // Fed time or attribution
-                      if (_isFed && feeding.log?.actedAt != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.fedAtTime(
-                            DateFormat.Hm().format(
-                              feeding.log!.actedAt.toLocal(),
-                            ),
-                          ),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                      // Fed by attribution (only for completed feedings with user info)
-                      if (_isFed && feeding.log?.actedByUserName != null) ...[
-                        const SizedBox(height: 4),
-                        _FedByLabel(
-                          name: feeding.log!.actedByUserName!,
-                          avatarUrl: feeding.avatarUrl,
-                          theme: theme,
-                        ),
-                      ],
                     ],
                   ),
-                ),
-                // Time and food type
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      feeding.time,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
+                  // Chevron hint for detail sheet (all states)
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.5,
                     ),
-                    Text(
-                      feeding.foodType,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                // Chevron hint for detail sheet (all states)
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.5,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

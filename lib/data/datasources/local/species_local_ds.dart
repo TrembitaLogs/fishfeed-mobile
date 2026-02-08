@@ -27,7 +27,7 @@ abstract interface class SpeciesLocalDataSource {
 class SpeciesLocalDataSourceImpl implements SpeciesLocalDataSource {
   @override
   SpeciesModel? getSpeciesById(String speciesId) {
-    return HiveBoxes.species.get(speciesId) as SpeciesModel?;
+    return HiveBoxes.species.get(speciesId);
   }
 
   @override

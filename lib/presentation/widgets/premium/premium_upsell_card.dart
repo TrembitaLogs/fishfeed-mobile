@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 
 /// A card that promotes premium subscription to free users.
@@ -34,93 +35,97 @@ class PremiumUpsellCard extends ConsumerWidget {
 
   Widget _buildCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.amber.shade50, Colors.orange.shade50],
+    return Semantics(
+      label: l.upgradeToPremium,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.amber.shade50, Colors.orange.shade50],
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.workspace_premium,
-                      color: Colors.amber.shade800,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Upgrade to Premium',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber.shade900,
-                          ),
-                        ),
-                        Text(
-                          'Unlock all features',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.amber.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (showDismissButton)
-                    IconButton(
-                      onPressed: onDismiss,
-                      icon: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: Colors.amber.shade700,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade100,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      visualDensity: VisualDensity.compact,
+                      child: Icon(
+                        Icons.workspace_premium,
+                        color: Colors.amber.shade800,
+                        size: 24,
+                      ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _BenefitChip(label: 'No Ads'),
-                  _BenefitChip(label: 'Unlimited AI Scans'),
-                  _BenefitChip(label: '6 Months History'),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => context.push('/paywall'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber.shade700,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('View Plans'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.upgradeToPremium,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber.shade900,
+                            ),
+                          ),
+                          Text(
+                            l.unlockAllFeatures,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.amber.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showDismissButton)
+                      IconButton(
+                        onPressed: onDismiss,
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.amber.shade700,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _BenefitChip(label: l.noAds),
+                    _BenefitChip(label: l.unlimitedAiScans),
+                    _BenefitChip(label: l.sixMonthsHistory),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => context.push('/paywall'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade700,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(l.viewPlans),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

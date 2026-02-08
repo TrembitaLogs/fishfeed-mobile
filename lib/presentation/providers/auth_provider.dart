@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
@@ -155,22 +157,30 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     required GoogleAuthService googleAuthService,
     required AppleAuthService appleAuthService,
     required AquariumLocalDataSource aquariumLocalDataSource,
+    required AuthLocalDataSource authLocalDataSource,
     required SyncService syncService,
   }) : _repository = repository,
        _googleAuthService = googleAuthService,
        _appleAuthService = appleAuthService,
        _aquariumLocalDataSource = aquariumLocalDataSource,
+       _authLocalDataSource = authLocalDataSource,
        _syncService = syncService,
        _loginUseCase = LoginUseCase(repository),
        _registerUseCase = RegisterUseCase(repository),
        _oauthLoginUseCase = OAuthLoginUseCase(repository),
        _logoutUseCase = LogoutUseCase(repository),
-       super(const AuthenticationState.initial());
+       super(const AuthenticationState.initial()) {
+    // Set up callback to update auth state when user profile is synced from server
+    _syncService.onUserProfileUpdated = (user) {
+      updateUser(user);
+    };
+  }
 
   final AuthRepository _repository;
   final GoogleAuthService _googleAuthService;
   final AppleAuthService _appleAuthService;
   final AquariumLocalDataSource _aquariumLocalDataSource;
+  final AuthLocalDataSource _authLocalDataSource;
   final SyncService _syncService;
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
@@ -237,7 +247,18 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             debugPrint(
               '[AuthNotifier] Triggering background sync after session restore',
             );
-            unawaited(_syncService.syncAll());
+            unawaited(
+              _syncService.syncAll().then((_) {
+                // Re-read user from Hive after sync to pick up server changes
+                final updatedModel = _authLocalDataSource.getCurrentUser();
+                if (updatedModel != null) {
+                  final updatedUser = updatedModel.toEntity();
+                  if (updatedUser != state.user) {
+                    updateUser(updatedUser);
+                  }
+                }
+              }),
+            );
           }
         },
       );
@@ -265,6 +286,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         state = state.copyWith(isLoading: false, error: failure);
       },
       (user) async {
+        // Save user to Hive before sync so profile updates can be applied
+        await _authLocalDataSource.saveUserLocally(UserModel.fromEntity(user));
+
         var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
         debugPrint('[AuthNotifier] Login success for ${user.email}');
         debugPrint(
@@ -275,11 +299,15 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
         }
 
+        // Re-read user from Hive after sync (may have nickname from server)
+        final syncedModel = _authLocalDataSource.getCurrentUser();
+        final syncedUser = syncedModel?.toEntity() ?? user;
+
         debugPrint(
           '[AuthNotifier] Setting state with hasCompletedOnboarding=$hasCompletedOnboarding',
         );
         state = AuthenticationState.authenticated(
-          user,
+          syncedUser,
           hasCompletedOnboarding: hasCompletedOnboarding,
         );
 
@@ -337,6 +365,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
+          await _authLocalDataSource.saveUserLocally(
+            UserModel.fromEntity(user),
+          );
+
           var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Google login success for ${user.email}');
 
@@ -344,8 +376,11 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
+          final syncedModel = _authLocalDataSource.getCurrentUser();
+          final syncedUser = syncedModel?.toEntity() ?? user;
+
           state = AuthenticationState.authenticated(
-            user,
+            syncedUser,
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
@@ -391,6 +426,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
+          await _authLocalDataSource.saveUserLocally(
+            UserModel.fromEntity(user),
+          );
+
           var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Apple login success for ${user.email}');
 
@@ -398,8 +437,11 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
+          final syncedModel = _authLocalDataSource.getCurrentUser();
+          final syncedUser = syncedModel?.toEntity() ?? user;
+
           state = AuthenticationState.authenticated(
-            user,
+            syncedUser,
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
@@ -513,6 +555,7 @@ final authNotifierProvider =
       final aquariumLocalDataSource = ref.watch(
         aquariumLocalDataSourceProvider,
       );
+      final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
       final syncService = ref.watch(syncServiceProvider);
 
       return AuthNotifier(
@@ -520,6 +563,7 @@ final authNotifierProvider =
         googleAuthService: googleAuthService,
         appleAuthService: appleAuthService,
         aquariumLocalDataSource: aquariumLocalDataSource,
+        authLocalDataSource: authLocalDataSource,
         syncService: syncService,
       );
     });

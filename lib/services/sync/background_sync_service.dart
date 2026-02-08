@@ -111,7 +111,7 @@ Future<bool> _performBackgroundSync() async {
     await _initializeHiveForBackground();
 
     // 2. Get unsynced feeding logs
-    final feedingLogsBox = await Hive.openBox<dynamic>(
+    final feedingLogsBox = await Hive.openBox<FeedingLogModel>(
       HiveBoxNames.feedingLogs,
     );
     final unsyncedLogs = feedingLogsBox.values

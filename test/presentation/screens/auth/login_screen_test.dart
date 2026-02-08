@@ -18,7 +18,10 @@ import 'package:fishfeed/presentation/screens/auth/login_screen.dart';
 import 'package:fishfeed/presentation/widgets/common/app_button.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:hive/hive.dart';
 import 'dart:io';
@@ -31,10 +34,15 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
+class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
+
+class _FakeUserModel extends Fake implements UserModel {}
+
 void main() {
   late MockAuthRepository mockAuthRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
+  late MockAuthLocalDataSource mockAuthLocalDs;
 
   final testUser = User(
     id: 'user-123',
@@ -50,6 +58,7 @@ void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
+    registerFallbackValue(_FakeUserModel());
     tempDir = await Directory.systemTemp.createTemp('login_screen_test_');
     Hive.init(tempDir.path);
     await HiveBoxes.initForTesting();
@@ -67,6 +76,9 @@ void main() {
     mockAuthRepository = MockAuthRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
+    mockAuthLocalDs = MockAuthLocalDataSource();
+    when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
+    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
   });
 
   Widget buildTestWidget({AuthenticationState? initialState}) {
@@ -76,6 +88,7 @@ void main() {
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
         syncServiceProvider.overrideWithValue(createMockSyncService()),
+        authLocalDataSourceProvider.overrideWithValue(mockAuthLocalDs),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,

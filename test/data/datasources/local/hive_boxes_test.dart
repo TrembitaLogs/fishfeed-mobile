@@ -4,6 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/models/aquarium_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
+import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 
 void main() {
   late Directory tempDir;
@@ -182,23 +187,82 @@ void main() {
     });
 
     test('should be able to write and read from users box', () async {
-      await HiveBoxes.users.put('test_key', 'test_value');
-      expect(HiveBoxes.users.get('test_key'), 'test_value');
+      final user = UserModel(
+        id: 'test_user',
+        email: 'test@example.com',
+        createdAt: DateTime(2024),
+      );
+      await HiveBoxes.users.put('test_key', user);
+      expect(HiveBoxes.users.get('test_key')?.id, 'test_user');
     });
 
     test('should be able to write and read from schedules box', () async {
-      final testData = {'id': '1', 'fishId': 'fish_1', 'time': '09:00'};
-      await HiveBoxes.schedules.put('schedule_1', testData);
-      expect(HiveBoxes.schedules.get('schedule_1'), testData);
+      final schedule = ScheduleModel(
+        id: 'schedule_1',
+        fishId: 'fish_1',
+        aquariumId: 'aquarium_1',
+        time: '09:00',
+        intervalDays: 1,
+        anchorDate: DateTime(2024),
+        foodType: 'flakes',
+        active: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+        createdByUserId: 'user_1',
+      );
+      await HiveBoxes.schedules.put('schedule_1', schedule);
+      expect(HiveBoxes.schedules.get('schedule_1')?.id, 'schedule_1');
     });
 
     test('clearAll should clear all boxes', () async {
       // Add data to multiple boxes
-      await HiveBoxes.users.put('key1', 'value1');
-      await HiveBoxes.aquariums.put('key2', 'value2');
-      await HiveBoxes.fish.put('key3', 'value3');
-      await HiveBoxes.schedules.put('key4', 'value4');
-      await HiveBoxes.feedingLogs.put('key5', 'value5');
+      final user = UserModel(
+        id: 'u1',
+        email: 'a@b.com',
+        createdAt: DateTime(2024),
+      );
+      final aquarium = AquariumModel(
+        id: 'a1',
+        userId: 'u1',
+        name: 'Tank',
+        createdAt: DateTime(2024),
+      );
+      final fish = FishModel(
+        id: 'f1',
+        aquariumId: 'a1',
+        speciesId: 's1',
+        addedAt: DateTime(2024),
+      );
+      final schedule = ScheduleModel(
+        id: 'sc1',
+        fishId: 'f1',
+        aquariumId: 'a1',
+        time: '09:00',
+        intervalDays: 1,
+        anchorDate: DateTime(2024),
+        foodType: 'flakes',
+        active: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+        createdByUserId: 'u1',
+      );
+      final log = FeedingLogModel(
+        id: 'l1',
+        scheduleId: 'sc1',
+        fishId: 'f1',
+        aquariumId: 'a1',
+        scheduledFor: DateTime(2024),
+        action: 'fed',
+        actedAt: DateTime(2024),
+        actedByUserId: 'u1',
+        deviceId: 'dev1',
+        createdAt: DateTime(2024),
+      );
+      await HiveBoxes.users.put('key1', user);
+      await HiveBoxes.aquariums.put('key2', aquarium);
+      await HiveBoxes.fish.put('key3', fish);
+      await HiveBoxes.schedules.put('key4', schedule);
+      await HiveBoxes.feedingLogs.put('key5', log);
       await HiveBoxes.setOnboardingCompleted(true);
 
       // Clear all
@@ -310,9 +374,39 @@ void main() {
       'clearUserData should clear schedules and feedingLogs boxes',
       () async {
         // Add data to boxes
-        await HiveBoxes.schedules.put('schedule1', {'id': 'schedule1'});
-        await HiveBoxes.feedingLogs.put('log1', {'id': 'log1'});
-        await HiveBoxes.users.put('user1', {'id': 'user1'});
+        final schedule = ScheduleModel(
+          id: 'schedule1',
+          fishId: 'f1',
+          aquariumId: 'a1',
+          time: '09:00',
+          intervalDays: 1,
+          anchorDate: DateTime(2024),
+          foodType: 'flakes',
+          active: true,
+          createdAt: DateTime(2024),
+          updatedAt: DateTime(2024),
+          createdByUserId: 'u1',
+        );
+        final log = FeedingLogModel(
+          id: 'log1',
+          scheduleId: 'sc1',
+          fishId: 'f1',
+          aquariumId: 'a1',
+          scheduledFor: DateTime(2024),
+          action: 'fed',
+          actedAt: DateTime(2024),
+          actedByUserId: 'u1',
+          deviceId: 'dev1',
+          createdAt: DateTime(2024),
+        );
+        final user = UserModel(
+          id: 'user1',
+          email: 'a@b.com',
+          createdAt: DateTime(2024),
+        );
+        await HiveBoxes.schedules.put('schedule1', schedule);
+        await HiveBoxes.feedingLogs.put('log1', log);
+        await HiveBoxes.users.put('user1', user);
 
         // Clear user data
         await HiveBoxes.clearUserData();

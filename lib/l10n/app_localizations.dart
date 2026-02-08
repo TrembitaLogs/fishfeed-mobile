@@ -2264,6 +2264,18 @@ abstract class AppLocalizations {
   /// **'Premium subscription coming soon!'**
   String get premiumComingSoon;
 
+  /// Coming soon title for features not yet available
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoon;
+
+  /// Message shown when user taps AI camera feature
+  ///
+  /// In en, this message translates to:
+  /// **'AI fish recognition is coming soon! Stay tuned for updates.'**
+  String get aiCameraComingSoonMessage;
+
   /// This week label
   ///
   /// In en, this message translates to:
@@ -3025,6 +3037,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} already fed at {time}'**
   String feedingAlreadyDoneByMember(String name, String time);
+
+  /// Morning greeting (before noon)
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// Afternoon greeting (noon to 6pm)
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// Evening greeting (after 6pm)
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// Greeting with user name
+  ///
+  /// In en, this message translates to:
+  /// **'{greeting}, {name}!'**
+  String greetingWithName(String greeting, String name);
+
+  /// Paywall headline
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Premium'**
+  String get paywallUnlockPremium;
+
+  /// Paywall subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Get the most out of FishFeed with premium features'**
+  String get paywallSubtitle;
+
+  /// Paywall benefits section title
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Benefits'**
+  String get paywallPremiumBenefits;
+
+  /// Paywall plan selection title
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Plan'**
+  String get paywallChooseYourPlan;
+
+  /// Annual plan title
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get paywallAnnual;
+
+  /// Monthly plan title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get paywallMonthly;
+
+  /// Badge for best value plan
+  ///
+  /// In en, this message translates to:
+  /// **'Best Value'**
+  String get paywallBestValue;
+
+  /// Subtitle for monthly plan
+  ///
+  /// In en, this message translates to:
+  /// **'Most Flexible'**
+  String get paywallMostFlexible;
+
+  /// Savings percentage badge
+  ///
+  /// In en, this message translates to:
+  /// **'Save {percent}%'**
+  String paywallSavePercent(int percent);
+
+  /// CTA button text for free trial
+  ///
+  /// In en, this message translates to:
+  /// **'Start 7-Day Free Trial'**
+  String get paywallStartFreeTrial;
+
+  /// Trial terms disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.'**
+  String get paywallTrialTerms;
+
+  /// Error when products cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load products'**
+  String get paywallFailedToLoadProducts;
+
+  /// Error when purchase fails
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase failed'**
+  String get paywallPurchaseFailed;
+
+  /// Divider text between premium and remove ads sections
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get paywallOr;
+
+  /// Price per month display
+  ///
+  /// In en, this message translates to:
+  /// **'{price}/month'**
+  String paywallPerMonth(String price);
+
+  /// Premium benefit: extended statistics
+  ///
+  /// In en, this message translates to:
+  /// **'Extended Statistics (6 months)'**
+  String get paywallExtendedStatistics;
+
+  /// Premium benefit: family mode
+  ///
+  /// In en, this message translates to:
+  /// **'Family Mode (5+ users)'**
+  String get paywallFamilyMode;
+
+  /// Premium benefit: multiple aquariums
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple Aquariums'**
+  String get paywallMultipleAquariums;
+
+  /// Premium benefit: unlimited AI scans
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI Fish Scans'**
+  String get paywallUnlimitedAiScans;
+
+  /// Snackbar message when trying to mark a feeding that is already done
+  ///
+  /// In en, this message translates to:
+  /// **'This feeding has already been completed'**
+  String get feedingAlreadyCompleted;
+
+  /// Privacy policy link text
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
 }
 
 class _AppLocalizationsDelegate

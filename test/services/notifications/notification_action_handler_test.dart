@@ -225,4 +225,99 @@ void main() {
       );
     });
   });
+
+  group('parseSchedulePayload', () {
+    test('should parse valid schedule payload with UUID', () {
+      const payload =
+          'schedule_a1b2c3d4-e5f6-7890-abcd-ef1234567890_1705312800000';
+      final result = parseSchedulePayload(payload);
+
+      expect(result, isNotNull);
+      expect(
+        result!.scheduleId,
+        equals('a1b2c3d4-e5f6-7890-abcd-ef1234567890'),
+      );
+      expect(
+        result.scheduledFor,
+        equals(DateTime.fromMillisecondsSinceEpoch(1705312800000)),
+      );
+    });
+
+    test('should parse simple schedule ID', () {
+      const payload = 'schedule_feed123_1705312800000';
+      final result = parseSchedulePayload(payload);
+
+      expect(result, isNotNull);
+      expect(result!.scheduleId, equals('feed123'));
+    });
+
+    test('should return null for null payload', () {
+      expect(parseSchedulePayload(null), isNull);
+    });
+
+    test('should return null for non-schedule payload', () {
+      expect(parseSchedulePayload('feeding_reminder_123'), isNull);
+    });
+
+    test('should return null for schedule payload without timestamp', () {
+      expect(parseSchedulePayload('schedule_abc'), isNull);
+    });
+
+    test('should return null for empty string', () {
+      expect(parseSchedulePayload(''), isNull);
+    });
+  });
+
+  group('parseDailyPayload', () {
+    test('should parse valid daily payload', () {
+      const payload = 'feeding_daily_09_30';
+      final result = parseDailyPayload(payload);
+
+      expect(result, isNotNull);
+      expect(result!.hour, equals(9));
+      expect(result.minute, equals(30));
+    });
+
+    test('should parse midnight payload', () {
+      const payload = 'feeding_daily_00_00';
+      final result = parseDailyPayload(payload);
+
+      expect(result, isNotNull);
+      expect(result!.hour, equals(0));
+      expect(result.minute, equals(0));
+    });
+
+    test('should parse late evening payload', () {
+      const payload = 'feeding_daily_23_59';
+      final result = parseDailyPayload(payload);
+
+      expect(result, isNotNull);
+      expect(result!.hour, equals(23));
+      expect(result.minute, equals(59));
+    });
+
+    test('should return null for null payload', () {
+      expect(parseDailyPayload(null), isNull);
+    });
+
+    test('should return null for non-daily payload', () {
+      expect(parseDailyPayload('feeding_slot_1'), isNull);
+    });
+
+    test('should return null for invalid hour', () {
+      expect(parseDailyPayload('feeding_daily_25_00'), isNull);
+    });
+
+    test('should return null for invalid minute', () {
+      expect(parseDailyPayload('feeding_daily_09_61'), isNull);
+    });
+
+    test('should return null for non-numeric values', () {
+      expect(parseDailyPayload('feeding_daily_ab_cd'), isNull);
+    });
+
+    test('should return null for empty string', () {
+      expect(parseDailyPayload(''), isNull);
+    });
+  });
 }

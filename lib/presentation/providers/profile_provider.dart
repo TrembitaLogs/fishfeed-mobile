@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/repositories/user_repository_impl.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// State for the profile screen.
 ///
@@ -82,12 +86,18 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   ProfileNotifier({
     required UserRepository userRepository,
     required AuthNotifier authNotifier,
+    required SyncService syncService,
+    required AuthLocalDataSource authLocalDataSource,
   }) : _userRepository = userRepository,
        _authNotifier = authNotifier,
+       _syncService = syncService,
+       _authLocalDs = authLocalDataSource,
        super(const ProfileState.initial());
 
   final UserRepository _userRepository;
   final AuthNotifier _authNotifier;
+  final SyncService _syncService;
+  final AuthLocalDataSource _authLocalDs;
 
   /// Minimum nickname length.
   static const int minNicknameLength = 3;
@@ -129,21 +139,47 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       clearNicknameError: true,
     );
 
-    final result = await _userRepository.updateDisplayName(
-      displayName: trimmedNickname,
-    );
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(isUpdatingNickname: false, error: failure);
+    try {
+      // 1. Get current user from auth state
+      final currentUser = _authNotifier.state.user;
+      if (currentUser == null) {
+        state = state.copyWith(
+          isUpdatingNickname: false,
+          error: const UnexpectedFailure(message: 'No authenticated user'),
+        );
         return false;
-      },
-      (user) {
-        state = state.copyWith(isUpdatingNickname: false);
-        _authNotifier.updateUser(user);
-        return true;
-      },
-    );
+      }
+
+      // 2. Create updated User entity
+      final updatedUser = currentUser.copyWith(displayName: trimmedNickname);
+
+      // 3. Save to Hive via AuthLocalDataSource (offline-first)
+      final localUser = _authLocalDs.getCurrentUser();
+      if (localUser != null) {
+        localUser.displayName = trimmedNickname;
+        localUser.synced = false;
+        await localUser.save();
+      } else {
+        final newModel = UserModel.fromEntity(updatedUser);
+        newModel.synced = false;
+        await _authLocalDs.saveUserLocally(newModel);
+      }
+
+      // 4. Update auth state
+      _authNotifier.updateUser(updatedUser);
+
+      // 5. Trigger sync to push changes to server
+      await _syncService.syncAll();
+
+      state = state.copyWith(isUpdatingNickname: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isUpdatingNickname: false,
+        error: UnexpectedFailure(message: e.toString()),
+      );
+      return false;
+    }
   }
 
   /// Updates the user's avatar.
@@ -204,10 +240,14 @@ final profileNotifierProvider =
     StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
       final userRepository = ref.watch(userRepositoryProvider);
       final authNotifier = ref.watch(authNotifierProvider.notifier);
+      final syncService = ref.watch(syncServiceProvider);
+      final authLocalDs = ref.watch(authLocalDataSourceProvider);
 
       return ProfileNotifier(
         userRepository: userRepository,
         authNotifier: authNotifier,
+        syncService: syncService,
+        authLocalDataSource: authLocalDs,
       );
     });
 

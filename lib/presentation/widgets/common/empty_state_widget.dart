@@ -85,7 +85,7 @@ class EmptyStateWidget extends StatelessWidget {
       ),
     );
 
-    if (animate) {
+    if (animate && !AnimationConfig.shouldReduceMotion(context)) {
       content = content
           .animate()
           .fadeIn(

@@ -53,6 +53,7 @@
 	<array>
 		<string>fetch</string>
 		<string>processing</string>
+		<string>remote-notification</string>
 	</array>
 	<!-- Background Task Scheduler permitted identifiers for workmanager -->
 	<key>BGTaskSchedulerPermittedIdentifiers</key>

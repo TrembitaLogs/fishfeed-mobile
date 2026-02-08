@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/core/utils/premium_gate.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 
 /// A wrapper widget that guards premium features.
 ///
@@ -62,6 +63,7 @@ class PremiumFeatureGuard extends ConsumerWidget {
 
   Widget _buildLockedOverlay(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
     final contentToShow = lockedChild ?? child;
 
     return Stack(
@@ -114,7 +116,7 @@ class PremiumFeatureGuard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Premium feature',
+                    l.premiumFeature,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -124,7 +126,7 @@ class PremiumFeatureGuard extends ConsumerWidget {
                     ElevatedButton.icon(
                       onPressed: () => _handleUpgradeTap(context),
                       icon: const Icon(Icons.workspace_premium, size: 18),
-                      label: const Text('Upgrade'),
+                      label: Text(l.upgrade),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber.shade700,
                         foregroundColor: Colors.white,
@@ -181,6 +183,7 @@ class LockedFeatureOverlay extends StatelessWidget {
   }
 
   Widget _buildCompactOverlay(BuildContext context, ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => _handleTap(context),
       child: Container(
@@ -197,7 +200,7 @@ class LockedFeatureOverlay extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                'Upgrade to unlock ${feature.displayName}',
+                l.upgradeToUnlock(feature.displayName),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: Colors.amber.shade800,
                   fontWeight: FontWeight.w500,
@@ -217,6 +220,7 @@ class LockedFeatureOverlay extends StatelessWidget {
   }
 
   Widget _buildFullOverlay(BuildContext context, ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -260,7 +264,7 @@ class LockedFeatureOverlay extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _handleTap(context),
               icon: const Icon(Icons.workspace_premium),
-              label: const Text('Upgrade to Premium'),
+              label: Text(l.upgradeToPremium),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber.shade700,
                 foregroundColor: Colors.white,

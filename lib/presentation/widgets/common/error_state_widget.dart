@@ -189,7 +189,7 @@ class _ErrorStateWidgetState extends State<ErrorStateWidget> {
       ),
     );
 
-    if (widget.animate) {
+    if (widget.animate && !AnimationConfig.shouldReduceMotion(context)) {
       content = content
           .animate()
           .fadeIn(

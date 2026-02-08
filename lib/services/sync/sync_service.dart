@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
@@ -13,6 +14,7 @@ import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/sync_metadata_model.dart';
+import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/services/sync/change_tracker.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 
@@ -142,6 +144,7 @@ class SyncService {
     required FishLocalDataSource fishDs,
     required FeedingLogLocalDataSource feedingLogDs,
     required ScheduleLocalDataSource scheduleDs,
+    required AuthLocalDataSource authLocalDs,
     SyncConfig config = const SyncConfig(),
     Connectivity? connectivity,
     Logger? logger,
@@ -151,6 +154,7 @@ class SyncService {
        _fishDs = fishDs,
        _feedingLogDs = feedingLogDs,
        _scheduleDs = scheduleDs,
+       _authLocalDs = authLocalDs,
        _config = config,
        _connectivity = connectivity ?? Connectivity(),
        _logger = logger ?? Logger(printer: PrettyPrinter(methodCount: 0)),
@@ -158,6 +162,7 @@ class SyncService {
        _changeTracker = ChangeTracker(
          aquariumDs: aquariumDs,
          fishDs: fishDs,
+         authLocalDs: authLocalDs,
          feedingLogDs: feedingLogDs,
          newScheduleDs: scheduleDs,
        );
@@ -167,12 +172,16 @@ class SyncService {
   final FishLocalDataSource _fishDs;
   final FeedingLogLocalDataSource _feedingLogDs;
   final ScheduleLocalDataSource _scheduleDs;
+  final AuthLocalDataSource _authLocalDs;
   final SyncConfig _config;
   final Connectivity _connectivity;
   final Logger _logger;
   // ignore: unused_field - reserved for local conflict detection
   final ConflictResolver _conflictResolver;
   final ChangeTracker _changeTracker;
+
+  /// Callback invoked when user profile is updated from server sync.
+  void Function(User)? onUserProfileUpdated;
 
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _retryTimer;
@@ -579,6 +588,17 @@ class SyncService {
       }
     }
 
+    // Apply user_profile (dict, not a list)
+    final userProfile = serverState['user_profile'] as Map<String, dynamic>?;
+    if (userProfile != null) {
+      await _authLocalDs.applyServerProfileUpdate(userProfile);
+      final updatedUser = _authLocalDs.getCurrentUser();
+      if (updatedUser != null) {
+        onUserProfileUpdated?.call(updatedUser.toEntity());
+      }
+      appliedCount++;
+    }
+
     _logger.d('SyncService: Applied $appliedCount server updates');
     return appliedCount;
   }
@@ -652,6 +672,8 @@ class SyncService {
           await _feedingLogDs.markAsSynced(change.entityId, now);
         case EntityType.newSchedule:
           await _scheduleDs.markAsSynced(change.entityId, now);
+        case EntityType.userProfile:
+          await _authLocalDs.markUserSynced(now);
         case EntityType.streak:
         case EntityType.achievement:
         case EntityType.progress:
@@ -680,6 +702,8 @@ class SyncService {
           await _feedingLogDs.markAsSynced(change.entityId, now);
         case EntityType.newSchedule:
           await _scheduleDs.markAsSynced(change.entityId, now);
+        case EntityType.userProfile:
+          await _authLocalDs.markUserSynced(now);
         case EntityType.streak:
         case EntityType.achievement:
         case EntityType.progress:
@@ -863,12 +887,12 @@ class SyncService {
 
   SyncMetadataModel? _getSyncMetadata() {
     final box = HiveBoxes.syncMetadata;
-    return box.get('default') as SyncMetadataModel?;
+    return box.get('default');
   }
 
   Future<void> _saveSyncMetadata({String? syncToken}) async {
     final box = HiveBoxes.syncMetadata;
-    var metadata = box.get('default') as SyncMetadataModel?;
+    var metadata = box.get('default');
 
     if (metadata == null) {
       metadata = SyncMetadataModel();
@@ -947,6 +971,7 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   final fishDs = ref.watch(fishLocalDataSourceProvider);
   final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
   final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
+  final authLocalDs = ref.watch(authLocalDataSourceProvider);
 
   final service = SyncService(
     apiClient: apiClient,
@@ -954,6 +979,7 @@ final syncServiceProvider = Provider<SyncService>((ref) {
     fishDs: fishDs,
     feedingLogDs: feedingLogDs,
     scheduleDs: scheduleDs,
+    authLocalDs: authLocalDs,
   );
 
   service.startListening();

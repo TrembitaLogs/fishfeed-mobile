@@ -24,6 +24,7 @@ import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/home/home_screen.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -44,6 +45,8 @@ class MockAppleAuthService extends Mock implements AppleAuthService {}
 
 class MockAquariumLocalDataSource extends Mock
     implements AquariumLocalDataSource {}
+
+class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
 /// Mock UserAquariumsNotifier that doesn't make async calls.
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
@@ -185,6 +188,7 @@ void main() {
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
   late MockAquariumLocalDataSource mockAquariumLocalDs;
+  late MockAuthLocalDataSource mockAuthLocalDs;
 
   final testUser = User(
     id: 'user-123',
@@ -219,6 +223,7 @@ void main() {
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
     mockAquariumLocalDs = MockAquariumLocalDataSource();
+    mockAuthLocalDs = MockAuthLocalDataSource();
 
     // Setup mock to return empty list by default
     when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
@@ -267,6 +272,7 @@ void main() {
               googleAuthService: mockGoogleAuthService,
               appleAuthService: mockAppleAuthService,
               aquariumLocalDataSource: mockAquariumLocalDs,
+              authLocalDataSource: mockAuthLocalDs,
               syncService: createMockSyncService(),
             );
             // Manually set authenticated state with user
@@ -470,6 +476,7 @@ void main() {
                   googleAuthService: mockGoogleAuthService,
                   appleAuthService: mockAppleAuthService,
                   aquariumLocalDataSource: mockAquariumLocalDs,
+                  authLocalDataSource: mockAuthLocalDs,
                   syncService: createMockSyncService(),
                 );
                 return notifier;
@@ -494,9 +501,14 @@ void main() {
         await tester.tap(find.text('Scan with AI Camera'));
         await tester.pumpAndSettle();
 
-        // Verify navigation to AI camera route
-        expect(navigatedRoute, equals('/ai-camera'));
-        expect(find.text('AI Camera Screen'), findsOneWidget);
+        // Verify "Coming Soon" dialog is shown
+        expect(find.text('Coming Soon'), findsOneWidget);
+        expect(
+          find.text(
+            'AI fish recognition is coming soon! Stay tuned for updates.',
+          ),
+          findsOneWidget,
+        );
       });
     });
 

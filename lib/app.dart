@@ -21,6 +21,9 @@ import 'package:fishfeed/presentation/providers/sync_refresh_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
 import 'package:fishfeed/presentation/providers/statistics_provider.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/services/notifications/notification_action_handler.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
 
 /// Provider for toggling performance overlay in debug builds.
 ///
@@ -194,9 +197,6 @@ class _LifecycleListener extends ConsumerWidget {
         if (event.event == AppLifecycleEvent.midnightCrossed ||
             event.event == AppLifecycleEvent.dstTransition) {
           // Trigger UI refresh for streak-related components
-          debugPrint(
-            'Lifecycle event: ${event.event} - may need streak refresh',
-          );
         }
       });
     });
@@ -260,7 +260,9 @@ class _SyncCompletionRefreshListenerState
       });
     });
 
-    return ConflictResolutionListener(child: widget.child);
+    return _NotificationActionListener(
+      child: ConflictResolutionListener(child: widget.child),
+    );
   }
 
   /// Refreshes all sync-dependent providers after sync completion.
@@ -275,5 +277,160 @@ class _SyncCompletionRefreshListenerState
     ref.invalidate(calendarDataProvider);
     ref.invalidate(statisticsProvider);
     ref.read(syncRefreshProvider.notifier).state++;
+  }
+}
+
+/// Widget that handles notification "Fed" button actions.
+///
+/// Instead of marking feedings directly, navigates to the feeding screen
+/// with the `autoFed` parameter so the standard confirmation dialog is shown.
+/// Pending background actions stored in [NotificationActionStorage] are
+/// processed on app resume.
+class _NotificationActionListener extends ConsumerStatefulWidget {
+  const _NotificationActionListener({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_NotificationActionListener> createState() =>
+      _NotificationActionListenerState();
+}
+
+class _NotificationActionListenerState
+    extends ConsumerState<_NotificationActionListener>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // Set up foreground action callback
+    NotificationService.instance.onActionReceived = _handleAction;
+
+    // Process any pending background actions
+    _processPendingActions();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    if (NotificationService.instance.onActionReceived == _handleAction) {
+      NotificationService.instance.onActionReceived = null;
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _processPendingActions();
+    }
+  }
+
+  void _handleAction(String actionId, String? payload) {
+    if (actionId != NotificationActionIds.fed || payload == null) {
+      return;
+    }
+    _navigateToFeedingScreen(payload);
+  }
+
+  /// Resolves schedule and aquarium from payload, then navigates
+  /// to the feeding screen with `autoFed` query parameter.
+  void _navigateToFeedingScreen(String payload) {
+    String? scheduleId;
+
+    // Try schedule-based payload: "schedule_{scheduleId}_{timestampMs}"
+    final schedulePayload = parseSchedulePayload(payload);
+    if (schedulePayload != null) {
+      scheduleId = schedulePayload.scheduleId;
+    } else {
+      // Try daily payload: "feeding_daily_{HH}_{mm}"
+      final dailyPayload = parseDailyPayload(payload);
+      if (dailyPayload != null) {
+        final now = DateTime.now();
+        final timeStr =
+            '${dailyPayload.hour.toString().padLeft(2, '0')}:'
+            '${dailyPayload.minute.toString().padLeft(2, '0')}';
+
+        final scheduleDs = ref.read(scheduleLocalDataSourceProvider);
+        final matching = scheduleDs.getAll().where((s) {
+          return s.active && s.shouldFeedOn(now) && s.time == timeStr;
+        }).toList();
+
+        if (matching.isNotEmpty) {
+          scheduleId = matching.first.id;
+        }
+      }
+    }
+
+    if (scheduleId == null) {
+      if (kDebugMode) {
+        debugPrint(
+          'NotificationActionListener: no schedule for payload: $payload',
+        );
+      }
+      return;
+    }
+
+    // Look up the schedule to get aquariumId
+    final scheduleDs = ref.read(scheduleLocalDataSourceProvider);
+    final schedule = scheduleDs
+        .getAll()
+        .where((s) => s.id == scheduleId)
+        .firstOrNull;
+
+    if (schedule == null) {
+      if (kDebugMode) {
+        debugPrint(
+          'NotificationActionListener: schedule $scheduleId not found',
+        );
+      }
+      return;
+    }
+
+    final aquariumId = schedule.aquariumId;
+
+    if (!mounted) return;
+    AppRouter.router.push('/aquarium/$aquariumId/feedings?autoFed=$scheduleId');
+  }
+
+  Future<void> _processPendingActions() async {
+    final pendingActions =
+        await NotificationActionStorage.getAndClearPendingActions();
+
+    if (pendingActions.isEmpty) return;
+
+    // Wait for the current frame to finish so GoRouter is ready
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Only process the most recent "fed" action within 30 minutes
+    final now = DateTime.now();
+    final cutoff = now.subtract(const Duration(minutes: 30));
+
+    PendingNotificationAction? latestFedAction;
+    for (final action in pendingActions) {
+      if (action.actionId == NotificationActionIds.fed &&
+          action.timestamp.isAfter(cutoff)) {
+        if (latestFedAction == null ||
+            action.timestamp.isAfter(latestFedAction.timestamp)) {
+          latestFedAction = action;
+        }
+      } else if (action.actionId != NotificationActionIds.fed) {
+        // Handle snooze and other actions via NotificationService
+        NotificationService.instance.handleNotificationAction(
+          action.actionId,
+          action.payload,
+        );
+      }
+    }
+
+    if (latestFedAction != null && mounted) {
+      _navigateToFeedingScreen(latestFedAction.payload);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

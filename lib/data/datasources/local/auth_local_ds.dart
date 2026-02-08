@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/models/user_model.dart';
+import 'package:fishfeed/domain/entities/subscription_status.dart';
 
 /// Keys used for storing authentication tokens in secure storage.
 abstract final class AuthStorageKeys {
@@ -158,4 +159,61 @@ class AuthLocalDataSource {
   Future<void> clearAll() async {
     await Future.wait([clearTokens(), clearUserData()]);
   }
+
+  // ============ Sync Methods ============
+
+  /// Applies a server profile update to the local user.
+  /// Uses last-write-wins: server data always wins during download.
+  Future<void> applyServerProfileUpdate(Map<String, dynamic> serverData) async {
+    final currentUser = getCurrentUser();
+    if (currentUser == null) return;
+
+    if (serverData['nickname'] != null) {
+      currentUser.displayName = serverData['nickname'] as String;
+    }
+    if (serverData.containsKey('avatar_url')) {
+      currentUser.avatarUrl = serverData['avatar_url'] as String?;
+    }
+    if (serverData.containsKey('free_ai_scans_remaining')) {
+      currentUser.freeAiScansRemaining =
+          serverData['free_ai_scans_remaining'] as int;
+    }
+    if (serverData.containsKey('subscription_status')) {
+      final status = serverData['subscription_status'] as String;
+      currentUser.subscriptionStatus = _parseSubscriptionStatus(status);
+    }
+
+    final serverUpdatedAt = serverData['updated_at'] != null
+        ? DateTime.parse(serverData['updated_at'] as String)
+        : null;
+    currentUser.serverUpdatedAt = serverUpdatedAt;
+    currentUser.synced = true;
+
+    await currentUser.save();
+  }
+
+  /// Returns the current user if they have unsynced changes.
+  UserModel? getUnsyncedUser() {
+    final user = getCurrentUser();
+    if (user == null) return null;
+    return user.synced ? null : user;
+  }
+
+  /// Marks the current user as synced with the given server timestamp.
+  Future<void> markUserSynced(DateTime serverUpdatedAt) async {
+    final user = getCurrentUser();
+    if (user == null) return;
+    user.synced = true;
+    user.serverUpdatedAt = serverUpdatedAt;
+    await user.save();
+  }
+}
+
+/// Parses a subscription status string from the server.
+SubscriptionStatus _parseSubscriptionStatus(String status) {
+  return switch (status) {
+    'premium' => SubscriptionStatus.premium(),
+    'trial' => SubscriptionStatus.premium(isTrialActive: true),
+    _ => const SubscriptionStatus.free(),
+  };
 }

@@ -1,4 +1,5 @@
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
@@ -14,13 +15,15 @@ enum EntityType {
   newSchedule,
   streak,
   achievement,
-  progress;
+  progress,
+  userProfile;
 
   /// Returns the server-expected snake_case entity type string.
   String get jsonValue {
     return switch (this) {
       EntityType.feedingLog => 'feeding_log',
       EntityType.newSchedule => 'schedule',
+      EntityType.userProfile => 'user_profile',
       _ => name,
     };
   }
@@ -94,15 +97,18 @@ class ChangeTracker {
   ChangeTracker({
     required AquariumLocalDataSource aquariumDs,
     required FishLocalDataSource fishDs,
+    required AuthLocalDataSource authLocalDs,
     FeedingLogLocalDataSource? feedingLogDs,
     ScheduleLocalDataSource? newScheduleDs,
   }) : _aquariumDs = aquariumDs,
        _fishDs = fishDs,
+       _authLocalDs = authLocalDs,
        _feedingLogDs = feedingLogDs,
        _newScheduleDs = newScheduleDs;
 
   final AquariumLocalDataSource _aquariumDs;
   final FishLocalDataSource _fishDs;
+  final AuthLocalDataSource _authLocalDs;
   final FeedingLogLocalDataSource? _feedingLogDs;
   final ScheduleLocalDataSource? _newScheduleDs;
 
@@ -127,6 +133,9 @@ class ChangeTracker {
     // Collect schedule changes
     changes.addAll(_collectNewScheduleChanges());
 
+    // Collect user profile changes
+    changes.addAll(_collectUserProfileChanges());
+
     return changes;
   }
 
@@ -141,6 +150,8 @@ class ChangeTracker {
         return _collectFeedingLogChanges();
       case EntityType.newSchedule:
         return _collectNewScheduleChanges();
+      case EntityType.userProfile:
+        return _collectUserProfileChanges();
       case EntityType.streak:
       case EntityType.achievement:
       case EntityType.progress:
@@ -156,7 +167,8 @@ class ChangeTracker {
         _fishDs.getUnsyncedFish().isNotEmpty ||
         _fishDs.getDeletedFish().isNotEmpty ||
         (_feedingLogDs?.hasUnsyncedLogs() ?? false) ||
-        (_newScheduleDs?.hasUnsyncedSchedules() ?? false);
+        (_newScheduleDs?.hasUnsyncedSchedules() ?? false) ||
+        _authLocalDs.getUnsyncedUser() != null;
   }
 
   /// Returns the count of pending changes.
@@ -168,6 +180,7 @@ class ChangeTracker {
     count += _fishDs.getDeletedFish().length;
     count += _feedingLogDs?.getUnsyncedCount() ?? 0;
     count += _newScheduleDs?.getUnsyncedCount() ?? 0;
+    if (_authLocalDs.getUnsyncedUser() != null) count++;
     return count;
   }
 
@@ -338,5 +351,22 @@ class ChangeTracker {
       return SyncOperation.create;
     }
     return SyncOperation.update;
+  }
+
+  // ============ User Profile Changes ============
+
+  List<SyncChange> _collectUserProfileChanges() {
+    final user = _authLocalDs.getUnsyncedUser();
+    if (user == null) return [];
+
+    return [
+      SyncChange(
+        entityType: EntityType.userProfile,
+        entityId: user.id,
+        operation: SyncOperation.update,
+        data: user.toSyncJson(),
+        clientUpdatedAt: DateTime.now().toUtc(),
+      ),
+    ];
   }
 }

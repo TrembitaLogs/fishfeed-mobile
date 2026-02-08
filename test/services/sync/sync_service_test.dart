@@ -9,6 +9,7 @@ import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
@@ -30,6 +31,8 @@ class MockFeedingLogLocalDataSource extends Mock
 
 class MockScheduleLocalDataSource extends Mock
     implements ScheduleLocalDataSource {}
+
+class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
 class MockApiClient extends Mock implements ApiClient {}
 
@@ -71,6 +74,7 @@ void main() {
   late MockFishLocalDataSource mockFishDs;
   late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockScheduleLocalDataSource mockScheduleDs;
+  late MockAuthLocalDataSource mockAuthLocalDs;
   late MockApiClient mockApiClient;
   late MockDio mockDio;
   late MockConnectivity mockConnectivity;
@@ -81,6 +85,7 @@ void main() {
     mockFishDs = MockFishLocalDataSource();
     mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockScheduleDs = MockScheduleLocalDataSource();
+    mockAuthLocalDs = MockAuthLocalDataSource();
     mockApiClient = MockApiClient();
     mockDio = MockDio();
     mockConnectivity = MockConnectivity();
@@ -103,6 +108,7 @@ void main() {
       fishDs: mockFishDs,
       feedingLogDs: mockFeedingLogDs,
       scheduleDs: mockScheduleDs,
+      authLocalDs: mockAuthLocalDs,
       config: config ?? const SyncConfig(),
       connectivity: mockConnectivity,
       logger: Logger(printer: PrettyPrinter(), level: Level.off),
@@ -164,6 +170,14 @@ void main() {
       () => mockScheduleDs.applyServerUpdate(any()),
     ).thenAnswer((_) async {});
     when(() => mockScheduleDs.delete(any())).thenAnswer((_) async => true);
+
+    // Auth local mocks
+    when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(null);
+    when(() => mockAuthLocalDs.markUserSynced(any())).thenAnswer((_) async {});
+    when(
+      () => mockAuthLocalDs.applyServerProfileUpdate(any()),
+    ).thenAnswer((_) async {});
+    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
   }
 
   group('SyncConfig', () {

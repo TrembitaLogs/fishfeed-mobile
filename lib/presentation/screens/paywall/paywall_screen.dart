@@ -2,22 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/paywall/benefit_item.dart';
 import 'package:fishfeed/presentation/widgets/paywall/product_card.dart';
 import 'package:fishfeed/presentation/widgets/paywall/remove_ads_card.dart';
 import 'package:fishfeed/presentation/widgets/paywall/trial_banner.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
-
-/// Premium benefits to display in the paywall.
-const _premiumBenefits = [
-  (Icons.block, 'No Ads'),
-  (Icons.camera_enhance, 'Unlimited AI Fish Scans'),
-  (Icons.analytics, 'Extended Statistics (6 months)'),
-  (Icons.family_restroom, 'Family Mode (5+ users)'),
-  (Icons.water, 'Multiple Aquariums'),
-];
 
 /// Paywall screen for displaying premium subscription options.
 ///
@@ -80,7 +73,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       (failure) {
         setState(() {
           _isLoadingOfferings = false;
-          _errorMessage = failure.message ?? 'Failed to load products';
+          _errorMessage =
+              failure.message ??
+              AppLocalizations.of(context)!.paywallFailedToLoadProducts;
         });
       },
       (offerings) {
@@ -237,9 +232,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   void _showSuccessAndClose() {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Welcome to Premium!'),
+      SnackBar(
+        content: Text(l.welcomeToPremium),
         backgroundColor: Colors.green,
       ),
     );
@@ -247,24 +243,40 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   void _showRemoveAdsSuccessAndClose() {
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ads removed successfully!'),
+      SnackBar(
+        content: Text(l.adsRemovedSuccessfully),
         backgroundColor: Colors.green,
       ),
     );
     context.pop();
   }
 
+  Future<void> _openUrl(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.couldNotOpenLink),
+          ),
+        );
+      }
+    }
+  }
+
   void _showNoRestorableMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No previous purchases found')),
-    );
+    final l = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l.noPreviousPurchases)));
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -272,7 +284,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
           icon: const Icon(Icons.close),
           onPressed: _handleDismiss,
         ),
-        title: const Text('Premium'),
+        title: Text(l.premium),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -328,6 +340,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildHeroSection(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Premium badge
@@ -354,7 +367,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
         // Headline
         Text(
-          'Unlock Premium',
+          l.paywallUnlockPremium,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -362,7 +375,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Get the most out of FishFeed with premium features',
+          l.paywallSubtitle,
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -373,17 +386,25 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildBenefitsList(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
+    final premiumBenefits = [
+      (Icons.block, l.noAds),
+      (Icons.camera_enhance, l.paywallUnlimitedAiScans),
+      (Icons.analytics, l.paywallExtendedStatistics),
+      (Icons.family_restroom, l.paywallFamilyMode),
+      (Icons.water, l.paywallMultipleAquariums),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Premium Benefits',
+          l.paywallPremiumBenefits,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 12),
-        ..._premiumBenefits.map(
+        ...premiumBenefits.map(
           (benefit) => BenefitItem(icon: benefit.$1, text: benefit.$2),
         ),
       ],
@@ -391,6 +412,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildProductOptions(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     final current = _offerings?.current;
     if (current == null) {
       return _buildFallbackProducts(theme);
@@ -408,7 +430,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Choose Your Plan',
+          l.paywallChooseYourPlan,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -420,6 +442,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildPackageCard(Package package, ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     final product = package.storeProduct;
     final isAnnual = package.packageType == PackageType.annual;
     final isMonthly = package.packageType == PackageType.monthly;
@@ -430,16 +453,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     String? savings;
 
     if (isAnnual) {
-      title = 'Annual';
-      badge = 'Best Value';
+      title = l.paywallAnnual;
+      badge = l.paywallBestValue;
       // Calculate monthly equivalent and savings
       final annualPrice = product.price;
       final monthlyEquivalent = annualPrice / 12;
-      subtitle = '\$${monthlyEquivalent.toStringAsFixed(2)}/month';
-      savings = 'Save 37%';
+      subtitle = l.paywallPerMonth(monthlyEquivalent.toStringAsFixed(2));
+      savings = l.paywallSavePercent(37);
     } else if (isMonthly) {
-      title = 'Monthly';
-      subtitle = 'Most Flexible';
+      title = l.paywallMonthly;
+      subtitle = l.paywallMostFlexible;
     } else {
       title = product.title;
     }
@@ -459,31 +482,32 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildFallbackProducts(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     // Fallback UI when offerings aren't available
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Choose Your Plan',
+          l.paywallChooseYourPlan,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 12),
         ProductCard(
-          title: 'Monthly',
-          price: '\$3.99/month',
-          subtitle: 'Most Flexible',
+          title: l.paywallMonthly,
+          price: l.paywallPerMonth('3.99'),
+          subtitle: l.paywallMostFlexible,
           isSelected: _selectedFallbackPlan == 'monthly',
           onTap: () => setState(() => _selectedFallbackPlan = 'monthly'),
         ),
         const SizedBox(height: 12),
         ProductCard(
-          title: 'Annual',
+          title: l.paywallAnnual,
           price: '\$29.99/year',
-          subtitle: '\$2.50/month',
-          badge: 'Best Value',
-          savings: 'Save 37%',
+          subtitle: l.paywallPerMonth('2.50'),
+          badge: l.paywallBestValue,
+          savings: l.paywallSavePercent(37),
           isSelected: _selectedFallbackPlan == 'annual',
           onTap: () => setState(() => _selectedFallbackPlan = 'annual'),
         ),
@@ -540,14 +564,17 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 color: Colors.white,
               ),
             )
-          : const Row(
+          : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.card_giftcard),
-                SizedBox(width: 8),
+                const Icon(Icons.card_giftcard),
+                const SizedBox(width: 8),
                 Text(
-                  'Start 7-Day Free Trial',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  AppLocalizations.of(context)!.paywallStartFreeTrial,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -555,6 +582,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildRemoveAdsSection(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     final price = _removeAdsPackage?.storeProduct.priceString ?? '\$3.99';
 
     return Column(
@@ -571,7 +599,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'or',
+                l.paywallOr,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -597,12 +625,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   }
 
   Widget _buildTermsAndRestore(ThemeData theme) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Trial terms
         Text(
-          'Free trial for 7 days, then auto-renews at the selected plan price. '
-          'Cancel anytime in App Store settings.',
+          l.paywallTrialTerms,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -620,7 +648,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  'Restore Purchases',
+                  l.restorePurchases,
                   style: TextStyle(color: theme.colorScheme.primary),
                 ),
         ),
@@ -630,11 +658,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              onPressed: () {
-                // TODO: Navigate to terms of service
-              },
+              onPressed: () => _openUrl(context, 'https://fishfeed.app/terms'),
               child: Text(
-                'Terms of Service',
+                l.termsOfService,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   decoration: TextDecoration.underline,
@@ -646,11 +672,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
             ),
             TextButton(
-              onPressed: () {
-                // TODO: Navigate to privacy policy
-              },
+              onPressed: () =>
+                  _openUrl(context, 'https://fishfeed.app/privacy'),
               child: Text(
-                'Privacy Policy',
+                l.privacyPolicy,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   decoration: TextDecoration.underline,

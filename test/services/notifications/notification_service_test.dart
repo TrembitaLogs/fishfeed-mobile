@@ -247,6 +247,9 @@ void main() {
         when(
           () => mockAndroidPlugin.requestNotificationsPermission(),
         ).thenAnswer((_) async => true);
+        when(
+          () => mockAndroidPlugin.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => true);
 
         await service.initialize();
         final result = await service.requestAndroidPermissions();
@@ -338,6 +341,126 @@ void main() {
 
         expect(result, isFalse);
       });
+
+      test(
+        'Android should request exact alarms permission when not available',
+        () async {
+          final mockAndroidPlugin =
+              MockAndroidFlutterLocalNotificationsPlugin();
+
+          when(
+            () => mockPlugin.initialize(
+              any(),
+              onDidReceiveNotificationResponse: any(
+                named: 'onDidReceiveNotificationResponse',
+              ),
+            ),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroidPlugin);
+          when(
+            () => mockAndroidPlugin.requestNotificationsPermission(),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).thenAnswer((_) async => false);
+          when(
+            () => mockAndroidPlugin.requestExactAlarmsPermission(),
+          ).thenAnswer((_) async => true);
+
+          await service.initialize();
+          final result = await service.requestAndroidPermissions();
+
+          expect(result, isTrue);
+          verify(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).called(1);
+          verify(
+            () => mockAndroidPlugin.requestExactAlarmsPermission(),
+          ).called(1);
+        },
+      );
+
+      test(
+        'Android should skip exact alarms permission when already available',
+        () async {
+          final mockAndroidPlugin =
+              MockAndroidFlutterLocalNotificationsPlugin();
+
+          when(
+            () => mockPlugin.initialize(
+              any(),
+              onDidReceiveNotificationResponse: any(
+                named: 'onDidReceiveNotificationResponse',
+              ),
+            ),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroidPlugin);
+          when(
+            () => mockAndroidPlugin.requestNotificationsPermission(),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).thenAnswer((_) async => true);
+
+          await service.initialize();
+          final result = await service.requestAndroidPermissions();
+
+          expect(result, isTrue);
+          verify(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).called(1);
+          verifyNever(() => mockAndroidPlugin.requestExactAlarmsPermission());
+        },
+      );
+
+      test(
+        'Android should check canScheduleExactNotifications during permission request',
+        () async {
+          final mockAndroidPlugin =
+              MockAndroidFlutterLocalNotificationsPlugin();
+
+          when(
+            () => mockPlugin.initialize(
+              any(),
+              onDidReceiveNotificationResponse: any(
+                named: 'onDidReceiveNotificationResponse',
+              ),
+            ),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroidPlugin);
+          when(
+            () => mockAndroidPlugin.requestNotificationsPermission(),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).thenAnswer((_) async => null);
+
+          await service.initialize();
+          final result = await service.requestAndroidPermissions();
+
+          expect(result, isTrue);
+          verify(
+            () => mockAndroidPlugin.canScheduleExactNotifications(),
+          ).called(1);
+          // Should not request exact alarms when canScheduleExact is null
+          verifyNever(() => mockAndroidPlugin.requestExactAlarmsPermission());
+        },
+      );
     });
   });
 
@@ -851,7 +974,7 @@ class TestableNotificationService {
     if (_isInitialized) return;
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_notification',
     );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
@@ -882,6 +1005,14 @@ class TestableNotificationService {
     if (androidPlugin == null) return false;
 
     final granted = await androidPlugin.requestNotificationsPermission();
+
+    // Request exact alarm permission for Android 14+ (API 34+)
+    final canScheduleExact = await androidPlugin
+        .canScheduleExactNotifications();
+    if (canScheduleExact != null && !canScheduleExact) {
+      await androidPlugin.requestExactAlarmsPermission();
+    }
+
     return granted ?? false;
   }
 
@@ -928,7 +1059,7 @@ class TestableNotificationService {
           channelDescription: NotificationService.feedingChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -1013,7 +1144,7 @@ class TestableNotificationServiceV2 {
     if (_isInitialized) return;
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_notification',
     );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
@@ -1161,7 +1292,7 @@ class TestableNotificationServiceV2 {
           channelDescription: NotificationService.feedingChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -1176,7 +1307,7 @@ class TestableNotificationServiceV2 {
           channelDescription: NotificationService.missedChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -1191,7 +1322,7 @@ class TestableNotificationServiceV2 {
           channelDescription: NotificationService.confirmChannelDescription,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -1206,7 +1337,7 @@ class TestableNotificationServiceV2 {
           channelDescription: NotificationService.freezeChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -1293,7 +1424,7 @@ class TestableNotificationServiceV3 {
     if (_isInitialized) return;
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_notification',
     );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
@@ -1388,7 +1519,7 @@ class TestableNotificationServiceV3 {
               channelDescription: NotificationService.feedingChannelDescription,
               importance: Importance.high,
               priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
+              icon: '@drawable/ic_notification',
             ),
             iOS: DarwinNotificationDetails(
               presentAlert: true,
