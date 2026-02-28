@@ -11,6 +11,7 @@ class Fish extends Equatable {
     this.name,
     this.quantity = 1,
     this.notes,
+    this.photoKey,
     required this.addedAt,
     this.synced = false,
     this.updatedAt,
@@ -36,6 +37,9 @@ class Fish extends Equatable {
 
   /// Additional notes about this fish.
   final String? notes;
+
+  /// S3 object key for fish photo.
+  final String? photoKey;
 
   /// When the fish was added to the aquarium.
   final DateTime addedAt;
@@ -66,6 +70,7 @@ class Fish extends Equatable {
     String? name,
     int? quantity,
     String? notes,
+    String? photoKey,
     DateTime? addedAt,
     bool? synced,
     DateTime? updatedAt,
@@ -80,6 +85,7 @@ class Fish extends Equatable {
       name: name ?? this.name,
       quantity: quantity ?? this.quantity,
       notes: notes ?? this.notes,
+      photoKey: photoKey ?? this.photoKey,
       addedAt: addedAt ?? this.addedAt,
       synced: synced ?? this.synced,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -97,6 +103,7 @@ class Fish extends Equatable {
     name,
     quantity,
     notes,
+    photoKey,
     addedAt,
     synced,
     updatedAt,

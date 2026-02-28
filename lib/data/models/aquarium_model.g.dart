@@ -22,7 +22,7 @@ class AquariumModelAdapter extends TypeAdapter<AquariumModel> {
       name: fields[2] as String,
       capacity: fields[3] as double?,
       waterType: fields[4] as WaterType,
-      imageUrl: fields[5] as String?,
+      photoKey: fields[5] as String?,
       createdAt: fields[6] as DateTime,
       synced: fields[7] == null ? false : fields[7] as bool,
       updatedAt: fields[8] as DateTime?,
@@ -47,7 +47,7 @@ class AquariumModelAdapter extends TypeAdapter<AquariumModel> {
       ..writeByte(4)
       ..write(obj.waterType)
       ..writeByte(5)
-      ..write(obj.imageUrl)
+      ..write(obj.photoKey)
       ..writeByte(6)
       ..write(obj.createdAt)
       ..writeByte(7)

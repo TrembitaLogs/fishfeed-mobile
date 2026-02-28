@@ -40,7 +40,7 @@ void main() {
       expect(model.createdAt, now);
       expect(model.capacity, isNull);
       expect(model.waterType, WaterType.freshwater);
-      expect(model.imageUrl, isNull);
+      expect(model.photoKey, isNull);
     });
 
     test('should create AquariumModel with all fields', () {
@@ -51,7 +51,7 @@ void main() {
         name: 'Saltwater Tank',
         capacity: 200.5,
         waterType: WaterType.saltwater,
-        imageUrl: 'https://example.com/tank.png',
+        photoKey: 'https://example.com/tank.png',
         createdAt: now,
       );
 
@@ -60,7 +60,7 @@ void main() {
       expect(model.name, 'Saltwater Tank');
       expect(model.capacity, 200.5);
       expect(model.waterType, WaterType.saltwater);
-      expect(model.imageUrl, 'https://example.com/tank.png');
+      expect(model.photoKey, 'https://example.com/tank.png');
     });
 
     test('should support brackish water type', () {
@@ -85,7 +85,7 @@ void main() {
         name: 'Test Aquarium',
         capacity: 100.0,
         waterType: WaterType.saltwater,
-        imageUrl: 'https://example.com/test.png',
+        photoKey: 'https://example.com/test.png',
         createdAt: now,
       );
 
@@ -97,7 +97,7 @@ void main() {
       expect(entity.name, 'Test Aquarium');
       expect(entity.capacity, 100.0);
       expect(entity.waterType, WaterType.saltwater);
-      expect(entity.imageUrl, 'https://example.com/test.png');
+      expect(entity.photoKey, 'https://example.com/test.png');
       expect(entity.createdAt, now);
     });
 
@@ -109,7 +109,7 @@ void main() {
         name: 'Entity Aquarium',
         capacity: 150.0,
         waterType: WaterType.brackish,
-        imageUrl: 'https://example.com/entity.png',
+        photoKey: 'https://example.com/entity.png',
         createdAt: now,
       );
 
@@ -120,7 +120,7 @@ void main() {
       expect(model.name, 'Entity Aquarium');
       expect(model.capacity, 150.0);
       expect(model.waterType, WaterType.brackish);
-      expect(model.imageUrl, 'https://example.com/entity.png');
+      expect(model.photoKey, 'https://example.com/entity.png');
       expect(model.createdAt, now);
     });
 
@@ -132,7 +132,7 @@ void main() {
         name: 'Round Trip Tank',
         capacity: 75.5,
         waterType: WaterType.freshwater,
-        imageUrl: 'https://example.com/round.png',
+        photoKey: 'https://example.com/round.png',
         createdAt: now,
       );
 
@@ -156,7 +156,7 @@ void main() {
 
       expect(resultEntity, equals(originalEntity));
       expect(resultEntity.capacity, isNull);
-      expect(resultEntity.imageUrl, isNull);
+      expect(resultEntity.photoKey, isNull);
     });
   });
 

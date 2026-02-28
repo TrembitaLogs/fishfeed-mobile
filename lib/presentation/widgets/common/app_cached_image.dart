@@ -1,6 +1,12 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
+
+import 'package:fishfeed/presentation/providers/image_upload_provider.dart';
+import 'package:fishfeed/presentation/providers/image_url_provider.dart';
 
 /// A wrapper widget for CachedNetworkImage with standardized placeholder
 /// and error handling.
@@ -164,6 +170,269 @@ class AppCachedAvatar extends StatelessWidget {
         memCacheHeight: (size * 2).toInt(),
       ),
     );
+  }
+}
+
+/// Displays entity images with 4-state support for the image sync system.
+///
+/// States:
+/// 1. [photoKey] is `null` or empty — placeholder icon based on [entityType]
+/// 2. [photoKey] starts with `local://` — local file from the upload queue
+/// 3. S3 key, presigned URL loading — shimmer placeholder
+/// 4. S3 key + presigned URL ready — [CachedNetworkImage] with [photoKey]
+///    as `cacheKey`
+///
+/// Uses [photoUrlProvider] for presigned URL resolution and
+/// [localImagePathProvider] for pending upload file paths.
+///
+/// IMPORTANT: [CachedNetworkImage] uses [photoKey] as `cacheKey`
+/// (not the presigned URL), because URLs expire every hour while the
+/// file content stays the same as long as the key doesn't change.
+///
+/// Example:
+/// ```dart
+/// EntityImage(
+///   photoKey: aquarium.photoKey,
+///   entityType: 'aquarium',
+///   entityId: aquarium.id,
+///   width: 120,
+///   height: 120,
+///   borderRadius: BorderRadius.circular(12),
+/// )
+/// ```
+class EntityImage extends ConsumerWidget {
+  const EntityImage({
+    super.key,
+    required this.photoKey,
+    required this.entityType,
+    required this.entityId,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.borderRadius,
+    this.isCircular = false,
+    this.placeholderIcon,
+    this.memCacheWidth,
+    this.memCacheHeight,
+  });
+
+  /// The S3 object key, `local://{uuid}`, or `null`.
+  final String? photoKey;
+
+  /// Entity type: `"aquarium"`, `"fish"`, or `"avatar"`.
+  final String entityType;
+
+  /// The entity's unique identifier.
+  final String entityId;
+
+  /// Width of the image widget.
+  final double? width;
+
+  /// Height of the image widget.
+  final double? height;
+
+  /// How to inscribe the image into the available space.
+  final BoxFit fit;
+
+  /// Border radius for rectangular images. Ignored when [isCircular] is true.
+  final BorderRadius? borderRadius;
+
+  /// Whether to display the image in a circular shape.
+  final bool isCircular;
+
+  /// Override the default placeholder icon.
+  ///
+  /// If `null`, uses a default icon based on [entityType]:
+  /// - `"aquarium"` → [Icons.water_drop_outlined]
+  /// - `"fish"` → [Icons.set_meal_rounded]
+  /// - `"avatar"` → [Icons.person]
+  final IconData? placeholderIcon;
+
+  /// Width for memory cache (for performance optimization).
+  final int? memCacheWidth;
+
+  /// Height for memory cache (for performance optimization).
+  final int? memCacheHeight;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // State 1: No photo
+    if (photoKey == null || photoKey!.isEmpty) {
+      return _buildPlaceholder(context);
+    }
+
+    // State 2: Local file (pending upload)
+    if (photoKey!.startsWith('local://')) {
+      return _buildLocalImage(context, ref);
+    }
+
+    // States 3 & 4: S3 key
+    return _buildRemoteImage(context, ref);
+  }
+
+  /// State 2: Resolves local file path and shows the image.
+  Widget _buildLocalImage(BuildContext context, WidgetRef ref) {
+    final pathAsync = ref.watch(localImagePathProvider(photoKey!));
+
+    return pathAsync.when(
+      data: (path) {
+        if (path == null) return _buildPlaceholder(context);
+        return _clip(
+          Image.file(
+            File(path),
+            width: width,
+            height: height,
+            fit: fit,
+            errorBuilder: (_, __, ___) => _buildPlaceholder(context),
+          ),
+        );
+      },
+      loading: () => _buildShimmer(context),
+      error: (_, __) => _buildPlaceholder(context),
+    );
+  }
+
+  /// States 3 & 4: Fetches presigned URL and shows the remote image.
+  Widget _buildRemoteImage(BuildContext context, WidgetRef ref) {
+    final urlAsync = ref.watch(
+      photoUrlProvider((
+        entityType: entityType,
+        entityId: entityId,
+        photoKey: photoKey,
+      )),
+    );
+
+    return urlAsync.when(
+      data: (url) {
+        if (url == null) return _buildPlaceholder(context);
+        return _clip(
+          CachedNetworkImage(
+            imageUrl: url,
+            cacheKey: photoKey!, // Use photo_key, not URL!
+            width: width,
+            height: height,
+            fit: fit,
+            memCacheWidth: memCacheWidth,
+            memCacheHeight: memCacheHeight,
+            placeholder: (_, __) => _buildShimmer(context),
+            errorWidget: (_, __, ___) => _buildErrorPlaceholder(context),
+            fadeInDuration: const Duration(milliseconds: 300),
+            fadeOutDuration: const Duration(milliseconds: 300),
+          ),
+        );
+      },
+      loading: () => _buildShimmer(context),
+      error: (_, __) => _buildErrorPlaceholder(context),
+    );
+  }
+
+  /// Applies clipping for circular or rounded shapes.
+  Widget _clip(Widget child) {
+    if (isCircular) {
+      return ClipOval(child: child);
+    }
+    if (borderRadius != null) {
+      return ClipRRect(borderRadius: borderRadius!, child: child);
+    }
+    return child;
+  }
+
+  /// Placeholder widget for null/missing photos.
+  Widget _buildPlaceholder(BuildContext context) {
+    final theme = Theme.of(context);
+    final icon = placeholderIcon ?? _defaultIcon;
+
+    if (isCircular) {
+      final size = width ?? height ?? 48;
+      return SizedBox(
+        width: size,
+        height: size,
+        child: CircleAvatar(
+          radius: size / 2,
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          child: Icon(
+            icon,
+            size: size * 0.4,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: borderRadius,
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          color: theme.colorScheme.onSurfaceVariant,
+          size: _calculateIconSize(),
+        ),
+      ),
+    );
+  }
+
+  /// Shimmer placeholder for loading states.
+  Widget _buildShimmer(BuildContext context) {
+    return _ShimmerPlaceholder(
+      width: width,
+      height: height,
+      isCircular: isCircular,
+      borderRadius: borderRadius,
+      icon: placeholderIcon ?? _defaultIcon,
+    );
+  }
+
+  /// Error placeholder for failed image loads.
+  Widget _buildErrorPlaceholder(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (isCircular) {
+      final size = width ?? height ?? 48;
+      return SizedBox(
+        width: size,
+        height: size,
+        child: CircleAvatar(
+          radius: size / 2,
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          child: Icon(
+            Icons.broken_image,
+            size: size * 0.4,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    return _ErrorPlaceholder(
+      width: width,
+      height: height,
+      icon: Icons.broken_image,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      iconColor: theme.colorScheme.onSurfaceVariant,
+    );
+  }
+
+  /// Default icon based on entity type.
+  IconData get _defaultIcon {
+    return switch (entityType) {
+      'aquarium' => Icons.water_drop_outlined,
+      'fish' => Icons.set_meal_rounded,
+      'avatar' => Icons.person,
+      _ => Icons.image,
+    };
+  }
+
+  /// Calculates icon size based on widget dimensions.
+  double _calculateIconSize() {
+    if (width != null && height != null) {
+      return (width! < height! ? width! : height!) * 0.4;
+    }
+    return 24;
   }
 }
 

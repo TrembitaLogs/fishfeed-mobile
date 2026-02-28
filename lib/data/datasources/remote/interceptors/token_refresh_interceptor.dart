@@ -15,6 +15,10 @@ typedef LogoutCallback = Future<void> Function();
 /// 1. Attempts to refresh the access token using the stored refresh token
 /// 2. Retries the original request with the new token
 /// 3. If refresh fails (e.g., refresh token expired), triggers logout
+///
+/// The refresh request uses a **separate plain [Dio] instance** to avoid
+/// deadlocking the [QueuedInterceptor] queue (the refresh 401 would wait
+/// for the original 401 handler to finish, which waits for the refresh).
 class TokenRefreshInterceptor extends QueuedInterceptor {
   TokenRefreshInterceptor({
     required SecureStorageService secureStorageService,
@@ -40,12 +44,6 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode != 401) {
-      return handler.next(err);
-    }
-
-    // Skip if this is the refresh endpoint itself
-    if (err.requestOptions.path.contains(_refreshEndpoint)) {
-      await _handleLogout();
       return handler.next(err);
     }
 
@@ -91,6 +89,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
   }
 
   /// Attempts to refresh the access token.
+  ///
+  /// Uses a plain [Dio] instance (no interceptors) to avoid deadlocking
+  /// the [QueuedInterceptor] queue on the main [_dio].
   Future<bool> _refreshToken() async {
     final refreshToken = await _secureStorageService.getRefreshToken();
 
@@ -99,11 +100,21 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       return false;
     }
 
+    // Use a plain Dio to avoid QueuedInterceptor deadlock:
+    // the main _dio's onError queue is blocked by the caller.
+    final plainDio = Dio(
+      BaseOptions(
+        baseUrl: _dio.options.baseUrl,
+        connectTimeout: _dio.options.connectTimeout,
+        receiveTimeout: _dio.options.receiveTimeout,
+        sendTimeout: _dio.options.sendTimeout,
+      ),
+    );
+
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
+      final response = await plainDio.post<Map<String, dynamic>>(
         _refreshEndpoint,
         data: {'refresh_token': refreshToken},
-        options: Options(headers: {'Authorization': null}),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -129,6 +140,8 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
         await _handleLogout();
       }
       return false;
+    } finally {
+      plainDio.close();
     }
   }
 

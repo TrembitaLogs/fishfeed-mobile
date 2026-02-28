@@ -8,7 +8,7 @@ void main() {
       'id': 'user-123',
       'email': 'test@example.com',
       'display_name': 'Test User',
-      'avatar_url': 'https://example.com/avatar.png',
+      'avatar_key': 'https://example.com/avatar.png',
       'created_at': '2024-01-15T10:30:00.000Z',
       'subscription_status': 'premium',
       'free_ai_scans_remaining': 10,
@@ -27,7 +27,7 @@ void main() {
         expect(dto.id, 'user-123');
         expect(dto.email, 'test@example.com');
         expect(dto.displayName, 'Test User');
-        expect(dto.avatarUrl, 'https://example.com/avatar.png');
+        expect(dto.avatarKey, 'https://example.com/avatar.png');
         expect(dto.createdAt, DateTime.utc(2024, 1, 15, 10, 30));
         expect(dto.subscriptionStatus, 'premium');
         expect(dto.freeAiScansRemaining, 10);
@@ -39,7 +39,7 @@ void main() {
         expect(dto.id, 'user-456');
         expect(dto.email, 'minimal@example.com');
         expect(dto.displayName, isNull);
-        expect(dto.avatarUrl, isNull);
+        expect(dto.avatarKey, isNull);
         expect(dto.subscriptionStatus, 'free');
         expect(dto.freeAiScansRemaining, 5);
       });
@@ -52,10 +52,10 @@ void main() {
       });
 
       test('should handle null avatar_url', () {
-        final jsonWithNull = {...testJson, 'avatar_url': null};
+        final jsonWithNull = {...testJson, 'avatar_key': null};
         final dto = UserDto.fromJson(jsonWithNull);
 
-        expect(dto.avatarUrl, isNull);
+        expect(dto.avatarKey, isNull);
       });
     });
 
@@ -65,7 +65,7 @@ void main() {
           id: 'user-123',
           email: 'test@example.com',
           displayName: 'Test User',
-          avatarUrl: 'https://example.com/avatar.png',
+          avatarKey: 'https://example.com/avatar.png',
           createdAt: DateTime.utc(2024, 1, 15, 10, 30),
           subscriptionStatus: 'premium',
           freeAiScansRemaining: 10,
@@ -76,7 +76,7 @@ void main() {
         expect(json['id'], 'user-123');
         expect(json['email'], 'test@example.com');
         expect(json['display_name'], 'Test User');
-        expect(json['avatar_url'], 'https://example.com/avatar.png');
+        expect(json['avatar_key'], 'https://example.com/avatar.png');
         expect(json['created_at'], '2024-01-15T10:30:00.000Z');
         expect(json['subscription_status'], 'premium');
         expect(json['free_ai_scans_remaining'], 10);
@@ -92,7 +92,7 @@ void main() {
         final json = dto.toJson();
 
         expect(json['display_name'], isNull);
-        expect(json['avatar_url'], isNull);
+        expect(json['avatar_key'], isNull);
       });
     });
 

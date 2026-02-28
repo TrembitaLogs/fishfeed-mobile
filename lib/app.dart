@@ -17,6 +17,7 @@ import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_trigger_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
+import 'package:fishfeed/presentation/providers/image_upload_provider.dart';
 import 'package:fishfeed/presentation/providers/sync_refresh_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
@@ -222,6 +223,26 @@ class _SyncTriggerListener extends ConsumerWidget {
     // Initialize sync trigger service by watching the provider
     // This activates automatic sync triggers based on lifecycle/connectivity
     ref.watch(syncTriggerServiceProvider);
+
+    return _ImageUploadTriggerListener(child: child);
+  }
+}
+
+/// Widget that initializes image upload queue processing.
+///
+/// Watches [imageUploadNotifierProvider] to activate:
+/// - Queue initialization and crash recovery on startup
+/// - Automatic upload processing when connectivity restores
+class _ImageUploadTriggerListener extends ConsumerWidget {
+  const _ImageUploadTriggerListener({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize image upload notifier by watching the provider.
+    // This activates connectivity-triggered queue processing.
+    ref.watch(imageUploadNotifierProvider);
 
     return _SyncCompletionRefreshListener(child: child);
   }

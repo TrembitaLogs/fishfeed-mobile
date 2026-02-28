@@ -14,7 +14,6 @@ class Species extends Equatable {
   const Species({
     required this.id,
     required this.name,
-    this.imageAsset,
     this.imageUrl,
     this.feedingFrequency,
     this.foodType,
@@ -29,9 +28,6 @@ class Species extends Equatable {
 
   /// Common name of the species.
   final String name;
-
-  /// Path to the image asset for this species (local).
-  final String? imageAsset;
 
   /// URL to the image for this species (remote).
   final String? imageUrl;
@@ -58,7 +54,6 @@ class Species extends Equatable {
   Species copyWith({
     String? id,
     String? name,
-    String? imageAsset,
     String? imageUrl,
     String? feedingFrequency,
     FoodType? foodType,
@@ -70,7 +65,6 @@ class Species extends Equatable {
     return Species(
       id: id ?? this.id,
       name: name ?? this.name,
-      imageAsset: imageAsset ?? this.imageAsset,
       imageUrl: imageUrl ?? this.imageUrl,
       feedingFrequency: feedingFrequency ?? this.feedingFrequency,
       foodType: foodType ?? this.foodType,
@@ -85,7 +79,6 @@ class Species extends Equatable {
   List<Object?> get props => [
     id,
     name,
-    imageAsset,
     imageUrl,
     feedingFrequency,
     foodType,

@@ -29,6 +29,8 @@ import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
+import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
+import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import '../../helpers/test_helpers.dart' show createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -38,6 +40,12 @@ class MockUserRepository extends Mock implements UserRepository {}
 class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
+
+class MockSpeciesLocalDataSource extends Mock
+    implements SpeciesLocalDataSource {}
+
+class MockSpeciesRemoteDataSource extends Mock
+    implements SpeciesRemoteDataSource {}
 
 /// Mock CalendarDataNotifier that doesn't make async calls.
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
@@ -120,7 +128,8 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
+    bool clearPhotoKey = false,
   }) async => null;
 
   @override
@@ -688,6 +697,10 @@ Widget _buildApp(GoRouter router) {
   mockGoogleAuthService = MockGoogleAuthService();
   mockAppleAuthService = MockAppleAuthService();
 
+  final mockSpeciesLocalDs = MockSpeciesLocalDataSource();
+  final mockSpeciesRemoteDs = MockSpeciesRemoteDataSource();
+  when(() => mockSpeciesLocalDs.getAllSpecies()).thenReturn([]);
+
   return ProviderScope(
     overrides: [
       authRepositoryProvider.overrideWithValue(mockAuthRepository),
@@ -711,6 +724,9 @@ Widget _buildApp(GoRouter router) {
       ),
       // Mock user aquariums provider to avoid HiveBoxes dependency
       userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
+      // Mock species providers for EditFishScreen
+      speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
+      speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
       // Mock fishByIdProvider for EditFishScreen
       fishByIdProvider.overrideWith((ref, fishId) {
         if (fishId == 'test-fish-1') {

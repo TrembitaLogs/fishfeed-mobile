@@ -19,7 +19,7 @@ class SpeciesModelAdapter extends TypeAdapter<SpeciesModel> {
     return SpeciesModel(
       id: fields[0] as String,
       name: fields[1] as String,
-      imageAsset: fields[5] as String?,
+      imageUrl: fields[9] as String?,
       feedingFrequency: fields[2] as String?,
       foodType: fields[6] as FoodTypeModel?,
       portionHint: fields[7] as PortionHintModel?,
@@ -43,14 +43,14 @@ class SpeciesModelAdapter extends TypeAdapter<SpeciesModel> {
       ..write(obj.optimalTemperature)
       ..writeByte(4)
       ..write(obj.careLevel)
-      ..writeByte(5)
-      ..write(obj.imageAsset)
       ..writeByte(6)
       ..write(obj.foodType)
       ..writeByte(7)
       ..write(obj.portionHint)
       ..writeByte(8)
-      ..write(obj.defaultPortionGrams);
+      ..write(obj.defaultPortionGrams)
+      ..writeByte(9)
+      ..write(obj.imageUrl);
   }
 
   @override

@@ -10,7 +10,9 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
+import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
+import 'package:fishfeed/presentation/widgets/common/image_picker_button.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Screen for editing an existing aquarium.
@@ -236,6 +238,39 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
     }
   }
 
+  Future<void> _removePhoto(String? currentPhotoKey) async {
+    if (currentPhotoKey == null) return;
+
+    final l = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.imageDeleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l.imageDeleteButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref
+        .read(userAquariumsProvider.notifier)
+        .updateAquarium(aquariumId: widget.aquariumId, clearPhotoKey: true);
+    unawaited(ref.read(syncServiceProvider).syncNow());
+  }
+
   void _addFish() {
     context.push('${AppRouter.addFish}?aquariumId=${widget.aquariumId}');
   }
@@ -266,6 +301,22 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Aquarium Photo Section
+                  _PhotoSection(
+                    aquariumId: aquarium.id,
+                    photoKey: aquarium.photoKey,
+                    onImageSelected: (localKey) async {
+                      await ref
+                          .read(userAquariumsProvider.notifier)
+                          .updateAquarium(
+                            aquariumId: widget.aquariumId,
+                            photoKey: localKey,
+                          );
+                      unawaited(ref.read(syncServiceProvider).syncNow());
+                    },
+                    onRemovePhoto: () => _removePhoto(aquarium.photoKey),
+                  ),
+                  const SizedBox(height: 24),
                   // Aquarium Name Section
                   _NameSection(
                     controller: _nameController,
@@ -290,6 +341,69 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
                 ],
               ),
             ),
+    );
+  }
+}
+
+/// Section for displaying and editing aquarium photo.
+class _PhotoSection extends StatelessWidget {
+  const _PhotoSection({
+    required this.aquariumId,
+    required this.photoKey,
+    required this.onImageSelected,
+    required this.onRemovePhoto,
+  });
+
+  final String aquariumId;
+  final String? photoKey;
+  final ValueChanged<String> onImageSelected;
+  final VoidCallback onRemovePhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            ImagePickerButton(
+              entityType: 'aquarium',
+              entityId: aquariumId,
+              onImageSelected: onImageSelected,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: EntityImage(
+                  photoKey: photoKey,
+                  entityType: 'aquarium',
+                  entityId: aquariumId,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            if (photoKey != null) ...[
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: onRemovePhoto,
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: theme.colorScheme.error,
+                ),
+                label: Text(l.imageDeleteButton),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

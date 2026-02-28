@@ -18,7 +18,7 @@ class AquariumModel extends HiveObject {
     required this.name,
     this.capacity,
     this.waterType = WaterType.freshwater,
-    this.imageUrl,
+    this.photoKey,
     required this.createdAt,
     this.synced = false,
     this.updatedAt,
@@ -35,7 +35,7 @@ class AquariumModel extends HiveObject {
       name: entity.name,
       capacity: entity.capacity,
       waterType: entity.waterType,
-      imageUrl: entity.imageUrl,
+      photoKey: entity.photoKey,
       createdAt: entity.createdAt,
       synced: entity.synced,
       updatedAt: entity.updatedAt,
@@ -65,9 +65,9 @@ class AquariumModel extends HiveObject {
   @HiveField(4)
   WaterType waterType;
 
-  /// URL to aquarium image.
+  /// S3 object key for aquarium photo (e.g. "aquariums/{id}/{uuid}.webp").
   @HiveField(5)
-  String? imageUrl;
+  String? photoKey;
 
   /// When the aquarium was created.
   @HiveField(6)
@@ -126,7 +126,7 @@ class AquariumModel extends HiveObject {
       name: name,
       capacity: capacity,
       waterType: waterType,
-      imageUrl: imageUrl,
+      photoKey: photoKey,
       createdAt: createdAt,
       synced: synced,
       updatedAt: updatedAt,
@@ -143,7 +143,7 @@ class AquariumModel extends HiveObject {
       'name': name,
       'capacity': capacity,
       'water_type': waterType.name,
-      'image_url': imageUrl,
+      'photo_key': photoKey,
     };
   }
 }

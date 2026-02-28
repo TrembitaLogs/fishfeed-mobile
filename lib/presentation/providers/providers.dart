@@ -16,6 +16,8 @@ export 'family_sync_provider.dart';
 export 'feeding_providers.dart';
 export 'fish_management_provider.dart';
 export 'home_providers.dart';
+export 'image_upload_provider.dart';
+export 'image_url_provider.dart';
 export 'home_tab_provider.dart';
 export 'join_invite_provider.dart';
 export 'migration_provider.dart';

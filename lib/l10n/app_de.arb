@@ -847,5 +847,11 @@
   "paywallMultipleAquariums": "Mehrere Aquarien",
   "paywallUnlimitedAiScans": "Unbegrenzte KI-Fischscans",
   "feedingAlreadyCompleted": "Diese Fütterung wurde bereits abgeschlossen",
-  "privacyPolicy": "Datenschutzrichtlinie"
+  "privacyPolicy": "Datenschutzrichtlinie",
+  "imageUploadProgress": "Wird hochgeladen...",
+  "imageUploadError": "Upload fehlgeschlagen. Tippen zum Wiederholen.",
+  "imageDeleteConfirm": "Dieses Foto entfernen?",
+  "imageDeleteButton": "Entfernen",
+  "imagePlaceholder": "Kein Bild",
+  "imageRetryButton": "Erneut versuchen"
 }

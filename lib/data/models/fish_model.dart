@@ -24,6 +24,7 @@ class FishModel extends HiveObject {
     this.serverUpdatedAt,
     this.deletedAt,
     this.conflictStatusValue = 0,
+    this.photoKey,
   });
 
   /// Creates a model from a domain entity.
@@ -41,6 +42,7 @@ class FishModel extends HiveObject {
       serverUpdatedAt: entity.serverUpdatedAt,
       deletedAt: entity.deletedAt,
       conflictStatusValue: entity.conflictStatus.index,
+      photoKey: entity.photoKey,
     );
   }
 
@@ -98,6 +100,10 @@ class FishModel extends HiveObject {
   @HiveField(11, defaultValue: 0)
   int conflictStatusValue;
 
+  /// S3 object key for fish photo (e.g. "fish/{id}/{uuid}.webp").
+  @HiveField(12)
+  String? photoKey;
+
   /// Whether this fish has been soft-deleted.
   bool get isDeleted => deletedAt != null;
 
@@ -126,6 +132,7 @@ class FishModel extends HiveObject {
       name: name,
       quantity: quantity,
       notes: notes,
+      photoKey: photoKey,
       addedAt: addedAt,
       synced: synced,
       updatedAt: updatedAt,
@@ -144,6 +151,7 @@ class FishModel extends HiveObject {
       'custom_name': name,
       'quantity': quantity,
       'notes': notes,
+      'photo_key': photoKey,
     };
   }
 }

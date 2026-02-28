@@ -97,7 +97,7 @@ class SpeciesModel extends HiveObject {
   SpeciesModel({
     required this.id,
     required this.name,
-    this.imageAsset,
+    this.imageUrl,
     this.feedingFrequency,
     this.foodType,
     this.portionHint,
@@ -111,7 +111,7 @@ class SpeciesModel extends HiveObject {
     return SpeciesModel(
       id: entity.id,
       name: entity.name,
-      imageAsset: entity.imageAsset,
+      imageUrl: entity.imageUrl,
       feedingFrequency: entity.feedingFrequency,
       foodType: entity.foodType != null
           ? FoodTypeModelExtension.fromEntity(entity.foodType!)
@@ -145,9 +145,7 @@ class SpeciesModel extends HiveObject {
   @HiveField(4)
   String? careLevel;
 
-  /// Path to the image asset for this species.
-  @HiveField(5)
-  String? imageAsset;
+  // HiveField(5) was imageAsset — removed, index reserved.
 
   /// Type of food recommended for this species.
   @HiveField(6)
@@ -161,12 +159,16 @@ class SpeciesModel extends HiveObject {
   @HiveField(8)
   double? defaultPortionGrams;
 
+  /// URL to the image for this species (remote).
+  @HiveField(9)
+  String? imageUrl;
+
   /// Converts this model to a domain entity.
   Species toEntity() {
     return Species(
       id: id,
       name: name,
-      imageAsset: imageAsset,
+      imageUrl: imageUrl,
       feedingFrequency: feedingFrequency,
       foodType: foodType?.toEntity(),
       portionHint: portionHint?.toEntity(),

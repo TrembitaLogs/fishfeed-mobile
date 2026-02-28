@@ -26,6 +26,10 @@ abstract final class ApiEndpoints {
   static const String speciesSearch = '/species/search';
   static const String speciesPopular = '/species/popular';
 
+  // Image endpoints
+  static const String imageUpload = '/images/upload';
+  static const String imageUrls = '/images/urls';
+
   // Aquarium endpoints
   static const String aquariums = '/aquariums';
 }

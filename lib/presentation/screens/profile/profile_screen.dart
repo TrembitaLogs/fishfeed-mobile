@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
@@ -15,6 +13,7 @@ import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/widgets/common/app_button.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
+import 'package:fishfeed/presentation/widgets/common/image_picker_button.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_badge.dart';
 import 'package:fishfeed/presentation/widgets/profile/achievements_gallery.dart';
 import 'package:fishfeed/presentation/widgets/profile/extended_statistics_section.dart';
@@ -38,7 +37,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nicknameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _imagePicker = ImagePicker();
 
   bool _isEditingNickname = false;
   String? _originalNickname;
@@ -133,9 +131,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               // Avatar section
               _AvatarSection(
-                avatarUrl: user.avatarUrl,
-                isLoading: profileState.isUpdatingAvatar,
-                onPickImage: _showImagePickerModal,
+                userId: user.id,
+                avatarKey: user.avatarKey,
+                onImageSelected: (localKey) async {
+                  await ref
+                      .read(profileNotifierProvider.notifier)
+                      .updateAvatarKey(localKey);
+                },
+                onRemoveAvatar: user.avatarKey != null
+                    ? () => _removeAvatar()
+                    : null,
               ),
               const SizedBox(height: 24),
 
@@ -219,78 +224,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _showImagePickerModal() {
-    final theme = Theme.of(context);
+  Future<void> _removeAvatar() async {
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet<void>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.choosePhoto, style: theme.textTheme.titleMedium),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: Text(l10n.takePhoto),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: Text(l10n.chooseFromGallery),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.imageDeleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
           ),
-        ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.imageDeleteButton),
+          ),
+        ],
       ),
     );
-  }
 
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final pickedFile = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 80,
-      );
-
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        await ref.read(profileNotifierProvider.notifier).updateAvatar(file);
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_getImagePickerErrorMessage(e, l10n)),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+    if (confirmed == true && mounted) {
+      await ref.read(profileNotifierProvider.notifier).updateAvatarKey(null);
     }
-  }
-
-  String _getImagePickerErrorMessage(Object error, AppLocalizations l10n) {
-    final errorString = error.toString().toLowerCase();
-    if (errorString.contains('permission') || errorString.contains('denied')) {
-      return l10n.permissionDenied;
-    }
-    return l10n.failedToPickImage;
   }
 
   void _toggleNicknameEdit() {
@@ -354,53 +313,75 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-/// Avatar section with edit button overlay.
+/// Avatar section with image picker overlay and optional remove button.
 class _AvatarSection extends StatelessWidget {
   const _AvatarSection({
-    required this.avatarUrl,
-    required this.isLoading,
-    required this.onPickImage,
+    required this.userId,
+    required this.avatarKey,
+    required this.onImageSelected,
+    this.onRemoveAvatar,
   });
 
-  final String? avatarUrl;
-  final bool isLoading;
-  final VoidCallback onPickImage;
+  final String userId;
+  final String? avatarKey;
+  final ValueChanged<String> onImageSelected;
+  final VoidCallback? onRemoveAvatar;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
-    return Stack(
+    return Column(
       children: [
-        GestureDetector(
-          onTap: isLoading ? null : onPickImage,
-          child: isLoading
-              ? CircleAvatar(
-                  radius: 60,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  child: const CircularProgressIndicator(),
-                )
-              : AppCachedAvatar(imageUrl: avatarUrl, radius: 60),
-        ),
-        Positioned(
-          right: 0,
-          bottom: 0,
-          child: GestureDetector(
-            onTap: isLoading ? null : onPickImage,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                shape: BoxShape.circle,
+        ImagePickerButton(
+          entityType: 'avatar',
+          entityId: userId,
+          onImageSelected: onImageSelected,
+          child: Stack(
+            children: [
+              EntityImage(
+                photoKey: avatarKey,
+                entityType: 'avatar',
+                entityId: userId,
+                width: 120,
+                height: 120,
+                isCircular: true,
               ),
-              child: Icon(
-                Icons.camera_alt,
-                size: 20,
-                color: theme.colorScheme.onPrimary,
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    size: 20,
+                    color: theme.colorScheme.onPrimary,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
+        if (onRemoveAvatar != null) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: onRemoveAvatar,
+            icon: Icon(
+              Icons.delete_outline,
+              size: 18,
+              color: theme.colorScheme.error,
+            ),
+            label: Text(l10n.imageDeleteButton),
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.error,
+            ),
+          ),
+        ],
       ],
     );
   }

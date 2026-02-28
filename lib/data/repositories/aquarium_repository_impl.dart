@@ -95,7 +95,8 @@ class AquariumRepositoryImpl implements AquariumRepository {
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
+    bool clearPhotoKey = false,
   }) async {
     try {
       // Update locally; sync mechanism will push to server
@@ -110,7 +111,7 @@ class AquariumRepositoryImpl implements AquariumRepository {
         name: name ?? existing.name,
         waterType: waterType ?? existing.waterType,
         capacity: capacity ?? existing.capacity,
-        imageUrl: imageUrl ?? existing.imageUrl,
+        photoKey: clearPhotoKey ? null : (photoKey ?? existing.photoKey),
         createdAt: existing.createdAt,
         synced: false,
         updatedAt: DateTime.now(),

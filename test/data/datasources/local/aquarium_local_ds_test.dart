@@ -23,7 +23,7 @@ void main() {
     String name = 'Test Aquarium',
     double? capacity = 50.0,
     WaterType waterType = WaterType.freshwater,
-    String? imageUrl,
+    String? photoKey,
     DateTime? createdAt,
   }) {
     return AquariumModel(
@@ -32,7 +32,7 @@ void main() {
       name: name,
       capacity: capacity,
       waterType: waterType,
-      imageUrl: imageUrl,
+      photoKey: photoKey,
       createdAt: createdAt ?? DateTime(2025, 6, 15, 10, 0),
     );
   }

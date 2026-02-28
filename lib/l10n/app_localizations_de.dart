@@ -1848,4 +1848,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get privacyPolicy => 'Datenschutzrichtlinie';
+
+  @override
+  String get imageUploadProgress => 'Wird hochgeladen...';
+
+  @override
+  String get imageUploadError =>
+      'Upload fehlgeschlagen. Tippen zum Wiederholen.';
+
+  @override
+  String get imageDeleteConfirm => 'Dieses Foto entfernen?';
+
+  @override
+  String get imageDeleteButton => 'Entfernen';
+
+  @override
+  String get imagePlaceholder => 'Kein Bild';
+
+  @override
+  String get imageRetryButton => 'Erneut versuchen';
 }

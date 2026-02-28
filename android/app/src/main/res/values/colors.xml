@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary color from AppTheme (light mode) -->
+    <color name="splash_background">#FFFFFFFF</color>
+    <!-- Primary color for splash icon tint -->
+    <color name="splash_primary">#FF1565C0</color>
+    <!-- Dark mode splash background matching Flutter surface color -->
+    <color name="splash_background_dark">#FF1E1E1E</color>
+</resources>

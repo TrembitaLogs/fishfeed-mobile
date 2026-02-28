@@ -29,13 +29,14 @@ class FishModelAdapter extends TypeAdapter<FishModel> {
       serverUpdatedAt: fields[9] as DateTime?,
       deletedAt: fields[10] as DateTime?,
       conflictStatusValue: fields[11] == null ? 0 : fields[11] as int,
+      photoKey: fields[12] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FishModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class FishModelAdapter extends TypeAdapter<FishModel> {
       ..writeByte(10)
       ..write(obj.deletedAt)
       ..writeByte(11)
-      ..write(obj.conflictStatusValue);
+      ..write(obj.conflictStatusValue)
+      ..writeByte(12)
+      ..write(obj.photoKey);
   }
 
   @override

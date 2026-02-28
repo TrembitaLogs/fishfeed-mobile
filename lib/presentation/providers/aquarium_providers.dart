@@ -172,7 +172,9 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
   /// [name] - Optional new name.
   /// [waterType] - Optional new water type.
   /// [capacity] - Optional new capacity.
-  /// [imageUrl] - Optional new image URL.
+  /// [photoKey] - Optional new S3 object key for photo.
+  /// [clearPhotoKey] - When true, explicitly sets photoKey to null
+  ///   (removes photo). Takes precedence over [photoKey].
   ///
   /// Returns the updated aquarium on success, or null on failure.
   Future<Aquarium?> updateAquarium({
@@ -180,14 +182,16 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
+    bool clearPhotoKey = false,
   }) async {
     final result = await _aquariumRepository.updateAquarium(
       aquariumId: aquariumId,
       name: name,
       waterType: waterType,
       capacity: capacity,
-      imageUrl: imageUrl,
+      photoKey: photoKey,
+      clearPhotoKey: clearPhotoKey,
     );
 
     return result.fold(

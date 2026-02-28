@@ -1825,4 +1825,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get imageUploadProgress => 'Uploading...';
+
+  @override
+  String get imageUploadError => 'Upload failed. Tap to retry.';
+
+  @override
+  String get imageDeleteConfirm => 'Remove this photo?';
+
+  @override
+  String get imageDeleteButton => 'Remove';
+
+  @override
+  String get imagePlaceholder => 'No image';
+
+  @override
+  String get imageRetryButton => 'Retry';
 }

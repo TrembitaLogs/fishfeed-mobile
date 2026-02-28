@@ -19,7 +19,7 @@ class AquariumDto with _$AquariumDto {
     required String name,
     double? capacity,
     @JsonKey(name: 'water_type') @Default('freshwater') String waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _AquariumDto;
 
@@ -34,7 +34,7 @@ class AquariumDto with _$AquariumDto {
       name: name,
       capacity: capacity,
       waterType: _mapWaterType(waterType),
-      imageUrl: imageUrl,
+      photoKey: photoKey,
       createdAt: createdAt,
     );
   }
@@ -69,7 +69,7 @@ class UpdateAquariumRequestDto with _$UpdateAquariumRequestDto {
     String? name,
     double? capacity,
     @JsonKey(name: 'water_type') String? waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
   }) = _UpdateAquariumRequestDto;
 
   factory UpdateAquariumRequestDto.fromJson(Map<String, dynamic> json) =>

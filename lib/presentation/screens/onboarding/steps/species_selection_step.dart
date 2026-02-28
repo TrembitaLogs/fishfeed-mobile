@@ -345,10 +345,7 @@ class _SpeciesCard extends StatelessWidget {
 
   Widget _buildSpeciesImage(ThemeData theme) {
     final placeholder = Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      color: theme.colorScheme.primaryContainer,
       child: Center(
         child: Icon(
           Icons.pets,
@@ -358,23 +355,17 @@ class _SpeciesCard extends StatelessWidget {
       ),
     );
 
-    // Prefer network image if available
     if (species.imageUrl != null && species.imageUrl!.isNotEmpty) {
-      return CachedNetworkImage(
-        imageUrl: species.imageUrl!,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => placeholder,
-        errorWidget: (context, url, error) => placeholder,
-        fadeInDuration: const Duration(milliseconds: 300),
-      );
-    }
-
-    // Fallback to asset image
-    if (species.imageAsset != null && species.imageAsset!.isNotEmpty) {
-      return Image.asset(
-        species.imageAsset!,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => placeholder,
+      return SizedBox.expand(
+        child: CachedNetworkImage(
+          imageUrl: species.imageUrl!,
+          cacheKey: 'species_${species.id}',
+          fit: BoxFit.cover,
+          placeholder: (context, url) => placeholder,
+          errorWidget: (context, url, error) => placeholder,
+          fadeOutDuration: Duration.zero,
+          fadeInDuration: Duration.zero,
+        ),
       );
     }
 

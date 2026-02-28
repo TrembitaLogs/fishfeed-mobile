@@ -3187,6 +3187,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get privacyPolicy;
+
+  /// Image upload progress indicator text
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading...'**
+  String get imageUploadProgress;
+
+  /// Image upload failure message with retry hint
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed. Tap to retry.'**
+  String get imageUploadError;
+
+  /// Confirmation dialog text for removing a photo
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this photo?'**
+  String get imageDeleteConfirm;
+
+  /// Button label for removing a photo
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get imageDeleteButton;
+
+  /// Placeholder text when no image is set
+  ///
+  /// In en, this message translates to:
+  /// **'No image'**
+  String get imagePlaceholder;
+
+  /// Button label for retrying a failed image upload
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get imageRetryButton;
 }
 
 class _AppLocalizationsDelegate

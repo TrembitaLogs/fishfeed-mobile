@@ -10,8 +10,11 @@ import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
+import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/services/sync/change_tracker.dart';
 
 // Mock classes
@@ -389,6 +392,214 @@ void main() {
         expect(changes, isEmpty);
         expect(tracker.hasChanges, false);
         expect(tracker.pendingChangesCount, 0);
+      });
+    });
+
+    group('local:// photo_key filtering', () {
+      AquariumModel createTestAquarium({
+        String id = 'aquarium-123',
+        String? photoKey,
+        DateTime? serverUpdatedAt,
+      }) {
+        return AquariumModel(
+          id: id,
+          userId: 'user-abc',
+          name: 'Test Aquarium',
+          createdAt: DateTime(2025, 1, 15),
+          serverUpdatedAt: serverUpdatedAt,
+          photoKey: photoKey,
+        );
+      }
+
+      FishModel createTestFish({
+        String id = 'fish-123',
+        String? photoKey,
+        DateTime? serverUpdatedAt,
+      }) {
+        return FishModel(
+          id: id,
+          aquariumId: 'aquarium-456',
+          speciesId: 'species-789',
+          addedAt: DateTime(2025, 1, 15),
+          serverUpdatedAt: serverUpdatedAt,
+          photoKey: photoKey,
+        );
+      }
+
+      group('aquarium sync data', () {
+        test('should NOT include photo_key when it starts with local://', () {
+          setupEmptyMocks();
+
+          final aquarium = createTestAquarium(
+            photoKey: 'local://a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          );
+          when(
+            () => mockAquariumDs.getUnsyncedAquariums(),
+          ).thenReturn([aquarium]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final aquariumChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.aquarium,
+          );
+          expect(aquariumChange.data.containsKey('photo_key'), false);
+        });
+
+        test('should include photo_key when it is a valid S3 key', () {
+          setupEmptyMocks();
+
+          final aquarium = createTestAquarium(
+            photoKey: 'aquariums/aquarium-123/f7a3b2c1.webp',
+          );
+          when(
+            () => mockAquariumDs.getUnsyncedAquariums(),
+          ).thenReturn([aquarium]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final aquariumChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.aquarium,
+          );
+          expect(
+            aquariumChange.data['photo_key'],
+            'aquariums/aquarium-123/f7a3b2c1.webp',
+          );
+        });
+
+        test('should NOT include photo_key when it is null', () {
+          setupEmptyMocks();
+
+          final aquarium = createTestAquarium();
+          when(
+            () => mockAquariumDs.getUnsyncedAquariums(),
+          ).thenReturn([aquarium]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final aquariumChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.aquarium,
+          );
+          expect(aquariumChange.data.containsKey('photo_key'), false);
+        });
+      });
+
+      group('fish sync data', () {
+        test('should NOT include photo_key when it starts with local://', () {
+          setupEmptyMocks();
+
+          final fish = createTestFish(
+            photoKey: 'local://b2c3d4e5-f6a7-8901-bcde-f12345678901',
+          );
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data.containsKey('photo_key'), false);
+        });
+
+        test('should include photo_key when it is a valid S3 key', () {
+          setupEmptyMocks();
+
+          final fish = createTestFish(photoKey: 'fish/fish-123/c4e82a1f.webp');
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data['photo_key'], 'fish/fish-123/c4e82a1f.webp');
+        });
+
+        test('should NOT include photo_key when it is null', () {
+          setupEmptyMocks();
+
+          final fish = createTestFish();
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data.containsKey('photo_key'), false);
+        });
+      });
+
+      group('user profile sync data', () {
+        test('should NOT include avatar_key when it starts with local://', () {
+          setupEmptyMocks();
+
+          final user = UserModel(
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: DateTime(2025, 1, 15),
+            avatarKey: 'local://c3d4e5f6-a7b8-9012-cdef-123456789012',
+            synced: false,
+          );
+          when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(user);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final userChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.userProfile,
+          );
+          expect(userChange.data.containsKey('avatar_key'), false);
+        });
+
+        test('should include avatar_key when it is a valid S3 key', () {
+          setupEmptyMocks();
+
+          final user = UserModel(
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: DateTime(2025, 1, 15),
+            avatarKey: 'avatars/user-123/d5e6f7a8.webp',
+            synced: false,
+          );
+          when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(user);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final userChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.userProfile,
+          );
+          expect(
+            userChange.data['avatar_key'],
+            'avatars/user-123/d5e6f7a8.webp',
+          );
+        });
+
+        test('should NOT include avatar_key when it is null', () {
+          setupEmptyMocks();
+
+          final user = UserModel(
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: DateTime(2025, 1, 15),
+            synced: false,
+          );
+          when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(user);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final userChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.userProfile,
+          );
+          expect(userChange.data.containsKey('avatar_key'), false);
+        });
       });
     });
   });

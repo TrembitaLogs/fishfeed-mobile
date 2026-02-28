@@ -33,7 +33,7 @@ void main() {
     id: 'user-123',
     email: 'test@example.com',
     displayName: 'Test User',
-    avatarUrl: null,
+    avatarKey: null,
     createdAt: DateTime(2024, 1, 15),
     subscriptionStatus: 'free',
     freeAiScansRemaining: 5,

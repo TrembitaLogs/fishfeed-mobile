@@ -39,7 +39,7 @@ void main() {
       expect(model.email, 'test@example.com');
       expect(model.createdAt, now);
       expect(model.displayName, isNull);
-      expect(model.avatarUrl, isNull);
+      expect(model.avatarKey, isNull);
       expect(model.subscriptionStatus, const SubscriptionStatus.free());
       expect(model.freeAiScansRemaining, 5);
       expect(model.settings, isA<UserSettingsModel>());
@@ -58,7 +58,7 @@ void main() {
         id: 'user-456',
         email: 'premium@example.com',
         displayName: 'Premium User',
-        avatarUrl: 'https://example.com/avatar.png',
+        avatarKey: 'https://example.com/avatar.png',
         createdAt: now,
         subscriptionStatus: SubscriptionStatus.premium(),
         freeAiScansRemaining: 0,
@@ -68,7 +68,7 @@ void main() {
       expect(model.id, 'user-456');
       expect(model.email, 'premium@example.com');
       expect(model.displayName, 'Premium User');
-      expect(model.avatarUrl, 'https://example.com/avatar.png');
+      expect(model.avatarKey, 'https://example.com/avatar.png');
       expect(model.subscriptionStatus, SubscriptionStatus.premium());
       expect(model.freeAiScansRemaining, 0);
       expect(model.settings.darkModeEnabled, true);
@@ -83,7 +83,7 @@ void main() {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        avatarUrl: 'https://example.com/avatar.png',
+        avatarKey: 'https://example.com/avatar.png',
         createdAt: now,
         subscriptionStatus: SubscriptionStatus.premium(),
         freeAiScansRemaining: 3,
@@ -101,7 +101,7 @@ void main() {
       expect(entity.id, 'user-123');
       expect(entity.email, 'test@example.com');
       expect(entity.displayName, 'Test User');
-      expect(entity.avatarUrl, 'https://example.com/avatar.png');
+      expect(entity.avatarKey, 'https://example.com/avatar.png');
       expect(entity.createdAt, now);
       expect(entity.subscriptionStatus, SubscriptionStatus.premium());
       expect(entity.freeAiScansRemaining, 3);
@@ -117,7 +117,7 @@ void main() {
         id: 'user-789',
         email: 'entity@example.com',
         displayName: 'Entity User',
-        avatarUrl: 'https://example.com/entity.png',
+        avatarKey: 'https://example.com/entity.png',
         createdAt: now,
         subscriptionStatus: const SubscriptionStatus.free(),
         freeAiScansRemaining: 5,
@@ -133,7 +133,7 @@ void main() {
       expect(model.id, 'user-789');
       expect(model.email, 'entity@example.com');
       expect(model.displayName, 'Entity User');
-      expect(model.avatarUrl, 'https://example.com/entity.png');
+      expect(model.avatarKey, 'https://example.com/entity.png');
       expect(model.createdAt, now);
       expect(model.subscriptionStatus, const SubscriptionStatus.free());
       expect(model.freeAiScansRemaining, 5);
@@ -163,6 +163,66 @@ void main() {
       final resultEntity = model.toEntity();
 
       expect(resultEntity, equals(originalEntity));
+    });
+  });
+
+  group('UserModel - toSyncJson', () {
+    test('should NOT include avatar_key when it starts with local://', () {
+      final model = UserModel(
+        id: 'user-123',
+        email: 'test@example.com',
+        createdAt: DateTime(2025, 1, 15),
+        avatarKey: 'local://a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      );
+
+      final json = model.toSyncJson();
+
+      expect(json.containsKey('avatar_key'), false);
+      expect(json['id'], 'user-123');
+      expect(json['nickname'], isNull);
+      expect(json.containsKey('settings'), true);
+    });
+
+    test('should include avatar_key when it is a valid S3 key', () {
+      final model = UserModel(
+        id: 'user-456',
+        email: 'test@example.com',
+        createdAt: DateTime(2025, 1, 15),
+        avatarKey: 'avatars/user-456/f7a3b2c1.webp',
+      );
+
+      final json = model.toSyncJson();
+
+      expect(json['avatar_key'], 'avatars/user-456/f7a3b2c1.webp');
+    });
+
+    test('should NOT include avatar_key when it is null', () {
+      final model = UserModel(
+        id: 'user-789',
+        email: 'test@example.com',
+        createdAt: DateTime(2025, 1, 15),
+      );
+
+      final json = model.toSyncJson();
+
+      expect(json.containsKey('avatar_key'), false);
+    });
+
+    test('should always include other fields regardless of avatar_key', () {
+      final model = UserModel(
+        id: 'user-100',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        createdAt: DateTime(2025, 1, 15),
+        avatarKey: 'local://some-uuid',
+      );
+
+      final json = model.toSyncJson();
+
+      expect(json['id'], 'user-100');
+      expect(json['nickname'], 'Test User');
+      expect(json['settings'], isA<Map<String, dynamic>>());
+      expect(json.containsKey('avatar_key'), false);
     });
   });
 

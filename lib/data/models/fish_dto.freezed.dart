@@ -29,6 +29,8 @@ mixin _$FishDto {
   int get quantity => throw _privateConstructorUsedError;
   @JsonKey(name: 'custom_name')
   String? get customName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'photo_key')
+  String? get photoKey => throw _privateConstructorUsedError;
   @JsonKey(name: 'added_via')
   String? get addedVia => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
@@ -50,6 +52,7 @@ abstract class $FishDtoCopyWith<$Res> {
     @JsonKey(name: 'species_id') String speciesId,
     int quantity,
     @JsonKey(name: 'custom_name') String? customName,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'added_via') String? addedVia,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
@@ -73,6 +76,7 @@ class _$FishDtoCopyWithImpl<$Res, $Val extends FishDto>
     Object? speciesId = null,
     Object? quantity = null,
     Object? customName = freezed,
+    Object? photoKey = freezed,
     Object? addedVia = freezed,
     Object? createdAt = null,
   }) {
@@ -97,6 +101,10 @@ class _$FishDtoCopyWithImpl<$Res, $Val extends FishDto>
             customName: freezed == customName
                 ? _value.customName
                 : customName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            photoKey: freezed == photoKey
+                ? _value.photoKey
+                : photoKey // ignore: cast_nullable_to_non_nullable
                       as String?,
             addedVia: freezed == addedVia
                 ? _value.addedVia
@@ -126,6 +134,7 @@ abstract class _$$FishDtoImplCopyWith<$Res> implements $FishDtoCopyWith<$Res> {
     @JsonKey(name: 'species_id') String speciesId,
     int quantity,
     @JsonKey(name: 'custom_name') String? customName,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'added_via') String? addedVia,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
@@ -148,6 +157,7 @@ class __$$FishDtoImplCopyWithImpl<$Res>
     Object? speciesId = null,
     Object? quantity = null,
     Object? customName = freezed,
+    Object? photoKey = freezed,
     Object? addedVia = freezed,
     Object? createdAt = null,
   }) {
@@ -173,6 +183,10 @@ class __$$FishDtoImplCopyWithImpl<$Res>
             ? _value.customName
             : customName // ignore: cast_nullable_to_non_nullable
                   as String?,
+        photoKey: freezed == photoKey
+            ? _value.photoKey
+            : photoKey // ignore: cast_nullable_to_non_nullable
+                  as String?,
         addedVia: freezed == addedVia
             ? _value.addedVia
             : addedVia // ignore: cast_nullable_to_non_nullable
@@ -195,6 +209,7 @@ class _$FishDtoImpl extends _FishDto {
     @JsonKey(name: 'species_id') required this.speciesId,
     required this.quantity,
     @JsonKey(name: 'custom_name') this.customName,
+    @JsonKey(name: 'photo_key') this.photoKey,
     @JsonKey(name: 'added_via') this.addedVia,
     @JsonKey(name: 'created_at') required this.createdAt,
   }) : super._();
@@ -216,6 +231,9 @@ class _$FishDtoImpl extends _FishDto {
   @JsonKey(name: 'custom_name')
   final String? customName;
   @override
+  @JsonKey(name: 'photo_key')
+  final String? photoKey;
+  @override
   @JsonKey(name: 'added_via')
   final String? addedVia;
   @override
@@ -224,7 +242,7 @@ class _$FishDtoImpl extends _FishDto {
 
   @override
   String toString() {
-    return 'FishDto(id: $id, aquariumId: $aquariumId, speciesId: $speciesId, quantity: $quantity, customName: $customName, addedVia: $addedVia, createdAt: $createdAt)';
+    return 'FishDto(id: $id, aquariumId: $aquariumId, speciesId: $speciesId, quantity: $quantity, customName: $customName, photoKey: $photoKey, addedVia: $addedVia, createdAt: $createdAt)';
   }
 
   @override
@@ -241,6 +259,8 @@ class _$FishDtoImpl extends _FishDto {
                 other.quantity == quantity) &&
             (identical(other.customName, customName) ||
                 other.customName == customName) &&
+            (identical(other.photoKey, photoKey) ||
+                other.photoKey == photoKey) &&
             (identical(other.addedVia, addedVia) ||
                 other.addedVia == addedVia) &&
             (identical(other.createdAt, createdAt) ||
@@ -256,6 +276,7 @@ class _$FishDtoImpl extends _FishDto {
     speciesId,
     quantity,
     customName,
+    photoKey,
     addedVia,
     createdAt,
   );
@@ -279,6 +300,7 @@ abstract class _FishDto extends FishDto {
     @JsonKey(name: 'species_id') required final String speciesId,
     required final int quantity,
     @JsonKey(name: 'custom_name') final String? customName,
+    @JsonKey(name: 'photo_key') final String? photoKey,
     @JsonKey(name: 'added_via') final String? addedVia,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
   }) = _$FishDtoImpl;
@@ -299,6 +321,9 @@ abstract class _FishDto extends FishDto {
   @override
   @JsonKey(name: 'custom_name')
   String? get customName;
+  @override
+  @JsonKey(name: 'photo_key')
+  String? get photoKey;
   @override
   @JsonKey(name: 'added_via')
   String? get addedVia;

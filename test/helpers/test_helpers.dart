@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +30,7 @@ import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:fishfeed/services/sync/sync_trigger_service.dart';
+import 'package:fishfeed/presentation/providers/image_upload_provider.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 // ============ Mock Classes ============
@@ -55,6 +57,34 @@ class MockConnectivityService extends Mock implements ConnectivityService {}
 class MockAppLifecycleService extends Mock implements AppLifecycleService {}
 
 class MockSyncTriggerService extends Mock implements SyncTriggerService {}
+
+/// Mock ImageUploadNotifier that does nothing.
+class MockImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus>
+    implements ImageUploadNotifier {
+  MockImageUploadNotifier() : super(ImageUploadQueueStatus.empty);
+
+  @override
+  bool get isInitialized => true;
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<String> queueUpload({
+    required String entityType,
+    required String entityId,
+    required Uint8List imageBytes,
+  }) async => 'local://mock';
+
+  @override
+  Future<void> processQueue() async {}
+
+  @override
+  Future<int> retryFailed() async => 0;
+
+  @override
+  Future<String?> getLocalImagePath(String localKey) async => null;
+}
 
 /// Mock CalendarDataNotifier that doesn't make async calls.
 class MockCalendarDataNotifier extends StateNotifier<CalendarDataState>
@@ -319,6 +349,11 @@ List<Override> getCommonAppOverrides({
 
     // Push token auth sync (no-op)
     pushTokenAuthSyncProvider.overrideWith((ref) => null),
+
+    // Image upload notifier (no-op)
+    imageUploadNotifierProvider.overrideWith(
+      (ref) => MockImageUploadNotifier(),
+    ),
 
     // Calendar and feeding provider mocks
     calendarDataProvider.overrideWith((ref) => MockCalendarDataNotifier()),

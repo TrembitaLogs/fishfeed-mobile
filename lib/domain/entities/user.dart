@@ -9,7 +9,7 @@ class User extends Equatable {
     required this.id,
     required this.email,
     this.displayName,
-    this.avatarUrl,
+    this.avatarKey,
     required this.createdAt,
     this.subscriptionStatus = const SubscriptionStatus.free(),
     this.freeAiScansRemaining = 5,
@@ -25,8 +25,8 @@ class User extends Equatable {
   /// User's display name (nickname).
   final String? displayName;
 
-  /// URL to user's avatar image.
-  final String? avatarUrl;
+  /// S3 object key for user's avatar image.
+  final String? avatarKey;
 
   /// When the user account was created.
   final DateTime createdAt;
@@ -45,7 +45,7 @@ class User extends Equatable {
     String? id,
     String? email,
     String? displayName,
-    String? avatarUrl,
+    String? avatarKey,
     DateTime? createdAt,
     SubscriptionStatus? subscriptionStatus,
     int? freeAiScansRemaining,
@@ -55,7 +55,7 @@ class User extends Equatable {
       id: id ?? this.id,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarKey: avatarKey ?? this.avatarKey,
       createdAt: createdAt ?? this.createdAt,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       freeAiScansRemaining: freeAiScansRemaining ?? this.freeAiScansRemaining,
@@ -68,7 +68,7 @@ class User extends Equatable {
     id,
     email,
     displayName,
-    avatarUrl,
+    avatarKey,
     createdAt,
     subscriptionStatus,
     freeAiScansRemaining,

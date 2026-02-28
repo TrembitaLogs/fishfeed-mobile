@@ -8,9 +8,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
+import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/screens/aquarium/edit_fish_screen.dart';
+import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
+import 'package:fishfeed/presentation/widgets/common/image_picker_button.dart';
 
 // ============================================================================
 // Mocks
@@ -18,10 +22,18 @@ import 'package:fishfeed/presentation/screens/aquarium/edit_fish_screen.dart';
 
 class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
 
+class MockSpeciesLocalDataSource extends Mock
+    implements SpeciesLocalDataSource {}
+
+class MockSpeciesRemoteDataSource extends Mock
+    implements SpeciesRemoteDataSource {}
+
 class FakeFishModel extends Fake implements FishModel {}
 
 void main() {
   late MockFishLocalDataSource mockFishDs;
+  late MockSpeciesLocalDataSource mockSpeciesLocalDs;
+  late MockSpeciesRemoteDataSource mockSpeciesRemoteDs;
 
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
@@ -35,6 +47,9 @@ void main() {
 
   setUp(() {
     mockFishDs = MockFishLocalDataSource();
+    mockSpeciesLocalDs = MockSpeciesLocalDataSource();
+    mockSpeciesRemoteDs = MockSpeciesRemoteDataSource();
+    when(() => mockSpeciesLocalDs.getAllSpecies()).thenReturn([]);
   });
 
   Widget buildTestWidget({
@@ -63,6 +78,8 @@ void main() {
     return ProviderScope(
       overrides: [
         fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
+        speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
+        speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
         ...additionalOverrides,
       ],
       child: MaterialApp.router(
@@ -352,7 +369,70 @@ void main() {
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.set_meal_rounded), findsOneWidget);
+        // Two fish icons: one in the header, one as photo placeholder
+        expect(find.byIcon(Icons.set_meal_rounded), findsNWidgets(2));
+      });
+    });
+
+    group('photo section', () {
+      testWidgets('renders EntityImage with fish entityType', (tester) async {
+        final fishModel = _createFishModel('1', 'guppy', 5);
+
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
+
+        await tester.pumpWidget(buildTestWidget(fishId: '1'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(EntityImage), findsOneWidget);
+      });
+
+      testWidgets('renders ImagePickerButton for fish', (tester) async {
+        final fishModel = _createFishModel('1', 'guppy', 5);
+
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
+
+        await tester.pumpWidget(buildTestWidget(fishId: '1'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ImagePickerButton), findsOneWidget);
+      });
+
+      testWidgets('shows Choose Photo label', (tester) async {
+        final fishModel = _createFishModel('1', 'guppy', 5);
+
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
+
+        await tester.pumpWidget(buildTestWidget(fishId: '1'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Choose Photo'), findsOneWidget);
+      });
+
+      testWidgets('hides remove button when no photo', (tester) async {
+        final fishModel = _createFishModel('1', 'guppy', 5);
+
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
+
+        await tester.pumpWidget(buildTestWidget(fishId: '1'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Remove'), findsNothing);
+      });
+
+      testWidgets('shows remove button when fish has photo', (tester) async {
+        final fishModel = _createFishModel(
+          '1',
+          'guppy',
+          5,
+          photoKey: 'fish/1/abc123.webp',
+        );
+
+        when(() => mockFishDs.getFishById(any())).thenReturn(fishModel);
+
+        await tester.pumpWidget(buildTestWidget(fishId: '1'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Remove'), findsOneWidget);
       });
     });
   });
@@ -364,6 +444,7 @@ FishModel _createFishModel(
   String speciesId,
   int quantity, {
   String? name,
+  String? photoKey,
 }) {
   return FishModel(
     id: id,
@@ -371,6 +452,7 @@ FishModel _createFishModel(
     speciesId: speciesId,
     name: name,
     quantity: quantity,
+    photoKey: photoKey,
     addedAt: DateTime(2024, 1, 15),
   );
 }

@@ -230,14 +230,19 @@ class ChangeTracker {
   }
 
   Map<String, dynamic> _aquariumToSyncData(AquariumModel aquarium) {
-    return {
+    final data = <String, dynamic>{
       'id': aquarium.id,
       'owner_id': aquarium.userId,
       'name': aquarium.name,
       'water_type': aquarium.waterType.name,
       'capacity': aquarium.capacity,
-      'image_url': aquarium.imageUrl,
     };
+    // Only include photo_key if it's an S3 key (not a local:// reference
+    // to a file pending upload)
+    if (_shouldSyncImageKey(aquarium.photoKey)) {
+      data['photo_key'] = aquarium.photoKey;
+    }
+    return data;
   }
 
   // ============ Fish Changes ============
@@ -285,13 +290,19 @@ class ChangeTracker {
   }
 
   Map<String, dynamic> _fishToSyncData(FishModel fish) {
-    return {
+    final data = <String, dynamic>{
       'id': fish.id,
       'aquarium_id': fish.aquariumId,
       'species_id': fish.speciesId,
       'custom_name': fish.name,
       'quantity': fish.quantity,
     };
+    // Only include photo_key if it's an S3 key (not a local:// reference
+    // to a file pending upload)
+    if (_shouldSyncImageKey(fish.photoKey)) {
+      data['photo_key'] = fish.photoKey;
+    }
+    return data;
   }
 
   // ============ Feeding Log Changes ============
@@ -368,5 +379,14 @@ class ChangeTracker {
         clientUpdatedAt: DateTime.now().toUtc(),
       ),
     ];
+  }
+
+  /// Returns true if the image key should be included in sync data.
+  ///
+  /// Keys with the `local://` prefix represent files that are pending
+  /// upload to S3 and must never be sent to the server. Only non-null
+  /// S3 object keys are synced.
+  static bool _shouldSyncImageKey(String? key) {
+    return key != null && !key.startsWith('local://');
   }
 }

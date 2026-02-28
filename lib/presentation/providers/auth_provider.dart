@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/core/services/session_expired_notifier.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/models/user_model.dart';
@@ -235,6 +236,19 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
           if (!hasCompletedOnboarding) {
             hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
+
+            // _syncAndCheckOnboarding makes API calls that may trigger a 401.
+            // If token refresh failed, the interceptor cleared tokens from
+            // SecureStorage. Re-check before setting authenticated state to
+            // avoid a stale session (authenticated UI but no valid tokens).
+            final stillAuthenticated = await _repository.isAuthenticated();
+            if (!stillAuthenticated) {
+              state = const AuthenticationState(
+                isInitializing: false,
+                isAuthenticated: false,
+              );
+              return;
+            }
           }
 
           state = AuthenticationState.authenticated(
@@ -471,6 +485,25 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
+  /// Handles forced session expiry (both tokens expired).
+  ///
+  /// Called by [TokenRefreshInterceptor] when refresh token is rejected.
+  /// Unlike [logout], this skips OAuth sign-out and use case cleanup
+  /// because tokens are already cleared by the interceptor.
+  ///
+  /// During initialization ([isInitializing] is true), the call is ignored
+  /// to prevent a brief login screen flash on app startup. The interceptor
+  /// has already cleared the tokens from SecureStorage, so [initialize]
+  /// will detect the missing tokens via [_repository.isAuthenticated] and
+  /// transition to unauthenticated state cleanly (splash → login, no flash).
+  void handleSessionExpired() {
+    if (state.isInitializing) return;
+    state = const AuthenticationState(
+      isInitializing: false,
+      isAuthenticated: false,
+    );
+  }
+
   /// Logout the current user.
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, clearError: true);
@@ -481,7 +514,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
     await _logoutUseCase();
 
-    state = const AuthenticationState.initial();
+    state = const AuthenticationState(
+      isInitializing: false,
+      isAuthenticated: false,
+    );
 
     // Notify external listeners (e.g., router)
     onLogout?.call();
@@ -506,6 +542,18 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     if (!state.isAuthenticated || state.user == null) return;
 
     state = state.copyWith(user: updatedUser);
+  }
+
+  /// Updates the avatar key in the authentication state.
+  ///
+  /// Called by [createPhotoKeyUpdater] after a successful avatar upload
+  /// to replace the `local://` key with the actual S3 key, so the UI
+  /// immediately switches from showing the local file to the S3 image.
+  void updateAvatarKey(String avatarKey) {
+    final currentUser = state.user;
+    if (currentUser == null) return;
+
+    state = state.copyWith(user: currentUser.copyWith(avatarKey: avatarKey));
   }
 
   /// Syncs with server and checks if user has aquariums for onboarding.
@@ -593,14 +641,27 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 /// required by GoRouter's refreshListenable.
 class AuthStateListenable extends ChangeNotifier {
   AuthStateListenable(this._ref) {
-    _subscription = _ref.listen(authNotifierProvider, (previous, next) {
+    _authSubscription = _ref.listen(authNotifierProvider, (previous, next) {
       // Notify GoRouter of state changes
       notifyListeners();
+    });
+
+    _sessionExpiredSubscription = _ref.listen(sessionExpiredProvider, (
+      previous,
+      next,
+    ) {
+      if (next) {
+        // Both tokens expired — force logout and redirect to login
+        _ref.read(authNotifierProvider.notifier).handleSessionExpired();
+        // Reset the signal so it can fire again in future sessions
+        _ref.read(sessionExpiredProvider.notifier).state = false;
+      }
     });
   }
 
   final Ref _ref;
-  ProviderSubscription<AuthenticationState>? _subscription;
+  ProviderSubscription<AuthenticationState>? _authSubscription;
+  ProviderSubscription<bool>? _sessionExpiredSubscription;
 
   /// Whether auth state is still being initialized.
   bool get isInitializing => _ref.read(authNotifierProvider).isInitializing;
@@ -614,7 +675,8 @@ class AuthStateListenable extends ChangeNotifier {
 
   @override
   void dispose() {
-    _subscription?.close();
+    _authSubscription?.close();
+    _sessionExpiredSubscription?.close();
     super.dispose();
   }
 }

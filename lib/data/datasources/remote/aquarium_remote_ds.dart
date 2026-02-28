@@ -54,7 +54,7 @@ abstract interface class AquariumRemoteDataSource {
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
   });
 
   /// Deletes an aquarium.
@@ -165,14 +165,14 @@ class AquariumRemoteDataSourceImpl implements AquariumRemoteDataSource {
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
   }) async {
     final data = <String, dynamic>{};
 
     if (name != null) data['name'] = name;
     if (waterType != null) data['water_type'] = waterType.name;
     if (capacity != null) data['capacity'] = capacity;
-    if (imageUrl != null) data['image_url'] = imageUrl;
+    if (photoKey != null) data['photo_key'] = photoKey;
 
     final response = await _dio.put<Map<String, dynamic>>(
       '${ApiEndpoints.aquariums}/$aquariumId',

@@ -13,6 +13,7 @@ _$FishDtoImpl _$$FishDtoImplFromJson(Map<String, dynamic> json) =>
       speciesId: json['species_id'] as String,
       quantity: (json['quantity'] as num).toInt(),
       customName: json['custom_name'] as String?,
+      photoKey: json['photo_key'] as String?,
       addedVia: json['added_via'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
@@ -24,6 +25,7 @@ Map<String, dynamic> _$$FishDtoImplToJson(_$FishDtoImpl instance) =>
       'species_id': instance.speciesId,
       'quantity': instance.quantity,
       'custom_name': instance.customName,
+      'photo_key': instance.photoKey,
       'added_via': instance.addedVia,
       'created_at': instance.createdAt.toIso8601String(),
     };

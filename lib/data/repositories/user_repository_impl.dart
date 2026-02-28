@@ -41,7 +41,7 @@ class UserRepositoryImpl implements UserRepository {
         id: userDto.id,
         email: userDto.email,
         displayName: userDto.displayName,
-        avatarUrl: userDto.avatarUrl,
+        avatarKey: userDto.avatarKey,
         createdAt: userDto.createdAt,
         subscriptionStatus: _parseSubscriptionStatus(
           userDto.subscriptionStatus,
@@ -73,7 +73,7 @@ class UserRepositoryImpl implements UserRepository {
         id: userDto.id,
         email: userDto.email,
         displayName: userDto.displayName,
-        avatarUrl: userDto.avatarUrl,
+        avatarKey: userDto.avatarKey,
         createdAt: userDto.createdAt,
         subscriptionStatus: _parseSubscriptionStatus(
           userDto.subscriptionStatus,

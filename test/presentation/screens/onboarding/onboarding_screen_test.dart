@@ -12,6 +12,7 @@ import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/screens/onboarding/onboarding_screen.dart';
+import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 
@@ -24,12 +25,18 @@ class MockSpeciesRemoteDataSource extends Mock
     implements SpeciesRemoteDataSource {}
 
 /// Mock SpeciesListNotifier that provides test data without API calls.
+class MockSpeciesLocalDataSource extends Mock
+    implements SpeciesLocalDataSource {}
+
 class TestSpeciesListNotifier extends SpeciesListNotifier {
   TestSpeciesListNotifier()
-    : super(speciesDataSource: MockSpeciesRemoteDataSource());
+    : super(
+        speciesDataSource: MockSpeciesRemoteDataSource(),
+        localDataSource: MockSpeciesLocalDataSource(),
+      );
 
   @override
-  Future<void> loadPopularSpecies() async {
+  Future<void> loadAllSpecies() async {
     state = SpeciesListState(species: SpeciesData.popularSpecies);
   }
 

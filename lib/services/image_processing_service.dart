@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
@@ -132,6 +133,65 @@ class ImageProcessingService {
     await outputFile.writeAsBytes(result.bytes);
 
     return outputPath;
+  }
+
+  /// Compresses image bytes to WebP format using native platform encoder.
+  ///
+  /// Uses [FlutterImageCompress] for hardware-accelerated WebP encoding.
+  /// The image is resized to fit within [maxWidth] x [maxWidth] bounds
+  /// while maintaining aspect ratio.
+  ///
+  /// [bytes] - Raw image bytes (JPEG, PNG, or other decodable format).
+  /// [quality] - WebP quality (0-100). Defaults to [defaultQuality].
+  /// [maxWidth] - Maximum dimension in pixels. Defaults to [defaultMaxWidth].
+  ///
+  /// Returns [CompressionResult] with WebP-encoded bytes and size info.
+  /// Throws [ImageProcessingException] if compression fails.
+  Future<CompressionResult> compressToWebP(
+    Uint8List bytes, {
+    int? quality,
+    int? maxWidth,
+  }) async {
+    final effectiveQuality = quality ?? defaultQuality;
+    final effectiveMaxWidth = maxWidth ?? defaultMaxWidth;
+
+    try {
+      final originalSize = bytes.length;
+
+      // Decode to check dimensions for proper resizing.
+      final decoded = img.decodeImage(bytes);
+      final srcWidth = decoded?.width ?? effectiveMaxWidth;
+      final srcHeight = decoded?.height ?? effectiveMaxWidth;
+
+      // Calculate target dimensions that fit within effectiveMaxWidth box
+      // while maintaining aspect ratio.
+      int targetWidth;
+      int targetHeight;
+      if (srcWidth >= srcHeight) {
+        targetWidth = effectiveMaxWidth;
+        targetHeight = (effectiveMaxWidth * srcHeight / srcWidth).round();
+      } else {
+        targetHeight = effectiveMaxWidth;
+        targetWidth = (effectiveMaxWidth * srcWidth / srcHeight).round();
+      }
+
+      final compressedBytes = await FlutterImageCompress.compressWithList(
+        bytes,
+        minWidth: targetWidth,
+        minHeight: targetHeight,
+        quality: effectiveQuality,
+        format: CompressFormat.webp,
+      );
+
+      return CompressionResult(
+        bytes: compressedBytes,
+        originalSize: originalSize,
+        compressedSize: compressedBytes.length,
+      );
+    } catch (e) {
+      if (e is ImageProcessingException) rethrow;
+      throw ImageProcessingException('Failed to compress image to WebP: $e');
+    }
   }
 
   /// Compresses image bytes directly.

@@ -20,7 +20,7 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       id: fields[0] as String,
       email: fields[1] as String,
       displayName: fields[2] as String?,
-      avatarUrl: fields[3] as String?,
+      avatarKey: fields[3] as String?,
       createdAt: fields[4] as DateTime,
       subscriptionStatus: fields[5] as SubscriptionStatus,
       freeAiScansRemaining: fields[6] as int,
@@ -41,7 +41,7 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..writeByte(2)
       ..write(obj.displayName)
       ..writeByte(3)
-      ..write(obj.avatarUrl)
+      ..write(obj.avatarKey)
       ..writeByte(4)
       ..write(obj.createdAt)
       ..writeByte(5)

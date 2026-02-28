@@ -11,7 +11,7 @@ _$UserDtoImpl _$$UserDtoImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       email: json['email'] as String,
       displayName: json['display_name'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarKey: json['avatar_key'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       subscriptionStatus: json['subscription_status'] as String? ?? 'free',
       freeAiScansRemaining:
@@ -23,7 +23,7 @@ Map<String, dynamic> _$$UserDtoImplToJson(_$UserDtoImpl instance) =>
       'id': instance.id,
       'email': instance.email,
       'display_name': instance.displayName,
-      'avatar_url': instance.avatarUrl,
+      'avatar_key': instance.avatarKey,
       'created_at': instance.createdAt.toIso8601String(),
       'subscription_status': instance.subscriptionStatus,
       'free_ai_scans_remaining': instance.freeAiScansRemaining,

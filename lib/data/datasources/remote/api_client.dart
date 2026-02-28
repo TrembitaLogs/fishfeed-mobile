@@ -9,6 +9,7 @@ import 'package:sentry_dio/sentry_dio.dart';
 
 import 'package:fishfeed/core/config/api_config.dart';
 import 'package:fishfeed/core/services/secure_storage_service.dart';
+import 'package:fishfeed/core/services/session_expired_notifier.dart';
 import 'package:fishfeed/data/datasources/remote/interceptors/interceptors.dart';
 import 'package:fishfeed/services/sentry/sentry_service.dart';
 
@@ -174,5 +175,10 @@ class ApiClient {
 /// ```
 final apiClientProvider = Provider<ApiClient>((ref) {
   final secureStorageService = ref.watch(secureStorageServiceProvider);
-  return ApiClient(secureStorageService: secureStorageService);
+  return ApiClient(
+    secureStorageService: secureStorageService,
+    onLogout: () async {
+      ref.read(sessionExpiredProvider.notifier).state = true;
+    },
+  );
 });

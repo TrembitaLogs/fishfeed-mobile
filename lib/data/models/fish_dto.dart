@@ -18,6 +18,7 @@ class FishDto with _$FishDto {
     @JsonKey(name: 'species_id') required String speciesId,
     required int quantity,
     @JsonKey(name: 'custom_name') String? customName,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'added_via') String? addedVia,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _FishDto;
@@ -33,6 +34,7 @@ class FishDto with _$FishDto {
       speciesId: speciesId,
       name: customName,
       quantity: quantity,
+      photoKey: photoKey,
       addedAt: createdAt,
     );
   }

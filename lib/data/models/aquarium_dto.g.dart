@@ -13,7 +13,7 @@ _$AquariumDtoImpl _$$AquariumDtoImplFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       capacity: (json['capacity'] as num?)?.toDouble(),
       waterType: json['water_type'] as String? ?? 'freshwater',
-      imageUrl: json['image_url'] as String?,
+      photoKey: json['photo_key'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 
@@ -24,7 +24,7 @@ Map<String, dynamic> _$$AquariumDtoImplToJson(_$AquariumDtoImpl instance) =>
       'name': instance.name,
       'capacity': instance.capacity,
       'water_type': instance.waterType,
-      'image_url': instance.imageUrl,
+      'photo_key': instance.photoKey,
       'created_at': instance.createdAt.toIso8601String(),
     };
 
@@ -50,7 +50,7 @@ _$UpdateAquariumRequestDtoImpl _$$UpdateAquariumRequestDtoImplFromJson(
   name: json['name'] as String?,
   capacity: (json['capacity'] as num?)?.toDouble(),
   waterType: json['water_type'] as String?,
-  imageUrl: json['image_url'] as String?,
+  photoKey: json['photo_key'] as String?,
 );
 
 Map<String, dynamic> _$$UpdateAquariumRequestDtoImplToJson(
@@ -59,5 +59,5 @@ Map<String, dynamic> _$$UpdateAquariumRequestDtoImplToJson(
   'name': instance.name,
   'capacity': instance.capacity,
   'water_type': instance.waterType,
-  'image_url': instance.imageUrl,
+  'photo_key': instance.photoKey,
 };

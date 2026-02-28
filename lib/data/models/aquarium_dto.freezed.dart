@@ -28,8 +28,8 @@ mixin _$AquariumDto {
   double? get capacity => throw _privateConstructorUsedError;
   @JsonKey(name: 'water_type')
   String get waterType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_url')
-  String? get imageUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'photo_key')
+  String? get photoKey => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -52,7 +52,7 @@ abstract class $AquariumDtoCopyWith<$Res> {
     String name,
     double? capacity,
     @JsonKey(name: 'water_type') String waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
 }
@@ -75,7 +75,7 @@ class _$AquariumDtoCopyWithImpl<$Res, $Val extends AquariumDto>
     Object? name = null,
     Object? capacity = freezed,
     Object? waterType = null,
-    Object? imageUrl = freezed,
+    Object? photoKey = freezed,
     Object? createdAt = null,
   }) {
     return _then(
@@ -100,9 +100,9 @@ class _$AquariumDtoCopyWithImpl<$Res, $Val extends AquariumDto>
                 ? _value.waterType
                 : waterType // ignore: cast_nullable_to_non_nullable
                       as String,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
+            photoKey: freezed == photoKey
+                ? _value.photoKey
+                : photoKey // ignore: cast_nullable_to_non_nullable
                       as String?,
             createdAt: null == createdAt
                 ? _value.createdAt
@@ -129,7 +129,7 @@ abstract class _$$AquariumDtoImplCopyWith<$Res>
     String name,
     double? capacity,
     @JsonKey(name: 'water_type') String waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
 }
@@ -151,7 +151,7 @@ class __$$AquariumDtoImplCopyWithImpl<$Res>
     Object? name = null,
     Object? capacity = freezed,
     Object? waterType = null,
-    Object? imageUrl = freezed,
+    Object? photoKey = freezed,
     Object? createdAt = null,
   }) {
     return _then(
@@ -176,9 +176,9 @@ class __$$AquariumDtoImplCopyWithImpl<$Res>
             ? _value.waterType
             : waterType // ignore: cast_nullable_to_non_nullable
                   as String,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
+        photoKey: freezed == photoKey
+            ? _value.photoKey
+            : photoKey // ignore: cast_nullable_to_non_nullable
                   as String?,
         createdAt: null == createdAt
             ? _value.createdAt
@@ -198,7 +198,7 @@ class _$AquariumDtoImpl extends _AquariumDto {
     required this.name,
     this.capacity,
     @JsonKey(name: 'water_type') this.waterType = 'freshwater',
-    @JsonKey(name: 'image_url') this.imageUrl,
+    @JsonKey(name: 'photo_key') this.photoKey,
     @JsonKey(name: 'created_at') required this.createdAt,
   }) : super._();
 
@@ -218,15 +218,15 @@ class _$AquariumDtoImpl extends _AquariumDto {
   @JsonKey(name: 'water_type')
   final String waterType;
   @override
-  @JsonKey(name: 'image_url')
-  final String? imageUrl;
+  @JsonKey(name: 'photo_key')
+  final String? photoKey;
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'AquariumDto(id: $id, userId: $userId, name: $name, capacity: $capacity, waterType: $waterType, imageUrl: $imageUrl, createdAt: $createdAt)';
+    return 'AquariumDto(id: $id, userId: $userId, name: $name, capacity: $capacity, waterType: $waterType, photoKey: $photoKey, createdAt: $createdAt)';
   }
 
   @override
@@ -241,8 +241,8 @@ class _$AquariumDtoImpl extends _AquariumDto {
                 other.capacity == capacity) &&
             (identical(other.waterType, waterType) ||
                 other.waterType == waterType) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl) &&
+            (identical(other.photoKey, photoKey) ||
+                other.photoKey == photoKey) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -256,7 +256,7 @@ class _$AquariumDtoImpl extends _AquariumDto {
     name,
     capacity,
     waterType,
-    imageUrl,
+    photoKey,
     createdAt,
   );
 
@@ -279,7 +279,7 @@ abstract class _AquariumDto extends AquariumDto {
     required final String name,
     final double? capacity,
     @JsonKey(name: 'water_type') final String waterType,
-    @JsonKey(name: 'image_url') final String? imageUrl,
+    @JsonKey(name: 'photo_key') final String? photoKey,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
   }) = _$AquariumDtoImpl;
   const _AquariumDto._() : super._();
@@ -300,8 +300,8 @@ abstract class _AquariumDto extends AquariumDto {
   @JsonKey(name: 'water_type')
   String get waterType;
   @override
-  @JsonKey(name: 'image_url')
-  String? get imageUrl;
+  @JsonKey(name: 'photo_key')
+  String? get photoKey;
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;
@@ -530,8 +530,8 @@ mixin _$UpdateAquariumRequestDto {
   double? get capacity => throw _privateConstructorUsedError;
   @JsonKey(name: 'water_type')
   String? get waterType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_url')
-  String? get imageUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'photo_key')
+  String? get photoKey => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -550,7 +550,7 @@ abstract class $UpdateAquariumRequestDtoCopyWith<$Res> {
     String? name,
     double? capacity,
     @JsonKey(name: 'water_type') String? waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
   });
 }
 
@@ -573,7 +573,7 @@ class _$UpdateAquariumRequestDtoCopyWithImpl<
     Object? name = freezed,
     Object? capacity = freezed,
     Object? waterType = freezed,
-    Object? imageUrl = freezed,
+    Object? photoKey = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -589,9 +589,9 @@ class _$UpdateAquariumRequestDtoCopyWithImpl<
                 ? _value.waterType
                 : waterType // ignore: cast_nullable_to_non_nullable
                       as String?,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
+            photoKey: freezed == photoKey
+                ? _value.photoKey
+                : photoKey // ignore: cast_nullable_to_non_nullable
                       as String?,
           )
           as $Val,
@@ -612,7 +612,7 @@ abstract class _$$UpdateAquariumRequestDtoImplCopyWith<$Res>
     String? name,
     double? capacity,
     @JsonKey(name: 'water_type') String? waterType,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'photo_key') String? photoKey,
   });
 }
 
@@ -635,7 +635,7 @@ class __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>
     Object? name = freezed,
     Object? capacity = freezed,
     Object? waterType = freezed,
-    Object? imageUrl = freezed,
+    Object? photoKey = freezed,
   }) {
     return _then(
       _$UpdateAquariumRequestDtoImpl(
@@ -651,9 +651,9 @@ class __$$UpdateAquariumRequestDtoImplCopyWithImpl<$Res>
             ? _value.waterType
             : waterType // ignore: cast_nullable_to_non_nullable
                   as String?,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
+        photoKey: freezed == photoKey
+            ? _value.photoKey
+            : photoKey // ignore: cast_nullable_to_non_nullable
                   as String?,
       ),
     );
@@ -667,7 +667,7 @@ class _$UpdateAquariumRequestDtoImpl implements _UpdateAquariumRequestDto {
     this.name,
     this.capacity,
     @JsonKey(name: 'water_type') this.waterType,
-    @JsonKey(name: 'image_url') this.imageUrl,
+    @JsonKey(name: 'photo_key') this.photoKey,
   });
 
   factory _$UpdateAquariumRequestDtoImpl.fromJson(Map<String, dynamic> json) =>
@@ -681,12 +681,12 @@ class _$UpdateAquariumRequestDtoImpl implements _UpdateAquariumRequestDto {
   @JsonKey(name: 'water_type')
   final String? waterType;
   @override
-  @JsonKey(name: 'image_url')
-  final String? imageUrl;
+  @JsonKey(name: 'photo_key')
+  final String? photoKey;
 
   @override
   String toString() {
-    return 'UpdateAquariumRequestDto(name: $name, capacity: $capacity, waterType: $waterType, imageUrl: $imageUrl)';
+    return 'UpdateAquariumRequestDto(name: $name, capacity: $capacity, waterType: $waterType, photoKey: $photoKey)';
   }
 
   @override
@@ -699,14 +699,14 @@ class _$UpdateAquariumRequestDtoImpl implements _UpdateAquariumRequestDto {
                 other.capacity == capacity) &&
             (identical(other.waterType, waterType) ||
                 other.waterType == waterType) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+            (identical(other.photoKey, photoKey) ||
+                other.photoKey == photoKey));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, name, capacity, waterType, imageUrl);
+      Object.hash(runtimeType, name, capacity, waterType, photoKey);
 
   @JsonKey(ignore: true)
   @override
@@ -728,7 +728,7 @@ abstract class _UpdateAquariumRequestDto implements UpdateAquariumRequestDto {
     final String? name,
     final double? capacity,
     @JsonKey(name: 'water_type') final String? waterType,
-    @JsonKey(name: 'image_url') final String? imageUrl,
+    @JsonKey(name: 'photo_key') final String? photoKey,
   }) = _$UpdateAquariumRequestDtoImpl;
 
   factory _UpdateAquariumRequestDto.fromJson(Map<String, dynamic> json) =
@@ -742,8 +742,8 @@ abstract class _UpdateAquariumRequestDto implements UpdateAquariumRequestDto {
   @JsonKey(name: 'water_type')
   String? get waterType;
   @override
-  @JsonKey(name: 'image_url')
-  String? get imageUrl;
+  @JsonKey(name: 'photo_key')
+  String? get photoKey;
   @override
   @JsonKey(ignore: true)
   _$$UpdateAquariumRequestDtoImplCopyWith<_$UpdateAquariumRequestDtoImpl>

@@ -80,6 +80,7 @@ dependencies:
   # Image Processing
   image: ^4.3.0
   image_picker: ^1.1.2
+  flutter_image_compress: ^2.4.0
 
   # Gamification
   confetti: ^0.7.0

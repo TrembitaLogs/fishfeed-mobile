@@ -36,67 +36,95 @@ class SpeciesListState {
 ///
 /// Fetches species from the API and provides search functionality.
 class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
-  SpeciesListNotifier({required SpeciesRemoteDataSource speciesDataSource})
-    : _speciesDataSource = speciesDataSource,
-      super(const SpeciesListState()) {
-    loadPopularSpecies();
+  SpeciesListNotifier({
+    required SpeciesRemoteDataSource speciesDataSource,
+    required SpeciesLocalDataSource localDataSource,
+  }) : _speciesDataSource = speciesDataSource,
+       _localDataSource = localDataSource,
+       super(const SpeciesListState()) {
+    loadAllSpecies();
   }
 
   final SpeciesRemoteDataSource _speciesDataSource;
+  final SpeciesLocalDataSource _localDataSource;
 
-  /// Loads popular species from the API.
-  Future<void> loadPopularSpecies() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+  /// All species (used for local filtering).
+  List<Species> _allSpecies = [];
 
+  /// Loads all species: instantly from Hive cache, then refreshes from API.
+  Future<void> loadAllSpecies() async {
+    // 1. Show cached species immediately (no loading spinner)
+    final cached = _localDataSource.getAllSpecies();
+    if (cached.isNotEmpty) {
+      _allSpecies = cached.map((m) => m.toEntity()).toList();
+      state = state.copyWith(species: _allSpecies);
+    } else {
+      state = state.copyWith(isLoading: true);
+    }
+
+    // 2. Fetch all pages from API
     try {
-      final speciesDtos = await _speciesDataSource.getPopularSpecies();
-      final speciesList = speciesDtos.map((dto) => dto.toEntity()).toList();
+      final fetched = <Species>[];
+      var page = 1;
+      const perPage = 100;
 
-      state = state.copyWith(species: speciesList, isLoading: false);
+      while (true) {
+        final response = await _speciesDataSource.listSpecies(
+          page: page,
+          perPage: perPage,
+        );
+        fetched.addAll(response.items.map((dto) => dto.toEntity()));
+
+        if (page >= response.pages) break;
+        page++;
+      }
+
+      _allSpecies = fetched;
+      state = state.copyWith(species: fetched, isLoading: false);
+
+      // 3. Save to Hive for next launch
+      for (final species in fetched) {
+        await _localDataSource.saveSpecies(SpeciesModel.fromEntity(species));
+      }
     } catch (e) {
-      // Fallback to hardcoded data on error
-      state = state.copyWith(
-        species: SpeciesData.popularSpecies,
-        isLoading: false,
-        error: 'Failed to load species from server. Using offline data.',
-      );
+      // If cache was empty and API failed, use hardcoded fallback
+      if (_allSpecies.isEmpty) {
+        _allSpecies = SpeciesData.popularSpecies;
+        state = state.copyWith(
+          species: SpeciesData.popularSpecies,
+          isLoading: false,
+          error: 'Failed to load species from server. Using offline data.',
+        );
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
     }
   }
 
-  /// Searches species by name.
+  /// Finds a species by ID from the full unfiltered list.
   ///
-  /// If query is empty, returns popular species.
-  /// Falls back to local search on API error.
-  Future<void> searchSpecies(String query) async {
+  /// Returns null if not found.
+  Species? findById(String id) {
+    for (final s in _allSpecies) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+
+  /// Searches species by name locally (instant, no API call).
+  ///
+  /// If query is empty, shows all species.
+  void searchSpecies(String query) {
     if (query.isEmpty) {
-      await loadPopularSpecies();
+      state = state.copyWith(species: _allSpecies);
       return;
     }
 
-    // Need at least 2 characters for API search
-    if (query.length < 2) {
-      // Use local filtering for short queries
-      final filtered = SpeciesData.searchByName(query);
-      state = state.copyWith(species: filtered);
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    try {
-      final speciesDtos = await _speciesDataSource.searchSpecies(query);
-      final speciesList = speciesDtos.map((dto) => dto.toEntity()).toList();
-
-      state = state.copyWith(species: speciesList, isLoading: false);
-    } catch (e) {
-      // Fallback to local search on error
-      final filtered = SpeciesData.searchByName(query);
-      state = state.copyWith(
-        species: filtered,
-        isLoading: false,
-        error: 'Search failed. Using offline results.',
-      );
-    }
+    final lowerQuery = query.toLowerCase();
+    final filtered = _allSpecies
+        .where((s) => s.name.toLowerCase().contains(lowerQuery))
+        .toList();
+    state = state.copyWith(species: filtered);
   }
 }
 
@@ -104,7 +132,11 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
 final speciesListProvider =
     StateNotifierProvider<SpeciesListNotifier, SpeciesListState>((ref) {
       final speciesDataSource = ref.watch(speciesRemoteDataSourceProvider);
-      return SpeciesListNotifier(speciesDataSource: speciesDataSource);
+      final localDataSource = ref.watch(speciesLocalDataSourceProvider);
+      return SpeciesListNotifier(
+        speciesDataSource: speciesDataSource,
+        localDataSource: localDataSource,
+      );
     });
 
 /// Provider for current species list (convenience accessor).

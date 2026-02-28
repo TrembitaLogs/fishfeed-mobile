@@ -16,7 +16,7 @@ class UserModel extends HiveObject {
     required this.id,
     required this.email,
     this.displayName,
-    this.avatarUrl,
+    this.avatarKey,
     required this.createdAt,
     this.subscriptionStatus = const SubscriptionStatus.free(),
     this.freeAiScansRemaining = 5,
@@ -31,7 +31,7 @@ class UserModel extends HiveObject {
       id: entity.id,
       email: entity.email,
       displayName: entity.displayName,
-      avatarUrl: entity.avatarUrl,
+      avatarKey: entity.avatarKey,
       createdAt: entity.createdAt,
       subscriptionStatus: entity.subscriptionStatus,
       freeAiScansRemaining: entity.freeAiScansRemaining,
@@ -52,9 +52,9 @@ class UserModel extends HiveObject {
   @HiveField(2)
   String? displayName;
 
-  /// URL to user's avatar image.
+  /// S3 object key for user avatar (e.g. "avatars/{user_id}/{uuid}.webp").
   @HiveField(3)
-  String? avatarUrl;
+  String? avatarKey;
 
   /// When the user account was created.
   @HiveField(4)
@@ -82,10 +82,9 @@ class UserModel extends HiveObject {
 
   /// Converts this model to JSON for the sync endpoint.
   Map<String, dynamic> toSyncJson() {
-    return {
+    final data = <String, dynamic>{
       'id': id,
       'nickname': displayName,
-      'avatar_url': avatarUrl,
       'settings': {
         'notifications_enabled': settings.notificationsEnabled,
         'feeding_reminder_minutes_before':
@@ -94,6 +93,12 @@ class UserModel extends HiveObject {
         'language': settings.language,
       },
     };
+    // Only include avatar_key if it's an S3 key (not a local:// reference
+    // to a file pending upload)
+    if (avatarKey != null && !avatarKey!.startsWith('local://')) {
+      data['avatar_key'] = avatarKey;
+    }
+    return data;
   }
 
   /// Converts this model to a domain entity.
@@ -102,7 +107,7 @@ class UserModel extends HiveObject {
       id: id,
       email: email,
       displayName: displayName,
-      avatarUrl: avatarUrl,
+      avatarKey: avatarKey,
       createdAt: createdAt,
       subscriptionStatus: subscriptionStatus,
       freeAiScansRemaining: freeAiScansRemaining,

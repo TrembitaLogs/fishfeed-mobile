@@ -34,7 +34,7 @@ void main() {
     name: 'Living Room Tank',
     capacity: 50.0,
     waterType: WaterType.freshwater,
-    imageUrl: null,
+    photoKey: null,
     createdAt: DateTime(2024, 1, 15),
   );
 

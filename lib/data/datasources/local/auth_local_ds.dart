@@ -171,8 +171,8 @@ class AuthLocalDataSource {
     if (serverData['nickname'] != null) {
       currentUser.displayName = serverData['nickname'] as String;
     }
-    if (serverData.containsKey('avatar_url')) {
-      currentUser.avatarUrl = serverData['avatar_url'] as String?;
+    if (serverData.containsKey('avatar_key')) {
+      currentUser.avatarKey = serverData['avatar_key'] as String?;
     }
     if (serverData.containsKey('free_ai_scans_remaining')) {
       currentUser.freeAiScansRemaining =

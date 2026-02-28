@@ -11,7 +11,7 @@ class Aquarium extends Equatable {
     required this.name,
     this.capacity,
     this.waterType = WaterType.freshwater,
-    this.imageUrl,
+    this.photoKey,
     required this.createdAt,
     this.synced = false,
     this.updatedAt,
@@ -35,8 +35,8 @@ class Aquarium extends Equatable {
   /// Type of water in the aquarium.
   final WaterType waterType;
 
-  /// URL to aquarium image.
-  final String? imageUrl;
+  /// S3 object key for aquarium photo.
+  final String? photoKey;
 
   /// When the aquarium was created.
   final DateTime createdAt;
@@ -66,7 +66,7 @@ class Aquarium extends Equatable {
     String? name,
     double? capacity,
     WaterType? waterType,
-    String? imageUrl,
+    String? photoKey,
     DateTime? createdAt,
     bool? synced,
     DateTime? updatedAt,
@@ -80,7 +80,7 @@ class Aquarium extends Equatable {
       name: name ?? this.name,
       capacity: capacity ?? this.capacity,
       waterType: waterType ?? this.waterType,
-      imageUrl: imageUrl ?? this.imageUrl,
+      photoKey: photoKey ?? this.photoKey,
       createdAt: createdAt ?? this.createdAt,
       synced: synced ?? this.synced,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -97,7 +97,7 @@ class Aquarium extends Equatable {
     name,
     capacity,
     waterType,
-    imageUrl,
+    photoKey,
     createdAt,
     synced,
     updatedAt,

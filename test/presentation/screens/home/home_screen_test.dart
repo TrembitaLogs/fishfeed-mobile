@@ -80,7 +80,8 @@ class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
+    bool clearPhotoKey = false,
   }) async => null;
 
   @override

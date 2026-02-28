@@ -13,7 +13,7 @@ class UserDto with _$UserDto {
     required String id,
     required String email,
     @JsonKey(name: 'display_name') String? displayName,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'avatar_key') String? avatarKey,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'subscription_status')
     @Default('free')

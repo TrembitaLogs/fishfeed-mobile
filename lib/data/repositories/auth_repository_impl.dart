@@ -188,7 +188,7 @@ class AuthRepositoryImpl implements AuthRepository {
       id: dto.id,
       email: dto.email,
       displayName: dto.displayName,
-      avatarUrl: dto.avatarUrl,
+      avatarKey: dto.avatarKey,
       createdAt: dto.createdAt,
       subscriptionStatus: _parseSubscriptionStatus(dto.subscriptionStatus),
       freeAiScansRemaining: dto.freeAiScansRemaining,

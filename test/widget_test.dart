@@ -14,6 +14,7 @@ import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:fishfeed/services/sync/sync_trigger_service.dart';
+import 'package:fishfeed/presentation/providers/image_upload_provider.dart';
 
 import 'helpers/test_helpers.dart';
 
@@ -88,6 +89,11 @@ void main() {
 
           // Push token auth sync (no-op)
           pushTokenAuthSyncProvider.overrideWith((ref) => null),
+
+          // Image upload notifier (no-op)
+          imageUploadNotifierProvider.overrideWith(
+            (ref) => MockImageUploadNotifier(),
+          ),
         ],
         child: const FishFeedApp(),
       ),

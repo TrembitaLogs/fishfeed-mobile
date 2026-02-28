@@ -7,6 +7,7 @@ import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/repositories/user_repository_impl.dart';
+import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -201,6 +202,46 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         return true;
       },
     );
+  }
+
+  /// Updates the user's avatar key locally.
+  ///
+  /// Sets [avatarKey] on the local user model and auth state.
+  /// Used by [ImagePickerButton] flow: the key is either a `local://{uuid}`
+  /// (pending upload) or `null` (remove avatar).
+  /// The actual S3 upload is handled by [ImageUploadService].
+  Future<bool> updateAvatarKey(String? avatarKey) async {
+    try {
+      // 1. Get current user from auth state
+      final currentUser = _authNotifier.state.user;
+      if (currentUser == null) return false;
+
+      // 2. Save to Hive (offline-first)
+      final localUser = _authLocalDs.getCurrentUser();
+      if (localUser != null) {
+        localUser.avatarKey = avatarKey;
+        localUser.synced = false;
+        await localUser.save();
+      }
+
+      // 3. Update auth state for immediate UI reactivity
+      final updatedUser = User(
+        id: currentUser.id,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        avatarKey: avatarKey,
+        createdAt: currentUser.createdAt,
+        subscriptionStatus: currentUser.subscriptionStatus,
+        freeAiScansRemaining: currentUser.freeAiScansRemaining,
+        settings: currentUser.settings,
+      );
+      _authNotifier.updateUser(updatedUser);
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: UnexpectedFailure(message: e.toString()));
+      return false;
+    }
   }
 
   /// Validates a nickname without updating.

@@ -2484,5 +2484,29 @@
   "privacyPolicy": "Privacy Policy",
   "@privacyPolicy": {
     "description": "Privacy policy link text"
+  },
+  "imageUploadProgress": "Uploading...",
+  "@imageUploadProgress": {
+    "description": "Image upload progress indicator text"
+  },
+  "imageUploadError": "Upload failed. Tap to retry.",
+  "@imageUploadError": {
+    "description": "Image upload failure message with retry hint"
+  },
+  "imageDeleteConfirm": "Remove this photo?",
+  "@imageDeleteConfirm": {
+    "description": "Confirmation dialog text for removing a photo"
+  },
+  "imageDeleteButton": "Remove",
+  "@imageDeleteButton": {
+    "description": "Button label for removing a photo"
+  },
+  "imagePlaceholder": "No image",
+  "@imagePlaceholder": {
+    "description": "Placeholder text when no image is set"
+  },
+  "imageRetryButton": "Retry",
+  "@imageRetryButton": {
+    "description": "Button label for retrying a failed image upload"
   }
 }

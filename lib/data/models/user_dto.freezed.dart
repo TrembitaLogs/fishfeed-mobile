@@ -25,8 +25,8 @@ mixin _$UserDto {
   String get email => throw _privateConstructorUsedError;
   @JsonKey(name: 'display_name')
   String? get displayName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'avatar_url')
-  String? get avatarUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'avatar_key')
+  String? get avatarKey => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'subscription_status')
@@ -48,7 +48,7 @@ abstract class $UserDtoCopyWith<$Res> {
     String id,
     String email,
     @JsonKey(name: 'display_name') String? displayName,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'avatar_key') String? avatarKey,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'subscription_status') String subscriptionStatus,
     @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining,
@@ -71,7 +71,7 @@ class _$UserDtoCopyWithImpl<$Res, $Val extends UserDto>
     Object? id = null,
     Object? email = null,
     Object? displayName = freezed,
-    Object? avatarUrl = freezed,
+    Object? avatarKey = freezed,
     Object? createdAt = null,
     Object? subscriptionStatus = null,
     Object? freeAiScansRemaining = null,
@@ -90,9 +90,9 @@ class _$UserDtoCopyWithImpl<$Res, $Val extends UserDto>
                 ? _value.displayName
                 : displayName // ignore: cast_nullable_to_non_nullable
                       as String?,
-            avatarUrl: freezed == avatarUrl
-                ? _value.avatarUrl
-                : avatarUrl // ignore: cast_nullable_to_non_nullable
+            avatarKey: freezed == avatarKey
+                ? _value.avatarKey
+                : avatarKey // ignore: cast_nullable_to_non_nullable
                       as String?,
             createdAt: null == createdAt
                 ? _value.createdAt
@@ -124,7 +124,7 @@ abstract class _$$UserDtoImplCopyWith<$Res> implements $UserDtoCopyWith<$Res> {
     String id,
     String email,
     @JsonKey(name: 'display_name') String? displayName,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'avatar_key') String? avatarKey,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'subscription_status') String subscriptionStatus,
     @JsonKey(name: 'free_ai_scans_remaining') int freeAiScansRemaining,
@@ -146,7 +146,7 @@ class __$$UserDtoImplCopyWithImpl<$Res>
     Object? id = null,
     Object? email = null,
     Object? displayName = freezed,
-    Object? avatarUrl = freezed,
+    Object? avatarKey = freezed,
     Object? createdAt = null,
     Object? subscriptionStatus = null,
     Object? freeAiScansRemaining = null,
@@ -165,9 +165,9 @@ class __$$UserDtoImplCopyWithImpl<$Res>
             ? _value.displayName
             : displayName // ignore: cast_nullable_to_non_nullable
                   as String?,
-        avatarUrl: freezed == avatarUrl
-            ? _value.avatarUrl
-            : avatarUrl // ignore: cast_nullable_to_non_nullable
+        avatarKey: freezed == avatarKey
+            ? _value.avatarKey
+            : avatarKey // ignore: cast_nullable_to_non_nullable
                   as String?,
         createdAt: null == createdAt
             ? _value.createdAt
@@ -193,7 +193,7 @@ class _$UserDtoImpl implements _UserDto {
     required this.id,
     required this.email,
     @JsonKey(name: 'display_name') this.displayName,
-    @JsonKey(name: 'avatar_url') this.avatarUrl,
+    @JsonKey(name: 'avatar_key') this.avatarKey,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(name: 'subscription_status') this.subscriptionStatus = 'free',
     @JsonKey(name: 'free_ai_scans_remaining') this.freeAiScansRemaining = 5,
@@ -210,8 +210,8 @@ class _$UserDtoImpl implements _UserDto {
   @JsonKey(name: 'display_name')
   final String? displayName;
   @override
-  @JsonKey(name: 'avatar_url')
-  final String? avatarUrl;
+  @JsonKey(name: 'avatar_key')
+  final String? avatarKey;
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
@@ -224,7 +224,7 @@ class _$UserDtoImpl implements _UserDto {
 
   @override
   String toString() {
-    return 'UserDto(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, createdAt: $createdAt, subscriptionStatus: $subscriptionStatus, freeAiScansRemaining: $freeAiScansRemaining)';
+    return 'UserDto(id: $id, email: $email, displayName: $displayName, avatarKey: $avatarKey, createdAt: $createdAt, subscriptionStatus: $subscriptionStatus, freeAiScansRemaining: $freeAiScansRemaining)';
   }
 
   @override
@@ -236,8 +236,8 @@ class _$UserDtoImpl implements _UserDto {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
-            (identical(other.avatarUrl, avatarUrl) ||
-                other.avatarUrl == avatarUrl) &&
+            (identical(other.avatarKey, avatarKey) ||
+                other.avatarKey == avatarKey) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.subscriptionStatus, subscriptionStatus) ||
@@ -253,7 +253,7 @@ class _$UserDtoImpl implements _UserDto {
     id,
     email,
     displayName,
-    avatarUrl,
+    avatarKey,
     createdAt,
     subscriptionStatus,
     freeAiScansRemaining,
@@ -276,7 +276,7 @@ abstract class _UserDto implements UserDto {
     required final String id,
     required final String email,
     @JsonKey(name: 'display_name') final String? displayName,
-    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+    @JsonKey(name: 'avatar_key') final String? avatarKey,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
     @JsonKey(name: 'subscription_status') final String subscriptionStatus,
     @JsonKey(name: 'free_ai_scans_remaining') final int freeAiScansRemaining,
@@ -292,8 +292,8 @@ abstract class _UserDto implements UserDto {
   @JsonKey(name: 'display_name')
   String? get displayName;
   @override
-  @JsonKey(name: 'avatar_url')
-  String? get avatarUrl;
+  @JsonKey(name: 'avatar_key')
+  String? get avatarKey;
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;

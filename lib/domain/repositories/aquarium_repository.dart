@@ -52,7 +52,9 @@ abstract interface class AquariumRepository {
   /// [name] - Optional new name.
   /// [waterType] - Optional new water type.
   /// [capacity] - Optional new capacity.
-  /// [imageUrl] - Optional new image URL.
+  /// [photoKey] - Optional new S3 object key for photo.
+  /// [clearPhotoKey] - When true, explicitly sets photoKey to null
+  ///   (removes photo). Takes precedence over [photoKey].
   ///
   /// Returns [Right(Aquarium)] with updated data on success.
   /// Returns [Left(Failure)] on error:
@@ -64,7 +66,8 @@ abstract interface class AquariumRepository {
     String? name,
     WaterType? waterType,
     double? capacity,
-    String? imageUrl,
+    String? photoKey,
+    bool clearPhotoKey = false,
   });
 
   /// Deletes an aquarium.

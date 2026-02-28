@@ -10,7 +10,7 @@ void main() {
         'id': 'user-123',
         'email': 'test@example.com',
         'display_name': 'Test User',
-        'avatar_url': 'https://example.com/avatar.png',
+        'avatar_key': 'https://example.com/avatar.png',
         'created_at': '2024-01-15T10:30:00.000Z',
         'subscription_status': 'free',
         'free_ai_scans_remaining': 5,
@@ -40,7 +40,7 @@ void main() {
       test('should parse nested user with all fields', () {
         final dto = AuthResponseDto.fromJson(testJson);
 
-        expect(dto.user.avatarUrl, 'https://example.com/avatar.png');
+        expect(dto.user.avatarKey, 'https://example.com/avatar.png');
         expect(dto.user.createdAt, DateTime.utc(2024, 1, 15, 10, 30));
         expect(dto.user.subscriptionStatus, 'free');
         expect(dto.user.freeAiScansRemaining, 5);

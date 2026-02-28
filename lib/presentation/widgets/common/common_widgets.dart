@@ -12,6 +12,7 @@ export 'app_text_field.dart';
 export 'bouncing_dots_loader.dart';
 export 'empty_state_widget.dart';
 export 'error_state_widget.dart';
+export 'image_picker_button.dart';
 export 'loading_indicator.dart';
 export 'loading_overlay.dart';
 export 'low_storage_dialog.dart';
