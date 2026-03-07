@@ -47,7 +47,11 @@ Future<void> main() async {
       await Firebase.initializeApp();
 
       // Initialize notification service
-      await NotificationService.instance.initialize();
+      try {
+        await NotificationService.instance.initialize();
+      } catch (e) {
+        debugPrint('NotificationService init failed: $e');
+      }
 
       // Check if app was launched from a notification action (cold start).
       // onDidReceiveNotificationResponse does not fire for launch actions,
