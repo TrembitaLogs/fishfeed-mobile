@@ -8,10 +8,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/screens/aquarium/edit_fish_screen.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 import 'package:fishfeed/presentation/widgets/common/image_picker_button.dart';
@@ -28,12 +31,16 @@ class MockSpeciesLocalDataSource extends Mock
 class MockSpeciesRemoteDataSource extends Mock
     implements SpeciesRemoteDataSource {}
 
+class MockScheduleLocalDataSource extends Mock
+    implements ScheduleLocalDataSource {}
+
 class FakeFishModel extends Fake implements FishModel {}
 
 void main() {
   late MockFishLocalDataSource mockFishDs;
   late MockSpeciesLocalDataSource mockSpeciesLocalDs;
   late MockSpeciesRemoteDataSource mockSpeciesRemoteDs;
+  late MockScheduleLocalDataSource mockScheduleDs;
 
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
@@ -49,7 +56,14 @@ void main() {
     mockFishDs = MockFishLocalDataSource();
     mockSpeciesLocalDs = MockSpeciesLocalDataSource();
     mockSpeciesRemoteDs = MockSpeciesRemoteDataSource();
+    mockScheduleDs = MockScheduleLocalDataSource();
     when(() => mockSpeciesLocalDs.getAllSpecies()).thenReturn([]);
+    when(
+      () => mockScheduleDs.getByFishId(
+        any(),
+        activeOnly: any(named: 'activeOnly'),
+      ),
+    ).thenReturn([]);
   });
 
   Widget buildTestWidget({
@@ -80,6 +94,8 @@ void main() {
         fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
         speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
         speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
+        scheduleLocalDataSourceProvider.overrideWithValue(mockScheduleDs),
+        aquariumsListProvider.overrideWithValue(const <Aquarium>[]),
         ...additionalOverrides,
       ],
       child: MaterialApp.router(
@@ -140,8 +156,8 @@ void main() {
 
         expect(find.text('5'), findsOneWidget);
 
-        // Tap increment
-        await tester.tap(find.byIcon(Icons.add));
+        // Tap increment (first add icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.add).first);
         await tester.pumpAndSettle();
 
         expect(find.text('6'), findsOneWidget);
@@ -157,8 +173,8 @@ void main() {
 
         expect(find.text('5'), findsOneWidget);
 
-        // Tap decrement
-        await tester.tap(find.byIcon(Icons.remove));
+        // Tap decrement (first remove icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.remove).first);
         await tester.pumpAndSettle();
 
         expect(find.text('4'), findsOneWidget);
@@ -174,8 +190,8 @@ void main() {
 
         expect(find.text('1'), findsOneWidget);
 
-        // Try to decrement when at minimum
-        await tester.tap(find.byIcon(Icons.remove));
+        // Try to decrement when at minimum (first remove icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.remove).first);
         await tester.pumpAndSettle();
 
         // Should still be 1
@@ -192,8 +208,8 @@ void main() {
 
         expect(find.text('999'), findsOneWidget);
 
-        // Try to increment when at maximum
-        await tester.tap(find.byIcon(Icons.add));
+        // Try to increment when at maximum (first add icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.add).first);
         await tester.pumpAndSettle();
 
         // Should still be 999
@@ -213,8 +229,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
 
-        // Change quantity
-        await tester.tap(find.byIcon(Icons.add));
+        // Change quantity (first add icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.add).first);
         await tester.pumpAndSettle();
 
         // Tap Save
@@ -238,8 +254,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
 
-        // Change quantity
-        await tester.tap(find.byIcon(Icons.add));
+        // Change quantity (first add icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.add).first);
         await tester.pumpAndSettle();
 
         // Tap Save
@@ -289,8 +305,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
 
-        // Change quantity
-        await tester.tap(find.byIcon(Icons.add));
+        // Change quantity (first add icon is in quantity section)
+        await tester.tap(find.byIcon(Icons.add).first);
         await tester.pumpAndSettle();
 
         expect(find.text('6'), findsOneWidget);
@@ -369,8 +385,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(fishId: '1'));
         await tester.pumpAndSettle();
 
-        // Two fish icons: one in the header, one as photo placeholder
-        expect(find.byIcon(Icons.set_meal_rounded), findsNWidgets(2));
+        // One fish icon as photo placeholder
+        expect(find.byIcon(Icons.set_meal_rounded), findsOneWidget);
       });
     });
 

@@ -253,6 +253,8 @@ void main() {
           userAquariumsProvider.overrideWith(
             (ref) => MockUserAquariumsNotifier(),
           ),
+          // Override aquariumsListProvider for AquariumNameStep title logic
+          aquariumsListProvider.overrideWithValue(const <Aquarium>[]),
         ],
         child: MaterialApp.router(
           theme: AppTheme.lightTheme,

@@ -7,6 +7,10 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 ///
 /// Displays: species name, aquarium, quantity, food type, portion hint, time.
 /// Based on spec section 3.4.
+///
+/// Deprecated: Use [showFishCardSheet] from fish_card_sheet.dart instead.
+/// This sheet was replaced by the richer FishCardSheet in Task 18.
+@Deprecated('Use showFishCardSheet from fish_card_sheet.dart instead')
 Future<void> showFeedingDetailSheet(
   BuildContext context,
   ComputedFeedingEvent feeding,
@@ -21,6 +25,9 @@ Future<void> showFeedingDetailSheet(
 }
 
 /// Bottom sheet content showing detailed feeding information.
+///
+/// Deprecated: Use [FishCardSheet] from fish_card_sheet.dart instead.
+@Deprecated('Use FishCardSheet from fish_card_sheet.dart instead')
 class FeedingDetailSheet extends StatelessWidget {
   const FeedingDetailSheet({super.key, required this.feeding});
 

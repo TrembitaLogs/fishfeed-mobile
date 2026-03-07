@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 
 /// Step 0: Create aquarium with name input.
@@ -20,25 +22,30 @@ class AquariumNameStep extends ConsumerStatefulWidget {
 
 class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
   final _nameController = TextEditingController();
+  final _capacityController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  WaterType _selectedWaterType = WaterType.freshwater;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    // Restore previous name if going back
-    final currentName = ref
-        .read(onboardingNotifierProvider)
-        .currentAquariumName;
-    if (currentName != null) {
-      _nameController.text = currentName;
+    // Restore previous values if going back
+    final state = ref.read(onboardingNotifierProvider);
+    if (state.currentAquariumName != null) {
+      _nameController.text = state.currentAquariumName!;
+    }
+    if (state.currentCapacity != null) {
+      _capacityController.text =
+          state.currentCapacity! == state.currentCapacity!.roundToDouble()
+          ? state.currentCapacity!.toInt().toString()
+          : state.currentCapacity!.toString();
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _capacityController.dispose();
     super.dispose();
   }
 
@@ -51,6 +58,13 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
         _errorMessage = null;
       });
     }
+  }
+
+  void _onCapacityChanged(String value) {
+    final parsed = value.trim().isNotEmpty
+        ? double.tryParse(value.trim())
+        : null;
+    ref.read(onboardingNotifierProvider.notifier).setCapacity(parsed);
   }
 
   String? _validateName(String? value) {
@@ -69,6 +83,14 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
     final l10n = AppLocalizations.of(context)!;
     final isCreating = ref.watch(isCreatingAquariumProvider);
     final createdAquariums = ref.watch(createdAquariumsProvider);
+    final existingAquariums = ref.watch(aquariumsListProvider);
+    final selectedWaterType = ref.watch(
+      onboardingNotifierProvider.select((s) => s.currentWaterType),
+    );
+
+    // Show "Add Another" if user has existing aquariums or created some this session
+    final hasAquariums =
+        existingAquariums.isNotEmpty || createdAquariums.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -79,9 +101,9 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
           children: [
             const SizedBox(height: 24),
             Text(
-              createdAquariums.isEmpty
-                  ? l10n.createYourFirstAquarium
-                  : l10n.addAnotherAquarium,
+              hasAquariums
+                  ? l10n.addAnotherAquarium
+                  : l10n.createYourFirstAquarium,
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -166,11 +188,80 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
               ),
             ),
             const SizedBox(height: 8),
-            _WaterTypeSelector(
-              selectedType: _selectedWaterType,
-              onChanged: isCreating
-                  ? null
-                  : (type) => setState(() => _selectedWaterType = type),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<WaterType>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: WaterType.freshwater,
+                    label: Text(l10n.freshwater),
+                  ),
+                  ButtonSegment(
+                    value: WaterType.saltwater,
+                    label: Text(l10n.saltwater),
+                  ),
+                  ButtonSegment(
+                    value: WaterType.brackish,
+                    label: Text(l10n.brackish),
+                  ),
+                ],
+                selected: {selectedWaterType},
+                onSelectionChanged: isCreating
+                    ? null
+                    : (selected) => ref
+                          .read(onboardingNotifierProvider.notifier)
+                          .setWaterType(selected.first),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Volume (capacity)
+            Text(
+              l10n.volume,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _capacityController,
+              onChanged: _onCapacityChanged,
+              enabled: !isCreating,
+              decoration: InputDecoration(
+                hintText: l10n.volume,
+                suffixText: 'L',
+                filled: true,
+                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+              ],
             ),
 
             // Info about created aquariums
@@ -181,117 +272,6 @@ class _AquariumNameStepState extends ConsumerState<AquariumNameStep> {
 
             const SizedBox(height: 24),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Water type selector widget.
-class _WaterTypeSelector extends StatelessWidget {
-  const _WaterTypeSelector({
-    required this.selectedType,
-    required this.onChanged,
-  });
-
-  final WaterType selectedType;
-  final ValueChanged<WaterType>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Row(
-      children: [
-        Expanded(
-          child: _WaterTypeOption(
-            type: WaterType.freshwater,
-            label: l10n.freshwater,
-            icon: Icons.water_drop,
-            isSelected: selectedType == WaterType.freshwater,
-            onTap: onChanged != null
-                ? () => onChanged!(WaterType.freshwater)
-                : null,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _WaterTypeOption(
-            type: WaterType.saltwater,
-            label: l10n.saltwater,
-            icon: Icons.waves,
-            isSelected: selectedType == WaterType.saltwater,
-            onTap: onChanged != null
-                ? () => onChanged!(WaterType.saltwater)
-                : null,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Individual water type option card.
-class _WaterTypeOption extends StatelessWidget {
-  const _WaterTypeOption({
-    required this.type,
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final WaterType type;
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: isSelected
-          ? theme.colorScheme.primaryContainer
-          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
-                      ? theme.colorScheme.onPrimaryContainer
-                      : theme.colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -468,7 +468,7 @@ void main() {
           );
         });
 
-        test('should NOT include photo_key when it is null', () {
+        test('should include photo_key as null when it is null', () {
           setupEmptyMocks();
 
           final aquarium = createTestAquarium();
@@ -482,7 +482,51 @@ void main() {
           final aquariumChange = changes.firstWhere(
             (c) => c.entityType == EntityType.aquarium,
           );
-          expect(aquariumChange.data.containsKey('photo_key'), false);
+          // null photo_key is included so server receives photo deletion
+          expect(aquariumChange.data.containsKey('photo_key'), true);
+          expect(aquariumChange.data['photo_key'], isNull);
+        });
+
+        test('should include water_type in sync payload', () {
+          setupEmptyMocks();
+
+          final aquarium = createTestAquarium(
+            photoKey: 'aquariums/aquarium-123/abc.webp',
+          );
+          when(
+            () => mockAquariumDs.getUnsyncedAquariums(),
+          ).thenReturn([aquarium]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final aquariumChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.aquarium,
+          );
+          expect(aquariumChange.data['water_type'], 'freshwater');
+        });
+
+        test('should include capacity in sync payload', () {
+          setupEmptyMocks();
+
+          final aquarium = AquariumModel(
+            id: 'aquarium-cap',
+            userId: 'user-abc',
+            name: 'Big Tank',
+            capacity: 120.5,
+            createdAt: DateTime(2025, 1, 15),
+          );
+          when(
+            () => mockAquariumDs.getUnsyncedAquariums(),
+          ).thenReturn([aquarium]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final aquariumChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.aquarium,
+          );
+          expect(aquariumChange.data['capacity'], 120.5);
         });
       });
 
@@ -519,7 +563,7 @@ void main() {
           expect(fishChange.data['photo_key'], 'fish/fish-123/c4e82a1f.webp');
         });
 
-        test('should NOT include photo_key when it is null', () {
+        test('should include photo_key as null when it is null', () {
           setupEmptyMocks();
 
           final fish = createTestFish();
@@ -531,7 +575,87 @@ void main() {
           final fishChange = changes.firstWhere(
             (c) => c.entityType == EntityType.fish,
           );
-          expect(fishChange.data.containsKey('photo_key'), false);
+          // null photo_key is included so server receives photo deletion
+          expect(fishChange.data.containsKey('photo_key'), true);
+          expect(fishChange.data['photo_key'], isNull);
+        });
+
+        test('should include notes field in sync payload', () {
+          setupEmptyMocks();
+
+          final fish = FishModel(
+            id: 'fish-notes',
+            aquariumId: 'aquarium-456',
+            speciesId: 'species-789',
+            addedAt: DateTime(2025, 1, 15),
+            notes: 'Very friendly fish',
+          );
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data['notes'], 'Very friendly fish');
+        });
+
+        test('should include null notes in sync payload', () {
+          setupEmptyMocks();
+
+          final fish = FishModel(
+            id: 'fish-no-notes',
+            aquariumId: 'aquarium-456',
+            speciesId: 'species-789',
+            addedAt: DateTime(2025, 1, 15),
+          );
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data.containsKey('notes'), true);
+          expect(fishChange.data['notes'], isNull);
+        });
+
+        test('should include aquarium_id in sync payload', () {
+          setupEmptyMocks();
+
+          final fish = createTestFish(photoKey: 'fish/fish-123/abc.webp');
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data['aquarium_id'], 'aquarium-456');
+        });
+
+        test('should include quantity in sync payload', () {
+          setupEmptyMocks();
+
+          final fish = FishModel(
+            id: 'fish-qty',
+            aquariumId: 'aquarium-456',
+            speciesId: 'species-789',
+            quantity: 5,
+            addedAt: DateTime(2025, 1, 15),
+          );
+          when(() => mockFishDs.getUnsyncedFish()).thenReturn([fish]);
+
+          final tracker = createChangeTracker();
+          final changes = tracker.collectAllChanges();
+
+          final fishChange = changes.firstWhere(
+            (c) => c.entityType == EntityType.fish,
+          );
+          expect(fishChange.data['quantity'], 5);
         });
       });
 
@@ -598,6 +722,7 @@ void main() {
           final userChange = changes.firstWhere(
             (c) => c.entityType == EntityType.userProfile,
           );
+          // User toSyncJson only includes avatar_key when it's a valid S3 key
           expect(userChange.data.containsKey('avatar_key'), false);
         });
       });

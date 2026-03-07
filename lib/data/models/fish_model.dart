@@ -151,7 +151,9 @@ class FishModel extends HiveObject {
       'custom_name': name,
       'quantity': quantity,
       'notes': notes,
-      'photo_key': photoKey,
+      'photo_key': photoKey != null && !photoKey!.startsWith('local://')
+          ? photoKey
+          : null,
     };
   }
 }

@@ -1639,6 +1639,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectAquarium => 'Select Aquarium';
 
   @override
+  String get selectAquariumDescription =>
+      'Choose which aquarium to add your fish to';
+
+  @override
   String get newAquarium => 'New Aquarium';
 
   @override
@@ -1843,4 +1847,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageRetryButton => 'Retry';
+
+  @override
+  String get aquarium => 'Aquarium';
+
+  @override
+  String get aquariumDetails => 'Aquarium Details';
+
+  @override
+  String get fishDetails => 'Fish Details';
+
+  @override
+  String get volume => 'Volume';
+
+  @override
+  String get brackish => 'Brackish';
+
+  @override
+  String get feedingSchedule => 'Feeding Schedule';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get addNotes => 'Add notes about this fish...';
+
+  @override
+  String get species => 'Species';
+
+  @override
+  String get added => 'Added';
+
+  @override
+  String get deleteFishConfirm => 'Delete this fish?';
+
+  @override
+  String fishMovedTo(String aquariumName) {
+    return 'Moved to $aquariumName';
+  }
+
+  @override
+  String get view => 'View';
+
+  @override
+  String get deleteAquariumConfirm => 'Delete this aquarium?';
+
+  @override
+  String get markAsFedButton => 'Mark as Fed';
+
+  @override
+  String get deleteFishBody =>
+      'This will remove the fish and deactivate all its feeding schedules. This action cannot be undone.';
+
+  @override
+  String get intervalDaily => 'Daily';
+
+  @override
+  String get intervalWeekly => 'Weekly';
+
+  @override
+  String intervalEveryNDays(int count) {
+    return 'Every $count days';
+  }
+
+  @override
+  String get editFishButton => 'Edit Fish';
+
+  @override
+  String get scheduledTime => 'Scheduled Time';
+
+  @override
+  String get foodTypeFlakes => 'Flakes';
+
+  @override
+  String get foodTypePellets => 'Pellets';
+
+  @override
+  String get foodTypeFrozen => 'Frozen';
+
+  @override
+  String get foodTypeLive => 'Live';
+
+  @override
+  String get foodTypeMixed => 'Mixed';
+
+  @override
+  String get feedingInterval => 'Feeding Interval';
+
+  @override
+  String get feedingTimes => 'Feeding Times';
+
+  @override
+  String get addFeedingTime => 'Add Time';
+
+  @override
+  String get portionHintPlaceholder => 'e.g. 2 pinches, 3 pellets';
+
+  @override
+  String get everyOtherDay => 'Every 2 Days';
 }

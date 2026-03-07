@@ -250,6 +250,17 @@ class FishLocalDataSource {
       if (serverData['species_id'] != null) {
         existing.speciesId = serverData['species_id'] as String;
       }
+      // Use containsKey to distinguish "not sent" from "set to null"
+      if (serverData.containsKey('notes')) {
+        existing.notes = serverData['notes'] as String?;
+      }
+      if (serverData['aquarium_id'] != null) {
+        existing.aquariumId = serverData['aquarium_id'] as String;
+      }
+      // Use containsKey to distinguish "not sent" from "set to null"
+      if (serverData.containsKey('photo_key')) {
+        existing.photoKey = serverData['photo_key'] as String?;
+      }
       existing.synced = true;
       existing.serverUpdatedAt = serverUpdatedAt;
       existing.updatedAt = serverUpdatedAt;
@@ -262,6 +273,8 @@ class FishLocalDataSource {
         speciesId: serverData['species_id'] as String? ?? 'unknown',
         name: serverData['custom_name'] as String?,
         quantity: serverData['quantity'] as int? ?? 1,
+        notes: serverData['notes'] as String?,
+        photoKey: serverData['photo_key'] as String?,
         addedAt: serverData['created_at'] != null
             ? DateTime.tryParse(serverData['created_at'] as String) ??
                   DateTime.now()

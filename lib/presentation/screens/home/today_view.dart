@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
@@ -19,6 +20,7 @@ import 'package:fishfeed/presentation/widgets/common/shimmer_widgets.dart';
 import 'package:fishfeed/presentation/widgets/feeding/add_aquarium_button.dart';
 import 'package:fishfeed/presentation/widgets/feeding/aquarium_status_card.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_upsell_card.dart';
+import 'package:fishfeed/presentation/widgets/sheets/sheets_widgets.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -269,11 +271,55 @@ class _FeedingsList extends ConsumerWidget {
               animationIndex * AnimationConfig.staggerInterval.inMilliseconds,
         );
 
-        // Aquarium status card
+        // Aquarium status card with swipe-left and long-press to open sheet
         if (item.isAquariumSection) {
-          final Widget child = AquariumStatusCard(
-            aquarium: item.aquarium!,
+          final aquarium = item.aquarium!;
+          final Widget card = AquariumStatusCard(
+            aquarium: aquarium,
             feedings: item.aquariumFeedings!,
+          );
+
+          final Widget child = Dismissible(
+            key: Key('aquarium_${aquarium.id}'),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) async {
+              unawaited(HapticFeedback.mediumImpact());
+              showAquariumCardSheet(context, aquarium.id);
+              return false;
+            },
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context)!.aquariumDetails,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            child: GestureDetector(
+              onLongPress: () {
+                HapticFeedback.mediumImpact();
+                showAquariumCardSheet(context, aquarium.id);
+              },
+              child: card,
+            ),
           );
 
           if (AnimationConfig.shouldReduceMotion(context)) {

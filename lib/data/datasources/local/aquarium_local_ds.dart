@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
 
 /// Data source for managing aquarium records in local Hive storage.
 ///
@@ -276,16 +277,48 @@ class AquariumLocalDataSource {
 
       // Update existing aquarium
       existing.name = serverData['name'] as String? ?? existing.name;
+      if (serverData['water_type'] != null) {
+        existing.waterType = _parseWaterType(
+          serverData['water_type'] as String?,
+        );
+      }
+      if (serverData['capacity'] != null) {
+        final rawCapacity = serverData['capacity'];
+        if (rawCapacity is double) {
+          existing.capacity = rawCapacity;
+        } else if (rawCapacity is int) {
+          existing.capacity = rawCapacity.toDouble();
+        } else if (rawCapacity is String) {
+          existing.capacity = double.tryParse(rawCapacity);
+        }
+      }
+      // Use containsKey to distinguish "not sent" from "set to null"
+      if (serverData.containsKey('photo_key')) {
+        existing.photoKey = serverData['photo_key'] as String?;
+      }
       existing.synced = true;
       existing.serverUpdatedAt = serverUpdatedAt;
       existing.updatedAt = serverUpdatedAt;
       await existing.save();
     } else {
       // Create new aquarium from server data
+      final rawCapacity = serverData['capacity'];
+      double? parsedCapacity;
+      if (rawCapacity is double) {
+        parsedCapacity = rawCapacity;
+      } else if (rawCapacity is int) {
+        parsedCapacity = rawCapacity.toDouble();
+      } else if (rawCapacity is String) {
+        parsedCapacity = double.tryParse(rawCapacity);
+      }
+
       final aquarium = AquariumModel(
         id: id,
         userId: serverData['owner_id'] as String? ?? '',
         name: serverData['name'] as String? ?? 'Unnamed Aquarium',
+        capacity: parsedCapacity,
+        waterType: _parseWaterType(serverData['water_type'] as String?),
+        photoKey: serverData['photo_key'] as String?,
         createdAt: serverData['created_at'] != null
             ? DateTime.tryParse(serverData['created_at'] as String) ??
                   DateTime.now()
@@ -306,5 +339,20 @@ class AquariumLocalDataSource {
     for (final aquarium in deleted) {
       await _aquariums.delete(aquarium.id);
     }
+  }
+
+  /// Parses a water type string from the server into a [WaterType] enum.
+  ///
+  /// Falls back to [WaterType.freshwater] for null or unknown values.
+  static WaterType _parseWaterType(String? value) {
+    if (value == null) {
+      return WaterType.freshwater;
+    }
+    for (final type in WaterType.values) {
+      if (type.name == value) {
+        return type;
+      }
+    }
+    return WaterType.freshwater;
   }
 }

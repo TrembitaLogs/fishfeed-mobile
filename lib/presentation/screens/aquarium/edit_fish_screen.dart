@@ -6,7 +6,12 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
@@ -15,7 +20,8 @@ import 'package:fishfeed/services/analytics/analytics_service.dart';
 
 /// Screen for editing an existing fish.
 ///
-/// Allows users to modify the quantity of a fish.
+/// Allows users to modify the quantity, aquarium assignment, and notes of a fish.
+/// When only one aquarium exists, the aquarium dropdown is hidden.
 /// Changes are persisted via [FishManagementProvider].
 class EditFishScreen extends ConsumerStatefulWidget {
   const EditFishScreen({super.key, required this.fishId});
@@ -29,6 +35,9 @@ class EditFishScreen extends ConsumerStatefulWidget {
 
 class _EditFishScreenState extends ConsumerState<EditFishScreen> {
   late int _quantity;
+  late String _selectedAquariumId;
+  TextEditingController? _notesController;
+  TextEditingController? _portionHintController;
   bool _isSaving = false;
 
   /// Minimum allowed quantity.
@@ -37,18 +46,61 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
   /// Maximum allowed quantity.
   static const int maxQuantity = 999;
 
+  /// Maximum allowed length for notes.
+  static const int maxNotesLength = 500;
+
+  /// Available food types for the dropdown.
+  static const List<String> _foodTypes = [
+    'flakes',
+    'pellets',
+    'frozen',
+    'live',
+    'mixed',
+  ];
+
   Fish? _fish;
   String? _photoKey;
   bool _photoKeyInitialized = false;
+
+  // Schedule state
+  List<ScheduleModel> _schedules = [];
+  String _selectedFoodType = 'flakes';
+  int _selectedIntervalDays = 1;
+  List<String> _feedingTimes = [];
+  bool _schedulesInitialized = false;
+
+  @override
+  void dispose() {
+    _notesController?.dispose();
+    _portionHintController?.dispose();
+    super.dispose();
+  }
 
   void _initializeFromFish(Fish fish) {
     if (_fish == null) {
       _fish = fish;
       _quantity = fish.quantity;
+      _selectedAquariumId = fish.aquariumId;
+      _notesController = TextEditingController(text: fish.notes);
     }
     if (!_photoKeyInitialized) {
       _photoKey = fish.photoKey;
       _photoKeyInitialized = true;
+    }
+    if (!_schedulesInitialized) {
+      _schedules = ref.read(activeSchedulesForFishProvider(fish.id));
+      if (_schedules.isNotEmpty) {
+        _selectedFoodType = _schedules.first.foodType;
+        _selectedIntervalDays = _schedules.first.intervalDays;
+        _feedingTimes = _schedules.map((s) => s.time).toList();
+        _portionHintController = TextEditingController(
+          text: _schedules.first.portionHint ?? '',
+        );
+      } else {
+        _portionHintController = TextEditingController();
+        _feedingTimes = [];
+      }
+      _schedulesInitialized = true;
     }
   }
 
@@ -75,14 +127,32 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
       _isSaving = true;
     });
 
+    final wasAquariumChanged = _selectedAquariumId != _fish!.aquariumId;
+    final notesText = _notesController!.text.trim();
+
+    // If local state still holds a local:// key, check whether the background
+    // upload already resolved it to an S3 key in Hive.  This avoids
+    // overwriting the resolved key with a stale local:// reference.
+    var effectivePhotoKey = _photoKey;
+    if (effectivePhotoKey != null && effectivePhotoKey.startsWith('local://')) {
+      final hiveModel = ref
+          .read(fishLocalDataSourceProvider)
+          .getFishById(_fish!.id);
+      if (hiveModel != null &&
+          hiveModel.photoKey != null &&
+          !hiveModel.photoKey!.startsWith('local://')) {
+        effectivePhotoKey = hiveModel.photoKey;
+      }
+    }
+
     final updatedFish = Fish(
       id: _fish!.id,
-      aquariumId: _fish!.aquariumId,
+      aquariumId: _selectedAquariumId,
       speciesId: _fish!.speciesId,
       name: _fish!.name,
       quantity: _quantity,
-      notes: _fish!.notes,
-      photoKey: _photoKey,
+      notes: notesText.isEmpty ? null : notesText,
+      photoKey: effectivePhotoKey,
       addedAt: _fish!.addedAt,
       synced: false,
       updatedAt: DateTime.now(),
@@ -92,6 +162,11 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
     final success = await ref
         .read(fishManagementProvider.notifier)
         .updateFish(updatedFish);
+
+    // Save schedule changes
+    if (success) {
+      await _saveScheduleChanges();
+    }
 
     if (mounted) {
       setState(() {
@@ -105,11 +180,118 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
               speciesId: _fish!.speciesId,
               newQuantity: _quantity,
             );
+
+        // If the fish was moved to a different aquarium, invalidate
+        // both old and new aquarium fish lists and show a snackbar.
+        if (wasAquariumChanged && mounted) {
+          ref.invalidate(fishByAquariumIdProvider(_fish!.aquariumId));
+          ref.invalidate(fishByAquariumIdProvider(_selectedAquariumId));
+
+          final l = AppLocalizations.of(context)!;
+          final newAquarium = ref.read(
+            aquariumByIdProvider(_selectedAquariumId),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l.fishMovedTo(newAquarium?.name ?? '')),
+              action: SnackBarAction(
+                label: l.view,
+                onPressed: () =>
+                    context.go('/aquarium/$_selectedAquariumId/feedings'),
+              ),
+            ),
+          );
+        }
+
         context.pop();
       } else {
         _showErrorSnackBar();
       }
     }
+  }
+
+  Future<void> _saveScheduleChanges() async {
+    if (_schedules.isEmpty && _feedingTimes.isEmpty) return;
+
+    final scheduleDs = ref.read(scheduleLocalDataSourceProvider);
+    final portionHint = _portionHintController?.text.trim();
+    final effectivePortionHint = portionHint != null && portionHint.isNotEmpty
+        ? portionHint
+        : null;
+
+    // Build a set of times that currently exist in schedules
+    final existingTimes = <String, ScheduleModel>{
+      for (final s in _schedules) s.time: s,
+    };
+
+    // Update existing schedules and add new ones
+    for (final time in _feedingTimes) {
+      if (existingTimes.containsKey(time)) {
+        // Update existing schedule
+        final schedule = existingTimes[time]!;
+        final updated = schedule.copyWith(
+          foodType: _selectedFoodType,
+          portionHint: effectivePortionHint,
+          intervalDays: _selectedIntervalDays,
+        );
+        updated.markAsModified();
+        await scheduleDs.update(updated);
+        existingTimes.remove(time);
+      } else {
+        // Add new schedule for this time
+        final now = DateTime.now();
+        final newSchedule = ScheduleModel(
+          id: '${_fish!.id}_${time.replaceAll(':', '')}',
+          fishId: _fish!.id,
+          aquariumId: _selectedAquariumId,
+          time: time,
+          intervalDays: _selectedIntervalDays,
+          anchorDate: now,
+          foodType: _selectedFoodType,
+          portionHint: effectivePortionHint,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+          createdByUserId: '',
+          synced: false,
+        );
+        await scheduleDs.save(newSchedule);
+      }
+    }
+
+    // Deactivate removed schedules
+    for (final removed in existingTimes.values) {
+      final deactivated = removed.copyWith(active: false);
+      deactivated.markAsModified();
+      await scheduleDs.update(deactivated);
+    }
+
+    // Invalidate feeding providers to refresh UI
+    ref.invalidate(activeSchedulesForFishProvider(_fish!.id));
+  }
+
+  Future<void> _addFeedingTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && mounted) {
+      final timeStr =
+          '${picked.hour.toString().padLeft(2, '0')}:'
+          '${picked.minute.toString().padLeft(2, '0')}';
+      if (!_feedingTimes.contains(timeStr)) {
+        setState(() {
+          _feedingTimes.add(timeStr);
+          _feedingTimes.sort();
+        });
+      }
+    }
+  }
+
+  void _removeFeedingTime(String time) {
+    setState(() {
+      _feedingTimes.remove(time);
+    });
   }
 
   Future<void> _removePhoto() async {
@@ -176,6 +358,12 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
     final speciesName =
         species?.name ?? SpeciesData.findById(fish.speciesId).name;
 
+    // Get active (non-deleted) aquariums for the dropdown
+    final allAquariums = ref.watch(aquariumsListProvider);
+    final activeAquariums = allAquariums
+        .where((aq) => aq.deletedAt == null)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(title: Text(l.editFish)),
       body: SafeArea(
@@ -212,6 +400,50 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
                           ? _decrementQuantity
                           : null,
                     ),
+                    if (activeAquariums.length > 1) ...[
+                      const SizedBox(height: 32),
+                      _AquariumDropdown(
+                        selectedAquariumId: _selectedAquariumId,
+                        aquariums: activeAquariums,
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedAquariumId = value);
+                          }
+                        },
+                      ),
+                    ],
+                    if (_schedulesInitialized) ...[
+                      const SizedBox(height: 32),
+                      _FoodTypeDropdown(
+                        selectedFoodType: _selectedFoodType,
+                        foodTypes: _foodTypes,
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedFoodType = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      _PortionHintField(controller: _portionHintController!),
+                      const SizedBox(height: 32),
+                      _IntervalSelector(
+                        selectedIntervalDays: _selectedIntervalDays,
+                        onChanged: (value) {
+                          setState(() => _selectedIntervalDays = value);
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      _FeedingTimesSection(
+                        times: _feedingTimes,
+                        onAddTime: _addFeedingTime,
+                        onRemoveTime: _removeFeedingTime,
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                    _NotesField(
+                      controller: _notesController!,
+                      maxLength: maxNotesLength,
+                    ),
                   ],
                 ),
               ),
@@ -238,53 +470,26 @@ class _FishHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l = AppLocalizations.of(context)!;
     final displayName = customName ?? speciesName;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.set_meal_rounded,
-            size: 32,
-            color: theme.colorScheme.onPrimaryContainer,
+        Text(
+          displayName,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                displayName,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (customName != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  speciesName,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 4),
-              Text(
-                l.editFishDetails,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+        if (customName != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            speciesName,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -473,6 +678,302 @@ class _QuantityField extends StatelessWidget {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Dropdown for selecting which aquarium the fish belongs to.
+class _AquariumDropdown extends StatelessWidget {
+  const _AquariumDropdown({
+    required this.selectedAquariumId,
+    required this.aquariums,
+    required this.onChanged,
+  });
+
+  final String selectedAquariumId;
+  final List<Aquarium> aquariums;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.aquarium,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          initialValue: selectedAquariumId,
+          decoration: InputDecoration(
+            labelText: l.aquarium,
+            prefixIcon: const Icon(Icons.water),
+            border: const OutlineInputBorder(),
+          ),
+          items: aquariums
+              .map((aq) => DropdownMenuItem(value: aq.id, child: Text(aq.name)))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
+/// Text field for adding notes about the fish.
+class _NotesField extends StatelessWidget {
+  const _NotesField({required this.controller, required this.maxLength});
+
+  final TextEditingController controller;
+  final int maxLength;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.notes,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: l.notes,
+            hintText: l.addNotes,
+            alignLabelWithHint: true,
+            border: const OutlineInputBorder(),
+          ),
+          maxLines: 4,
+          maxLength: maxLength,
+          textInputAction: TextInputAction.newline,
+        ),
+      ],
+    );
+  }
+}
+
+/// Dropdown for selecting the food type.
+class _FoodTypeDropdown extends StatelessWidget {
+  const _FoodTypeDropdown({
+    required this.selectedFoodType,
+    required this.foodTypes,
+    required this.onChanged,
+  });
+
+  final String selectedFoodType;
+  final List<String> foodTypes;
+  final ValueChanged<String?> onChanged;
+
+  String _localizedFoodType(AppLocalizations l, String type) {
+    switch (type) {
+      case 'flakes':
+        return l.foodTypeFlakes;
+      case 'pellets':
+        return l.foodTypePellets;
+      case 'frozen':
+        return l.foodTypeFrozen;
+      case 'live':
+        return l.foodTypeLive;
+      case 'mixed':
+        return l.foodTypeMixed;
+      default:
+        return type;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.foodType,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          value: selectedFoodType,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.restaurant),
+            border: const OutlineInputBorder(),
+          ),
+          items: foodTypes
+              .map(
+                (type) => DropdownMenuItem(
+                  value: type,
+                  child: Text(_localizedFoodType(l, type)),
+                ),
+              )
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
+/// Text field for portion hint.
+class _PortionHintField extends StatelessWidget {
+  const _PortionHintField({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.portionHintLabel,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.lightbulb_outline),
+            hintText: l.portionHintPlaceholder,
+            border: const OutlineInputBorder(),
+          ),
+          textInputAction: TextInputAction.done,
+        ),
+      ],
+    );
+  }
+}
+
+/// Selector for feeding interval (daily, every other day, weekly).
+class _IntervalSelector extends StatelessWidget {
+  const _IntervalSelector({
+    required this.selectedIntervalDays,
+    required this.onChanged,
+  });
+
+  final int selectedIntervalDays;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.feedingInterval,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<int>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(value: 1, label: Text(l.intervalDaily)),
+              ButtonSegment(value: 2, label: Text(l.everyOtherDay)),
+              ButtonSegment(value: 7, label: Text(l.intervalWeekly)),
+            ],
+            selected: {selectedIntervalDays},
+            onSelectionChanged: (selected) => onChanged(selected.first),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Section for managing feeding times.
+class _FeedingTimesSection extends StatelessWidget {
+  const _FeedingTimesSection({
+    required this.times,
+    required this.onAddTime,
+    required this.onRemoveTime,
+  });
+
+  final List<String> times;
+  final VoidCallback onAddTime;
+  final ValueChanged<String> onRemoveTime;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l.feedingTimes,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onAddTime,
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l.addFeedingTime),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (times.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              '—',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: times.map((time) {
+              return Chip(
+                avatar: Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                label: Text(time),
+                onDeleted: () => onRemoveTime(time),
+                deleteIconColor: theme.colorScheme.onSurfaceVariant,
+                side: BorderSide(color: theme.colorScheme.outlineVariant),
+              );
+            }).toList(),
+          ),
       ],
     );
   }

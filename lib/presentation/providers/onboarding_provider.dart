@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/species.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 
 /// Represents a selected species with its quantity for onboarding.
@@ -97,6 +98,9 @@ class OnboardingState {
     this.currentStep = 0,
     this.currentAquariumId,
     this.currentAquariumName,
+    this.currentWaterType = WaterType.freshwater,
+    this.currentCapacity,
+    this.selectedAquariumId,
     this.createdAquariums = const [],
     this.isCreatingAquarium = false,
     this.selectedSpecies = const [],
@@ -112,6 +116,15 @@ class OnboardingState {
 
   /// Name of the current aquarium being set up.
   final String? currentAquariumName;
+
+  /// Water type for the current aquarium.
+  final WaterType currentWaterType;
+
+  /// Capacity (liters) for the current aquarium.
+  final double? currentCapacity;
+
+  /// Aquarium ID selected in add-fish mode.
+  final String? selectedAquariumId;
 
   /// List of aquariums created during this onboarding session.
   final List<Aquarium> createdAquariums;
@@ -158,6 +171,9 @@ class OnboardingState {
     int? currentStep,
     String? currentAquariumId,
     String? currentAquariumName,
+    WaterType? currentWaterType,
+    double? Function()? currentCapacity,
+    String? Function()? selectedAquariumId,
     List<Aquarium>? createdAquariums,
     bool? isCreatingAquarium,
     List<SpeciesSelection>? selectedSpecies,
@@ -168,6 +184,13 @@ class OnboardingState {
       currentStep: currentStep ?? this.currentStep,
       currentAquariumId: currentAquariumId ?? this.currentAquariumId,
       currentAquariumName: currentAquariumName ?? this.currentAquariumName,
+      currentWaterType: currentWaterType ?? this.currentWaterType,
+      currentCapacity: currentCapacity != null
+          ? currentCapacity()
+          : this.currentCapacity,
+      selectedAquariumId: selectedAquariumId != null
+          ? selectedAquariumId()
+          : this.selectedAquariumId,
       createdAquariums: createdAquariums ?? this.createdAquariums,
       isCreatingAquarium: isCreatingAquarium ?? this.isCreatingAquarium,
       selectedSpecies: selectedSpecies ?? this.selectedSpecies,
@@ -182,6 +205,7 @@ class OnboardingState {
       currentStep: currentStep,
       currentAquariumId: null,
       currentAquariumName: null,
+      currentWaterType: WaterType.freshwater,
       createdAquariums: createdAquariums,
       isCreatingAquarium: isCreatingAquarium,
       selectedSpecies: selectedSpecies,
@@ -197,6 +221,9 @@ class OnboardingState {
     if (currentStep != other.currentStep) return false;
     if (currentAquariumId != other.currentAquariumId) return false;
     if (currentAquariumName != other.currentAquariumName) return false;
+    if (currentWaterType != other.currentWaterType) return false;
+    if (currentCapacity != other.currentCapacity) return false;
+    if (selectedAquariumId != other.selectedAquariumId) return false;
     if (isCreatingAquarium != other.isCreatingAquarium) return false;
     if (createdAquariums.length != other.createdAquariums.length) return false;
     for (var i = 0; i < createdAquariums.length; i++) {
@@ -220,6 +247,9 @@ class OnboardingState {
     currentStep,
     currentAquariumId,
     currentAquariumName,
+    currentWaterType,
+    currentCapacity,
+    selectedAquariumId,
     Object.hashAll(createdAquariums),
     isCreatingAquarium,
     Object.hashAll(selectedSpecies),
@@ -267,6 +297,21 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     state = state.copyWith(currentAquariumName: name);
   }
 
+  /// Set the water type for current aquarium setup.
+  void setWaterType(WaterType waterType) {
+    state = state.copyWith(currentWaterType: waterType);
+  }
+
+  /// Set the capacity for current aquarium setup.
+  void setCapacity(double? capacity) {
+    state = state.copyWith(currentCapacity: () => capacity);
+  }
+
+  /// Set selected aquarium ID for add-fish mode.
+  void setSelectedAquarium(String id) {
+    state = state.copyWith(selectedAquariumId: () => id);
+  }
+
   /// Set creating aquarium loading state.
   void setCreatingAquarium(bool isCreating) {
     state = state.copyWith(isCreatingAquarium: isCreating);
@@ -299,6 +344,7 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
       currentStep: 0,
       currentAquariumId: null,
       currentAquariumName: null,
+      currentWaterType: WaterType.freshwater,
       createdAquariums: state.createdAquariums,
       isCreatingAquarium: false,
       selectedSpecies: const [],

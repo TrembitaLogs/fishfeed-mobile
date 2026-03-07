@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:mocktail/mocktail.dart';
+
 import 'package:fishfeed/core/config/theme.dart';
+import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
+import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
+import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/widgets/feeding/feeding_card.dart';
+
+class MockSpeciesLocalDataSource extends Mock
+    implements SpeciesLocalDataSource {}
+
+class MockSpeciesRemoteDataSource extends Mock
+    implements SpeciesRemoteDataSource {}
 
 void main() {
   setUpAll(() {
@@ -84,6 +102,48 @@ void main() {
           child: FeedingCard(
             feeding: feeding,
             onMarkAsFed: onMarkAsFed ?? (_) {},
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the test widget wrapped in [ProviderScope] with minimal overrides.
+  ///
+  /// Required for tests that trigger bottom sheets or dialogs using
+  /// ConsumerWidget (e.g. FishCardSheet, ConfirmFeedingDialog).
+  Widget buildTestWidgetWithProviders({
+    required ComputedFeedingEvent feeding,
+    FeedingStatusCallback? onMarkAsFed,
+  }) {
+    final mockSpeciesLocalDs = MockSpeciesLocalDataSource();
+    final mockSpeciesRemoteDs = MockSpeciesRemoteDataSource();
+    when(() => mockSpeciesLocalDs.getAllSpecies()).thenReturn([]);
+
+    return ProviderScope(
+      overrides: [
+        fishByIdProvider.overrideWith((ref, id) => null),
+        aquariumByIdProvider.overrideWith((ref, id) => null),
+        currentUserProvider.overrideWithValue(null),
+        speciesByIdProvider.overrideWith(
+          (ref, id) => Future<Species?>.value(null),
+        ),
+        activeSchedulesForFishProvider.overrideWith(
+          (ref, id) => <ScheduleModel>[],
+        ),
+        speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
+        speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Center(
+            child: FeedingCard(
+              feeding: feeding,
+              onMarkAsFed: onMarkAsFed ?? (_) {},
+            ),
           ),
         ),
       ),
@@ -302,7 +362,7 @@ void main() {
     group('Tap Interaction', () {
       testWidgets('tap on pending card opens bottom sheet', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
+          buildTestWidgetWithProviders(
             feeding: createFeeding(
               status: EventStatus.pending,
               fishName: 'Betta',
@@ -314,13 +374,15 @@ void main() {
         await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
 
-        // Bottom sheet with "Feeding Details" should appear
-        expect(find.text('Feeding Details'), findsOneWidget);
+        // Fish card bottom sheet should appear with the fish name
+        expect(find.byType(BottomSheet), findsOneWidget);
+        // The sheet displays the fish name as heading
+        expect(find.text('Betta'), findsWidgets);
       });
 
       testWidgets('tap on fed card opens bottom sheet', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(
+          buildTestWidgetWithProviders(
             feeding: createFeeding(
               status: EventStatus.fed,
               fishName: 'Betta',
@@ -332,14 +394,15 @@ void main() {
         await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
 
-        expect(find.text('Feeding Details'), findsOneWidget);
+        // Fish card bottom sheet should appear
+        expect(find.byType(BottomSheet), findsOneWidget);
       });
 
       testWidgets('tap does NOT directly call onMarkAsFed', (tester) async {
         var wasCalled = false;
 
         await tester.pumpWidget(
-          buildTestWidget(
+          buildTestWidgetWithProviders(
             feeding: createFeeding(
               status: EventStatus.pending,
               scheduleId: 'test-123',
@@ -363,7 +426,7 @@ void main() {
         expect(find.byType(Dismissible), findsOneWidget);
       });
 
-      testWidgets('pending card allows only startToEnd swipe', (tester) async {
+      testWidgets('pending card allows horizontal swipe', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(feeding: createFeeding(status: EventStatus.pending)),
         );
@@ -371,10 +434,14 @@ void main() {
         final dismissible = tester.widget<Dismissible>(
           find.byType(Dismissible),
         );
-        expect(dismissible.direction, DismissDirection.startToEnd);
+        // Pending cards support both swipe directions:
+        // right (startToEnd) for mark as fed, left (endToStart) for edit
+        expect(dismissible.direction, DismissDirection.horizontal);
       });
 
-      testWidgets('fed card disables swipe (direction none)', (tester) async {
+      testWidgets('fed card allows only endToStart swipe for edit', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             feeding: createFeeding(status: EventStatus.fed, log: createLog()),
@@ -384,12 +451,15 @@ void main() {
         final dismissible = tester.widget<Dismissible>(
           find.byType(Dismissible),
         );
-        expect(dismissible.direction, DismissDirection.none);
+        // Fed cards only allow swipe left to edit (no mark as fed)
+        expect(dismissible.direction, DismissDirection.endToStart);
       });
 
       testWidgets('swipe right opens confirmation dialog', (tester) async {
         await tester.pumpWidget(
-          buildTestWidget(feeding: createFeeding(status: EventStatus.pending)),
+          buildTestWidgetWithProviders(
+            feeding: createFeeding(status: EventStatus.pending),
+          ),
         );
 
         // Perform a fling gesture to trigger confirmDismiss
@@ -408,7 +478,7 @@ void main() {
         String? markedId;
 
         await tester.pumpWidget(
-          buildTestWidget(
+          buildTestWidgetWithProviders(
             feeding: createFeeding(
               scheduleId: 'test-456',
               status: EventStatus.pending,
@@ -438,7 +508,7 @@ void main() {
         var wasCalled = false;
 
         await tester.pumpWidget(
-          buildTestWidget(
+          buildTestWidgetWithProviders(
             feeding: createFeeding(status: EventStatus.pending),
             onMarkAsFed: (_) => wasCalled = true,
           ),
@@ -459,9 +529,7 @@ void main() {
         expect(wasCalled, isFalse);
       });
 
-      testWidgets('no secondary background (swipe left removed)', (
-        tester,
-      ) async {
+      testWidgets('has secondary background for edit swipe', (tester) async {
         await tester.pumpWidget(
           buildTestWidget(feeding: createFeeding(status: EventStatus.pending)),
         );
@@ -469,7 +537,8 @@ void main() {
         final dismissible = tester.widget<Dismissible>(
           find.byType(Dismissible),
         );
-        expect(dismissible.secondaryBackground, isNull);
+        // Secondary background is shown for swipe left (edit fish)
+        expect(dismissible.secondaryBackground, isNotNull);
       });
 
       testWidgets('dismissible has unique key per feeding', (tester) async {

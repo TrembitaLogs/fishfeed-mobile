@@ -138,11 +138,18 @@ void main() {
         expect(appBarTitle, findsOneWidget);
       });
 
-      testWidgets('displays settings icon in actions', (tester) async {
+      testWidgets('displays dropdown arrow next to aquarium name', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+        // AppBar title contains a dropdown arrow indicating tappable aquarium name
+        final dropdownIcon = find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byIcon(Icons.arrow_drop_down),
+        );
+        expect(dropdownIcon, findsOneWidget);
       });
 
       testWidgets('displays fallback label when aquarium not found', (

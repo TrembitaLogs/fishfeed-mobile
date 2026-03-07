@@ -1,7 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
+import 'package:fishfeed/presentation/providers/species_provider.dart';
+import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 
 /// Shows a confirmation dialog before marking a feeding as done.
 ///
@@ -18,16 +25,21 @@ Future<bool> showConfirmFeedingDialog(
 }
 
 /// Dialog content for confirming a feeding action.
-class ConfirmFeedingDialog extends StatelessWidget {
+class ConfirmFeedingDialog extends ConsumerWidget {
   const ConfirmFeedingDialog({super.key, required this.feeding});
 
   /// The feeding event to confirm.
   final ComputedFeedingEvent feeding;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+
+    final fish = ref.watch(fishByIdProvider(feeding.fishId));
+    final speciesAsync = fish != null
+        ? ref.watch(speciesByIdProvider(fish.speciesId))
+        : null;
 
     return AlertDialog(
       title: Text(l10n.markAsFedQuestion),
@@ -35,6 +47,9 @@ class ConfirmFeedingDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Fish photo
+          _FishPhoto(fish: fish, speciesAsync: speciesAsync),
+          const SizedBox(height: 16),
           // Species + aquarium
           _InfoRow(
             icon: Icons.pets,
@@ -73,6 +88,79 @@ class ConfirmFeedingDialog extends StatelessWidget {
           child: Text(l10n.yesFed),
         ),
       ],
+    );
+  }
+}
+
+/// Displays a fish photo in the confirmation dialog.
+///
+/// Priority:
+/// 1. User-uploaded fish photo (via [EntityImage] with S3 key)
+/// 2. Species reference photo (via [CachedNetworkImage])
+/// 3. Placeholder icon
+class _FishPhoto extends ConsumerWidget {
+  const _FishPhoto({required this.fish, required this.speciesAsync});
+
+  final Fish? fish;
+  final AsyncValue<Species?>? speciesAsync;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
+    // Priority 1: User-uploaded fish photo (S3 key)
+    if (fish != null && fish!.photoKey != null && fish!.photoKey!.isNotEmpty) {
+      return Center(
+        child: EntityImage(
+          photoKey: fish!.photoKey,
+          entityType: 'fish',
+          entityId: fish!.id,
+          width: 80,
+          height: 80,
+          isCircular: true,
+        ),
+      );
+    }
+
+    // Priority 2: Species reference photo
+    final speciesImageUrl = speciesAsync?.valueOrNull?.imageUrl;
+    if (speciesImageUrl != null && speciesImageUrl.isNotEmpty) {
+      return Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40),
+          child: SizedBox(
+            width: 80,
+            height: 80,
+            child: CachedNetworkImage(
+              imageUrl: speciesImageUrl,
+              fit: BoxFit.cover,
+              memCacheWidth: 160,
+              memCacheHeight: 160,
+              placeholder: (_, __) => _buildPlaceholder(theme),
+              errorWidget: (_, __, ___) => _buildPlaceholder(theme),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Priority 3: Placeholder icon
+    return Center(child: _buildPlaceholder(theme));
+  }
+
+  Widget _buildPlaceholder(ThemeData theme) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.set_meal_rounded,
+        size: 36,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }

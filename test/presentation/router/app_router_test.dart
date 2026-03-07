@@ -29,9 +29,14 @@ import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import '../../helpers/test_helpers.dart' show createMockSyncService;
+
+class MockScheduleLocalDataSource extends Mock
+    implements ScheduleLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -699,7 +704,12 @@ Widget _buildApp(GoRouter router) {
 
   final mockSpeciesLocalDs = MockSpeciesLocalDataSource();
   final mockSpeciesRemoteDs = MockSpeciesRemoteDataSource();
+  final mockScheduleDs = MockScheduleLocalDataSource();
   when(() => mockSpeciesLocalDs.getAllSpecies()).thenReturn([]);
+  when(
+    () =>
+        mockScheduleDs.getByFishId(any(), activeOnly: any(named: 'activeOnly')),
+  ).thenReturn([]);
 
   return ProviderScope(
     overrides: [
@@ -724,9 +734,12 @@ Widget _buildApp(GoRouter router) {
       ),
       // Mock user aquariums provider to avoid HiveBoxes dependency
       userAquariumsProvider.overrideWith((ref) => MockUserAquariumsNotifier()),
-      // Mock species providers for EditFishScreen
+      // Override aquariumsListProvider for AquariumNameStep title logic
+      aquariumsListProvider.overrideWithValue(const <Aquarium>[]),
+      // Mock species and schedule providers for EditFishScreen
       speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
       speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
+      scheduleLocalDataSourceProvider.overrideWithValue(mockScheduleDs),
       // Mock fishByIdProvider for EditFishScreen
       fishByIdProvider.overrideWith((ref, fishId) {
         if (fishId == 'test-fish-1') {

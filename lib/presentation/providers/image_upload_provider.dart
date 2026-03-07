@@ -11,7 +11,9 @@ import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/services/image_sync_queue.dart';
 import 'package:fishfeed/data/services/image_upload_service.dart';
 import 'package:fishfeed/data/services/image_upload_task.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/services/connectivity/connectivity_service.dart';
 import 'package:fishfeed/services/image_processing_service.dart';
 
@@ -257,6 +259,8 @@ EntityPhotoKeyUpdater createPhotoKeyUpdater({
   required AquariumLocalDataSource aquariumDs,
   required FishLocalDataSource fishDs,
   required AuthLocalDataSource authDs,
+  void Function(String entityId, String photoKey)? onAquariumKeyUpdated,
+  void Function(String entityId, String photoKey)? onFishKeyUpdated,
   void Function(String photoKey)? onAvatarKeyUpdated,
 }) {
   return ({
@@ -273,6 +277,7 @@ EntityPhotoKeyUpdater createPhotoKeyUpdater({
           aquarium.synced = false;
           await aquarium.save();
         }
+        onAquariumKeyUpdated?.call(entityId, photoKey);
       case 'fish':
         final fish = fishDs.getFishById(entityId);
         if (fish != null) {
@@ -281,6 +286,7 @@ EntityPhotoKeyUpdater createPhotoKeyUpdater({
           fish.synced = false;
           await fish.save();
         }
+        onFishKeyUpdated?.call(entityId, photoKey);
       case 'avatar':
         final user = authDs.getCurrentUser();
         if (user != null) {
@@ -288,8 +294,6 @@ EntityPhotoKeyUpdater createPhotoKeyUpdater({
           user.synced = false;
           await user.save();
         }
-        // Notify AuthNotifier so the UI reflects the new S3 key immediately
-        // (without requiring an app restart).
         onAvatarKeyUpdated?.call(photoKey);
     }
   };
@@ -333,6 +337,12 @@ final imageUploadServiceProvider = Provider<ImageUploadService>((ref) {
       aquariumDs: aquariumDs,
       fishDs: fishDs,
       authDs: authDs,
+      onAquariumKeyUpdated: (entityId, photoKey) {
+        ref.read(userAquariumsProvider.notifier).loadAquariums();
+      },
+      onFishKeyUpdated: (entityId, photoKey) {
+        ref.invalidate(fishByAquariumIdProvider);
+      },
       onAvatarKeyUpdated: (photoKey) {
         final notifier = ref.read(authNotifierProvider.notifier);
         notifier.updateAvatarKey(photoKey);

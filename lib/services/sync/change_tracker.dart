@@ -237,11 +237,9 @@ class ChangeTracker {
       'water_type': aquarium.waterType.name,
       'capacity': aquarium.capacity,
     };
-    // Only include photo_key if it's an S3 key (not a local:// reference
-    // to a file pending upload)
-    if (_shouldSyncImageKey(aquarium.photoKey)) {
-      data['photo_key'] = aquarium.photoKey;
-    }
+    // Include photo_key when null (photo deletion) or when it's a valid
+    // S3 key. Exclude local:// keys which are pending upload.
+    _addImageKeyIfSyncable(data, 'photo_key', aquarium.photoKey);
     return data;
   }
 
@@ -296,12 +294,11 @@ class ChangeTracker {
       'species_id': fish.speciesId,
       'custom_name': fish.name,
       'quantity': fish.quantity,
+      'notes': fish.notes,
     };
-    // Only include photo_key if it's an S3 key (not a local:// reference
-    // to a file pending upload)
-    if (_shouldSyncImageKey(fish.photoKey)) {
-      data['photo_key'] = fish.photoKey;
-    }
+    // Include photo_key when null (photo deletion) or when it's a valid
+    // S3 key. Exclude local:// keys which are pending upload.
+    _addImageKeyIfSyncable(data, 'photo_key', fish.photoKey);
     return data;
   }
 
@@ -381,12 +378,21 @@ class ChangeTracker {
     ];
   }
 
-  /// Returns true if the image key should be included in sync data.
+  /// Adds an image key to the sync [data] map when appropriate.
   ///
-  /// Keys with the `local://` prefix represent files that are pending
-  /// upload to S3 and must never be sent to the server. Only non-null
-  /// S3 object keys are synced.
-  static bool _shouldSyncImageKey(String? key) {
-    return key != null && !key.startsWith('local://');
+  /// - `null` key: included as `null` so the server receives photo deletion.
+  /// - `local://` prefixed key: excluded (pending upload, not yet on S3).
+  /// - Valid S3 key: included with its value.
+  static void _addImageKeyIfSyncable(
+    Map<String, dynamic> data,
+    String field,
+    String? key,
+  ) {
+    if (key == null) {
+      data[field] = null;
+    } else if (!key.startsWith('local://')) {
+      data[field] = key;
+    }
+    // local:// keys are intentionally omitted from the payload
   }
 }

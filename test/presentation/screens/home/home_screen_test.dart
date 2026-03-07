@@ -364,6 +364,10 @@ void main() {
       });
 
       testWidgets('can navigate to Calendar tab', (tester) async {
+        // Use a taller surface to prevent CalendarScreen overflow
+        await tester.binding.setSurfaceSize(const Size(800, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(const Size(800, 600)));
+
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 
@@ -390,6 +394,10 @@ void main() {
       testWidgets('tab navigation preserves state with IndexedStack', (
         tester,
       ) async {
+        // Use a taller surface to prevent CalendarScreen overflow
+        await tester.binding.setSurfaceSize(const Size(800, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(const Size(800, 600)));
+
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 
@@ -544,6 +552,10 @@ void main() {
       });
 
       testWidgets('Calendar tab shows CalendarScreen', (tester) async {
+        // Use a taller surface to prevent CalendarScreen overflow
+        await tester.binding.setSurfaceSize(const Size(800, 1200));
+        addTearDown(() => tester.binding.setSurfaceSize(const Size(800, 600)));
+
         await tester.pumpWidget(buildTestWidget(user: testUser));
         await tester.pumpAndSettle();
 

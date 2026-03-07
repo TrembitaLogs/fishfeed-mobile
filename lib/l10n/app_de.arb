@@ -656,6 +656,7 @@
   },
   "noFeedingsForAquarium": "Keine Fütterungen geplant",
   "selectAquarium": "Aquarium auswählen",
+  "selectAquariumDescription": "Wählen Sie das Aquarium für Ihren Fisch",
   "newAquarium": "Neues Aquarium",
   "editAquarium": "Aquarium bearbeiten",
   "@editAquarium": {
@@ -853,5 +854,51 @@
   "imageDeleteConfirm": "Dieses Foto entfernen?",
   "imageDeleteButton": "Entfernen",
   "imagePlaceholder": "Kein Bild",
-  "imageRetryButton": "Erneut versuchen"
+  "imageRetryButton": "Erneut versuchen",
+
+  "aquarium": "Aquarium",
+  "aquariumDetails": "Aquariumdetails",
+  "fishDetails": "Fischdetails",
+  "volume": "Volumen",
+  "brackish": "Brackwasser",
+  "feedingSchedule": "Fütterungsplan",
+  "notes": "Notizen",
+  "addNotes": "Notizen zu diesem Fisch hinzufügen...",
+  "species": "Art",
+  "added": "Hinzugefügt",
+  "deleteFishConfirm": "Diesen Fisch löschen?",
+  "fishMovedTo": "Verschoben nach {aquariumName}",
+  "@fishMovedTo": {
+    "placeholders": {
+      "aquariumName": {
+        "type": "String"
+      }
+    }
+  },
+  "view": "Anzeigen",
+  "deleteAquariumConfirm": "Dieses Aquarium löschen?",
+  "markAsFedButton": "Als gefüttert markieren",
+  "deleteFishBody": "Dadurch wird der Fisch entfernt und alle zugehörigen Fütterungspläne deaktiviert. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "intervalDaily": "Täglich",
+  "intervalWeekly": "Wöchentlich",
+  "intervalEveryNDays": "Alle {count} Tage",
+  "@intervalEveryNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editFishButton": "Fisch bearbeiten",
+  "scheduledTime": "Geplante Zeit",
+  "foodTypeFlakes": "Flocken",
+  "foodTypePellets": "Pellets",
+  "foodTypeFrozen": "Tiefgekühlt",
+  "foodTypeLive": "Lebendfutter",
+  "foodTypeMixed": "Gemischt",
+  "feedingInterval": "Fütterungsintervall",
+  "feedingTimes": "Fütterungszeiten",
+  "addFeedingTime": "Zeit hinzufügen",
+  "portionHintPlaceholder": "z.B. 2 Prisen, 3 Pellets",
+  "everyOtherDay": "Alle 2 Tage"
 }

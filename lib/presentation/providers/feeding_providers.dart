@@ -4,6 +4,7 @@ import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
@@ -463,6 +464,22 @@ final feedingsGroupedByTimeProvider =
       // Sort by time key
       final sortedKeys = grouped.keys.toList()..sort();
       return Map.fromEntries(sortedKeys.map((k) => MapEntry(k, grouped[k]!)));
+    });
+
+/// Provider for active feeding schedules for a specific fish.
+///
+/// Queries all schedules from Hive via [ScheduleLocalDataSource],
+/// filters to only active schedules for the given fish ID,
+/// and sorts them by time of day.
+///
+/// Usage:
+/// ```dart
+/// final schedules = ref.watch(activeSchedulesForFishProvider('fish-123'));
+/// ```
+final activeSchedulesForFishProvider =
+    Provider.family<List<ScheduleModel>, String>((ref, fishId) {
+      final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
+      return scheduleDs.getByFishId(fishId, activeOnly: true);
     });
 
 /// Aquarium feeding status for the aquarium list screen.

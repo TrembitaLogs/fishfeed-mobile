@@ -11,8 +11,10 @@ import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
 import 'package:fishfeed/presentation/widgets/feeding/feeding_card.dart';
+import 'package:fishfeed/presentation/widgets/sheets/aquarium_card_sheet.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -26,7 +28,7 @@ import 'package:fishfeed/services/sync/sync_service.dart';
 /// - Pull-to-refresh triggering sync + data reload
 /// - Conflict stream listener showing styled toast for family mode
 /// - Staggered entrance animations for cards
-/// - Settings icon in AppBar for aquarium editing
+/// - Tappable aquarium name in AppBar opening aquarium card sheet
 class FeedingCardsScreen extends ConsumerStatefulWidget {
   const FeedingCardsScreen({
     super.key,
@@ -209,14 +211,35 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(aquarium?.name ?? l10n.feedingLabel),
-        actions: [
-          IconButton(
-            onPressed: () =>
-                context.push('/aquarium/${widget.aquariumId}/edit'),
-            icon: const Icon(Icons.settings_outlined),
+        title: GestureDetector(
+          onTap: () => showAquariumCardSheet(
+            context,
+            widget.aquariumId,
+            onDeleted: () {
+              // Navigate back to Home after aquarium deletion from this screen
+              context.go(AppRouter.home);
+            },
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  aquarium?.name ?? l10n.feedingLabel,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 20,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,

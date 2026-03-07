@@ -2876,6 +2876,12 @@ abstract class AppLocalizations {
   /// **'Select Aquarium'**
   String get selectAquarium;
 
+  /// Description for aquarium selection step when adding fish
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which aquarium to add your fish to'**
+  String get selectAquariumDescription;
+
   /// Label for a newly created aquarium
   ///
   /// In en, this message translates to:
@@ -3223,6 +3229,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get imageRetryButton;
+
+  /// Aquarium label
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium'**
+  String get aquarium;
+
+  /// Title for aquarium details screen
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium Details'**
+  String get aquariumDetails;
+
+  /// Title for fish details screen
+  ///
+  /// In en, this message translates to:
+  /// **'Fish Details'**
+  String get fishDetails;
+
+  /// Volume label for aquarium
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volume;
+
+  /// Brackish water type
+  ///
+  /// In en, this message translates to:
+  /// **'Brackish'**
+  String get brackish;
+
+  /// Feeding schedule section title
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Schedule'**
+  String get feedingSchedule;
+
+  /// Notes section title
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// Placeholder text for notes input
+  ///
+  /// In en, this message translates to:
+  /// **'Add notes about this fish...'**
+  String get addNotes;
+
+  /// Species label
+  ///
+  /// In en, this message translates to:
+  /// **'Species'**
+  String get species;
+
+  /// Label for date when item was added
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get added;
+
+  /// Confirmation message for deleting a fish
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this fish?'**
+  String get deleteFishConfirm;
+
+  /// Message when fish is moved to another aquarium
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to {aquariumName}'**
+  String fishMovedTo(String aquariumName);
+
+  /// View action button text
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// Confirmation message for deleting an aquarium
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this aquarium?'**
+  String get deleteAquariumConfirm;
+
+  /// Button text for marking a feeding as completed
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Fed'**
+  String get markAsFedButton;
+
+  /// Body text for delete fish confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the fish and deactivate all its feeding schedules. This action cannot be undone.'**
+  String get deleteFishBody;
+
+  /// Feeding interval label for every day
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get intervalDaily;
+
+  /// Feeding interval label for every 7 days
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get intervalWeekly;
+
+  /// Feeding interval label for every N days
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} days'**
+  String intervalEveryNDays(int count);
+
+  /// Button text for editing a fish
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Fish'**
+  String get editFishButton;
+
+  /// Label for scheduled feeding time
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled Time'**
+  String get scheduledTime;
+
+  /// Food type label for flakes
+  ///
+  /// In en, this message translates to:
+  /// **'Flakes'**
+  String get foodTypeFlakes;
+
+  /// Food type label for pellets
+  ///
+  /// In en, this message translates to:
+  /// **'Pellets'**
+  String get foodTypePellets;
+
+  /// Food type label for frozen food
+  ///
+  /// In en, this message translates to:
+  /// **'Frozen'**
+  String get foodTypeFrozen;
+
+  /// Food type label for live food
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get foodTypeLive;
+
+  /// Food type label for mixed food
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed'**
+  String get foodTypeMixed;
+
+  /// Label for feeding interval selector
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Interval'**
+  String get feedingInterval;
+
+  /// Label for feeding times section
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Times'**
+  String get feedingTimes;
+
+  /// Button label for adding a feeding time
+  ///
+  /// In en, this message translates to:
+  /// **'Add Time'**
+  String get addFeedingTime;
+
+  /// Placeholder text for portion hint input
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2 pinches, 3 pellets'**
+  String get portionHintPlaceholder;
+
+  /// Label for every-other-day feeding interval
+  ///
+  /// In en, this message translates to:
+  /// **'Every 2 Days'**
+  String get everyOtherDay;
 }
 
 class _AppLocalizationsDelegate

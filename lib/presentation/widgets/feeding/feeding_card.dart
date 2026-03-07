@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:fishfeed/l10n/app_localizations.dart';
 
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
-import 'package:fishfeed/presentation/widgets/feeding/feeding_detail_sheet.dart';
+import 'package:fishfeed/presentation/widgets/feeding/fish_card_sheet.dart';
 import 'package:fishfeed/presentation/widgets/feeding/status_indicator.dart';
 
 /// Callback type for feeding status changes.
@@ -17,10 +19,13 @@ typedef FeedingStatusCallback = void Function(String scheduleId);
 /// Card widget displaying a scheduled feeding with swipe and tap actions.
 ///
 /// Features:
-/// - Tap to open detail bottom sheet (all states)
-/// - Swipe right to show confirmation dialog before marking as fed
+/// - Tap to open fish card bottom sheet (all states)
+/// - Swipe right to show confirmation dialog before marking as fed (unfed only)
+/// - Swipe left to navigate to Edit Fish screen (all states)
+/// - When fed: only left swipe (edit) is available
+/// - When unfed: both swipe directions are available
 /// - Card states: pending (normal), fed (green), syncing (cloud icon)
-/// - Haptic feedback on actions
+/// - Haptic feedback on both swipe directions
 class FeedingCard extends StatefulWidget {
   const FeedingCard({
     super.key,
@@ -66,20 +71,33 @@ class _FeedingCardState extends State<FeedingCard>
       widget.feeding.fishName ?? widget.feeding.aquariumName ?? 'Fish';
 
   void _onTap() {
-    // Tap opens detail bottom sheet for ALL states
-    showFeedingDetailSheet(context, widget.feeding);
+    // Tap opens fish card bottom sheet for ALL states
+    showFishCardSheet(context, widget.feeding);
   }
 
   Future<bool> _confirmDismiss(DismissDirection direction) async {
-    // Only handle swipe right (startToEnd)
-    if (widget.feeding.status == EventStatus.fed) return false;
+    if (direction == DismissDirection.startToEnd) {
+      // Swipe right: Mark as Fed
+      if (widget.feeding.status == EventStatus.fed) return false;
 
-    unawaited(HapticFeedback.mediumImpact());
+      unawaited(HapticFeedback.mediumImpact());
 
-    final confirmed = await showConfirmFeedingDialog(context, widget.feeding);
-    if (confirmed && mounted) {
-      widget.onMarkAsFed(widget.feeding.scheduleId);
-      _showSuccessSnackBar(context);
+      final confirmed = await showConfirmFeedingDialog(context, widget.feeding);
+      if (confirmed && mounted) {
+        widget.onMarkAsFed(widget.feeding.scheduleId);
+        _showSuccessSnackBar(context);
+      }
+    } else if (direction == DismissDirection.endToStart) {
+      // Swipe left: Navigate to Edit Fish screen
+      unawaited(HapticFeedback.mediumImpact());
+
+      if (mounted) {
+        unawaited(
+          context.push(
+            AppRouter.editFish.replaceFirst(':fishId', widget.feeding.fishId),
+          ),
+        );
+      }
     }
 
     // Always return false to keep card in list
@@ -118,12 +136,23 @@ class _FeedingCardState extends State<FeedingCard>
       },
       child: Dismissible(
         key: Key('feeding_card_${widget.feeding.scheduleId}'),
-        direction: isFed ? DismissDirection.none : DismissDirection.startToEnd,
+        direction: isFed
+            ? DismissDirection.endToStart
+            : DismissDirection.horizontal,
         confirmDismiss: _confirmDismiss,
         background: _SwipeBackground(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.only(left: 24),
           color: Colors.green,
           icon: Icons.check_circle,
           label: l10n.feedingLabel,
+        ),
+        secondaryBackground: _SwipeBackground(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 24),
+          color: theme.colorScheme.primary,
+          icon: Icons.edit,
+          label: l10n.editFish,
         ),
         child: RepaintBoundary(
           child: _FeedingCardContent(
@@ -137,14 +166,18 @@ class _FeedingCardState extends State<FeedingCard>
   }
 }
 
-/// Background shown during swipe right gesture.
+/// Background shown during swipe gestures (left or right).
 class _SwipeBackground extends StatelessWidget {
   const _SwipeBackground({
+    required this.alignment,
+    required this.padding,
     required this.color,
     required this.icon,
     required this.label,
   });
 
+  final AlignmentGeometry alignment;
+  final EdgeInsetsGeometry padding;
   final Color color;
   final IconData icon;
   final String label;
@@ -157,8 +190,8 @@ class _SwipeBackground extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(12),
       ),
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.only(left: 24),
+      alignment: alignment,
+      padding: padding,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

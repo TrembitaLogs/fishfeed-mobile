@@ -143,7 +143,9 @@ class AquariumModel extends HiveObject {
       'name': name,
       'capacity': capacity,
       'water_type': waterType.name,
-      'photo_key': photoKey,
+      'photo_key': photoKey != null && !photoKey!.startsWith('local://')
+          ? photoKey
+          : null,
     };
   }
 }

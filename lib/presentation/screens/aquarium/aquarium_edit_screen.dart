@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
@@ -30,9 +32,13 @@ class AquariumEditScreen extends ConsumerStatefulWidget {
 
 class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
   late TextEditingController _nameController;
+  late TextEditingController _capacityController;
   bool _isSaving = false;
   bool _isDeleting = false;
   String? _initialName;
+  double? _initialCapacity;
+  WaterType? _initialWaterType;
+  WaterType? _selectedWaterType;
   Timer? _autoSaveTimer;
 
   static const _autoSaveDelay = Duration(seconds: 2);
@@ -41,48 +47,98 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _nameController.addListener(_onNameChanged);
+    _capacityController = TextEditingController();
+    _nameController.addListener(_onFieldChanged);
+    _capacityController.addListener(_onFieldChanged);
   }
 
   @override
   void dispose() {
     _autoSaveTimer?.cancel();
-    _nameController.removeListener(_onNameChanged);
+    _nameController.removeListener(_onFieldChanged);
+    _capacityController.removeListener(_onFieldChanged);
     _nameController.dispose();
+    _capacityController.dispose();
     super.dispose();
   }
 
-  void _onNameChanged() {
+  void _onFieldChanged() {
     // Trigger rebuild to show/hide save button
     setState(() {});
 
     // Schedule auto-save with debounce
     _autoSaveTimer?.cancel();
-    if (_hasNameChanged) {
+    if (_hasChanges) {
       _autoSaveTimer = Timer(_autoSaveDelay, _autoSave);
     }
   }
 
   Future<void> _autoSave() async {
-    if (!_hasNameChanged || _isSaving) return;
-    await _saveName(showSuccessSnackbar: true);
+    if (!_hasChanges || _isSaving) return;
+    await _saveChanges(showSuccessSnackbar: true);
   }
 
-  void _initializeFromAquarium(String name) {
+  void _initializeFromAquarium({
+    required String name,
+    required WaterType waterType,
+    required double? capacity,
+  }) {
     if (_initialName == null) {
       _initialName = name;
       _nameController.text = name;
+      _initialWaterType = waterType;
+      _selectedWaterType = waterType;
+      _initialCapacity = capacity;
+      if (capacity != null) {
+        // Format: remove trailing zeros for clean display
+        _capacityController.text = capacity == capacity.roundToDouble()
+            ? capacity.toInt().toString()
+            : capacity.toString();
+      }
     }
   }
 
   bool get _hasNameChanged =>
       _initialName != null && _nameController.text.trim() != _initialName;
 
-  Future<void> _saveName({bool showSuccessSnackbar = false}) async {
-    if (!_hasNameChanged) return;
+  bool get _hasWaterTypeChanged =>
+      _initialWaterType != null && _selectedWaterType != _initialWaterType;
+
+  bool get _hasCapacityChanged {
+    final currentText = _capacityController.text.trim();
+    if (_initialCapacity == null && currentText.isEmpty) return false;
+    if (_initialCapacity == null && currentText.isNotEmpty) return true;
+    if (_initialCapacity != null && currentText.isEmpty) return true;
+    final parsed = double.tryParse(currentText);
+    return parsed != _initialCapacity;
+  }
+
+  bool get _hasChanges =>
+      _hasNameChanged || _hasWaterTypeChanged || _hasCapacityChanged;
+
+  void _onWaterTypeChanged(WaterType type) {
+    setState(() {
+      _selectedWaterType = type;
+    });
+
+    // Schedule auto-save with debounce
+    _autoSaveTimer?.cancel();
+    if (_hasChanges) {
+      _autoSaveTimer = Timer(_autoSaveDelay, _autoSave);
+    }
+  }
+
+  Future<void> _saveChanges({bool showSuccessSnackbar = false}) async {
+    if (!_hasChanges) return;
 
     final trimmedName = _nameController.text.trim();
     if (trimmedName.isEmpty || trimmedName.length > 50) return;
+
+    // Parse capacity
+    final capacityText = _capacityController.text.trim();
+    final capacity = capacityText.isNotEmpty
+        ? double.tryParse(capacityText)
+        : null;
 
     // Cancel auto-save timer since we're saving now
     _autoSaveTimer?.cancel();
@@ -93,7 +149,12 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
 
     final result = await ref
         .read(userAquariumsProvider.notifier)
-        .updateAquarium(aquariumId: widget.aquariumId, name: trimmedName);
+        .updateAquarium(
+          aquariumId: widget.aquariumId,
+          name: trimmedName,
+          waterType: _selectedWaterType,
+          capacity: capacity,
+        );
 
     if (mounted) {
       setState(() {
@@ -102,6 +163,8 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
 
       if (result != null) {
         _initialName = trimmedName;
+        _initialWaterType = _selectedWaterType;
+        _initialCapacity = capacity;
         // Trigger sync to push changes to server
         unawaited(ref.read(syncServiceProvider).syncNow());
         if (showSuccessSnackbar) {
@@ -287,7 +350,11 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
       );
     }
 
-    _initializeFromAquarium(aquarium.name);
+    _initializeFromAquarium(
+      name: aquarium.name,
+      waterType: aquarium.waterType,
+      capacity: aquarium.capacity,
+    );
 
     // Get fish for this aquarium directly from local storage
     final aquariumFish = ref.watch(fishByAquariumIdProvider(widget.aquariumId));
@@ -317,12 +384,16 @@ class _AquariumEditScreenState extends ConsumerState<AquariumEditScreen> {
                     onRemovePhoto: () => _removePhoto(aquarium.photoKey),
                   ),
                   const SizedBox(height: 24),
-                  // Aquarium Name Section
-                  _NameSection(
-                    controller: _nameController,
+                  // Aquarium Details Section (Name, Water Type, Volume)
+                  _DetailsSection(
+                    nameController: _nameController,
+                    capacityController: _capacityController,
+                    selectedWaterType:
+                        _selectedWaterType ?? WaterType.freshwater,
                     isSaving: _isSaving,
-                    hasChanged: _hasNameChanged,
-                    onSave: () => _saveName(showSuccessSnackbar: true),
+                    hasChanged: _hasChanges,
+                    onSave: () => _saveChanges(showSuccessSnackbar: true),
+                    onWaterTypeChanged: _onWaterTypeChanged,
                   ),
                   const SizedBox(height: 24),
                   // Fish Section
@@ -408,19 +479,25 @@ class _PhotoSection extends StatelessWidget {
   }
 }
 
-/// Section for editing aquarium name.
-class _NameSection extends StatelessWidget {
-  const _NameSection({
-    required this.controller,
+/// Section for editing aquarium details: name, water type, and volume.
+class _DetailsSection extends StatelessWidget {
+  const _DetailsSection({
+    required this.nameController,
+    required this.capacityController,
+    required this.selectedWaterType,
     required this.isSaving,
     required this.hasChanged,
     required this.onSave,
+    required this.onWaterTypeChanged,
   });
 
-  final TextEditingController controller;
+  final TextEditingController nameController;
+  final TextEditingController capacityController;
+  final WaterType selectedWaterType;
   final bool isSaving;
   final bool hasChanged;
   final VoidCallback onSave;
+  final ValueChanged<WaterType> onWaterTypeChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -433,6 +510,7 @@ class _NameSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Aquarium Name
             Text(
               l.aquariumName,
               style: theme.textTheme.titleMedium?.copyWith(
@@ -444,7 +522,7 @@ class _NameSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: AppTextField(
-                    controller: controller,
+                    controller: nameController,
                     hint: l.aquariumNameHint,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => onSave(),
@@ -463,6 +541,59 @@ class _NameSection extends StatelessWidget {
                         : const Icon(Icons.check),
                   ),
                 ],
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Water Type
+            Text(
+              l.waterType,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<WaterType>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: WaterType.freshwater,
+                    label: Text(l.freshwater),
+                  ),
+                  ButtonSegment(
+                    value: WaterType.saltwater,
+                    label: Text(l.saltwater),
+                  ),
+                  ButtonSegment(
+                    value: WaterType.brackish,
+                    label: Text(l.brackish),
+                  ),
+                ],
+                selected: {selectedWaterType},
+                onSelectionChanged: (selected) =>
+                    onWaterTypeChanged(selected.first),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Volume
+            Text(
+              l.volume,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: capacityController,
+              decoration: InputDecoration(hintText: l.volume, suffixText: 'L'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
             ),
           ],

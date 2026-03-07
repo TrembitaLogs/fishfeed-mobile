@@ -1659,6 +1659,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectAquarium => 'Aquarium auswählen';
 
   @override
+  String get selectAquariumDescription =>
+      'Wählen Sie das Aquarium für Ihren Fisch';
+
+  @override
   String get newAquarium => 'Neues Aquarium';
 
   @override
@@ -1867,4 +1871,102 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get imageRetryButton => 'Erneut versuchen';
+
+  @override
+  String get aquarium => 'Aquarium';
+
+  @override
+  String get aquariumDetails => 'Aquariumdetails';
+
+  @override
+  String get fishDetails => 'Fischdetails';
+
+  @override
+  String get volume => 'Volumen';
+
+  @override
+  String get brackish => 'Brackwasser';
+
+  @override
+  String get feedingSchedule => 'Fütterungsplan';
+
+  @override
+  String get notes => 'Notizen';
+
+  @override
+  String get addNotes => 'Notizen zu diesem Fisch hinzufügen...';
+
+  @override
+  String get species => 'Art';
+
+  @override
+  String get added => 'Hinzugefügt';
+
+  @override
+  String get deleteFishConfirm => 'Diesen Fisch löschen?';
+
+  @override
+  String fishMovedTo(String aquariumName) {
+    return 'Verschoben nach $aquariumName';
+  }
+
+  @override
+  String get view => 'Anzeigen';
+
+  @override
+  String get deleteAquariumConfirm => 'Dieses Aquarium löschen?';
+
+  @override
+  String get markAsFedButton => 'Als gefüttert markieren';
+
+  @override
+  String get deleteFishBody =>
+      'Dadurch wird der Fisch entfernt und alle zugehörigen Fütterungspläne deaktiviert. Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get intervalDaily => 'Täglich';
+
+  @override
+  String get intervalWeekly => 'Wöchentlich';
+
+  @override
+  String intervalEveryNDays(int count) {
+    return 'Alle $count Tage';
+  }
+
+  @override
+  String get editFishButton => 'Fisch bearbeiten';
+
+  @override
+  String get scheduledTime => 'Geplante Zeit';
+
+  @override
+  String get foodTypeFlakes => 'Flocken';
+
+  @override
+  String get foodTypePellets => 'Pellets';
+
+  @override
+  String get foodTypeFrozen => 'Tiefgekühlt';
+
+  @override
+  String get foodTypeLive => 'Lebendfutter';
+
+  @override
+  String get foodTypeMixed => 'Gemischt';
+
+  @override
+  String get feedingInterval => 'Fütterungsintervall';
+
+  @override
+  String get feedingTimes => 'Fütterungszeiten';
+
+  @override
+  String get addFeedingTime => 'Zeit hinzufügen';
+
+  @override
+  String get portionHintPlaceholder => 'z.B. 2 Prisen, 3 Pellets';
+
+  @override
+  String get everyOtherDay => 'Alle 2 Tage';
 }

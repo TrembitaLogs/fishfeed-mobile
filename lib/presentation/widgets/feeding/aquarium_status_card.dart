@@ -6,6 +6,7 @@ import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 
 /// Card widget displaying an aquarium with its feeding status.
 ///
@@ -57,17 +58,20 @@ class AquariumStatusCard extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Aquarium icon
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
+              // Aquarium photo
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: EntityImage(
+                  photoKey: aquarium.photoKey,
+                  entityType: 'aquarium',
+                  entityId: aquarium.id,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.water_drop_outlined,
-                  size: 24,
-                  color: theme.colorScheme.primary,
+                  memCacheWidth: 96,
+                  memCacheHeight: 96,
                 ),
               ),
               const SizedBox(width: 16),

@@ -9,6 +9,7 @@ import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/sync_refresh_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -384,6 +385,8 @@ final fishByAquariumIdProvider = Provider.family<List<Fish>, String>((
   ref,
   aquariumId,
 ) {
+  // Re-read from Hive when sync completes (e.g. server-side photo_key update)
+  ref.watch(syncRefreshProvider);
   final fishDs = ref.watch(fishLocalDataSourceProvider);
   final fishModels = fishDs.getFishByAquariumId(aquariumId);
 
@@ -403,6 +406,8 @@ final fishByAquariumIdProvider = Provider.family<List<Fish>, String>((
 /// Loads fish directly from local storage regardless of selected aquarium.
 /// Useful for edit screens that need to find a specific fish.
 final fishByIdProvider = Provider.family<Fish?, String>((ref, fishId) {
+  // Re-read from Hive when sync completes (e.g. server-side photo_key update)
+  ref.watch(syncRefreshProvider);
   final fishDs = ref.watch(fishLocalDataSourceProvider);
   final fishModel = fishDs.getFishById(fishId);
   return fishModel?.toEntity();

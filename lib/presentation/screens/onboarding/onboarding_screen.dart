@@ -16,6 +16,7 @@ import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/add_more_aquarium_step.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/aquarium_name_step.dart';
+import 'package:fishfeed/presentation/screens/onboarding/steps/aquarium_selection_step.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/species_selection_step.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/quantity_step.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/schedule_preview_step.dart';
@@ -90,6 +91,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (widget.isAddMode || widget.isAddAquariumMode) {
         // Reset onboarding state to start fresh for adding new fish/aquarium
         ref.read(onboardingNotifierProvider.notifier).reset();
+
+        // Pre-select aquarium if passed via route parameter
+        if (widget.isAddMode && widget.aquariumId != null) {
+          ref
+              .read(onboardingNotifierProvider.notifier)
+              .setSelectedAquarium(widget.aquariumId!);
+        }
       }
       ref.read(onboardingNotifierProvider.notifier).onComplete = _onComplete;
     });
@@ -130,15 +138,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         );
       }
 
-      // 2. Get aquarium ID (use current aquarium from onboarding or selected aquarium for add mode)
+      // 2. Get aquarium ID
       String? aquariumId;
       if (widget.isAddMode) {
-        // For add mode: prefer explicit aquariumId, then selectedAquarium, then first available
-        aquariumId = widget.aquariumId ?? ref.read(selectedAquariumIdProvider);
-        if (aquariumId == null) {
-          final aquariums = ref.read(userAquariumsProvider).aquariums;
-          aquariumId = aquariums.isNotEmpty ? aquariums.first.id : null;
-        }
+        // For add mode: use aquarium selected in step 0, or explicit param
+        aquariumId = state.selectedAquariumId ?? widget.aquariumId;
       } else {
         // For normal onboarding and addAquariumMode: use currentAquariumId set during aquarium creation
         aquariumId = state.currentAquariumId;
@@ -401,7 +405,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   /// Returns total steps based on the mode.
   int _getTotalSteps() {
-    if (widget.isAddMode) return 3;
+    if (widget.isAddMode)
+      return 4; // Aquarium Selection + Species + Quantity + Schedule
     if (widget.isAddAquariumMode) return 4; // Skip AddMoreAquariumStep
     return OnboardingState.totalSteps;
   }
@@ -426,12 +431,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildStep(int index) {
-    // In add mode, skip aquarium creation step (start from species selection)
+    // In add mode: aquarium selection → species → quantity → schedule
     if (widget.isAddMode) {
       return switch (index) {
-        0 => const SpeciesSelectionStep(),
-        1 => const QuantityStep(),
-        2 => const SchedulePreviewStep(),
+        0 => const AquariumSelectionStep(),
+        1 => const SpeciesSelectionStep(),
+        2 => const QuantityStep(),
+        3 => const SchedulePreviewStep(),
         _ => const SizedBox.shrink(),
       };
     }
@@ -464,11 +470,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   /// to check different conditions based on the actual step being shown.
   bool _canProceed(OnboardingState state) {
     if (widget.isAddMode) {
-      // Add mode: 0=Species, 1=Quantity, 2=Schedule
+      // Add mode: 0=Aquarium, 1=Species, 2=Quantity, 3=Schedule
       return switch (state.currentStep) {
-        0 => state.selectedSpecies.isNotEmpty,
-        1 => state.selectedSpecies.every((s) => s.quantity > 0),
-        2 => state.generatedSchedule.isNotEmpty,
+        0 => state.selectedAquariumId != null,
+        1 => state.selectedSpecies.isNotEmpty,
+        2 => state.selectedSpecies.every((s) => s.quantity > 0),
+        3 => state.generatedSchedule.isNotEmpty,
         _ => false,
       };
     }
@@ -597,6 +604,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final aquariumsNotifier = ref.read(userAquariumsProvider.notifier);
       final aquarium = await aquariumsNotifier.createAquarium(
         name: aquariumName,
+        waterType: state.currentWaterType,
+        capacity: state.currentCapacity,
       );
 
       if (aquarium != null) {

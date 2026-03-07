@@ -8,6 +8,8 @@ import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
@@ -50,6 +52,14 @@ class TestSpeciesListNotifier extends SpeciesListNotifier {
   }
 }
 
+const _testAquariumId = 'test-aquarium-id';
+final _testAquarium = Aquarium(
+  id: _testAquariumId,
+  userId: 'test-user',
+  name: 'Test Aquarium',
+  createdAt: DateTime(2024),
+);
+
 void main() {
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
@@ -62,8 +72,7 @@ void main() {
 
   Widget createWidgetUnderTest({
     OnboardingNotifier? notifier,
-    bool isAddMode =
-        true, // Use add mode to skip aquarium step and test species selection
+    bool isAddMode = true,
   }) {
     return ProviderScope(
       overrides: [
@@ -71,6 +80,8 @@ void main() {
           onboardingNotifierProvider.overrideWith((_) => notifier),
         // Override speciesListProvider to avoid API calls in tests
         speciesListProvider.overrideWith((_) => TestSpeciesListNotifier()),
+        // Override aquariumsListProvider for aquarium selection and name steps
+        aquariumsListProvider.overrideWithValue([_testAquarium]),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -81,6 +92,21 @@ void main() {
     );
   }
 
+  /// Pumps widget, waits for reset(), then navigates to species step (step 1).
+  /// Returns the notifier for further configuration.
+  Future<OnboardingNotifier> goToSpeciesStep(WidgetTester tester) async {
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(OnboardingScreen)),
+    );
+    final notifier = container.read(onboardingNotifierProvider.notifier);
+    notifier.setSelectedAquarium(_testAquariumId);
+    notifier.goToStep(1);
+    await tester.pumpAndSettle();
+    return notifier;
+  }
+
   group('OnboardingScreen', () {
     testWidgets('should display progress indicator', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
@@ -89,14 +115,18 @@ void main() {
       expect(find.byType(Expanded), findsAtLeast(3));
     });
 
-    testWidgets('should display species selection step initially', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets(
+      'should display aquarium selection step initially in add mode',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
 
-      expect(find.text('What fish do you have?'), findsOneWidget);
-      expect(find.text('Select up to 3 species'), findsOneWidget);
-    });
+        expect(find.text('Select Aquarium'), findsOneWidget);
+        expect(
+          find.text('Choose which aquarium to add your fish to'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('should display Next button', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
@@ -129,10 +159,9 @@ void main() {
     testWidgets('should enable Next button when species is selected', (
       tester,
     ) async {
-      final notifier = OnboardingNotifier();
+      final notifier = await goToSpeciesStep(tester);
       notifier.addSpecies(SpeciesData.guppy);
-
-      await tester.pumpWidget(createWidgetUnderTest(notifier: notifier));
+      await tester.pumpAndSettle();
 
       final nextButton = find.widgetWithText(FilledButton, 'Next');
       final button = tester.widget<FilledButton>(nextButton);
@@ -150,8 +179,9 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       expect(find.text('How many fish?'), findsOneWidget);
@@ -166,6 +196,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.goToStep(1);
       await tester.pumpAndSettle();
@@ -182,8 +213,9 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Verify we're on quantity step
@@ -207,6 +239,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -217,7 +250,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // In add mode, button says "Done" not "Get Started"
@@ -258,7 +291,7 @@ void main() {
 
   group('SpeciesSelectionStep', () {
     testWidgets('should display list of popular species', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       // Check that at least first two species in grid are visible
       // (Grid shows 2 columns, so at least 2 should be visible)
@@ -269,13 +302,13 @@ void main() {
     });
 
     testWidgets('should display "I don\'t know" option', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       expect(find.text("I don't know my species"), findsOneWidget);
     });
 
     testWidgets('should toggle species selection on tap', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       // Find GridView and tap on first visible item
       final gridFinder = find.byType(GridView);
@@ -294,26 +327,24 @@ void main() {
     });
 
     testWidgets('should allow multiple species selection', (tester) async {
-      // Use programmatic selection to test chip display
-      final notifier = OnboardingNotifier();
+      final notifier = await goToSpeciesStep(tester);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.addSpecies(SpeciesData.neonTetra);
-
-      await tester.pumpWidget(createWidgetUnderTest(notifier: notifier));
+      await tester.pumpAndSettle();
 
       // Check that two selections are displayed as chips
       expect(find.byType(Chip), findsNWidgets(2));
     });
 
     testWidgets('should display search field', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       expect(find.byIcon(Icons.search), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
     });
 
     testWidgets('should filter species by search query', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       // Initially Guppy should be visible (first in grid)
       expect(find.text('Guppy'), findsOneWidget);
@@ -329,11 +360,9 @@ void main() {
     });
 
     testWidgets('should show selected species as chips', (tester) async {
-      // Use programmatic selection
-      final notifier = OnboardingNotifier();
+      final notifier = await goToSpeciesStep(tester);
       notifier.addSpecies(SpeciesData.guppy);
-
-      await tester.pumpWidget(createWidgetUnderTest(notifier: notifier));
+      await tester.pumpAndSettle();
 
       // Chip should appear
       expect(find.byType(Chip), findsOneWidget);
@@ -350,11 +379,9 @@ void main() {
     testWidgets('should remove species when chip delete is tapped', (
       tester,
     ) async {
-      // Pre-populate with a species
-      final notifier = OnboardingNotifier();
+      final notifier = await goToSpeciesStep(tester);
       notifier.addSpecies(SpeciesData.guppy);
-
-      await tester.pumpWidget(createWidgetUnderTest(notifier: notifier));
+      await tester.pumpAndSettle();
 
       expect(find.byType(Chip), findsOneWidget);
 
@@ -375,6 +402,8 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
+      notifier.goToStep(1);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.addSpecies(SpeciesData.betta);
       notifier.addSpecies(SpeciesData.goldfish);
@@ -395,7 +424,7 @@ void main() {
     testWidgets(
       'should select default species when "I don\'t know" is tapped',
       (tester) async {
-        await tester.pumpWidget(createWidgetUnderTest());
+        await goToSpeciesStep(tester);
 
         // Tap "I don't know" option
         await tester.tap(find.text("I don't know my species"));
@@ -416,7 +445,7 @@ void main() {
     testWidgets('should show "No species found" when search has no results', (
       tester,
     ) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       // Enter search query with no matches
       await tester.enterText(find.byType(TextField), 'xyz123');
@@ -426,7 +455,7 @@ void main() {
     });
 
     testWidgets('should display species in grid view', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await goToSpeciesStep(tester);
 
       expect(find.byType(GridView), findsOneWidget);
     });
@@ -442,9 +471,10 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.addSpecies(SpeciesData.betta);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       expect(find.text('Guppy'), findsOneWidget);
@@ -461,8 +491,9 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Initial quantity should be 1
@@ -482,8 +513,9 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Tap + button
@@ -502,9 +534,10 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.updateQuantity('guppy', 5);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Initial should be 5
@@ -526,8 +559,9 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Find the decrement button and verify it's disabled
@@ -547,9 +581,10 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.updateQuantity('guppy', 50);
-      notifier.goToStep(1);
+      notifier.goToStep(2);
       await tester.pumpAndSettle();
 
       // Verify quantity is 50
@@ -574,6 +609,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -584,7 +620,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       expect(find.text('Your feeding schedule'), findsOneWidget);
@@ -599,6 +635,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -609,7 +646,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Schedule should be generated - read the state after navigation
@@ -627,6 +664,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.updateQuantity('guppy', 5);
       notifier.setGeneratedSchedule([
@@ -638,7 +676,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Summary should show total fish count
@@ -657,6 +695,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -667,7 +706,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Summary should show feedings per day (guppy = twice daily = 2)
@@ -684,6 +723,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -694,7 +734,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Edit icons should be displayed for feeding times
@@ -710,6 +750,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -720,7 +761,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Feeding times should be displayed
@@ -737,6 +778,7 @@ void main() {
         tester.element(find.byType(OnboardingScreen)),
       );
       final notifier = container.read(onboardingNotifierProvider.notifier);
+      notifier.setSelectedAquarium(_testAquariumId);
       notifier.addSpecies(SpeciesData.guppy);
       notifier.setGeneratedSchedule([
         GeneratedScheduleEntry(
@@ -747,7 +789,7 @@ void main() {
           portionGrams: 0.3,
         ),
       ]);
-      notifier.goToStep(2);
+      notifier.goToStep(3);
       await tester.pumpAndSettle();
 
       // Food type should be displayed

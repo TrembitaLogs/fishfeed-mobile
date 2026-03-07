@@ -2219,6 +2219,10 @@
   "@selectAquarium": {
     "description": "Title for aquarium selection"
   },
+  "selectAquariumDescription": "Choose which aquarium to add your fish to",
+  "@selectAquariumDescription": {
+    "description": "Description for aquarium selection step when adding fish"
+  },
   "newAquarium": "New Aquarium",
   "@newAquarium": {
     "description": "Label for a newly created aquarium"
@@ -2508,5 +2512,140 @@
   "imageRetryButton": "Retry",
   "@imageRetryButton": {
     "description": "Button label for retrying a failed image upload"
+  },
+
+  "aquarium": "Aquarium",
+  "@aquarium": {
+    "description": "Aquarium label"
+  },
+  "aquariumDetails": "Aquarium Details",
+  "@aquariumDetails": {
+    "description": "Title for aquarium details screen"
+  },
+  "fishDetails": "Fish Details",
+  "@fishDetails": {
+    "description": "Title for fish details screen"
+  },
+  "volume": "Volume",
+  "@volume": {
+    "description": "Volume label for aquarium"
+  },
+  "brackish": "Brackish",
+  "@brackish": {
+    "description": "Brackish water type"
+  },
+  "feedingSchedule": "Feeding Schedule",
+  "@feedingSchedule": {
+    "description": "Feeding schedule section title"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes section title"
+  },
+  "addNotes": "Add notes about this fish...",
+  "@addNotes": {
+    "description": "Placeholder text for notes input"
+  },
+  "species": "Species",
+  "@species": {
+    "description": "Species label"
+  },
+  "added": "Added",
+  "@added": {
+    "description": "Label for date when item was added"
+  },
+  "deleteFishConfirm": "Delete this fish?",
+  "@deleteFishConfirm": {
+    "description": "Confirmation message for deleting a fish"
+  },
+  "fishMovedTo": "Moved to {aquariumName}",
+  "@fishMovedTo": {
+    "description": "Message when fish is moved to another aquarium",
+    "placeholders": {
+      "aquariumName": {
+        "type": "String"
+      }
+    }
+  },
+  "view": "View",
+  "@view": {
+    "description": "View action button text"
+  },
+  "deleteAquariumConfirm": "Delete this aquarium?",
+  "@deleteAquariumConfirm": {
+    "description": "Confirmation message for deleting an aquarium"
+  },
+  "markAsFedButton": "Mark as Fed",
+  "@markAsFedButton": {
+    "description": "Button text for marking a feeding as completed"
+  },
+  "deleteFishBody": "This will remove the fish and deactivate all its feeding schedules. This action cannot be undone.",
+  "@deleteFishBody": {
+    "description": "Body text for delete fish confirmation dialog"
+  },
+  "intervalDaily": "Daily",
+  "@intervalDaily": {
+    "description": "Feeding interval label for every day"
+  },
+  "intervalWeekly": "Weekly",
+  "@intervalWeekly": {
+    "description": "Feeding interval label for every 7 days"
+  },
+  "intervalEveryNDays": "Every {count} days",
+  "@intervalEveryNDays": {
+    "description": "Feeding interval label for every N days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editFishButton": "Edit Fish",
+  "@editFishButton": {
+    "description": "Button text for editing a fish"
+  },
+  "scheduledTime": "Scheduled Time",
+  "@scheduledTime": {
+    "description": "Label for scheduled feeding time"
+  },
+  "foodTypeFlakes": "Flakes",
+  "@foodTypeFlakes": {
+    "description": "Food type label for flakes"
+  },
+  "foodTypePellets": "Pellets",
+  "@foodTypePellets": {
+    "description": "Food type label for pellets"
+  },
+  "foodTypeFrozen": "Frozen",
+  "@foodTypeFrozen": {
+    "description": "Food type label for frozen food"
+  },
+  "foodTypeLive": "Live",
+  "@foodTypeLive": {
+    "description": "Food type label for live food"
+  },
+  "foodTypeMixed": "Mixed",
+  "@foodTypeMixed": {
+    "description": "Food type label for mixed food"
+  },
+  "feedingInterval": "Feeding Interval",
+  "@feedingInterval": {
+    "description": "Label for feeding interval selector"
+  },
+  "feedingTimes": "Feeding Times",
+  "@feedingTimes": {
+    "description": "Label for feeding times section"
+  },
+  "addFeedingTime": "Add Time",
+  "@addFeedingTime": {
+    "description": "Button label for adding a feeding time"
+  },
+  "portionHintPlaceholder": "e.g. 2 pinches, 3 pellets",
+  "@portionHintPlaceholder": {
+    "description": "Placeholder text for portion hint input"
+  },
+  "everyOtherDay": "Every 2 Days",
+  "@everyOtherDay": {
+    "description": "Label for every-other-day feeding interval"
   }
 }

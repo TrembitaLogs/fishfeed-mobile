@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
 
 void main() {
@@ -46,17 +48,24 @@ void main() {
   late bool? dialogResult;
 
   Widget buildTestWidget(ComputedFeedingEvent feeding) {
-    return MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () async {
-              dialogResult = await showConfirmFeedingDialog(context, feeding);
-            },
-            child: const Text('Open'),
+    return ProviderScope(
+      overrides: [
+        // Return null so the dialog shows placeholder icon instead of
+        // attempting to load fish photo from Hive/network.
+        fishByIdProvider.overrideWith((ref, fishId) => null),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                dialogResult = await showConfirmFeedingDialog(context, feeding);
+              },
+              child: const Text('Open'),
+            ),
           ),
         ),
       ),
