@@ -14,31 +14,31 @@ class AppTheme {
 
   // Primary colors - Deep blue (fish/ocean theme)
   static const Color _primaryLight = Color(0xFF1565C0);
-  static const Color _primaryDark = Color(0xFF64B5F6);
+  static const Color _primaryDark = Color(0xFF88C0D0); // Nord Frost cyan
 
   // Secondary colors - Sea green (aquatic theme)
   static const Color _secondaryLight = Color(0xFF00796B);
-  static const Color _secondaryDark = Color(0xFF4DB6AC);
+  static const Color _secondaryDark = Color(0xFFA3BE8C); // Nord Aurora green
 
   // Error colors
   static const Color _errorLight = Color(0xFFD32F2F);
-  static const Color _errorDark = Color(0xFFEF5350);
+  static const Color _errorDark = Color(0xFFBF616A); // Nord Aurora red
 
   // Surface colors for light theme
   static const Color _surfaceLight = Color(0xFFFFFFFF);
   static const Color _backgroundLight = Color(0xFFF5F5F5);
   static const Color _onSurfaceLight = Color(0xFF1C1B1F);
 
-  // Surface colors for dark theme
-  static const Color _surfaceDark = Color(0xFF1E1E1E);
-  static const Color _backgroundDark = Color(0xFF121212);
-  static const Color _onSurfaceDark = Color(0xFFF5F5F5);
+  // Surface colors for dark theme (Nord Polar Night)
+  static const Color _surfaceDark = Color(0xFF3B4252);
+  static const Color _backgroundDark = Color(0xFF2E3440);
+  static const Color _onSurfaceDark = Color(0xFFECEFF4); // Nord Snow Storm
 
   // On-primary/secondary colors (text/icons on colored backgrounds)
   static const Color _onPrimaryLight = Color(0xFFFFFFFF);
-  static const Color _onPrimaryDark = Color(0xFF001D36);
+  static const Color _onPrimaryDark = Color(0xFF2E3440); // Nord Polar Night
   static const Color _onSecondaryLight = Color(0xFFFFFFFF);
-  static const Color _onSecondaryDark = Color(0xFF00201D);
+  static const Color _onSecondaryDark = Color(0xFF2E3440); // Nord Polar Night
 
   /// Light theme configuration
   static ThemeData get lightTheme {
@@ -76,27 +76,27 @@ class AppTheme {
     const colorScheme = ColorScheme.dark(
       primary: _primaryDark,
       onPrimary: _onPrimaryDark,
-      primaryContainer: Color(0xFF004A77),
-      onPrimaryContainer: Color(0xFFD1E4FF),
+      primaryContainer: Color(0xFF5E81AC), // Nord Frost blue
+      onPrimaryContainer: Color(0xFFECEFF4), // Nord Snow Storm
       secondary: _secondaryDark,
       onSecondary: _onSecondaryDark,
-      secondaryContainer: Color(0xFF005048),
-      onSecondaryContainer: Color(0xFFA7F3EC),
-      tertiary: Color(0xFFF5BE48),
-      onTertiary: Color(0xFF412D00),
-      tertiaryContainer: Color(0xFF5E4200),
-      onTertiaryContainer: Color(0xFFFFDEA6),
+      secondaryContainer: Color(0xFF4C566A), // Nord Polar Night lightest
+      onSecondaryContainer: Color(0xFFD8DEE9), // Nord Snow Storm
+      tertiary: Color(0xFFEBCB8B), // Nord Aurora yellow
+      onTertiary: Color(0xFF2E3440),
+      tertiaryContainer: Color(0xFF434C5E), // Nord Polar Night
+      onTertiaryContainer: Color(0xFFECEFF4),
       error: _errorDark,
-      onError: Color(0xFF601410),
+      onError: Color(0xFF2E3440),
       surface: _surfaceDark,
       onSurface: _onSurfaceDark,
-      outline: Color(0xFF938F99),
-      outlineVariant: Color(0xFF49454F),
+      outline: Color(0xFF4C566A), // Nord Polar Night lightest
+      outlineVariant: Color(0xFF434C5E), // Nord Polar Night
       shadow: Colors.black,
       scrim: Colors.black,
-      inverseSurface: Color(0xFFE6E1E5),
-      onInverseSurface: Color(0xFF313033),
-      inversePrimary: _primaryLight,
+      inverseSurface: Color(0xFFECEFF4),
+      onInverseSurface: Color(0xFF2E3440),
+      inversePrimary: Color(0xFF5E81AC), // Nord Frost blue
     );
 
     return _buildTheme(colorScheme, Brightness.dark);

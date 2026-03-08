@@ -319,11 +319,17 @@ class AchievementUseCase {
       case AchievementType.weekWithoutMiss:
         return stats.consecutiveDaysWithoutMiss >= 7;
 
+      case AchievementType.feedings50:
+        return stats.totalFeedings >= 50;
+
       case AchievementType.feedings100:
         return stats.totalFeedings >= 100;
 
       case AchievementType.feedings500:
         return stats.totalFeedings >= 500;
+
+      case AchievementType.feedings1000:
+        return stats.totalFeedings >= 1000;
     }
   }
 
@@ -353,8 +359,10 @@ class AchievementUseCase {
         current = stats.consecutiveDaysWithoutMiss.toDouble();
         break;
 
+      case AchievementType.feedings50:
       case AchievementType.feedings100:
       case AchievementType.feedings500:
+      case AchievementType.feedings1000:
         current = stats.totalFeedings.toDouble();
         break;
     }

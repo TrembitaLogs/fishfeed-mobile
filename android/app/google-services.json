@@ -1,26 +1,59 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "fishfeed-placeholder",
-    "storage_bucket": "fishfeed-placeholder.appspot.com"
+    "project_number": "293378189651",
+    "project_id": "fishfeed-4256f",
+    "storage_bucket": "fishfeed-4256f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:293378189651:android:2fadd8a3e6330ccb2619a6",
         "android_client_info": {
           "package_name": "com.fishfeed.fishfeed"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "293378189651-6jm011k9p6ckma4ibft3cis06pu5j3v8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fishfeed.fishfeed",
+            "certificate_hash": "bfe05a1ecd3831bd082802cfedabd88b70a95bb1"
+          }
+        },
+        {
+          "client_id": "293378189651-7mnah09ui32v38vls9htblg3g21dvetq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fishfeed.fishfeed",
+            "certificate_hash": "c94508b42a1c4174652d387402c759a44e3e5ef7"
+          }
+        },
+        {
+          "client_id": "293378189651-gst0mn9drktjiqqc22gdq2llm1mm7nrs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "PLACEHOLDER_API_KEY_REPLACE_WITH_REAL"
+          "current_key": "AIzaSyCh_UcVyJ61g-YjFjVj3AgW8CuxsASoFEE"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "293378189651-gst0mn9drktjiqqc22gdq2llm1mm7nrs.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "293378189651-p8v14esb6gdjqs8i1gm03fi0ve5rbv6g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fishfeed.mobile"
+              }
+            }
+          ]
         }
       }
     }

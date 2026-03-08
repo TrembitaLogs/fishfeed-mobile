@@ -255,7 +255,7 @@ void main() {
         verify(
           () => mockDio.post<Map<String, dynamic>>(
             '/auth/oauth',
-            data: {'provider': 'google', 'id_token': 'google-id-token-123'},
+            data: {'provider': 'google', 'token': 'google-id-token-123'},
           ),
         ).called(1);
       });

@@ -1280,6 +1280,10 @@
   "@sharePerfectWeek": {
     "description": "Share text for perfect week achievement"
   },
+  "shareFeedings50": "Dedicated caretaker! 🐠 50 feedings completed in FishFeed! 🎉",
+  "@shareFeedings50": {
+    "description": "Share text for 50 feedings achievement"
+  },
   "shareFeedings100": "A hundred feedings! 🎯 Fed my fish 100 times in FishFeed! 🐟",
   "@shareFeedings100": {
     "description": "Share text for 100 feedings achievement"
@@ -1287,6 +1291,10 @@
   "shareFeedings500": "Feeding master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆",
   "@shareFeedings500": {
     "description": "Share text for 500 feedings achievement"
+  },
+  "shareFeedings1000": "Fish whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎",
+  "@shareFeedings1000": {
+    "description": "Share text for 1000 feedings achievement"
   },
   "shareStreakLong": "Incredible! 💎 My streak in {appName}: {days} days! 🔥🏆",
   "@shareStreakLong": {
@@ -1780,6 +1788,14 @@
   "@achievementFeedings100Desc": {
     "description": "100 feedings achievement description"
   },
+  "achievementFeedings50": "Dedicated Caretaker",
+  "@achievementFeedings50": {
+    "description": "50 feedings achievement title"
+  },
+  "achievementFeedings50Desc": "Complete 50 total feedings",
+  "@achievementFeedings50Desc": {
+    "description": "50 feedings achievement description"
+  },
   "achievementFeedings500": "Feeding Master",
   "@achievementFeedings500": {
     "description": "500 feedings achievement title"
@@ -1787,6 +1803,14 @@
   "achievementFeedings500Desc": "Complete 500 total feedings",
   "@achievementFeedings500Desc": {
     "description": "500 feedings achievement description"
+  },
+  "achievementFeedings1000": "Fish Whisperer",
+  "@achievementFeedings1000": {
+    "description": "1000 feedings achievement title"
+  },
+  "achievementFeedings1000Desc": "Complete 1000 total feedings",
+  "@achievementFeedings1000Desc": {
+    "description": "1000 feedings achievement description"
   },
   "achievementLocked": "Locked",
   "@achievementLocked": {

@@ -74,28 +74,28 @@ void main() {
         expect(theme.useMaterial3, true);
       });
 
-      test('has correct primary color (lighter blue for dark mode)', () {
+      test('has correct primary color (Nord Frost cyan for dark mode)', () {
         final theme = AppTheme.darkTheme;
 
-        expect(theme.colorScheme.primary, const Color(0xFF64B5F6));
+        expect(theme.colorScheme.primary, const Color(0xFF88C0D0));
       });
 
-      test('has correct secondary color (lighter green for dark mode)', () {
+      test('has correct secondary color (Nord Aurora green for dark mode)', () {
         final theme = AppTheme.darkTheme;
 
-        expect(theme.colorScheme.secondary, const Color(0xFF4DB6AC));
+        expect(theme.colorScheme.secondary, const Color(0xFFA3BE8C));
       });
 
-      test('has dark surface color', () {
+      test('has dark surface color (Nord Polar Night)', () {
         final theme = AppTheme.darkTheme;
 
-        expect(theme.colorScheme.surface, const Color(0xFF1E1E1E));
+        expect(theme.colorScheme.surface, const Color(0xFF3B4252));
       });
 
-      test('has correct error color', () {
+      test('has correct error color (Nord Aurora red)', () {
         final theme = AppTheme.darkTheme;
 
-        expect(theme.colorScheme.error, const Color(0xFFEF5350));
+        expect(theme.colorScheme.error, const Color(0xFFBF616A));
       });
     });
 
@@ -187,7 +187,7 @@ void main() {
         final theme = Theme.of(context);
 
         expect(theme.brightness, Brightness.dark);
-        expect(theme.colorScheme.primary, const Color(0xFF64B5F6));
+        expect(theme.colorScheme.primary, const Color(0xFF88C0D0));
       });
 
       testWidgets('theme switching works correctly', (

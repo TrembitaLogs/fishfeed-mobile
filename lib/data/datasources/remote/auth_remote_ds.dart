@@ -100,7 +100,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       AuthEndpoints.oauth,
-      data: {'provider': provider, 'id_token': idToken},
+      data: {'provider': provider, 'token': idToken},
     );
 
     return AuthResponseDto.fromJson(response.data!);

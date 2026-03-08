@@ -967,12 +967,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Perfect week! ✨ No missed feedings in FishFeed! 🐟';
 
   @override
+  String get shareFeedings50 =>
+      'Dedicated caretaker! 🐠 50 feedings completed in FishFeed! 🎉';
+
+  @override
   String get shareFeedings100 =>
       'A hundred feedings! 🎯 Fed my fish 100 times in FishFeed! 🐟';
 
   @override
   String get shareFeedings500 =>
       'Feeding master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆';
+
+  @override
+  String get shareFeedings1000 =>
+      'Fish whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎';
 
   @override
   String shareStreakLong(String appName, int days) {
@@ -1317,10 +1325,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get achievementFeedings100Desc => 'Complete 100 total feedings';
 
   @override
+  String get achievementFeedings50 => 'Dedicated Caretaker';
+
+  @override
+  String get achievementFeedings50Desc => 'Complete 50 total feedings';
+
+  @override
   String get achievementFeedings500 => 'Feeding Master';
 
   @override
   String get achievementFeedings500Desc => 'Complete 500 total feedings';
+
+  @override
+  String get achievementFeedings1000 => 'Fish Whisperer';
+
+  @override
+  String get achievementFeedings1000Desc => 'Complete 1000 total feedings';
 
   @override
   String get achievementLocked => 'Locked';

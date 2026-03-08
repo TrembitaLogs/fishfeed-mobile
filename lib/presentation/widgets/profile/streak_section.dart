@@ -47,17 +47,20 @@ class _StreakSectionContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
     final hasGlow = streak.currentStreak >= 7;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        gradient: _buildGradient(streak.currentStreak),
+        gradient: _buildGradient(streak.currentStreak, isDark),
         borderRadius: BorderRadius.circular(16),
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.4),
+                  color: isDark
+                      ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                      : Colors.orange.withValues(alpha: 0.4),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
@@ -124,22 +127,45 @@ class _StreakSectionContent extends StatelessWidget {
     );
   }
 
-  LinearGradient _buildGradient(int streakCount) {
+  LinearGradient _buildGradient(int streakCount, bool isDark) {
+    if (!isDark) {
+      // Light mode: warm fire gradients
+      if (streakCount >= 30) {
+        return LinearGradient(
+          colors: [Colors.red.shade400, Colors.orange.shade500],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      } else if (streakCount >= 7) {
+        return LinearGradient(
+          colors: [Colors.orange.shade400, Colors.amber.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      } else {
+        return LinearGradient(
+          colors: [Colors.amber.shade300, Colors.amber.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      }
+    }
+    // Dark mode: Nord Polar Night gradients
     if (streakCount >= 30) {
-      return LinearGradient(
-        colors: [Colors.red.shade400, Colors.orange.shade500],
+      return const LinearGradient(
+        colors: [Color(0xFF5E81AC), Color(0xFF81A1C1)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else if (streakCount >= 7) {
-      return LinearGradient(
-        colors: [Colors.orange.shade400, Colors.amber.shade400],
+      return const LinearGradient(
+        colors: [Color(0xFF434C5E), Color(0xFF4C566A)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else {
-      return LinearGradient(
-        colors: [Colors.amber.shade300, Colors.amber.shade100],
+      return const LinearGradient(
+        colors: [Color(0xFF3B4252), Color(0xFF434C5E)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
@@ -183,11 +209,14 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: isDark
+            ? const Color(0xFFECEFF4).withValues(alpha: 0.07)
+            : Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -232,12 +261,16 @@ class _FreezeCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () => _showFreezeInfoDialog(context),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
+          color: isDark
+              ? const Color(0xFFECEFF4).withValues(alpha: 0.07)
+              : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -390,10 +423,14 @@ class _MilestoneBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: isDark
+            ? const Color(0xFFECEFF4).withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -466,10 +503,12 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: isDark ? const Color(0xFF434C5E) : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -495,6 +534,7 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
   }
 
   Widget _buildShimmerBox({required double height, required double width}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -506,11 +546,17 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
             gradient: LinearGradient(
               begin: Alignment(_animation.value - 1, 0),
               end: Alignment(_animation.value, 0),
-              colors: [
-                Colors.grey.shade300,
-                Colors.grey.shade100,
-                Colors.grey.shade300,
-              ],
+              colors: isDark
+                  ? const [
+                      Color(0xFF4C566A),
+                      Color(0xFF3B4252),
+                      Color(0xFF4C566A),
+                    ]
+                  : [
+                      Colors.grey.shade300,
+                      Colors.grey.shade100,
+                      Colors.grey.shade300,
+                    ],
             ),
           ),
         );
@@ -519,6 +565,7 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
   }
 
   Widget _buildShimmerCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -529,11 +576,17 @@ class _StreakSectionShimmerState extends State<_StreakSectionShimmer>
             gradient: LinearGradient(
               begin: Alignment(_animation.value - 1, 0),
               end: Alignment(_animation.value, 0),
-              colors: [
-                Colors.grey.shade300,
-                Colors.grey.shade100,
-                Colors.grey.shade300,
-              ],
+              colors: isDark
+                  ? const [
+                      Color(0xFF4C566A),
+                      Color(0xFF3B4252),
+                      Color(0xFF4C566A),
+                    ]
+                  : [
+                      Colors.grey.shade300,
+                      Colors.grey.shade100,
+                      Colors.grey.shade300,
+                    ],
             ),
           ),
         );

@@ -231,10 +231,14 @@ class ShareService {
         return 'Legendary streak! 💎 100 days of feedings without misses in FishFeed! 🏆🔥';
       case AchievementType.weekWithoutMiss:
         return 'Perfect Week! ✨ No missed feedings in FishFeed! 🐟';
+      case AchievementType.feedings50:
+        return 'Dedicated Caretaker! 🐠 50 feedings completed in FishFeed! 🎉';
       case AchievementType.feedings100:
         return '100 feedings! 🎯 Fed my fish 100 times in FishFeed! 🐟';
       case AchievementType.feedings500:
         return 'Feeding Master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆';
+      case AchievementType.feedings1000:
+        return 'Fish Whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎';
     }
   }
 

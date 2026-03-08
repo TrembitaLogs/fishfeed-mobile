@@ -193,7 +193,7 @@ void main() {
       final theme = Theme.of(context);
 
       expect(theme.brightness, Brightness.dark);
-      expect(theme.colorScheme.primary, const Color(0xFF64B5F6));
+      expect(theme.colorScheme.primary, const Color(0xFF88C0D0));
 
       // Reset
       tester.view.platformDispatcher.clearPlatformBrightnessTestValue();

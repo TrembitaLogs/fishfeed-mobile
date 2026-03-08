@@ -1700,6 +1700,12 @@ abstract class AppLocalizations {
   /// **'Perfect week! ✨ No missed feedings in FishFeed! 🐟'**
   String get sharePerfectWeek;
 
+  /// Share text for 50 feedings achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Dedicated caretaker! 🐠 50 feedings completed in FishFeed! 🎉'**
+  String get shareFeedings50;
+
   /// Share text for 100 feedings achievement
   ///
   /// In en, this message translates to:
@@ -1711,6 +1717,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Feeding master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆'**
   String get shareFeedings500;
+
+  /// Share text for 1000 feedings achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Fish whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎'**
+  String get shareFeedings1000;
 
   /// Share text for long streak (50+)
   ///
@@ -2366,6 +2378,18 @@ abstract class AppLocalizations {
   /// **'Complete 100 total feedings'**
   String get achievementFeedings100Desc;
 
+  /// 50 feedings achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Dedicated Caretaker'**
+  String get achievementFeedings50;
+
+  /// 50 feedings achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 50 total feedings'**
+  String get achievementFeedings50Desc;
+
   /// 500 feedings achievement title
   ///
   /// In en, this message translates to:
@@ -2377,6 +2401,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete 500 total feedings'**
   String get achievementFeedings500Desc;
+
+  /// 1000 feedings achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Fish Whisperer'**
+  String get achievementFeedings1000;
+
+  /// 1000 feedings achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 1000 total feedings'**
+  String get achievementFeedings1000Desc;
 
   /// Label for locked achievement
   ///

@@ -14,6 +14,8 @@ import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
+import 'package:fishfeed/domain/entities/achievement.dart';
+import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/services/feeding/feeding_service.dart';
@@ -972,6 +974,9 @@ void main() {
           aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
           streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
           currentUserProvider.overrideWithValue(testUser),
+          checkAchievementsProvider.overrideWith(
+            (ref) async => <Achievement>[],
+          ),
         ],
       );
 

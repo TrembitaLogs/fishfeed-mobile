@@ -21,11 +21,17 @@ enum AchievementType {
   /// Complete a full week without any missed feedings.
   weekWithoutMiss,
 
+  /// Complete 50 total feedings.
+  feedings50,
+
   /// Complete 100 total feedings.
   feedings100,
 
   /// Complete 500 total feedings.
   feedings500,
+
+  /// Complete 1000 total feedings.
+  feedings1000,
 }
 
 /// Data class representing achievement metadata.
@@ -84,6 +90,12 @@ abstract final class AchievementConstants {
       xpReward: 50,
       targetValue: 7,
     ),
+    AchievementType.feedings50: AchievementData(
+      type: AchievementType.feedings50,
+      iconAsset: 'assets/achievements/feedings_50.png',
+      xpReward: 40,
+      targetValue: 50,
+    ),
     AchievementType.feedings100: AchievementData(
       type: AchievementType.feedings100,
       iconAsset: 'assets/achievements/feedings_100.png',
@@ -96,6 +108,12 @@ abstract final class AchievementConstants {
       xpReward: 250,
       targetValue: 500,
     ),
+    AchievementType.feedings1000: AchievementData(
+      type: AchievementType.feedings1000,
+      iconAsset: 'assets/achievements/feedings_1000.png',
+      xpReward: 750,
+      targetValue: 1000,
+    ),
   };
 
   /// Ordered list of achievements for display.
@@ -104,9 +122,11 @@ abstract final class AchievementConstants {
     AchievementType.streak7,
     AchievementType.weekWithoutMiss,
     AchievementType.streak30,
+    AchievementType.feedings50,
     AchievementType.feedings100,
     AchievementType.streak100,
     AchievementType.feedings500,
+    AchievementType.feedings1000,
   ];
 
   /// Gets achievement data by type.
@@ -129,10 +149,14 @@ abstract final class AchievementConstants {
         return Icons.emoji_events;
       case AchievementType.weekWithoutMiss:
         return Icons.verified;
+      case AchievementType.feedings50:
+        return Icons.pets;
       case AchievementType.feedings100:
         return Icons.star;
       case AchievementType.feedings500:
         return Icons.stars;
+      case AchievementType.feedings1000:
+        return Icons.water_drop;
     }
   }
 
@@ -149,10 +173,14 @@ abstract final class AchievementConstants {
         return const Color(0xFF9C27B0); // Purple
       case AchievementType.weekWithoutMiss:
         return const Color(0xFF2196F3); // Blue
+      case AchievementType.feedings50:
+        return const Color(0xFF009688); // Teal
       case AchievementType.feedings100:
         return const Color(0xFFFFEB3B); // Yellow
       case AchievementType.feedings500:
         return const Color(0xFFFFD700); // Gold
+      case AchievementType.feedings1000:
+        return const Color(0xFF3F51B5); // Indigo
     }
   }
 }
@@ -175,10 +203,14 @@ extension AchievementTypeExtension on AchievementType {
         return l10n.achievementStreak100;
       case AchievementType.weekWithoutMiss:
         return l10n.achievementPerfectWeek;
+      case AchievementType.feedings50:
+        return l10n.achievementFeedings50;
       case AchievementType.feedings100:
         return l10n.achievementFeedings100;
       case AchievementType.feedings500:
         return l10n.achievementFeedings500;
+      case AchievementType.feedings1000:
+        return l10n.achievementFeedings1000;
     }
   }
 
@@ -195,10 +227,14 @@ extension AchievementTypeExtension on AchievementType {
         return l10n.achievementStreak100Desc;
       case AchievementType.weekWithoutMiss:
         return l10n.achievementPerfectWeekDesc;
+      case AchievementType.feedings50:
+        return l10n.achievementFeedings50Desc;
       case AchievementType.feedings100:
         return l10n.achievementFeedings100Desc;
       case AchievementType.feedings500:
         return l10n.achievementFeedings500Desc;
+      case AchievementType.feedings1000:
+        return l10n.achievementFeedings1000Desc;
     }
   }
 

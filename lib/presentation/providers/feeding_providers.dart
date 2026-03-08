@@ -8,6 +8,7 @@ import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
+import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/feeding/feeding_service.dart';
@@ -230,6 +231,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
         // Refresh streak provider
         _ref.invalidate(currentStreakProvider);
+
+        // Check and unlock achievements
+        _ref.invalidate(checkAchievementsProvider);
 
         // Track streak analytics if incremented
         if (streak.currentStreak > 0) {
