@@ -3,7 +3,9 @@ import 'package:dartz/dartz.dart';
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
@@ -38,15 +40,21 @@ class AchievementUseCase {
     required FeedingLogLocalDataSource feedingLogDataSource,
     required StreakLocalDataSource streakDataSource,
     required UserProgressLocalDataSource progressDataSource,
+    required AquariumLocalDataSource aquariumDataSource,
+    required FishLocalDataSource fishDataSource,
   }) : _achievementDataSource = achievementDataSource,
        _feedingLogDataSource = feedingLogDataSource,
        _streakDataSource = streakDataSource,
-       _progressDataSource = progressDataSource;
+       _progressDataSource = progressDataSource,
+       _aquariumDataSource = aquariumDataSource,
+       _fishDataSource = fishDataSource;
 
   final AchievementLocalDataSource _achievementDataSource;
   final FeedingLogLocalDataSource _feedingLogDataSource;
   final StreakLocalDataSource _streakDataSource;
   final UserProgressLocalDataSource _progressDataSource;
+  final AquariumLocalDataSource _aquariumDataSource;
+  final FishLocalDataSource _fishDataSource;
 
   /// Checks all achievements and unlocks any that meet their criteria.
   ///
@@ -289,8 +297,34 @@ class AchievementUseCase {
     final longestStreak = streakModel?.longestStreak ?? 0;
 
     // For now, use current streak as consecutive days without miss
-    // In a more complex implementation, this would be calculated separately
     final consecutiveDaysWithoutMiss = currentStreak;
+
+    // Get aquarium count
+    final aquariums = _aquariumDataSource.getAquariumsByUserId(userId);
+    final aquariumCount = aquariums.length;
+
+    // Get fish count and unique species across user's aquariums
+    int fishCount = 0;
+    final speciesIds = <String>{};
+    for (final aquarium in aquariums) {
+      final fishList = _fishDataSource.getFishByAquariumId(aquarium.id);
+      for (final fish in fishList) {
+        fishCount += fish.quantity;
+        speciesIds.add(fish.speciesId);
+      }
+    }
+
+    // Check for early bird / night owl feedings
+    bool hasEarlyBird = false;
+    bool hasNightOwl = false;
+    for (final log in allLogs) {
+      if (log.isFed) {
+        final hour = log.actedAt.hour;
+        if (hour < 7) hasEarlyBird = true;
+        if (hour >= 22) hasNightOwl = true;
+        if (hasEarlyBird && hasNightOwl) break;
+      }
+    }
 
     return UserStats(
       userId: userId,
@@ -298,12 +332,18 @@ class AchievementUseCase {
       currentStreak: currentStreak,
       longestStreak: longestStreak,
       consecutiveDaysWithoutMiss: consecutiveDaysWithoutMiss,
+      aquariumCount: aquariumCount,
+      fishCount: fishCount,
+      uniqueSpeciesCount: speciesIds.length,
+      hasEarlyBirdFeeding: hasEarlyBird,
+      hasNightOwlFeeding: hasNightOwl,
     );
   }
 
   /// Checks if the unlock condition is met for an achievement.
   bool _checkUnlockCondition(AchievementType type, UserStats stats) {
     switch (type) {
+      // Feeding
       case AchievementType.firstFeeding:
         return stats.totalFeedings >= 1;
 
@@ -316,8 +356,17 @@ class AchievementUseCase {
       case AchievementType.streak100:
         return stats.currentStreak >= 100 || stats.longestStreak >= 100;
 
+      case AchievementType.streak365:
+        return stats.currentStreak >= 365 || stats.longestStreak >= 365;
+
       case AchievementType.weekWithoutMiss:
         return stats.consecutiveDaysWithoutMiss >= 7;
+
+      case AchievementType.earlyBird:
+        return stats.hasEarlyBirdFeeding;
+
+      case AchievementType.nightOwl:
+        return stats.hasNightOwlFeeding;
 
       case AchievementType.feedings50:
         return stats.totalFeedings >= 50;
@@ -330,6 +379,46 @@ class AchievementUseCase {
 
       case AchievementType.feedings1000:
         return stats.totalFeedings >= 1000;
+
+      // Fish
+      case AchievementType.firstFish:
+        return stats.fishCount >= 1;
+
+      case AchievementType.fishCollector10:
+        return stats.fishCount >= 10;
+
+      case AchievementType.fishCollector50:
+        return stats.fishCount >= 50;
+
+      case AchievementType.speciesExplorer5:
+        return stats.uniqueSpeciesCount >= 5;
+
+      case AchievementType.speciesExplorer10:
+        return stats.uniqueSpeciesCount >= 10;
+
+      case AchievementType.speciesExplorer20:
+        return stats.uniqueSpeciesCount >= 20;
+
+      // Aquarium
+      case AchievementType.firstAquarium:
+        return stats.aquariumCount >= 1;
+
+      case AchievementType.aquariumCollector3:
+        return stats.aquariumCount >= 3;
+
+      case AchievementType.aquariumCollector10:
+        return stats.aquariumCount >= 10;
+
+      // Family
+      case AchievementType.familyFirst:
+        return stats.familyMembersCount >= 1;
+
+      case AchievementType.familyTeam3:
+        return stats.familyMembersCount >= 3;
+
+      // Social
+      case AchievementType.firstShare:
+        return stats.hasSharedAchievement;
     }
   }
 
@@ -340,6 +429,7 @@ class AchievementUseCase {
 
     double current;
     switch (type) {
+      // Feeding
       case AchievementType.firstFeeding:
         current = stats.totalFeedings.toDouble();
         break;
@@ -347,6 +437,7 @@ class AchievementUseCase {
       case AchievementType.streak7:
       case AchievementType.streak30:
       case AchievementType.streak100:
+      case AchievementType.streak365:
         // Use the higher of current or longest streak
         current =
             (stats.currentStreak > stats.longestStreak
@@ -359,11 +450,50 @@ class AchievementUseCase {
         current = stats.consecutiveDaysWithoutMiss.toDouble();
         break;
 
+      case AchievementType.earlyBird:
+        current = stats.hasEarlyBirdFeeding ? 1.0 : 0.0;
+        break;
+
+      case AchievementType.nightOwl:
+        current = stats.hasNightOwlFeeding ? 1.0 : 0.0;
+        break;
+
       case AchievementType.feedings50:
       case AchievementType.feedings100:
       case AchievementType.feedings500:
       case AchievementType.feedings1000:
         current = stats.totalFeedings.toDouble();
+        break;
+
+      // Fish
+      case AchievementType.firstFish:
+      case AchievementType.fishCollector10:
+      case AchievementType.fishCollector50:
+        current = stats.fishCount.toDouble();
+        break;
+
+      case AchievementType.speciesExplorer5:
+      case AchievementType.speciesExplorer10:
+      case AchievementType.speciesExplorer20:
+        current = stats.uniqueSpeciesCount.toDouble();
+        break;
+
+      // Aquarium
+      case AchievementType.firstAquarium:
+      case AchievementType.aquariumCollector3:
+      case AchievementType.aquariumCollector10:
+        current = stats.aquariumCount.toDouble();
+        break;
+
+      // Family
+      case AchievementType.familyFirst:
+      case AchievementType.familyTeam3:
+        current = stats.familyMembersCount.toDouble();
+        break;
+
+      // Social
+      case AchievementType.firstShare:
+        current = stats.hasSharedAchievement ? 1.0 : 0.0;
         break;
     }
 

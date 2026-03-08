@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/home_tab_provider.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/screens/calendar/calendar_screen.dart';
@@ -40,14 +41,13 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(greeting),
-        actions: const [
+        actions: [
           // Sync status indicator - shows sync state and last synced time
-          SyncStatusIndicator(),
-          SizedBox(width: 8),
-          // Streak badge - provider will be connected in task 7.6
+          const SyncStatusIndicator(),
+          const SizedBox(width: 8),
           Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: StreakBadge(streak: 0),
+            padding: const EdgeInsets.only(right: 16),
+            child: StreakBadge(streak: ref.watch(currentStreakCountProvider)),
           ),
         ],
       ),

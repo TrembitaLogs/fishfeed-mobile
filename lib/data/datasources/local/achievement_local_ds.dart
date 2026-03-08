@@ -126,6 +126,8 @@ class AchievementLocalDataSource {
       unlockedAt: DateTime.now(),
       iconUrl: data.iconAsset,
       progress: 1.0,
+      synced: false,
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await saveAchievement(achievement);
@@ -217,6 +219,120 @@ class AchievementLocalDataSource {
     return _achievements.watch().map((_) {
       return getAchievements(userId).map((m) => m.toEntity()).toList();
     });
+  }
+
+  // ============ Sync Operations ============
+
+  /// Returns achievements that haven't been synced to the server.
+  List<AchievementModel> getUnsyncedAchievements() {
+    return _achievements.values
+        .whereType<AchievementModel>()
+        .where((a) => !a.synced && a.unlockedAt != null)
+        .toList();
+  }
+
+  /// Returns the count of unsynced achievements.
+  int getUnsyncedCount() {
+    return getUnsyncedAchievements().length;
+  }
+
+  /// Whether there are unsynced achievements.
+  bool hasUnsyncedAchievements() {
+    return _achievements.values.whereType<AchievementModel>().any(
+      (a) => !a.synced && a.unlockedAt != null,
+    );
+  }
+
+  /// Marks an achievement as synced with the server.
+  Future<void> markAsSynced(String id, DateTime serverTime) async {
+    final achievement = getAchievementById(id);
+    if (achievement != null) {
+      achievement.synced = true;
+      achievement.serverUpdatedAt = serverTime;
+      await achievement.save();
+    }
+  }
+
+  /// Applies a server achievement update to local storage.
+  ///
+  /// Converts server snake_case type to mobile camelCase enum name.
+  /// Compares timestamps: if server is newer, updates local Hive.
+  /// If local is newer, skips to preserve client-authoritative data.
+  Future<void> applyServerUpdate(Map<String, dynamic> serverData) async {
+    final userId = serverData['user_id'] as String?;
+    final serverType = serverData['achievement_type'] as String?;
+    if (userId == null || serverType == null) return;
+
+    // Convert server key to mobile enum name
+    final mobileType = AchievementTypeExtension.fromServerKey(serverType);
+    if (mobileType == null) return; // Unknown achievement type, skip
+
+    final mobileTypeName = mobileType.name;
+    final id = 'achievement_${userId}_$mobileTypeName';
+    final existing = getAchievementById(id);
+
+    final unlockedAtStr = serverData['unlocked_at'] as String?;
+    final unlockedAt = unlockedAtStr != null
+        ? DateTime.tryParse(unlockedAtStr)
+        : null;
+
+    // If local exists and has unsynced changes with a newer timestamp, skip
+    if (existing != null && !existing.synced && existing.updatedAt != null) {
+      final serverUpdatedAtStr =
+          serverData['updated_at'] as String? ??
+          serverData['server_updated_at'] as String?;
+      final serverUpdatedAt = serverUpdatedAtStr != null
+          ? DateTime.tryParse(serverUpdatedAtStr)
+          : null;
+      if (serverUpdatedAt != null &&
+          existing.updatedAt!.isAfter(serverUpdatedAt)) {
+        return;
+      }
+    }
+
+    if (existing != null) {
+      // Update existing: only update if server has unlock and local doesn't
+      if (unlockedAt != null && existing.unlockedAt == null) {
+        existing.unlockedAt = unlockedAt;
+        existing.progress = 1.0;
+      }
+      existing.synced = true;
+      existing.serverUpdatedAt = DateTime.now().toUtc();
+      await existing.save();
+    } else {
+      // Create new achievement from server data
+      final achievement = AchievementModel(
+        id: id,
+        userId: userId,
+        type: mobileTypeName,
+        title: mobileTypeName,
+        description: mobileTypeName,
+        unlockedAt: unlockedAt,
+        progress: unlockedAt != null ? 1.0 : 0.0,
+        synced: true,
+        serverUpdatedAt: DateTime.now().toUtc(),
+      );
+      await saveAchievement(achievement);
+    }
+  }
+
+  /// Reconciles local achievements with server state after a full sync.
+  ///
+  /// Any locally-unlocked achievement not present in [serverTypes]
+  /// is marked as unsynced so it gets re-uploaded on the next sync.
+  /// [serverTypes] should contain mobile enum names (not server keys).
+  Future<void> reconcileWithServer(
+    String userId,
+    Set<String> serverTypes,
+  ) async {
+    final unlocked = getUnlockedAchievements(userId);
+    for (final achievement in unlocked) {
+      if (achievement.synced && !serverTypes.contains(achievement.type)) {
+        achievement.synced = false;
+        achievement.updatedAt = DateTime.now().toUtc();
+        await achievement.save();
+      }
+    }
   }
 
   // ============ Utility Methods ============

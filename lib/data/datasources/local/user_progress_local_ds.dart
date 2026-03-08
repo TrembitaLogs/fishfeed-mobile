@@ -105,6 +105,8 @@ class UserProgressLocalDataSource {
 
     progress.totalXp += amount;
     progress.lastXpAwardedAt = DateTime.now();
+    progress.synced = false;
+    progress.updatedAt = DateTime.now().toUtc();
 
     await saveProgress(progress);
     return progress;
@@ -136,6 +138,8 @@ class UserProgressLocalDataSource {
     }
 
     progress.streakBonusesEarned = [...progress.streakBonusesEarned, milestone];
+    progress.synced = false;
+    progress.updatedAt = DateTime.now().toUtc();
     await saveProgress(progress);
     return true;
   }
@@ -170,6 +174,8 @@ class UserProgressLocalDataSource {
   Future<void> recordLevelUp(String userId) async {
     final progress = await getOrCreateProgress(userId);
     progress.lastLevelUpAt = DateTime.now();
+    progress.synced = false;
+    progress.updatedAt = DateTime.now().toUtc();
     await saveProgress(progress);
   }
 
@@ -182,6 +188,100 @@ class UserProgressLocalDataSource {
   /// Emits the current progress whenever it changes.
   Stream<UserProgressModel?> watchProgress(String userId) {
     return _progress.watch().map((_) => getProgressByUserId(userId));
+  }
+
+  // ============ Sync Operations ============
+
+  /// Returns all unsynced progress records.
+  List<UserProgressModel> getUnsyncedProgress() {
+    return _progress.values
+        .whereType<UserProgressModel>()
+        .where((p) => !p.synced && p.userId != 'default_user')
+        .toList();
+  }
+
+  /// Returns the count of unsynced progress records.
+  int getUnsyncedCount() {
+    return getUnsyncedProgress().length;
+  }
+
+  /// Whether there are unsynced progress records.
+  bool hasUnsyncedProgress() {
+    return _progress.values.whereType<UserProgressModel>().any(
+      (p) => !p.synced,
+    );
+  }
+
+  /// Marks a progress record as synced with the server.
+  Future<void> markAsSynced(String id, DateTime serverTime) async {
+    final progress = getProgressById(id) ?? getProgressByUserId(id);
+    if (progress != null) {
+      progress.synced = true;
+      progress.serverUpdatedAt = serverTime;
+      await progress.save();
+    }
+  }
+
+  /// Applies a server progress update to local storage.
+  ///
+  /// Compares timestamps: if server is newer, updates local Hive.
+  /// If local is newer, skips to preserve client-authoritative data.
+  Future<void> applyServerUpdate(Map<String, dynamic> serverData) async {
+    final userId = serverData['user_id'] as String?;
+    if (userId == null) return;
+
+    final id = 'progress_$userId';
+    final existing = getProgressById(id);
+
+    final serverUpdatedAtStr =
+        serverData['updated_at'] as String? ??
+        serverData['server_updated_at'] as String?;
+    final serverUpdatedAt = serverUpdatedAtStr != null
+        ? DateTime.tryParse(serverUpdatedAtStr)
+        : null;
+
+    // If local exists and has unsynced changes with a newer timestamp, skip
+    if (existing != null && !existing.synced && existing.updatedAt != null) {
+      if (serverUpdatedAt != null &&
+          existing.updatedAt!.isAfter(serverUpdatedAt)) {
+        return;
+      }
+    }
+
+    final totalXp = serverData['total_xp'] as int? ?? 0;
+    final lastXpAwardedAtStr = serverData['last_xp_awarded_at'] as String?;
+    final lastXpAwardedAt = lastXpAwardedAtStr != null
+        ? DateTime.tryParse(lastXpAwardedAtStr)
+        : null;
+    final lastLevelUpAtStr = serverData['last_level_up_at'] as String?;
+    final lastLevelUpAt = lastLevelUpAtStr != null
+        ? DateTime.tryParse(lastLevelUpAtStr)
+        : null;
+
+    if (existing != null) {
+      // XP can only go up (same rule as backend)
+      if (totalXp > existing.totalXp) {
+        existing.totalXp = totalXp;
+      }
+      // Recalculate level from XP
+      existing.lastXpAwardedAt = lastXpAwardedAt ?? existing.lastXpAwardedAt;
+      existing.lastLevelUpAt = lastLevelUpAt ?? existing.lastLevelUpAt;
+      existing.synced = true;
+      existing.serverUpdatedAt = serverUpdatedAt;
+      await existing.save();
+    } else {
+      final progress = UserProgressModel(
+        id: id,
+        userId: userId,
+        totalXp: totalXp,
+        streakBonusesEarned: [],
+        lastXpAwardedAt: lastXpAwardedAt,
+        lastLevelUpAt: lastLevelUpAt,
+        synced: true,
+        serverUpdatedAt: serverUpdatedAt,
+      );
+      await saveProgress(progress);
+    }
   }
 
   // ============ Utility Operations ============

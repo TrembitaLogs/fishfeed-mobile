@@ -221,6 +221,7 @@ class ShareService {
 
   String _getLocalizedShareText(AchievementType type) {
     switch (type) {
+      // Feeding
       case AchievementType.firstFeeding:
         return 'I started caring for fish in FishFeed! 🐟 First Feeding complete! 🎉';
       case AchievementType.streak7:
@@ -229,8 +230,14 @@ class ShareService {
         return 'A month of excellence! 🌟 30 days of feedings in a row in FishFeed! 🔥';
       case AchievementType.streak100:
         return 'Legendary streak! 💎 100 days of feedings without misses in FishFeed! 🏆🔥';
+      case AchievementType.streak365:
+        return 'A full year! 🏅 365 days of feedings without misses in FishFeed! 🐟💎🔥';
       case AchievementType.weekWithoutMiss:
         return 'Perfect Week! ✨ No missed feedings in FishFeed! 🐟';
+      case AchievementType.earlyBird:
+        return 'Early Bird! 🌅 Fed my fish before sunrise in FishFeed! 🐟';
+      case AchievementType.nightOwl:
+        return 'Night Owl! 🌙 Late-night feeding in FishFeed! 🐟';
       case AchievementType.feedings50:
         return 'Dedicated Caretaker! 🐠 50 feedings completed in FishFeed! 🎉';
       case AchievementType.feedings100:
@@ -239,6 +246,34 @@ class ShareService {
         return 'Feeding Master! 👑 500 feedings in FishFeed! My fish are in good hands! 🐟🏆';
       case AchievementType.feedings1000:
         return 'Fish Whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎';
+      // Fish
+      case AchievementType.firstFish:
+        return 'My first fish! 🐟 Added my first fish to FishFeed! 🎉';
+      case AchievementType.fishCollector10:
+        return 'Fish Collector! 🐠 10 fish in my FishFeed aquariums! 🏆';
+      case AchievementType.fishCollector50:
+        return 'Master Collector! 🐟 50 fish in FishFeed! A true aquarist! 🏆💎';
+      case AchievementType.speciesExplorer5:
+        return 'Species Explorer! 🔍 5 different species in FishFeed! 🐟';
+      case AchievementType.speciesExplorer10:
+        return 'Species Expert! 🧬 10 different species in FishFeed! 🐠🏆';
+      case AchievementType.speciesExplorer20:
+        return 'Species Master! 🌊 20 different species in FishFeed! True biodiversity! 🐟💎';
+      // Aquarium
+      case AchievementType.firstAquarium:
+        return 'My first aquarium! 🏠 Set up my first aquarium in FishFeed! 🐟';
+      case AchievementType.aquariumCollector3:
+        return 'Aquarium Enthusiast! 🏠 3 aquariums in FishFeed! 🐟🏆';
+      case AchievementType.aquariumCollector10:
+        return 'Aquarium Empire! 🏰 10 aquariums in FishFeed! A true master! 🐟💎';
+      // Family
+      case AchievementType.familyFirst:
+        return 'Teamwork! 👨‍👩‍👧 Invited my first family member to FishFeed! 🐟';
+      case AchievementType.familyTeam3:
+        return 'Family Team! 👨‍👩‍👧‍👦 3 family members caring for fish in FishFeed! 🐟🏆';
+      // Social
+      case AchievementType.firstShare:
+        return 'Shared my first achievement in FishFeed! 📢 Join me! 🐟';
     }
   }
 

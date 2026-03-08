@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
+import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/widgets/profile/streak_section.dart';
@@ -188,7 +189,11 @@ void main() {
 /// Test-only StreakNotifier that returns a fixed state.
 class _TestStreakNotifier extends StreakNotifier {
   _TestStreakNotifier(this._initialState)
-    : super(streakDataSource: _MockStreakLocalDataSource(), ref: _MockRef());
+    : super(
+        streakDataSource: _MockStreakLocalDataSource(),
+        calculateStreakUseCase: _MockCalculateStreakUseCase(),
+        ref: _MockRef(),
+      );
 
   final StreakState _initialState;
 
@@ -209,6 +214,10 @@ class _TestStreakNotifier extends StreakNotifier {
 /// Minimal mock for StreakLocalDataSource.
 class _MockStreakLocalDataSource extends Mock
     implements StreakLocalDataSource {}
+
+/// Minimal mock for CalculateStreakUseCase.
+class _MockCalculateStreakUseCase extends Mock
+    implements CalculateStreakUseCase {}
 
 /// Minimal mock for Ref.
 class _MockRef extends Mock implements Ref {}

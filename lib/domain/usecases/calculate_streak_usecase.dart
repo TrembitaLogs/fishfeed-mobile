@@ -99,16 +99,33 @@ class CalculateStreakUseCase {
     }
   }
 
-  /// Returns the streak model without modification.
+  /// Checks if the streak needs to be broken due to missed days.
   ///
-  /// Note: Streak reset logic has been removed from client.
-  /// Streak breaks are now determined by the server during POST /sync
-  /// via the _check_streak_breaks function. The client only reads
-  /// streak values that are updated during sync.
+  /// Uses freeze days to cover gaps when available. If not enough
+  /// freezes exist to cover the gap, the streak is reset to 0.
+  /// The client is authoritative for streak state.
   Future<StreakModel> _checkAndUpdateStreak(StreakModel streak) async {
-    // Server handles streak break detection during sync.
-    // Client no longer resets streak - just return as-is.
-    return streak;
+    if (streak.lastFeedingDate == null || streak.currentStreak == 0) {
+      return streak;
+    }
+
+    final today = DateTimeUtils.todayStart;
+    final lastFeedDate = DateTimeUtils.startOfDay(streak.lastFeedingDate!);
+    final daysSinceLastFeed = today.difference(lastFeedDate).inDays;
+
+    if (daysSinceLastFeed <= 1) return streak; // Fed today or yesterday
+
+    // Gap detected - missed day(s)
+    final missedDays = daysSinceLastFeed - 1;
+
+    if (missedDays <= streak.freezeAvailable) {
+      // Can cover all missed days with freezes
+      return _streakDataSource.useFreezeMultiple(streak.userId, missedDays);
+    } else {
+      // Not enough freezes - streak breaks
+      final resetStreak = await _streakDataSource.resetStreak(streak.userId);
+      return resetStreak ?? streak;
+    }
   }
 
   /// Calculates days until streak expires.

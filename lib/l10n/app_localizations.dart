@@ -1724,6 +1724,96 @@ abstract class AppLocalizations {
   /// **'Fish whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎'**
   String get shareFeedings1000;
 
+  /// Share text for 365-day streak achievement
+  ///
+  /// In en, this message translates to:
+  /// **'A full year! 🏅 365 days of feedings without misses in FishFeed! 🐟💎🔥'**
+  String get shareStreak365;
+
+  /// Share text for early bird achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird! 🌅 Fed my fish before sunrise in FishFeed! 🐟'**
+  String get shareEarlyBird;
+
+  /// Share text for night owl achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Night Owl! 🌙 Late-night feeding in FishFeed! 🐟'**
+  String get shareNightOwl;
+
+  /// Share text for first fish achievement
+  ///
+  /// In en, this message translates to:
+  /// **'My first fish! 🐟 Added my first fish to FishFeed! 🎉'**
+  String get shareFirstFish;
+
+  /// Share text for 10 fish collector achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Fish Collector! 🐠 10 fish in my FishFeed aquariums! 🏆'**
+  String get shareFishCollector10;
+
+  /// Share text for 50 fish collector achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Master Collector! 🐟 50 fish in FishFeed! A true aquarist! 🏆💎'**
+  String get shareFishCollector50;
+
+  /// Share text for 5 species explorer achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Species Explorer! 🔍 5 different species in FishFeed! 🐟'**
+  String get shareSpeciesExplorer5;
+
+  /// Share text for 10 species explorer achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Species Expert! 🧬 10 different species in FishFeed! 🐠🏆'**
+  String get shareSpeciesExplorer10;
+
+  /// Share text for 20 species explorer achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Species Master! 🌊 20 different species in FishFeed! True biodiversity! 🐟💎'**
+  String get shareSpeciesExplorer20;
+
+  /// Share text for first aquarium achievement
+  ///
+  /// In en, this message translates to:
+  /// **'My first aquarium! 🏠 Set up my first aquarium in FishFeed! 🐟'**
+  String get shareFirstAquarium;
+
+  /// Share text for 3 aquariums collector achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium Enthusiast! 🏠 3 aquariums in FishFeed! 🐟🏆'**
+  String get shareAquariumCollector3;
+
+  /// Share text for 10 aquariums collector achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium Empire! 🏰 10 aquariums in FishFeed! A true master! 🐟💎'**
+  String get shareAquariumCollector10;
+
+  /// Share text for first family member achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Teamwork! 👨‍👩‍👧 Invited my first family member to FishFeed! 🐟'**
+  String get shareFamilyFirst;
+
+  /// Share text for 3 family members achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Family Team! 👨‍👩‍👧‍👦 3 family members caring for fish in FishFeed! 🐟🏆'**
+  String get shareFamilyTeam3;
+
+  /// Share text for first share achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Shared my first achievement in FishFeed! 📢 Join me! 🐟'**
+  String get shareFirstShare;
+
   /// Share text for long streak (50+)
   ///
   /// In en, this message translates to:
@@ -2413,6 +2503,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete 1000 total feedings'**
   String get achievementFeedings1000Desc;
+
+  /// 365-day streak achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Year-Long Streak'**
+  String get achievementStreak365;
+
+  /// 365-day streak achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'365 consecutive days of feeding'**
+  String get achievementStreak365Desc;
+
+  /// Early bird achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird'**
+  String get achievementEarlyBird;
+
+  /// Early bird achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a feeding before 7:00 AM'**
+  String get achievementEarlyBirdDesc;
+
+  /// Night owl achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Night Owl'**
+  String get achievementNightOwl;
+
+  /// Night owl achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a feeding after 10:00 PM'**
+  String get achievementNightOwlDesc;
+
+  /// First fish achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'First Fish'**
+  String get achievementFirstFish;
+
+  /// First fish achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first fish'**
+  String get achievementFirstFishDesc;
+
+  /// 10 fish collector achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Fish Collector'**
+  String get achievementFishCollector10;
+
+  /// 10 fish collector achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Collect 10 fish'**
+  String get achievementFishCollector10Desc;
+
+  /// 50 fish collector achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Master Collector'**
+  String get achievementFishCollector50;
+
+  /// 50 fish collector achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Collect 50 fish'**
+  String get achievementFishCollector50Desc;
+
+  /// 5 species explorer achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Species Explorer'**
+  String get achievementSpeciesExplorer5;
+
+  /// 5 species explorer achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Own 5 different species'**
+  String get achievementSpeciesExplorer5Desc;
+
+  /// 10 species explorer achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Species Expert'**
+  String get achievementSpeciesExplorer10;
+
+  /// 10 species explorer achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Own 10 different species'**
+  String get achievementSpeciesExplorer10Desc;
+
+  /// 20 species explorer achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Species Master'**
+  String get achievementSpeciesExplorer20;
+
+  /// 20 species explorer achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Own 20 different species'**
+  String get achievementSpeciesExplorer20Desc;
+
+  /// First aquarium achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'First Aquarium'**
+  String get achievementFirstAquarium;
+
+  /// First aquarium achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first aquarium'**
+  String get achievementFirstAquariumDesc;
+
+  /// 3 aquariums collector achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium Enthusiast'**
+  String get achievementAquariumCollector3;
+
+  /// 3 aquariums collector achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Own 3 aquariums'**
+  String get achievementAquariumCollector3Desc;
+
+  /// 10 aquariums collector achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarium Empire'**
+  String get achievementAquariumCollector10;
+
+  /// 10 aquariums collector achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Own 10 aquariums'**
+  String get achievementAquariumCollector10Desc;
+
+  /// First family member achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Family First'**
+  String get achievementFamilyFirst;
+
+  /// First family member achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Invite your first family member'**
+  String get achievementFamilyFirstDesc;
+
+  /// 3 family members achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Family Team'**
+  String get achievementFamilyTeam3;
+
+  /// 3 family members achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Have 3 family members'**
+  String get achievementFamilyTeam3Desc;
+
+  /// First share achievement title
+  ///
+  /// In en, this message translates to:
+  /// **'Social Star'**
+  String get achievementFirstShare;
+
+  /// First share achievement description
+  ///
+  /// In en, this message translates to:
+  /// **'Share an achievement for the first time'**
+  String get achievementFirstShareDesc;
 
   /// Label for locked achievement
   ///

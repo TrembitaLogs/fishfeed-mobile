@@ -180,10 +180,10 @@ void main() {
       });
 
       test(
-        'should return streak as-is when inactive (server handles resets)',
+        'should reset streak when inactive and no freezes available',
         () async {
-          // Note: Streak reset logic moved to server in Task 25.5.
-          // Client no longer resets streaks - just returns existing value.
+          // Client-side break detection: when a gap is detected and
+          // there are not enough freezes, the streak is reset to 0.
           final now = DateTime.now();
           final twoDaysAgo = DateTime(
             now.year,
@@ -194,11 +194,21 @@ void main() {
             currentStreak: 5,
             lastFeedingDate: twoDaysAgo,
           );
+          // Set freezeAvailable to 0 so reset path is triggered
+          streak.freezeAvailable = 0;
 
           when(
             () => mockStreakDs.getStreakByUserId('user_1'),
           ).thenReturn(streak);
           when(() => mockStreakDs.isStreakActive('user_1')).thenReturn(false);
+          when(() => mockStreakDs.resetStreak('user_1')).thenAnswer(
+            (_) async => StreakModel(
+              id: 'streak_user_1',
+              userId: 'user_1',
+              currentStreak: 0,
+              longestStreak: 10,
+            ),
+          );
 
           final result = await useCase(
             const CalculateStreakParams(userId: 'user_1'),
@@ -206,14 +216,14 @@ void main() {
 
           expect(result.isRight(), true);
           result.fold((_) => fail('Should be Right'), (calcResult) {
-            // Streak is returned as-is - server will reset during sync
-            expect(calcResult.streak.currentStreak, 5);
+            // Streak is reset to 0 by client-side break detection
+            expect(calcResult.streak.currentStreak, 0);
             expect(calcResult.isActive, isFalse);
             expect(calcResult.daysUntilExpiry, 0);
           });
 
-          // No saveStreak call - client doesn't modify streak
-          verifyNever(() => mockStreakDs.saveStreak(any()));
+          // resetStreak is called because no freezes available
+          verify(() => mockStreakDs.resetStreak('user_1')).called(1);
         },
       );
 

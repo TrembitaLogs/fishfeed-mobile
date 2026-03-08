@@ -76,12 +76,14 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 400,
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: AchievementsGallery(),
+          body: SingleChildScrollView(
+            child: Center(
+              child: SizedBox(
+                width: 400,
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: AchievementsGallery(),
+                ),
               ),
             ),
           ),

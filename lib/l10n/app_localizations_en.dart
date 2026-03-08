@@ -983,6 +983,66 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fish whisperer! 🌊 1000 feedings in FishFeed! True dedication! 🐟💎';
 
   @override
+  String get shareStreak365 =>
+      'A full year! 🏅 365 days of feedings without misses in FishFeed! 🐟💎🔥';
+
+  @override
+  String get shareEarlyBird =>
+      'Early Bird! 🌅 Fed my fish before sunrise in FishFeed! 🐟';
+
+  @override
+  String get shareNightOwl =>
+      'Night Owl! 🌙 Late-night feeding in FishFeed! 🐟';
+
+  @override
+  String get shareFirstFish =>
+      'My first fish! 🐟 Added my first fish to FishFeed! 🎉';
+
+  @override
+  String get shareFishCollector10 =>
+      'Fish Collector! 🐠 10 fish in my FishFeed aquariums! 🏆';
+
+  @override
+  String get shareFishCollector50 =>
+      'Master Collector! 🐟 50 fish in FishFeed! A true aquarist! 🏆💎';
+
+  @override
+  String get shareSpeciesExplorer5 =>
+      'Species Explorer! 🔍 5 different species in FishFeed! 🐟';
+
+  @override
+  String get shareSpeciesExplorer10 =>
+      'Species Expert! 🧬 10 different species in FishFeed! 🐠🏆';
+
+  @override
+  String get shareSpeciesExplorer20 =>
+      'Species Master! 🌊 20 different species in FishFeed! True biodiversity! 🐟💎';
+
+  @override
+  String get shareFirstAquarium =>
+      'My first aquarium! 🏠 Set up my first aquarium in FishFeed! 🐟';
+
+  @override
+  String get shareAquariumCollector3 =>
+      'Aquarium Enthusiast! 🏠 3 aquariums in FishFeed! 🐟🏆';
+
+  @override
+  String get shareAquariumCollector10 =>
+      'Aquarium Empire! 🏰 10 aquariums in FishFeed! A true master! 🐟💎';
+
+  @override
+  String get shareFamilyFirst =>
+      'Teamwork! 👨‍👩‍👧 Invited my first family member to FishFeed! 🐟';
+
+  @override
+  String get shareFamilyTeam3 =>
+      'Family Team! 👨‍👩‍👧‍👦 3 family members caring for fish in FishFeed! 🐟🏆';
+
+  @override
+  String get shareFirstShare =>
+      'Shared my first achievement in FishFeed! 📢 Join me! 🐟';
+
+  @override
   String shareStreakLong(String appName, int days) {
     return 'Incredible! 💎 My streak in $appName: $days days! 🔥🏆';
   }
@@ -1341,6 +1401,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achievementFeedings1000Desc => 'Complete 1000 total feedings';
+
+  @override
+  String get achievementStreak365 => 'Year-Long Streak';
+
+  @override
+  String get achievementStreak365Desc => '365 consecutive days of feeding';
+
+  @override
+  String get achievementEarlyBird => 'Early Bird';
+
+  @override
+  String get achievementEarlyBirdDesc => 'Complete a feeding before 7:00 AM';
+
+  @override
+  String get achievementNightOwl => 'Night Owl';
+
+  @override
+  String get achievementNightOwlDesc => 'Complete a feeding after 10:00 PM';
+
+  @override
+  String get achievementFirstFish => 'First Fish';
+
+  @override
+  String get achievementFirstFishDesc => 'Add your first fish';
+
+  @override
+  String get achievementFishCollector10 => 'Fish Collector';
+
+  @override
+  String get achievementFishCollector10Desc => 'Collect 10 fish';
+
+  @override
+  String get achievementFishCollector50 => 'Master Collector';
+
+  @override
+  String get achievementFishCollector50Desc => 'Collect 50 fish';
+
+  @override
+  String get achievementSpeciesExplorer5 => 'Species Explorer';
+
+  @override
+  String get achievementSpeciesExplorer5Desc => 'Own 5 different species';
+
+  @override
+  String get achievementSpeciesExplorer10 => 'Species Expert';
+
+  @override
+  String get achievementSpeciesExplorer10Desc => 'Own 10 different species';
+
+  @override
+  String get achievementSpeciesExplorer20 => 'Species Master';
+
+  @override
+  String get achievementSpeciesExplorer20Desc => 'Own 20 different species';
+
+  @override
+  String get achievementFirstAquarium => 'First Aquarium';
+
+  @override
+  String get achievementFirstAquariumDesc => 'Create your first aquarium';
+
+  @override
+  String get achievementAquariumCollector3 => 'Aquarium Enthusiast';
+
+  @override
+  String get achievementAquariumCollector3Desc => 'Own 3 aquariums';
+
+  @override
+  String get achievementAquariumCollector10 => 'Aquarium Empire';
+
+  @override
+  String get achievementAquariumCollector10Desc => 'Own 10 aquariums';
+
+  @override
+  String get achievementFamilyFirst => 'Family First';
+
+  @override
+  String get achievementFamilyFirstDesc => 'Invite your first family member';
+
+  @override
+  String get achievementFamilyTeam3 => 'Family Team';
+
+  @override
+  String get achievementFamilyTeam3Desc => 'Have 3 family members';
+
+  @override
+  String get achievementFirstShare => 'Social Star';
+
+  @override
+  String get achievementFirstShareDesc =>
+      'Share an achievement for the first time';
 
   @override
   String get achievementLocked => 'Locked';

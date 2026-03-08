@@ -1,8 +1,11 @@
+import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
@@ -100,17 +103,26 @@ class ChangeTracker {
     required AuthLocalDataSource authLocalDs,
     FeedingLogLocalDataSource? feedingLogDs,
     ScheduleLocalDataSource? newScheduleDs,
+    StreakLocalDataSource? streakDs,
+    AchievementLocalDataSource? achievementDs,
+    UserProgressLocalDataSource? progressDs,
   }) : _aquariumDs = aquariumDs,
        _fishDs = fishDs,
        _authLocalDs = authLocalDs,
        _feedingLogDs = feedingLogDs,
-       _newScheduleDs = newScheduleDs;
+       _newScheduleDs = newScheduleDs,
+       _streakDs = streakDs,
+       _achievementDs = achievementDs,
+       _progressDs = progressDs;
 
   final AquariumLocalDataSource _aquariumDs;
   final FishLocalDataSource _fishDs;
   final AuthLocalDataSource _authLocalDs;
   final FeedingLogLocalDataSource? _feedingLogDs;
   final ScheduleLocalDataSource? _newScheduleDs;
+  final StreakLocalDataSource? _streakDs;
+  final AchievementLocalDataSource? _achievementDs;
+  final UserProgressLocalDataSource? _progressDs;
 
   /// Collects all local changes that need to be synced.
   ///
@@ -136,6 +148,15 @@ class ChangeTracker {
     // Collect user profile changes
     changes.addAll(_collectUserProfileChanges());
 
+    // Collect streak changes
+    changes.addAll(_collectStreakChanges());
+
+    // Collect achievement changes
+    changes.addAll(_collectAchievementChanges());
+
+    // Collect progress changes
+    changes.addAll(_collectProgressChanges());
+
     return changes;
   }
 
@@ -153,10 +174,11 @@ class ChangeTracker {
       case EntityType.userProfile:
         return _collectUserProfileChanges();
       case EntityType.streak:
+        return _collectStreakChanges();
       case EntityType.achievement:
+        return _collectAchievementChanges();
       case EntityType.progress:
-        // These are typically server-managed, but can be extended
-        return [];
+        return _collectProgressChanges();
     }
   }
 
@@ -168,6 +190,9 @@ class ChangeTracker {
         _fishDs.getDeletedFish().isNotEmpty ||
         (_feedingLogDs?.hasUnsyncedLogs() ?? false) ||
         (_newScheduleDs?.hasUnsyncedSchedules() ?? false) ||
+        (_streakDs?.hasUnsyncedStreaks() ?? false) ||
+        (_achievementDs?.hasUnsyncedAchievements() ?? false) ||
+        (_progressDs?.hasUnsyncedProgress() ?? false) ||
         _authLocalDs.getUnsyncedUser() != null;
   }
 
@@ -180,6 +205,9 @@ class ChangeTracker {
     count += _fishDs.getDeletedFish().length;
     count += _feedingLogDs?.getUnsyncedCount() ?? 0;
     count += _newScheduleDs?.getUnsyncedCount() ?? 0;
+    count += _streakDs?.getUnsyncedCount() ?? 0;
+    count += _achievementDs?.getUnsyncedCount() ?? 0;
+    count += _progressDs?.getUnsyncedCount() ?? 0;
     if (_authLocalDs.getUnsyncedUser() != null) count++;
     return count;
   }
@@ -376,6 +404,93 @@ class ChangeTracker {
         clientUpdatedAt: DateTime.now().toUtc(),
       ),
     ];
+  }
+
+  // ============ Streak Changes ============
+
+  List<SyncChange> _collectStreakChanges() {
+    final streakDs = _streakDs;
+    if (streakDs == null) return [];
+
+    final changes = <SyncChange>[];
+    final unsyncedStreaks = streakDs.getUnsyncedStreaks();
+    for (final streak in unsyncedStreaks) {
+      // Skip non-real users (e.g. default_user before login)
+      if (streak.userId == 'default_user') continue;
+
+      final operation = streak.serverUpdatedAt == null
+          ? SyncOperation.create
+          : SyncOperation.update;
+      changes.add(
+        SyncChange(
+          entityType: EntityType.streak,
+          // Server expects user_id (UUID) as entity_id for streaks
+          entityId: streak.userId,
+          operation: operation,
+          data: streak.toSyncJson(),
+          clientUpdatedAt: streak.updatedAt ?? DateTime.now().toUtc(),
+        ),
+      );
+    }
+    return changes;
+  }
+
+  // ============ Achievement Changes ============
+
+  List<SyncChange> _collectAchievementChanges() {
+    final achievementDs = _achievementDs;
+    if (achievementDs == null) return [];
+
+    final changes = <SyncChange>[];
+    final unsyncedAchievements = achievementDs.getUnsyncedAchievements();
+    for (final achievement in unsyncedAchievements) {
+      // Skip non-real users (e.g. default_user before login)
+      if (achievement.userId == 'default_user') continue;
+
+      final operation = achievement.serverUpdatedAt == null
+          ? SyncOperation.create
+          : SyncOperation.update;
+      changes.add(
+        SyncChange(
+          entityType: EntityType.achievement,
+          // Server expects user_id (UUID) as entity_id for achievements
+          entityId: achievement.userId,
+          operation: operation,
+          data: achievement.toSyncJson(),
+          clientUpdatedAt: achievement.updatedAt ?? DateTime.now().toUtc(),
+        ),
+      );
+    }
+    return changes;
+  }
+
+  // ============ Progress Changes ============
+
+  List<SyncChange> _collectProgressChanges() {
+    final progressDs = _progressDs;
+    if (progressDs == null) return [];
+
+    final changes = <SyncChange>[];
+    final unsyncedProgress = progressDs.getUnsyncedProgress();
+    for (final progress in unsyncedProgress) {
+      // Skip non-real users (e.g. default_user before login)
+      if (progress.userId == 'default_user') continue;
+
+      final operation = progress.serverUpdatedAt == null
+          ? SyncOperation.create
+          : SyncOperation.update;
+      changes.add(
+        SyncChange(
+          entityType: EntityType.progress,
+          // Server expects user_id (UUID) as entity_id for progress
+          entityId: progress.userId,
+          operation: operation,
+          data: progress.toSyncJson(),
+          clientUpdatedAt: progress.updatedAt ?? DateTime.now().toUtc(),
+        ),
+      );
+    }
+    return changes;
   }
 
   /// Adds an image key to the sync [data] map when appropriate.

@@ -26,6 +26,8 @@ final achievementUseCaseProvider = Provider<AchievementUseCase>((ref) {
     feedingLogDataSource: ref.watch(feedingLogLocalDataSourceProvider),
     streakDataSource: ref.watch(streakLocalDataSourceProvider),
     progressDataSource: ref.watch(userProgressLocalDataSourceProvider),
+    aquariumDataSource: ref.watch(aquariumLocalDataSourceProvider),
+    fishDataSource: ref.watch(fishLocalDataSourceProvider),
   );
 });
 
@@ -91,11 +93,20 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
   final Ref _ref;
 
   /// Loads all achievements for the current user.
+  ///
+  /// Also evaluates unlock conditions so achievements are re-unlocked
+  /// based on current data (e.g., after a sync pulls new aquariums/fish).
   Future<void> loadAchievements() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
+
+      // Only check/unlock achievements for real users (not before login)
+      if (userId != 'default_user') {
+        await _achievementUseCase.checkAchievements(userId);
+      }
+
       final result = await _achievementUseCase.getAllAchievements(userId);
 
       result.fold(

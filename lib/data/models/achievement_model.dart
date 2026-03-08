@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
 
 part 'achievement_model.g.dart';
@@ -113,11 +114,19 @@ class AchievementModel extends HiveObject {
   }
 
   /// Converts this model to JSON for sync.
+  ///
+  /// Uses server-expected snake_case achievement type via [serverKey].
   Map<String, dynamic> toSyncJson() {
+    // Convert mobile enum name to server key
+    final mobileType = AchievementType.values
+        .where((t) => t.name == type)
+        .firstOrNull;
+    final serverType = mobileType?.serverKey ?? type;
+
     return {
       'id': id,
       'user_id': userId,
-      'achievement_type': type,
+      'achievement_type': serverType,
       'unlocked_at': unlockedAt?.toIso8601String(),
     };
   }

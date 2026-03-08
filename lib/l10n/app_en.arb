@@ -1296,6 +1296,66 @@
   "@shareFeedings1000": {
     "description": "Share text for 1000 feedings achievement"
   },
+  "shareStreak365": "A full year! 🏅 365 days of feedings without misses in FishFeed! 🐟💎🔥",
+  "@shareStreak365": {
+    "description": "Share text for 365-day streak achievement"
+  },
+  "shareEarlyBird": "Early Bird! 🌅 Fed my fish before sunrise in FishFeed! 🐟",
+  "@shareEarlyBird": {
+    "description": "Share text for early bird achievement"
+  },
+  "shareNightOwl": "Night Owl! 🌙 Late-night feeding in FishFeed! 🐟",
+  "@shareNightOwl": {
+    "description": "Share text for night owl achievement"
+  },
+  "shareFirstFish": "My first fish! 🐟 Added my first fish to FishFeed! 🎉",
+  "@shareFirstFish": {
+    "description": "Share text for first fish achievement"
+  },
+  "shareFishCollector10": "Fish Collector! 🐠 10 fish in my FishFeed aquariums! 🏆",
+  "@shareFishCollector10": {
+    "description": "Share text for 10 fish collector achievement"
+  },
+  "shareFishCollector50": "Master Collector! 🐟 50 fish in FishFeed! A true aquarist! 🏆💎",
+  "@shareFishCollector50": {
+    "description": "Share text for 50 fish collector achievement"
+  },
+  "shareSpeciesExplorer5": "Species Explorer! 🔍 5 different species in FishFeed! 🐟",
+  "@shareSpeciesExplorer5": {
+    "description": "Share text for 5 species explorer achievement"
+  },
+  "shareSpeciesExplorer10": "Species Expert! 🧬 10 different species in FishFeed! 🐠🏆",
+  "@shareSpeciesExplorer10": {
+    "description": "Share text for 10 species explorer achievement"
+  },
+  "shareSpeciesExplorer20": "Species Master! 🌊 20 different species in FishFeed! True biodiversity! 🐟💎",
+  "@shareSpeciesExplorer20": {
+    "description": "Share text for 20 species explorer achievement"
+  },
+  "shareFirstAquarium": "My first aquarium! 🏠 Set up my first aquarium in FishFeed! 🐟",
+  "@shareFirstAquarium": {
+    "description": "Share text for first aquarium achievement"
+  },
+  "shareAquariumCollector3": "Aquarium Enthusiast! 🏠 3 aquariums in FishFeed! 🐟🏆",
+  "@shareAquariumCollector3": {
+    "description": "Share text for 3 aquariums collector achievement"
+  },
+  "shareAquariumCollector10": "Aquarium Empire! 🏰 10 aquariums in FishFeed! A true master! 🐟💎",
+  "@shareAquariumCollector10": {
+    "description": "Share text for 10 aquariums collector achievement"
+  },
+  "shareFamilyFirst": "Teamwork! 👨‍👩‍👧 Invited my first family member to FishFeed! 🐟",
+  "@shareFamilyFirst": {
+    "description": "Share text for first family member achievement"
+  },
+  "shareFamilyTeam3": "Family Team! 👨‍👩‍👧‍👦 3 family members caring for fish in FishFeed! 🐟🏆",
+  "@shareFamilyTeam3": {
+    "description": "Share text for 3 family members achievement"
+  },
+  "shareFirstShare": "Shared my first achievement in FishFeed! 📢 Join me! 🐟",
+  "@shareFirstShare": {
+    "description": "Share text for first share achievement"
+  },
   "shareStreakLong": "Incredible! 💎 My streak in {appName}: {days} days! 🔥🏆",
   "@shareStreakLong": {
     "description": "Share text for long streak (50+)",
@@ -1811,6 +1871,126 @@
   "achievementFeedings1000Desc": "Complete 1000 total feedings",
   "@achievementFeedings1000Desc": {
     "description": "1000 feedings achievement description"
+  },
+  "achievementStreak365": "Year-Long Streak",
+  "@achievementStreak365": {
+    "description": "365-day streak achievement title"
+  },
+  "achievementStreak365Desc": "365 consecutive days of feeding",
+  "@achievementStreak365Desc": {
+    "description": "365-day streak achievement description"
+  },
+  "achievementEarlyBird": "Early Bird",
+  "@achievementEarlyBird": {
+    "description": "Early bird achievement title"
+  },
+  "achievementEarlyBirdDesc": "Complete a feeding before 7:00 AM",
+  "@achievementEarlyBirdDesc": {
+    "description": "Early bird achievement description"
+  },
+  "achievementNightOwl": "Night Owl",
+  "@achievementNightOwl": {
+    "description": "Night owl achievement title"
+  },
+  "achievementNightOwlDesc": "Complete a feeding after 10:00 PM",
+  "@achievementNightOwlDesc": {
+    "description": "Night owl achievement description"
+  },
+  "achievementFirstFish": "First Fish",
+  "@achievementFirstFish": {
+    "description": "First fish achievement title"
+  },
+  "achievementFirstFishDesc": "Add your first fish",
+  "@achievementFirstFishDesc": {
+    "description": "First fish achievement description"
+  },
+  "achievementFishCollector10": "Fish Collector",
+  "@achievementFishCollector10": {
+    "description": "10 fish collector achievement title"
+  },
+  "achievementFishCollector10Desc": "Collect 10 fish",
+  "@achievementFishCollector10Desc": {
+    "description": "10 fish collector achievement description"
+  },
+  "achievementFishCollector50": "Master Collector",
+  "@achievementFishCollector50": {
+    "description": "50 fish collector achievement title"
+  },
+  "achievementFishCollector50Desc": "Collect 50 fish",
+  "@achievementFishCollector50Desc": {
+    "description": "50 fish collector achievement description"
+  },
+  "achievementSpeciesExplorer5": "Species Explorer",
+  "@achievementSpeciesExplorer5": {
+    "description": "5 species explorer achievement title"
+  },
+  "achievementSpeciesExplorer5Desc": "Own 5 different species",
+  "@achievementSpeciesExplorer5Desc": {
+    "description": "5 species explorer achievement description"
+  },
+  "achievementSpeciesExplorer10": "Species Expert",
+  "@achievementSpeciesExplorer10": {
+    "description": "10 species explorer achievement title"
+  },
+  "achievementSpeciesExplorer10Desc": "Own 10 different species",
+  "@achievementSpeciesExplorer10Desc": {
+    "description": "10 species explorer achievement description"
+  },
+  "achievementSpeciesExplorer20": "Species Master",
+  "@achievementSpeciesExplorer20": {
+    "description": "20 species explorer achievement title"
+  },
+  "achievementSpeciesExplorer20Desc": "Own 20 different species",
+  "@achievementSpeciesExplorer20Desc": {
+    "description": "20 species explorer achievement description"
+  },
+  "achievementFirstAquarium": "First Aquarium",
+  "@achievementFirstAquarium": {
+    "description": "First aquarium achievement title"
+  },
+  "achievementFirstAquariumDesc": "Create your first aquarium",
+  "@achievementFirstAquariumDesc": {
+    "description": "First aquarium achievement description"
+  },
+  "achievementAquariumCollector3": "Aquarium Enthusiast",
+  "@achievementAquariumCollector3": {
+    "description": "3 aquariums collector achievement title"
+  },
+  "achievementAquariumCollector3Desc": "Own 3 aquariums",
+  "@achievementAquariumCollector3Desc": {
+    "description": "3 aquariums collector achievement description"
+  },
+  "achievementAquariumCollector10": "Aquarium Empire",
+  "@achievementAquariumCollector10": {
+    "description": "10 aquariums collector achievement title"
+  },
+  "achievementAquariumCollector10Desc": "Own 10 aquariums",
+  "@achievementAquariumCollector10Desc": {
+    "description": "10 aquariums collector achievement description"
+  },
+  "achievementFamilyFirst": "Family First",
+  "@achievementFamilyFirst": {
+    "description": "First family member achievement title"
+  },
+  "achievementFamilyFirstDesc": "Invite your first family member",
+  "@achievementFamilyFirstDesc": {
+    "description": "First family member achievement description"
+  },
+  "achievementFamilyTeam3": "Family Team",
+  "@achievementFamilyTeam3": {
+    "description": "3 family members achievement title"
+  },
+  "achievementFamilyTeam3Desc": "Have 3 family members",
+  "@achievementFamilyTeam3Desc": {
+    "description": "3 family members achievement description"
+  },
+  "achievementFirstShare": "Social Star",
+  "@achievementFirstShare": {
+    "description": "First share achievement title"
+  },
+  "achievementFirstShareDesc": "Share an achievement for the first time",
+  "@achievementFirstShareDesc": {
+    "description": "First share achievement description"
   },
   "achievementLocked": "Locked",
   "@achievementLocked": {

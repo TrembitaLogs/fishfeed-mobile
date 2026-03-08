@@ -125,6 +125,9 @@ class StreakModel extends HiveObject {
       'best_streak': longestStreak,
       'freeze_available': freezeAvailable,
       'last_feed_date': lastFeedingDate?.toIso8601String(),
+      'streak_start_date': streakStartDate?.toIso8601String(),
+      'frozen_days': frozenDays.map((d) => d.toIso8601String()).toList(),
+      'last_freeze_reset_date': lastFreezeResetDate?.toIso8601String(),
     };
   }
 }

@@ -995,6 +995,66 @@ class AppLocalizationsDe extends AppLocalizations {
       'Fischflüsterer! 🌊 1000 Fütterungen in FishFeed! Wahre Hingabe! 🐟💎';
 
   @override
+  String get shareStreak365 =>
+      'Ein ganzes Jahr! 🏅 365 Tage Fütterungen ohne Auslassen in FishFeed! 🐟💎🔥';
+
+  @override
+  String get shareEarlyBird =>
+      'Frühaufsteher! 🌅 Fische vor Sonnenaufgang in FishFeed gefüttert! 🐟';
+
+  @override
+  String get shareNightOwl =>
+      'Nachteule! 🌙 Nächtliche Fütterung in FishFeed! 🐟';
+
+  @override
+  String get shareFirstFish =>
+      'Mein erster Fisch! 🐟 Meinen ersten Fisch zu FishFeed hinzugefügt! 🎉';
+
+  @override
+  String get shareFishCollector10 =>
+      'Fischsammler! 🐠 10 Fische in meinen FishFeed-Aquarien! 🏆';
+
+  @override
+  String get shareFishCollector50 =>
+      'Meistersammler! 🐟 50 Fische in FishFeed! Ein wahrer Aquarianer! 🏆💎';
+
+  @override
+  String get shareSpeciesExplorer5 =>
+      'Artenentdecker! 🔍 5 verschiedene Arten in FishFeed! 🐟';
+
+  @override
+  String get shareSpeciesExplorer10 =>
+      'Artenexperte! 🧬 10 verschiedene Arten in FishFeed! 🐠🏆';
+
+  @override
+  String get shareSpeciesExplorer20 =>
+      'Artenmeister! 🌊 20 verschiedene Arten in FishFeed! Wahre Biodiversität! 🐟💎';
+
+  @override
+  String get shareFirstAquarium =>
+      'Mein erstes Aquarium! 🏠 Mein erstes Aquarium in FishFeed eingerichtet! 🐟';
+
+  @override
+  String get shareAquariumCollector3 =>
+      'Aquarium-Enthusiast! 🏠 3 Aquarien in FishFeed! 🐟🏆';
+
+  @override
+  String get shareAquariumCollector10 =>
+      'Aquarium-Imperium! 🏰 10 Aquarien in FishFeed! Ein wahrer Meister! 🐟💎';
+
+  @override
+  String get shareFamilyFirst =>
+      'Teamarbeit! 👨‍👩‍👧 Mein erstes Familienmitglied zu FishFeed eingeladen! 🐟';
+
+  @override
+  String get shareFamilyTeam3 =>
+      'Familienteam! 👨‍👩‍👧‍👦 3 Familienmitglieder kümmern sich um Fische in FishFeed! 🐟🏆';
+
+  @override
+  String get shareFirstShare =>
+      'Meinen ersten Erfolg in FishFeed geteilt! 📢 Mach mit! 🐟';
+
+  @override
   String shareStreakLong(String appName, int days) {
     return 'Unglaublich! 💎 Meine Serie in $appName: $days Tage! 🔥🏆';
   }
@@ -1360,6 +1420,103 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get achievementFeedings1000Desc =>
       '1000 Fütterungen insgesamt abschließen';
+
+  @override
+  String get achievementStreak365 => 'Jahres-Serie';
+
+  @override
+  String get achievementStreak365Desc =>
+      '365 aufeinanderfolgende Fütterungstage';
+
+  @override
+  String get achievementEarlyBird => 'Frühaufsteher';
+
+  @override
+  String get achievementEarlyBirdDesc =>
+      'Eine Fütterung vor 7:00 Uhr abschließen';
+
+  @override
+  String get achievementNightOwl => 'Nachteule';
+
+  @override
+  String get achievementNightOwlDesc =>
+      'Eine Fütterung nach 22:00 Uhr abschließen';
+
+  @override
+  String get achievementFirstFish => 'Erster Fisch';
+
+  @override
+  String get achievementFirstFishDesc => 'Fügen Sie Ihren ersten Fisch hinzu';
+
+  @override
+  String get achievementFishCollector10 => 'Fischsammler';
+
+  @override
+  String get achievementFishCollector10Desc => '10 Fische sammeln';
+
+  @override
+  String get achievementFishCollector50 => 'Meistersammler';
+
+  @override
+  String get achievementFishCollector50Desc => '50 Fische sammeln';
+
+  @override
+  String get achievementSpeciesExplorer5 => 'Artenentdecker';
+
+  @override
+  String get achievementSpeciesExplorer5Desc => '5 verschiedene Arten besitzen';
+
+  @override
+  String get achievementSpeciesExplorer10 => 'Artenexperte';
+
+  @override
+  String get achievementSpeciesExplorer10Desc =>
+      '10 verschiedene Arten besitzen';
+
+  @override
+  String get achievementSpeciesExplorer20 => 'Artenmeister';
+
+  @override
+  String get achievementSpeciesExplorer20Desc =>
+      '20 verschiedene Arten besitzen';
+
+  @override
+  String get achievementFirstAquarium => 'Erstes Aquarium';
+
+  @override
+  String get achievementFirstAquariumDesc =>
+      'Erstellen Sie Ihr erstes Aquarium';
+
+  @override
+  String get achievementAquariumCollector3 => 'Aquarium-Enthusiast';
+
+  @override
+  String get achievementAquariumCollector3Desc => '3 Aquarien besitzen';
+
+  @override
+  String get achievementAquariumCollector10 => 'Aquarium-Imperium';
+
+  @override
+  String get achievementAquariumCollector10Desc => '10 Aquarien besitzen';
+
+  @override
+  String get achievementFamilyFirst => 'Familie zuerst';
+
+  @override
+  String get achievementFamilyFirstDesc =>
+      'Laden Sie Ihr erstes Familienmitglied ein';
+
+  @override
+  String get achievementFamilyTeam3 => 'Familienteam';
+
+  @override
+  String get achievementFamilyTeam3Desc => '3 Familienmitglieder haben';
+
+  @override
+  String get achievementFirstShare => 'Social Star';
+
+  @override
+  String get achievementFirstShareDesc => 'Einen Erfolg zum ersten Mal teilen';
 
   @override
   String get achievementLocked => 'Gesperrt';

@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
+import 'package:fishfeed/core/constants/achievements.dart';
+import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
@@ -12,7 +14,10 @@ import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
+import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/data/models/sync_metadata_model.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/services/sync/change_tracker.dart';
@@ -145,6 +150,9 @@ class SyncService {
     required FeedingLogLocalDataSource feedingLogDs,
     required ScheduleLocalDataSource scheduleDs,
     required AuthLocalDataSource authLocalDs,
+    required StreakLocalDataSource streakDs,
+    required AchievementLocalDataSource achievementDs,
+    required UserProgressLocalDataSource progressDs,
     SyncConfig config = const SyncConfig(),
     Connectivity? connectivity,
     Logger? logger,
@@ -155,6 +163,9 @@ class SyncService {
        _feedingLogDs = feedingLogDs,
        _scheduleDs = scheduleDs,
        _authLocalDs = authLocalDs,
+       _streakDs = streakDs,
+       _achievementDs = achievementDs,
+       _progressDs = progressDs,
        _config = config,
        _connectivity = connectivity ?? Connectivity(),
        _logger = logger ?? Logger(printer: PrettyPrinter(methodCount: 0)),
@@ -165,6 +176,9 @@ class SyncService {
          authLocalDs: authLocalDs,
          feedingLogDs: feedingLogDs,
          newScheduleDs: scheduleDs,
+         streakDs: streakDs,
+         achievementDs: achievementDs,
+         progressDs: progressDs,
        );
 
   final ApiClient _apiClient;
@@ -173,6 +187,9 @@ class SyncService {
   final FeedingLogLocalDataSource _feedingLogDs;
   final ScheduleLocalDataSource _scheduleDs;
   final AuthLocalDataSource _authLocalDs;
+  final StreakLocalDataSource _streakDs;
+  final AchievementLocalDataSource _achievementDs;
+  final UserProgressLocalDataSource _progressDs;
   final SyncConfig _config;
   final Connectivity _connectivity;
   final Logger _logger;
@@ -182,6 +199,11 @@ class SyncService {
 
   /// Callback invoked when user profile is updated from server sync.
   void Function(User)? onUserProfileUpdated;
+
+  /// Callback invoked after sync downloads and applies server data.
+  ///
+  /// Used to refresh achievement UI state after server data is applied.
+  void Function()? onSyncDownloadCompleted;
 
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _retryTimer;
@@ -442,7 +464,11 @@ class SyncService {
         return SyncResult(uploadedCount: changes.length, downloadedCount: 0);
       }
 
-      return await _processSyncResponse(data, changes);
+      return await _processSyncResponse(
+        data,
+        changes,
+        isFullSync: effectiveLastSyncAt == null,
+      );
     } on DioException catch (e) {
       _logger.e('SyncService: Network error', error: e);
       return SyncResult(
@@ -455,8 +481,9 @@ class SyncService {
 
   Future<SyncResult> _processSyncResponse(
     Map<String, dynamic> data,
-    List<SyncChange> sentChanges,
-  ) async {
+    List<SyncChange> sentChanges, {
+    bool isFullSync = false,
+  }) async {
     int downloadedCount = 0;
     final errors = <String>[];
     final conflicts = <SyncConflict<Map<String, dynamic>>>[];
@@ -472,7 +499,10 @@ class SyncService {
     // Handle server_state - apply server data to local storage
     final serverState = data['server_state'] as Map<String, dynamic>?;
     if (serverState != null) {
-      downloadedCount += await _applyServerState(serverState);
+      downloadedCount += await _applyServerState(
+        serverState,
+        isFullSync: isFullSync,
+      );
     }
 
     // Handle deleted entities
@@ -500,6 +530,11 @@ class SyncService {
           }
         }
       }
+    }
+
+    // Notify listeners that server data has been applied
+    if (downloadedCount > 0) {
+      onSyncDownloadCompleted?.call();
     }
 
     // Save sync token
@@ -545,7 +580,10 @@ class SyncService {
 
   // ============ Apply Server State ============
 
-  Future<int> _applyServerState(Map<String, dynamic> serverState) async {
+  Future<int> _applyServerState(
+    Map<String, dynamic> serverState, {
+    bool isFullSync = false,
+  }) async {
     int appliedCount = 0;
 
     // Apply aquariums
@@ -583,6 +621,57 @@ class SyncService {
       for (final scheduleData in schedules) {
         await _scheduleDs.applyServerUpdate(
           scheduleData as Map<String, dynamic>,
+        );
+        appliedCount++;
+      }
+    }
+
+    // Apply streaks
+    final streaks = serverState['streaks'] as List<dynamic>?;
+    if (streaks != null) {
+      for (final streakData in streaks) {
+        await _streakDs.applyServerUpdate(streakData as Map<String, dynamic>);
+        appliedCount++;
+      }
+    }
+
+    // Apply achievements
+    final achievements = serverState['achievements'] as List<dynamic>?;
+    final serverAchievementTypes = <String>{};
+    if (achievements != null) {
+      for (final achievementData in achievements) {
+        final map = achievementData as Map<String, dynamic>;
+        await _achievementDs.applyServerUpdate(map);
+        // Track which types the server knows about (as mobile enum names)
+        final serverKey = map['achievement_type'] as String?;
+        if (serverKey != null) {
+          final mobileType = AchievementTypeExtension.fromServerKey(serverKey);
+          if (mobileType != null) {
+            serverAchievementTypes.add(mobileType.name);
+          }
+        }
+        appliedCount++;
+      }
+    }
+
+    // On full sync, reconcile: mark local unlocked achievements
+    // not present on server as unsynced so they get re-uploaded.
+    if (isFullSync) {
+      final userId = _authLocalDs.getCurrentUser()?.id;
+      if (userId != null) {
+        await _achievementDs.reconcileWithServer(
+          userId,
+          serverAchievementTypes,
+        );
+      }
+    }
+
+    // Apply progress
+    final progress = serverState['progress'] as List<dynamic>?;
+    if (progress != null) {
+      for (final progressData in progress) {
+        await _progressDs.applyServerUpdate(
+          progressData as Map<String, dynamic>,
         );
         appliedCount++;
       }
@@ -675,10 +764,11 @@ class SyncService {
         case EntityType.userProfile:
           await _authLocalDs.markUserSynced(now);
         case EntityType.streak:
+          await _streakDs.markAsSynced(change.entityId, now);
         case EntityType.achievement:
+          await _achievementDs.markAsSynced(change.entityId, now);
         case EntityType.progress:
-          // Handle in future
-          break;
+          await _progressDs.markAsSynced(change.entityId, now);
       }
     }
   }
@@ -705,9 +795,11 @@ class SyncService {
         case EntityType.userProfile:
           await _authLocalDs.markUserSynced(now);
         case EntityType.streak:
+          await _streakDs.markAsSynced(change.entityId, now);
         case EntityType.achievement:
+          await _achievementDs.markAsSynced(change.entityId, now);
         case EntityType.progress:
-          break;
+          await _progressDs.markAsSynced(change.entityId, now);
       }
     }
   }
@@ -972,6 +1064,9 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
   final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
   final authLocalDs = ref.watch(authLocalDataSourceProvider);
+  final streakDs = ref.watch(streakLocalDataSourceProvider);
+  final achievementDs = ref.watch(achievementLocalDataSourceProvider);
+  final progressDs = ref.watch(userProgressLocalDataSourceProvider);
 
   final service = SyncService(
     apiClient: apiClient,
@@ -980,7 +1075,19 @@ final syncServiceProvider = Provider<SyncService>((ref) {
     feedingLogDs: feedingLogDs,
     scheduleDs: scheduleDs,
     authLocalDs: authLocalDs,
+    streakDs: streakDs,
+    achievementDs: achievementDs,
+    progressDs: progressDs,
   );
+
+  // Refresh achievements after sync downloads data (e.g., fresh install)
+  service.onSyncDownloadCompleted = () {
+    final notifier = ref.read(achievementsProvider.notifier);
+    // Always reload state from Hive first (server may have sent unlocked achievements)
+    notifier.loadAchievements();
+    // Then check for new achievements based on downloaded data (e.g., feeding logs)
+    notifier.checkAchievements();
+  };
 
   service.startListening();
 

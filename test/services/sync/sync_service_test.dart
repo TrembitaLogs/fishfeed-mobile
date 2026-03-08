@@ -8,12 +8,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
@@ -33,6 +36,14 @@ class MockScheduleLocalDataSource extends Mock
     implements ScheduleLocalDataSource {}
 
 class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
+
+class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
+
+class MockAchievementLocalDataSource extends Mock
+    implements AchievementLocalDataSource {}
+
+class MockUserProgressLocalDataSource extends Mock
+    implements UserProgressLocalDataSource {}
 
 class MockApiClient extends Mock implements ApiClient {}
 
@@ -75,6 +86,9 @@ void main() {
   late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockScheduleLocalDataSource mockScheduleDs;
   late MockAuthLocalDataSource mockAuthLocalDs;
+  late MockStreakLocalDataSource mockStreakDs;
+  late MockAchievementLocalDataSource mockAchievementDs;
+  late MockUserProgressLocalDataSource mockProgressDs;
   late MockApiClient mockApiClient;
   late MockDio mockDio;
   late MockConnectivity mockConnectivity;
@@ -86,6 +100,9 @@ void main() {
     mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockScheduleDs = MockScheduleLocalDataSource();
     mockAuthLocalDs = MockAuthLocalDataSource();
+    mockStreakDs = MockStreakLocalDataSource();
+    mockAchievementDs = MockAchievementLocalDataSource();
+    mockProgressDs = MockUserProgressLocalDataSource();
     mockApiClient = MockApiClient();
     mockDio = MockDio();
     mockConnectivity = MockConnectivity();
@@ -109,6 +126,9 @@ void main() {
       feedingLogDs: mockFeedingLogDs,
       scheduleDs: mockScheduleDs,
       authLocalDs: mockAuthLocalDs,
+      streakDs: mockStreakDs,
+      achievementDs: mockAchievementDs,
+      progressDs: mockProgressDs,
       config: config ?? const SyncConfig(),
       connectivity: mockConnectivity,
       logger: Logger(printer: PrettyPrinter(), level: Level.off),
@@ -170,6 +190,37 @@ void main() {
       () => mockScheduleDs.applyServerUpdate(any()),
     ).thenAnswer((_) async {});
     when(() => mockScheduleDs.delete(any())).thenAnswer((_) async => true);
+
+    // Streak mocks
+    when(() => mockStreakDs.getUnsyncedStreaks()).thenReturn([]);
+    when(() => mockStreakDs.getUnsyncedCount()).thenReturn(0);
+    when(() => mockStreakDs.hasUnsyncedStreaks()).thenReturn(false);
+    when(
+      () => mockStreakDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async {});
+    when(() => mockStreakDs.applyServerUpdate(any())).thenAnswer((_) async {});
+
+    // Achievement mocks
+    when(() => mockAchievementDs.getUnsyncedAchievements()).thenReturn([]);
+    when(() => mockAchievementDs.getUnsyncedCount()).thenReturn(0);
+    when(() => mockAchievementDs.hasUnsyncedAchievements()).thenReturn(false);
+    when(
+      () => mockAchievementDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockAchievementDs.applyServerUpdate(any()),
+    ).thenAnswer((_) async {});
+
+    // Progress mocks
+    when(() => mockProgressDs.getUnsyncedProgress()).thenReturn([]);
+    when(() => mockProgressDs.getUnsyncedCount()).thenReturn(0);
+    when(() => mockProgressDs.hasUnsyncedProgress()).thenReturn(false);
+    when(
+      () => mockProgressDs.markAsSynced(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockProgressDs.applyServerUpdate(any()),
+    ).thenAnswer((_) async {});
 
     // Auth local mocks
     when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(null);

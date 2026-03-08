@@ -8,6 +8,7 @@ import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
+import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
@@ -251,7 +252,8 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
   /// Marks a feeding as skipped.
   ///
   /// Note: Skipping does NOT reset streak - streak is only reset
-  /// by the server when a day is completely missed (handled in _check_streak_breaks).
+  /// when a full day is missed (detected by client-side break detection
+  /// in [CalculateStreakUseCase]).
   Future<void> markAsMissed(String scheduleId) async {
     final feeding = state.feedings.firstWhere(
       (f) => f.scheduleId == scheduleId,
@@ -280,9 +282,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
         // Refresh to get updated state from generator
         await refresh();
 
-        // Note: NO streak reset here - server handles streak breaks
+        // Note: NO streak reset here - break detection runs on loadStreak
 
-        // Notify streak provider to refresh (to get latest from sync)
+        // Notify streak provider to refresh (runs break detection)
         _ref.invalidate(currentStreakProvider);
 
       case FeedingAlreadyDone(:final message):
@@ -596,46 +598,53 @@ class StreakState {
 
 /// Notifier for managing current streak state.
 ///
-/// Reads streak from Hive and provides methods to update it.
-/// Note: Streak reset is handled by server during sync, not client.
+/// Reads streak from Hive and runs client-side break detection.
+/// Mobile is the source of truth for streak state; server is sync-only storage.
 class StreakNotifier extends StateNotifier<StreakState> {
   StreakNotifier({
     required StreakLocalDataSource streakDataSource,
+    required CalculateStreakUseCase calculateStreakUseCase,
     required Ref ref,
   }) : _streakDataSource = streakDataSource,
+       _calculateStreakUseCase = calculateStreakUseCase,
        _ref = ref,
        super(const StreakState()) {
     loadStreak();
   }
 
   final StreakLocalDataSource _streakDataSource;
+  final CalculateStreakUseCase _calculateStreakUseCase;
   final Ref _ref;
 
-  /// Loads the current streak from Hive.
+  /// Loads the current streak from Hive with break detection.
+  ///
+  /// After loading the streak, runs [CalculateStreakUseCase] which checks
+  /// for missed days and applies freeze or resets the streak accordingly.
   Future<void> loadStreak() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
-      final streakModel = _streakDataSource.getStreakByUserId(userId);
 
-      if (streakModel != null) {
-        state = state.copyWith(
-          streak: streakModel.toEntity(),
-          isLoading: false,
-        );
-      } else {
-        // No streak exists yet - return default
-        state = state.copyWith(
-          streak: Streak(
-            id: 'streak_$userId',
-            userId: userId,
-            currentStreak: 0,
-            longestStreak: 0,
-          ),
-          isLoading: false,
-        );
-      }
+      // Use CalculateStreakUseCase which handles break detection
+      final result = await _calculateStreakUseCase(
+        CalculateStreakParams(userId: userId),
+      );
+
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'Failed to load streak: $failure',
+          );
+        },
+        (calculationResult) {
+          state = state.copyWith(
+            streak: calculationResult.streak,
+            isLoading: false,
+          );
+        },
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -676,19 +685,23 @@ class StreakNotifier extends StateNotifier<StreakState> {
       state = state.copyWith(error: 'Failed to increment streak: $e');
     }
   }
-
-  // Note: resetStreak() removed - streak reset is handled by server
-  // during POST /sync via _check_streak_breaks function.
-  // Client only increments streak on markAsFed and reads from Hive
-  // which is updated during sync with server values.
 }
 
 /// Provider for current streak state.
 final currentStreakProvider =
     StateNotifierProvider<StreakNotifier, StreakState>((ref) {
       final streakDs = ref.watch(streakLocalDataSourceProvider);
+      final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
+      final calculateStreakUseCase = CalculateStreakUseCase(
+        streakDataSource: streakDs,
+        feedingLogDataSource: feedingLogDs,
+      );
 
-      return StreakNotifier(streakDataSource: streakDs, ref: ref);
+      return StreakNotifier(
+        streakDataSource: streakDs,
+        calculateStreakUseCase: calculateStreakUseCase,
+        ref: ref,
+      );
     });
 
 /// Provider for just the current streak count.

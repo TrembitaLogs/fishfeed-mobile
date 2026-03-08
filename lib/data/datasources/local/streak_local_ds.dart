@@ -78,6 +78,94 @@ class StreakLocalDataSource {
     return streaks;
   }
 
+  // ============ Sync Operations ============
+
+  /// Returns streaks that haven't been synced to the server.
+  List<StreakModel> getUnsyncedStreaks() {
+    return _streaks.values
+        .whereType<StreakModel>()
+        .where((s) => !s.synced && s.userId != 'default_user')
+        .toList();
+  }
+
+  /// Returns the count of unsynced streaks.
+  int getUnsyncedCount() {
+    return getUnsyncedStreaks().length;
+  }
+
+  /// Whether there are unsynced streaks.
+  bool hasUnsyncedStreaks() {
+    return _streaks.values.whereType<StreakModel>().any((s) => !s.synced);
+  }
+
+  /// Marks a streak as synced with the server.
+  Future<void> markAsSynced(String id, DateTime serverTime) async {
+    final streak = getStreakById(id);
+    if (streak != null) {
+      streak.synced = true;
+      streak.serverUpdatedAt = serverTime;
+      await streak.save();
+    }
+  }
+
+  /// Applies a server streak update to local storage.
+  ///
+  /// Compares timestamps: if server is newer, updates local Hive.
+  /// If local is newer, skips to preserve client-authoritative data.
+  Future<void> applyServerUpdate(Map<String, dynamic> serverData) async {
+    final userId = serverData['user_id'] as String?;
+    if (userId == null) return;
+
+    final id = 'streak_$userId';
+    final existing = getStreakById(id);
+
+    final serverUpdatedAtStr =
+        serverData['updated_at'] as String? ??
+        serverData['server_updated_at'] as String?;
+    final serverUpdatedAt = serverUpdatedAtStr != null
+        ? DateTime.tryParse(serverUpdatedAtStr)
+        : null;
+
+    // If local exists and has unsynced changes with a newer timestamp, skip
+    if (existing != null && !existing.synced && existing.updatedAt != null) {
+      if (serverUpdatedAt != null &&
+          existing.updatedAt!.isAfter(serverUpdatedAt)) {
+        return;
+      }
+    }
+
+    final currentStreak = serverData['current_streak'] as int? ?? 0;
+    final bestStreak = serverData['best_streak'] as int? ?? 0;
+    final freezeAvailable =
+        serverData['freeze_available'] as int? ?? kDefaultFreezePerMonth;
+    final lastFeedDateStr = serverData['last_feed_date'] as String?;
+    final lastFeedDate = lastFeedDateStr != null
+        ? DateTime.tryParse(lastFeedDateStr)
+        : null;
+
+    if (existing != null) {
+      existing.currentStreak = currentStreak;
+      existing.longestStreak = bestStreak;
+      existing.freezeAvailable = freezeAvailable;
+      existing.lastFeedingDate = lastFeedDate;
+      existing.synced = true;
+      existing.serverUpdatedAt = serverUpdatedAt;
+      await existing.save();
+    } else {
+      final streak = StreakModel(
+        id: id,
+        userId: userId,
+        currentStreak: currentStreak,
+        longestStreak: bestStreak,
+        freezeAvailable: freezeAvailable,
+        lastFeedingDate: lastFeedDate,
+        synced: true,
+        serverUpdatedAt: serverUpdatedAt,
+      );
+      await saveStreak(streak);
+    }
+  }
+
   // ============ Streak Update Operations ============
 
   /// Increments the current streak for a user.
@@ -106,6 +194,8 @@ class StreakLocalDataSource {
         longestStreak: 1,
         lastFeedingDate: today,
         streakStartDate: today,
+        synced: false,
+        updatedAt: DateTime.now().toUtc(),
       );
     } else {
       final lastDate = streak.lastFeedingDate;
@@ -135,6 +225,8 @@ class StreakLocalDataSource {
       }
 
       streak.lastFeedingDate = today;
+      streak.synced = false;
+      streak.updatedAt = DateTime.now().toUtc();
     }
 
     await saveStreak(streak);
@@ -144,6 +236,7 @@ class StreakLocalDataSource {
   /// Resets the current streak for a user to zero.
   ///
   /// [userId] - The ID of the user whose streak to reset.
+  /// Sets synced to false so the reset is uploaded during next sync.
   /// Returns the updated streak or `null` if no streak exists.
   Future<StreakModel?> resetStreak(String userId) async {
     final streak = getStreakByUserId(userId);
@@ -153,6 +246,8 @@ class StreakLocalDataSource {
 
     streak.currentStreak = 0;
     streak.streakStartDate = null;
+    streak.synced = false;
+    streak.updatedAt = DateTime.now().toUtc();
     await saveStreak(streak);
     return streak;
   }
@@ -259,6 +354,54 @@ class StreakLocalDataSource {
     streak.freezeAvailable--;
     streak.frozenDays = [...streak.frozenDays, normalizedDate];
     streak.lastFeedingDate = normalizedDate;
+    streak.synced = false;
+    streak.updatedAt = DateTime.now().toUtc();
+
+    await saveStreak(streak);
+    return streak;
+  }
+
+  /// Uses multiple freeze days to cover consecutive missed days.
+  ///
+  /// [userId] - The ID of the user.
+  /// [count] - The number of freeze days to use.
+  ///
+  /// Returns the updated streak. If not enough freezes are available,
+  /// uses as many as possible and then resets the streak.
+  Future<StreakModel> useFreezeMultiple(String userId, int count) async {
+    final streak = getStreakByUserId(userId);
+    if (streak == null) {
+      return StreakModel(
+        id: 'streak_$userId',
+        userId: userId,
+        currentStreak: 0,
+        longestStreak: 0,
+        synced: false,
+        updatedAt: DateTime.now().toUtc(),
+      );
+    }
+
+    final today = DateTime.now();
+    for (int i = 0; i < count; i++) {
+      if (streak.freezeAvailable <= 0) break;
+      // Each missed day is one day before today going backwards
+      final missedDate = DateTime(
+        today.year,
+        today.month,
+        today.day,
+      ).subtract(Duration(days: count - i));
+      streak.freezeAvailable--;
+      streak.frozenDays = [...streak.frozenDays, missedDate];
+    }
+
+    // Update lastFeedingDate to yesterday so streak remains valid
+    streak.lastFeedingDate = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: 1));
+    streak.synced = false;
+    streak.updatedAt = DateTime.now().toUtc();
 
     await saveStreak(streak);
     return streak;
@@ -309,6 +452,8 @@ class StreakLocalDataSource {
     // No freeze available - reset streak
     streak.currentStreak = 0;
     streak.streakStartDate = null;
+    streak.synced = false;
+    streak.updatedAt = DateTime.now().toUtc();
     await saveStreak(streak);
     return streak;
   }

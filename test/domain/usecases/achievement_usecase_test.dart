@@ -4,7 +4,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/models/achievement_model.dart';
@@ -24,6 +26,11 @@ class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 class MockUserProgressLocalDataSource extends Mock
     implements UserProgressLocalDataSource {}
 
+class MockAquariumLocalDataSource extends Mock
+    implements AquariumLocalDataSource {}
+
+class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
+
 class MockBox extends Mock implements Box<dynamic> {}
 
 class FakeAchievementModel extends Fake implements AchievementModel {}
@@ -38,6 +45,8 @@ void main() {
   late MockFeedingLogLocalDataSource mockFeedingLogDs;
   late MockStreakLocalDataSource mockStreakDs;
   late MockUserProgressLocalDataSource mockProgressDs;
+  late MockAquariumLocalDataSource mockAquariumDs;
+  late MockFishLocalDataSource mockFishDs;
   late AchievementUseCase useCase;
 
   setUp(() {
@@ -45,12 +54,20 @@ void main() {
     mockFeedingLogDs = MockFeedingLogLocalDataSource();
     mockStreakDs = MockStreakLocalDataSource();
     mockProgressDs = MockUserProgressLocalDataSource();
+    mockAquariumDs = MockAquariumLocalDataSource();
+    mockFishDs = MockFishLocalDataSource();
+
+    // Default stubs for aquarium/fish data sources
+    when(() => mockAquariumDs.getAquariumsByUserId(any())).thenReturn([]);
+    when(() => mockFishDs.getFishByAquariumId(any())).thenReturn([]);
 
     useCase = AchievementUseCase(
       achievementDataSource: mockAchievementDs,
       feedingLogDataSource: mockFeedingLogDs,
       streakDataSource: mockStreakDs,
       progressDataSource: mockProgressDs,
+      aquariumDataSource: mockAquariumDs,
+      fishDataSource: mockFishDs,
     );
   });
 
@@ -145,19 +162,18 @@ void main() {
         ).thenReturn(false);
       }
 
-      // Unlock firstFeeding
+      // Unlock any achievement (firstFeeding will match, plus earlyBird/nightOwl
+      // may trigger depending on the time of day the test runs)
       when(
-        () => mockAchievementDs.unlockAchievement(
-          'user_1',
-          AchievementType.firstFeeding,
-        ),
-      ).thenAnswer(
-        (_) async => createTestAchievement(
-          type: AchievementType.firstFeeding,
+        () => mockAchievementDs.unlockAchievement('user_1', any()),
+      ).thenAnswer((invocation) async {
+        final type = invocation.positionalArguments[1] as AchievementType;
+        return createTestAchievement(
+          type: type,
           unlockedAt: DateTime.now(),
           progress: 1.0,
-        ),
-      );
+        );
+      });
 
       // Update progress for other achievements
       when(
@@ -177,15 +193,12 @@ void main() {
       expect(result.isRight(), isTrue);
       result.fold((_) => fail('Should return success'), (checkResult) {
         expect(checkResult.hasUnlocked, isTrue);
-        expect(checkResult.newlyUnlocked.length, 1);
-        expect(
-          checkResult.newlyUnlocked.first.achievementType,
-          AchievementType.firstFeeding,
-        );
-        expect(
-          checkResult.totalXpAwarded,
-          AchievementType.firstFeeding.xpReward,
-        );
+        // firstFeeding must be unlocked; earlyBird/nightOwl may also unlock
+        // depending on what time the test runs
+        final unlockedTypes = checkResult.newlyUnlocked
+            .map((a) => a.achievementType)
+            .toList();
+        expect(unlockedTypes, contains(AchievementType.firstFeeding));
       });
     });
 
@@ -281,6 +294,22 @@ void main() {
       ).thenAnswer(
         (_) async => createTestAchievement(type: AchievementType.streak7),
       );
+
+      // earlyBird/nightOwl may unlock depending on time of day
+      when(
+        () => mockAchievementDs.unlockAchievement('user_1', any()),
+      ).thenAnswer((invocation) async {
+        final type = invocation.positionalArguments[1] as AchievementType;
+        return createTestAchievement(
+          type: type,
+          unlockedAt: DateTime.now(),
+          progress: 1.0,
+        );
+      });
+
+      when(
+        () => mockProgressDs.addXp(any(), any()),
+      ).thenAnswer((_) async => createTestProgress());
 
       // Act
       final result = await useCase.checkAchievements('user_1');
@@ -435,6 +464,96 @@ void main() {
         expect(list.length, AchievementType.values.length);
       });
     });
+  });
+
+  group('new achievement types', () {
+    test('should unlock streak365 when streak reaches 365 days', () async {
+      // Arrange
+      when(() => mockFeedingLogDs.getAll()).thenReturn([]);
+      when(
+        () => mockStreakDs.getStreakByUserId('user_1'),
+      ).thenReturn(createTestStreak(currentStreak: 365));
+
+      for (final type in AchievementType.values) {
+        when(
+          () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+        ).thenReturn(false);
+      }
+
+      when(
+        () => mockAchievementDs.unlockAchievement('user_1', any()),
+      ).thenAnswer((invocation) async {
+        final type = invocation.positionalArguments[1] as AchievementType;
+        return createTestAchievement(
+          type: type,
+          unlockedAt: DateTime.now(),
+          progress: 1.0,
+        );
+      });
+
+      when(
+        () => mockAchievementDs.updateProgress(any(), any(), any()),
+      ).thenAnswer(
+        (_) async => createTestAchievement(type: AchievementType.streak7),
+      );
+
+      when(
+        () => mockProgressDs.addXp(any(), any()),
+      ).thenAnswer((_) async => createTestProgress());
+
+      // Act
+      final result = await useCase.checkAchievements('user_1');
+
+      // Assert
+      expect(result.isRight(), isTrue);
+      result.fold((_) => fail('Should return success'), (checkResult) {
+        final unlockedTypes = checkResult.newlyUnlocked
+            .map((a) => a.achievementType)
+            .toList();
+        expect(unlockedTypes, contains(AchievementType.streak365));
+        expect(unlockedTypes, contains(AchievementType.streak100));
+        expect(unlockedTypes, contains(AchievementType.streak30));
+        expect(unlockedTypes, contains(AchievementType.streak7));
+      });
+    });
+
+    test(
+      'should not unlock earlyBird when hasEarlyBirdFeeding is false',
+      () async {
+        // Arrange - default UserStats has hasEarlyBirdFeeding = false
+        when(() => mockFeedingLogDs.getAll()).thenReturn([]);
+        when(() => mockStreakDs.getStreakByUserId('user_1')).thenReturn(null);
+
+        for (final type in AchievementType.values) {
+          when(
+            () => mockAchievementDs.isAchievementUnlocked('user_1', type),
+          ).thenReturn(false);
+        }
+
+        when(
+          () => mockAchievementDs.updateProgress(any(), any(), any()),
+        ).thenAnswer(
+          (_) async => createTestAchievement(type: AchievementType.streak7),
+        );
+
+        // Act
+        final result = await useCase.checkAchievements('user_1');
+
+        // Assert
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Should return success'), (checkResult) {
+          final unlockedTypes = checkResult.newlyUnlocked
+              .map((a) => a.achievementType)
+              .toList();
+          expect(unlockedTypes, isNot(contains(AchievementType.earlyBird)));
+          expect(unlockedTypes, isNot(contains(AchievementType.nightOwl)));
+          expect(unlockedTypes, isNot(contains(AchievementType.firstFish)));
+          expect(unlockedTypes, isNot(contains(AchievementType.firstAquarium)));
+          expect(unlockedTypes, isNot(contains(AchievementType.familyFirst)));
+          expect(unlockedTypes, isNot(contains(AchievementType.firstShare)));
+        });
+      },
+    );
   });
 
   group('getUnlockedAchievements', () {

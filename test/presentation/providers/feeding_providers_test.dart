@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,6 +16,7 @@ import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
+import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
@@ -35,7 +37,46 @@ class MockAquariumLocalDataSource extends Mock
 
 class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
 
+class MockCalculateStreakUseCase extends Mock
+    implements CalculateStreakUseCase {}
+
+/// Test helper: StreakNotifier that skips async loadStreak() in constructor.
+///
+/// Prevents "dispose after use" errors in tests where the provider
+/// gets invalidated (e.g., after markAsFed/markAsMissed).
+class TestStreakNotifier extends StreakNotifier {
+  TestStreakNotifier({
+    required super.streakDataSource,
+    required super.calculateStreakUseCase,
+    required super.ref,
+    this.initialStreak,
+  });
+
+  /// Optional initial streak to set immediately.
+  final Streak? initialStreak;
+
+  @override
+  Future<void> loadStreak() async {
+    // No-op: set state synchronously to avoid async dispose issues in tests.
+    if (initialStreak != null) {
+      state = StreakState(streak: initialStreak);
+    }
+  }
+}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(
+      StreakModel(
+        id: 'fallback',
+        userId: 'fallback',
+        currentStreak: 0,
+        longestStreak: 0,
+      ),
+    );
+    registerFallbackValue(const CalculateStreakParams(userId: 'fallback'));
+  });
+
   group('TodayFeedingsState', () {
     test('isEmpty returns true when feedings empty, not loading, no error', () {
       const state = TodayFeedingsState(feedings: [], isLoading: false);
@@ -162,6 +203,8 @@ void main() {
     late MockFeedingService mockFeedingService;
     late MockFishLocalDataSource mockFishDs;
     late MockAquariumLocalDataSource mockAquariumDs;
+    late MockStreakLocalDataSource mockStreakDs;
+    late MockCalculateStreakUseCase mockCalculateStreakUseCase;
     late ProviderContainer container;
 
     final testUser = User(
@@ -178,10 +221,28 @@ void main() {
       mockFeedingService = MockFeedingService();
       mockFishDs = MockFishLocalDataSource();
       mockAquariumDs = MockAquariumLocalDataSource();
+      mockStreakDs = MockStreakLocalDataSource();
+      mockCalculateStreakUseCase = MockCalculateStreakUseCase();
 
       // Set up default empty responses for fish and aquarium data sources
       when(() => mockFishDs.getAllFish()).thenReturn([]);
       when(() => mockAquariumDs.getAllAquariums()).thenReturn([]);
+
+      // Default mock for CalculateStreakUseCase used by StreakNotifier
+      when(() => mockCalculateStreakUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 0,
+              longestStreak: 0,
+            ),
+            isActive: false,
+            daysUntilExpiry: 0,
+          ),
+        ),
+      );
     });
 
     tearDown(() {
@@ -290,7 +351,17 @@ void main() {
           feedingServiceProvider.overrideWithValue(mockFeedingService),
           fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
           aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          currentStreakProvider.overrideWith(
+            (ref) => TestStreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockCalculateStreakUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
+          checkAchievementsProvider.overrideWith(
+            (ref) async => <Achievement>[],
+          ),
         ],
       );
 
@@ -386,6 +457,13 @@ void main() {
             feedingServiceProvider.overrideWithValue(mockFeedingService),
             fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
             aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+            currentStreakProvider.overrideWith(
+              (ref) => TestStreakNotifier(
+                streakDataSource: mockStreakDs,
+                calculateStreakUseCase: mockCalculateStreakUseCase,
+                ref: ref,
+              ),
+            ),
             currentUserProvider.overrideWithValue(testUser),
           ],
         );
@@ -421,6 +499,9 @@ void main() {
             notes: any(named: 'notes'),
           ),
         );
+
+        // Wait for invalidated currentStreakProvider to complete
+        await Future<void>.delayed(const Duration(milliseconds: 100));
       },
     );
 
@@ -582,6 +663,7 @@ void main() {
 
   group('StreakNotifier', () {
     late MockStreakLocalDataSource mockStreakDs;
+    late MockCalculateStreakUseCase mockCalculateStreakUseCase;
     late ProviderContainer container;
 
     final testUser = User(
@@ -595,6 +677,7 @@ void main() {
 
     setUp(() {
       mockStreakDs = MockStreakLocalDataSource();
+      mockCalculateStreakUseCase = MockCalculateStreakUseCase();
     });
 
     tearDown(() {
@@ -609,18 +692,31 @@ void main() {
         longestStreak: 10,
       );
 
-      when(
-        () => mockStreakDs.getStreakByUserId('user_123'),
-      ).thenReturn(streakModel);
+      when(() => mockCalculateStreakUseCase.call(any())).thenAnswer(
+        (_) async => Right(
+          StreakCalculationResult(
+            streak: streakModel.toEntity(),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
+        ),
+      );
 
       container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockCalculateStreakUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
-      // Wait for load
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final state = container.read(currentStreakProvider);
@@ -631,15 +727,36 @@ void main() {
     });
 
     test('loadStreak returns default streak when none exists', () async {
-      when(() => mockStreakDs.getStreakByUserId('user_123')).thenReturn(null);
+      when(() => mockCalculateStreakUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 0,
+              longestStreak: 0,
+            ),
+            isActive: false,
+            daysUntilExpiry: 0,
+          ),
+        ),
+      );
 
       container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockCalculateStreakUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final state = container.read(currentStreakProvider);
@@ -650,13 +767,6 @@ void main() {
     });
 
     test('incrementStreak calls datasource incrementStreak', () async {
-      final initialStreak = StreakModel(
-        id: 'streak_user_123',
-        userId: 'user_123',
-        currentStreak: 5,
-        longestStreak: 10,
-      );
-
       final updatedStreak = StreakModel(
         id: 'streak_user_123',
         userId: 'user_123',
@@ -664,20 +774,39 @@ void main() {
         longestStreak: 10,
       );
 
-      when(
-        () => mockStreakDs.getStreakByUserId('user_123'),
-      ).thenReturn(initialStreak);
+      when(() => mockCalculateStreakUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 5,
+              longestStreak: 10,
+            ),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
+        ),
+      );
       when(
         () => mockStreakDs.incrementStreak('user_123', any()),
       ).thenAnswer((_) async => updatedStreak);
 
       container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockCalculateStreakUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       await container.read(currentStreakProvider.notifier).incrementStreak();
@@ -714,17 +843,22 @@ void main() {
   group('currentStreakCountProvider', () {
     test('returns currentStreak from streakProvider', () async {
       final mockStreakDs = MockStreakLocalDataSource();
+      final mockUseCase = MockCalculateStreakUseCase();
 
-      final streakModel = StreakModel(
-        id: 'streak_user_123',
-        userId: 'user_123',
-        currentStreak: 7,
-        longestStreak: 15,
+      when(() => mockUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 7,
+              longestStreak: 15,
+            ),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
+        ),
       );
-
-      when(
-        () => mockStreakDs.getStreakByUserId('user_123'),
-      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',
@@ -737,11 +871,19 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final count = container.read(currentStreakCountProvider);
@@ -754,17 +896,22 @@ void main() {
   group('isStreakActiveProvider', () {
     test('returns true when streak > 0', () async {
       final mockStreakDs = MockStreakLocalDataSource();
+      final mockUseCase = MockCalculateStreakUseCase();
 
-      final streakModel = StreakModel(
-        id: 'streak_user_123',
-        userId: 'user_123',
-        currentStreak: 3,
-        longestStreak: 10,
+      when(() => mockUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 3,
+              longestStreak: 10,
+            ),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
+        ),
       );
-
-      when(
-        () => mockStreakDs.getStreakByUserId('user_123'),
-      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',
@@ -777,11 +924,19 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final isActive = container.read(isStreakActiveProvider);
@@ -792,17 +947,22 @@ void main() {
 
     test('returns false when streak is 0', () async {
       final mockStreakDs = MockStreakLocalDataSource();
+      final mockUseCase = MockCalculateStreakUseCase();
 
-      final streakModel = StreakModel(
-        id: 'streak_user_123',
-        userId: 'user_123',
-        currentStreak: 0,
-        longestStreak: 10,
+      when(() => mockUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 0,
+              longestStreak: 10,
+            ),
+            isActive: false,
+            daysUntilExpiry: 0,
+          ),
+        ),
       );
-
-      when(
-        () => mockStreakDs.getStreakByUserId('user_123'),
-      ).thenReturn(streakModel);
 
       final testUser = User(
         id: 'user_123',
@@ -815,11 +975,19 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => StreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
 
+      // Trigger provider creation (lazy) then wait for async loadStreak
+      container.read(currentStreakProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final isActive = container.read(isStreakActiveProvider);
@@ -895,6 +1063,7 @@ void main() {
       final mockFishDs = MockFishLocalDataSource();
       final mockAquariumDs = MockAquariumLocalDataSource();
       final mockStreakDs = MockStreakLocalDataSource();
+      final mockUseCase = MockCalculateStreakUseCase();
 
       final now = DateTime.now();
       final scheduledFor = DateTime(now.year, now.month, now.day, 9, 0);
@@ -948,12 +1117,19 @@ void main() {
         ),
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123')).thenReturn(
-        StreakModel(
-          id: 'streak_user_123',
-          userId: 'user_123',
-          currentStreak: 5,
-          longestStreak: 10,
+      // Mock CalculateStreakUseCase for StreakNotifier
+      when(() => mockUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 5,
+              longestStreak: 10,
+            ),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
         ),
       );
 
@@ -972,7 +1148,13 @@ void main() {
           feedingServiceProvider.overrideWithValue(mockFeedingService),
           fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
           aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => TestStreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
           checkAchievementsProvider.overrideWith(
             (ref) async => <Achievement>[],
@@ -999,6 +1181,9 @@ void main() {
         ),
       ).called(1);
 
+      // Wait for invalidated currentStreakProvider to re-create and complete
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
       container.dispose();
     });
 
@@ -1008,6 +1193,7 @@ void main() {
       final mockFishDs = MockFishLocalDataSource();
       final mockAquariumDs = MockAquariumLocalDataSource();
       final mockStreakDs = MockStreakLocalDataSource();
+      final mockUseCase = MockCalculateStreakUseCase();
 
       final now = DateTime.now();
       final scheduledFor = DateTime(now.year, now.month, now.day, 9, 0);
@@ -1061,12 +1247,19 @@ void main() {
         ),
       );
 
-      when(() => mockStreakDs.getStreakByUserId('user_123')).thenReturn(
-        StreakModel(
-          id: 'streak_user_123',
-          userId: 'user_123',
-          currentStreak: 5,
-          longestStreak: 10,
+      // Mock CalculateStreakUseCase for StreakNotifier
+      when(() => mockUseCase.call(any())).thenAnswer(
+        (_) async => const Right(
+          StreakCalculationResult(
+            streak: Streak(
+              id: 'streak_user_123',
+              userId: 'user_123',
+              currentStreak: 5,
+              longestStreak: 10,
+            ),
+            isActive: true,
+            daysUntilExpiry: 2,
+          ),
         ),
       );
 
@@ -1085,7 +1278,13 @@ void main() {
           feedingServiceProvider.overrideWithValue(mockFeedingService),
           fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
           aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          streakLocalDataSourceProvider.overrideWithValue(mockStreakDs),
+          currentStreakProvider.overrideWith(
+            (ref) => TestStreakNotifier(
+              streakDataSource: mockStreakDs,
+              calculateStreakUseCase: mockUseCase,
+              ref: ref,
+            ),
+          ),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1109,9 +1308,11 @@ void main() {
         ),
       ).called(1);
 
-      // 2. resetStreak was NOT called on streakDs
-      // (This verification would fail if resetStreak was called)
+      // 2. resetStreak was NOT called on streakDs during markAsMissed
       verifyNever(() => mockStreakDs.resetStreak(any()));
+
+      // Wait for invalidated currentStreakProvider to re-create and complete
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       container.dispose();
     });
