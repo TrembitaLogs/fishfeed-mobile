@@ -33,7 +33,10 @@ abstract interface class FamilyRepository {
   ///
   /// Returns [Right(unit)] on success.
   /// Returns [Left(Failure)] on error.
-  Future<Either<Failure, Unit>> cancelInvite({required String inviteId});
+  Future<Either<Failure, Unit>> cancelInvite({
+    required String aquariumId,
+    required String inviteId,
+  });
 
   /// Gets all family members for an aquarium.
   ///
@@ -49,7 +52,10 @@ abstract interface class FamilyRepository {
   /// Returns [Left(Failure)] on error:
   /// - [ForbiddenFailure] if user is not the owner
   /// - [ValidationFailure] if trying to remove the owner
-  Future<Either<Failure, Unit>> removeMember({required String memberId});
+  Future<Either<Failure, Unit>> removeMember({
+    required String aquariumId,
+    required String userId,
+  });
 
   /// Accepts a family invitation using an invite code.
   ///

@@ -98,6 +98,10 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   final FamilyRepository _repository;
 
   /// Loads family data (invites and members) for an aquarium.
+  ///
+  /// Invites are only accessible to the aquarium owner; members can view
+  /// the member list but will receive 403 for invites. We silently treat
+  /// invite failures as an empty list so non-owners don't see an error.
   Future<void> loadFamilyData(String aquariumId) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -113,13 +117,11 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     List<FamilyMember> members = [];
     Failure? error;
 
-    invitesResult.fold(
-      (failure) => error = failure,
-      (data) => invites = data as List<FamilyInvite>,
-    );
+    // Silently ignore invite failures (non-owners get 403)
+    invitesResult.fold((_) {}, (data) => invites = data as List<FamilyInvite>);
 
     membersResult.fold(
-      (failure) => error ??= failure,
+      (failure) => error = failure,
       (data) => members = data as List<FamilyMember>,
     );
 
@@ -156,10 +158,13 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   }
 
   /// Cancels an existing invitation.
-  Future<void> cancelInvite(String inviteId) async {
+  Future<void> cancelInvite(String aquariumId, String inviteId) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
-    final result = await _repository.cancelInvite(inviteId: inviteId);
+    final result = await _repository.cancelInvite(
+      aquariumId: aquariumId,
+      inviteId: inviteId,
+    );
 
     result.fold(
       (failure) {
@@ -175,10 +180,13 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   }
 
   /// Removes a family member.
-  Future<void> removeMember(String memberId) async {
+  Future<void> removeMember(String aquariumId, String userId) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
-    final result = await _repository.removeMember(memberId: memberId);
+    final result = await _repository.removeMember(
+      aquariumId: aquariumId,
+      userId: userId,
+    );
 
     result.fold(
       (failure) {
@@ -186,7 +194,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       },
       (_) {
         state = state.copyWith(
-          members: state.members.where((m) => m.id != memberId).toList(),
+          members: state.members.where((m) => m.userId != userId).toList(),
           isLoading: false,
         );
       },

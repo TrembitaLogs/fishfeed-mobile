@@ -214,18 +214,26 @@ class FeedingLogLocalDataSource {
 
   /// Applies a server update to local storage.
   ///
-  /// Since FeedingLog is immutable, this only creates new logs
-  /// that don't exist locally.
+  /// FeedingLog is mostly immutable (first-write-wins), but we backfill
+  /// [actedByUserName] when the server provides it and the local copy
+  /// doesn't have it yet. This handles logs synced before the backend
+  /// started returning the feeder's display name.
   ///
   /// [serverData] - The data from the server in JSON format.
   Future<void> applyServerUpdate(Map<String, dynamic> serverData) async {
     final id = serverData['id'] as String;
     final existing = getById(id);
 
-    // FeedingLog is immutable - only create if doesn't exist
     if (existing == null) {
       final log = FeedingLogModel.fromJson(serverData);
       await _feedingLogs.put(log.id, log);
+    } else if (existing.actedByUserName == null) {
+      // Backfill feeder display name if missing locally
+      final serverName = serverData['acted_by_user_name'] as String?;
+      if (serverName != null) {
+        final updated = existing.copyWith(actedByUserName: serverName);
+        await _feedingLogs.put(id, updated);
+      }
     }
   }
 

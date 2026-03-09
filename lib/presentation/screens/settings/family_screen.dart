@@ -62,7 +62,10 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
     final maxMembers = isPremium ? kMaxPremiumTierMembers : kMaxFreeTierMembers;
     final memberCount = state.members.length;
     final hasReachedLimit = memberCount >= maxMembers;
-    final canInvite = !hasReachedLimit && !state.isLoading;
+    final isOwner = state.members.any(
+      (m) => m.isOwner && m.userId == currentUser?.id,
+    );
+    final canInvite = isOwner && !hasReachedLimit && !state.isLoading;
 
     final l10n = AppLocalizations.of(context)!;
 
@@ -93,8 +96,8 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                   // Header section
                   SliverToBoxAdapter(child: _buildHeader(context, theme)),
 
-                  // Member limit indicator (free tier)
-                  if (!isPremium)
+                  // Member limit indicator (free tier, owner only)
+                  if (!isPremium && isOwner)
                     SliverToBoxAdapter(
                       child: _buildMemberLimitIndicator(
                         context,
@@ -104,20 +107,21 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                       ),
                     ),
 
-                  // Invite button or upgrade prompt
-                  SliverToBoxAdapter(
-                    child: hasReachedLimit && !isPremium
-                        ? _buildUpgradePrompt(context, theme)
-                        : _buildInviteButton(
-                            context,
-                            theme,
-                            state.isLoading,
-                            canInvite,
-                          ),
-                  ),
+                  // Invite button or upgrade prompt (owner only)
+                  if (isOwner)
+                    SliverToBoxAdapter(
+                      child: hasReachedLimit && !isPremium
+                          ? _buildUpgradePrompt(context, theme)
+                          : _buildInviteButton(
+                              context,
+                              theme,
+                              state.isLoading,
+                              canInvite,
+                            ),
+                    ),
 
-                  // Active invitations section
-                  if (state.invites.isNotEmpty) ...[
+                  // Active invitations section (owner only)
+                  if (isOwner && state.invites.isNotEmpty) ...[
                     SliverToBoxAdapter(
                       child: _buildSectionHeader(
                         context,
@@ -154,8 +158,10 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                     SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final member = state.members[index];
-                        // Only premium users can remove members (and owners can't be removed)
-                        final canRemove = isPremium && !member.isOwner;
+                        // Owner can remove any member; member can leave (remove self)
+                        final isSelf = member.userId == currentUser?.id;
+                        final canRemove =
+                            !member.isOwner && (isOwner || isSelf);
                         return _MemberCard(
                           member: member,
                           onRemove: canRemove
@@ -503,19 +509,26 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
       ),
     ).then((confirmed) {
       if (confirmed == true) {
-        ref.read(familyNotifierProvider.notifier).cancelInvite(inviteId);
+        ref
+            .read(familyNotifierProvider.notifier)
+            .cancelInvite(widget.aquariumId, inviteId);
       }
     });
   }
 
   void _removeMember(FamilyMember member) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.read(currentUserProvider);
+    final isSelf = member.userId == currentUser?.id;
+
     showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.removeMember),
+        title: Text(isSelf ? l10n.leaveFamily : l10n.removeMember),
         content: Text(
-          l10n.removeMemberDescription(member.displayName ?? l10n.user),
+          isSelf
+              ? l10n.leaveFamilyDescription
+              : l10n.removeMemberDescription(member.displayName ?? l10n.user),
         ),
         actions: [
           TextButton(
@@ -527,13 +540,15 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: Text(l10n.remove),
+            child: Text(isSelf ? l10n.leave : l10n.remove),
           ),
         ],
       ),
     ).then((confirmed) {
       if (confirmed == true) {
-        ref.read(familyNotifierProvider.notifier).removeMember(member.id);
+        ref
+            .read(familyNotifierProvider.notifier)
+            .removeMember(widget.aquariumId, member.userId);
       }
     });
   }
@@ -873,13 +888,12 @@ class _MemberCard extends StatelessWidget {
                   ],
                 ),
                 trailing: onRemove != null
-                    ? IconButton(
-                        onPressed: onRemove,
-                        icon: Icon(
+                    ? GestureDetector(
+                        onTap: onRemove,
+                        child: Icon(
                           Icons.remove_circle_outline,
                           color: theme.colorScheme.error,
                         ),
-                        tooltip: l10n.remove,
                       )
                     : member.isOwner
                     ? Icon(Icons.verified, color: theme.colorScheme.primary)

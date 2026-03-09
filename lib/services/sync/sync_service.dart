@@ -334,15 +334,16 @@ class SyncService {
   /// Performs a full sync: uploads local changes and downloads server changes.
   ///
   /// Returns the total number of items synced (uploaded + downloaded).
-  Future<int> syncAll() async {
-    final result = await syncAllWithResult();
+  Future<int> syncAll({bool fullSync = false}) async {
+    final result = await syncAllWithResult(fullSync: fullSync);
     return result.totalProcessed;
   }
 
   /// Performs a full sync and returns detailed result.
   ///
   /// Use this when you need detailed sync information (conflicts, errors, etc.).
-  Future<SyncResult> syncAllWithResult() async {
+  /// When [fullSync] is true, ignores the last sync timestamp to fetch all data.
+  Future<SyncResult> syncAllWithResult({bool fullSync = false}) async {
     if (_isProcessing) {
       _logger.d('SyncService: Already processing, skipping');
       return const SyncResult(uploadedCount: 0, downloadedCount: 0);
@@ -358,13 +359,17 @@ class SyncService {
     _lastError = null;
 
     try {
-      final result = await _performSync().timeout(
-        _config.syncTimeout,
-        onTimeout: () {
-          _logger.w('SyncService: Sync timed out');
-          throw TimeoutException('Sync timed out');
-        },
-      );
+      final result =
+          await _performSync(
+            lastSyncAt: fullSync ? null : _getSyncMetadata()?.lastSyncAt,
+            forceLastSyncAt: fullSync,
+          ).timeout(
+            _config.syncTimeout,
+            onTimeout: () {
+              _logger.w('SyncService: Sync timed out');
+              throw TimeoutException('Sync timed out');
+            },
+          );
 
       if (result.isSuccess) {
         _updateState(SyncState.success);
@@ -429,10 +434,16 @@ class SyncService {
 
   // ============ Core Sync Logic ============
 
-  Future<SyncResult> _performSync({DateTime? lastSyncAt}) async {
+  Future<SyncResult> _performSync({
+    DateTime? lastSyncAt,
+    bool forceLastSyncAt = false,
+  }) async {
     final changes = _changeTracker.collectAllChanges();
     final metadata = _getSyncMetadata();
-    final effectiveLastSyncAt = lastSyncAt ?? metadata?.lastSyncAt;
+    // When forceLastSyncAt is true, use the provided lastSyncAt as-is (even if null)
+    final effectiveLastSyncAt = forceLastSyncAt
+        ? lastSyncAt
+        : (lastSyncAt ?? metadata?.lastSyncAt);
 
     _logger.i('SyncService: Sending ${changes.length} changes to server');
 

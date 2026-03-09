@@ -31,6 +31,7 @@ class FeedingCard extends StatefulWidget {
     super.key,
     required this.feeding,
     required this.onMarkAsFed,
+    this.isOwner = true,
   });
 
   /// The computed feeding event to display.
@@ -38,6 +39,10 @@ class FeedingCard extends StatefulWidget {
 
   /// Callback when feeding is confirmed as fed.
   final FeedingStatusCallback onMarkAsFed;
+
+  /// Whether the current user is the owner of the aquarium.
+  /// Non-owners cannot swipe left to edit fish.
+  final bool isOwner;
 
   @override
   State<FeedingCard> createState() => _FeedingCardState();
@@ -73,6 +78,15 @@ class _FeedingCardState extends State<FeedingCard>
   void _onTap() {
     // Tap opens fish card bottom sheet for ALL states
     showFishCardSheet(context, widget.feeding);
+  }
+
+  DismissDirection _dismissDirection(bool isFed) {
+    if (!widget.isOwner) {
+      // Non-owners: only swipe right to feed (no edit swipe)
+      return isFed ? DismissDirection.none : DismissDirection.startToEnd;
+    }
+    // Owners: when fed — only edit swipe; when unfed — both directions
+    return isFed ? DismissDirection.endToStart : DismissDirection.horizontal;
   }
 
   Future<bool> _confirmDismiss(DismissDirection direction) async {
@@ -136,9 +150,7 @@ class _FeedingCardState extends State<FeedingCard>
       },
       child: Dismissible(
         key: Key('feeding_card_${widget.feeding.scheduleId}'),
-        direction: isFed
-            ? DismissDirection.endToStart
-            : DismissDirection.horizontal,
+        direction: _dismissDirection(isFed),
         confirmDismiss: _confirmDismiss,
         background: _SwipeBackground(
           alignment: Alignment.centerLeft,
@@ -147,13 +159,15 @@ class _FeedingCardState extends State<FeedingCard>
           icon: Icons.check_circle,
           label: l10n.feedingLabel,
         ),
-        secondaryBackground: _SwipeBackground(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 24),
-          color: theme.colorScheme.primary,
-          icon: Icons.edit,
-          label: l10n.editFish,
-        ),
+        secondaryBackground: widget.isOwner
+            ? _SwipeBackground(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 24),
+                color: theme.colorScheme.primary,
+                icon: Icons.edit,
+                label: l10n.editFish,
+              )
+            : null,
         child: RepaintBoundary(
           child: _FeedingCardContent(
             feeding: widget.feeding,

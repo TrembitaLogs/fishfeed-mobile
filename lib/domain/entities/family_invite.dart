@@ -57,7 +57,7 @@ class FamilyInvite extends Equatable {
   final DateTime? acceptedAt;
 
   /// Returns the deep link URL for this invitation.
-  String get deepLink => 'fishfeed://join/$inviteCode';
+  String get deepLink => 'https://api.fishfeed.club/join/$inviteCode';
 
   /// Returns true if the invitation is still valid and can be accepted.
   bool get isValid =>

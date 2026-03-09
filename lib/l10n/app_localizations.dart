@@ -1442,6 +1442,24 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get remove;
 
+  /// Leave family dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Leave family?'**
+  String get leaveFamily;
+
+  /// Leave family dialog description
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to this shared aquarium.'**
+  String get leaveFamilyDescription;
+
+  /// Leave button text
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
   /// Title when invitation is created
   ///
   /// In en, this message translates to:

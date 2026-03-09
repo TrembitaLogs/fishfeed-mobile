@@ -21,22 +21,15 @@ FamilyInviteDto _$FamilyInviteDtoFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FamilyInviteDto {
-  String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'aquarium_id')
-  String get aquariumId => throw _privateConstructorUsedError;
+  String? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'invite_code')
   String get inviteCode => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_by')
-  String get createdBy => throw _privateConstructorUsedError;
+  @JsonKey(name: 'invite_link')
+  String get inviteLink => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'expires_at')
   DateTime get expiresAt => throw _privateConstructorUsedError;
-  String get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'accepted_by')
-  String? get acceptedBy => throw _privateConstructorUsedError;
-  @JsonKey(name: 'accepted_at')
-  DateTime? get acceptedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -52,15 +45,11 @@ abstract class $FamilyInviteDtoCopyWith<$Res> {
   ) = _$FamilyInviteDtoCopyWithImpl<$Res, FamilyInviteDto>;
   @useResult
   $Res call({
-    String id,
-    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String? id,
     @JsonKey(name: 'invite_code') String inviteCode,
-    @JsonKey(name: 'created_by') String createdBy,
-    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'invite_link') String inviteLink,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'expires_at') DateTime expiresAt,
-    String status,
-    @JsonKey(name: 'accepted_by') String? acceptedBy,
-    @JsonKey(name: 'accepted_at') DateTime? acceptedAt,
   });
 }
 
@@ -77,54 +66,34 @@ class _$FamilyInviteDtoCopyWithImpl<$Res, $Val extends FamilyInviteDto>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? aquariumId = null,
+    Object? id = freezed,
     Object? inviteCode = null,
-    Object? createdBy = null,
-    Object? createdAt = null,
+    Object? inviteLink = null,
+    Object? createdAt = freezed,
     Object? expiresAt = null,
-    Object? status = null,
-    Object? acceptedBy = freezed,
-    Object? acceptedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
+            id: freezed == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            aquariumId: null == aquariumId
-                ? _value.aquariumId
-                : aquariumId // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             inviteCode: null == inviteCode
                 ? _value.inviteCode
                 : inviteCode // ignore: cast_nullable_to_non_nullable
                       as String,
-            createdBy: null == createdBy
-                ? _value.createdBy
-                : createdBy // ignore: cast_nullable_to_non_nullable
+            inviteLink: null == inviteLink
+                ? _value.inviteLink
+                : inviteLink // ignore: cast_nullable_to_non_nullable
                       as String,
-            createdAt: null == createdAt
+            createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+                      as DateTime?,
             expiresAt: null == expiresAt
                 ? _value.expiresAt
                 : expiresAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as String,
-            acceptedBy: freezed == acceptedBy
-                ? _value.acceptedBy
-                : acceptedBy // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            acceptedAt: freezed == acceptedAt
-                ? _value.acceptedAt
-                : acceptedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
           )
           as $Val,
     );
@@ -141,15 +110,11 @@ abstract class _$$FamilyInviteDtoImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String id,
-    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String? id,
     @JsonKey(name: 'invite_code') String inviteCode,
-    @JsonKey(name: 'created_by') String createdBy,
-    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'invite_link') String inviteLink,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'expires_at') DateTime expiresAt,
-    String status,
-    @JsonKey(name: 'accepted_by') String? acceptedBy,
-    @JsonKey(name: 'accepted_at') DateTime? acceptedAt,
   });
 }
 
@@ -165,54 +130,34 @@ class __$$FamilyInviteDtoImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? aquariumId = null,
+    Object? id = freezed,
     Object? inviteCode = null,
-    Object? createdBy = null,
-    Object? createdAt = null,
+    Object? inviteLink = null,
+    Object? createdAt = freezed,
     Object? expiresAt = null,
-    Object? status = null,
-    Object? acceptedBy = freezed,
-    Object? acceptedAt = freezed,
   }) {
     return _then(
       _$FamilyInviteDtoImpl(
-        id: null == id
+        id: freezed == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        aquariumId: null == aquariumId
-            ? _value.aquariumId
-            : aquariumId // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         inviteCode: null == inviteCode
             ? _value.inviteCode
             : inviteCode // ignore: cast_nullable_to_non_nullable
                   as String,
-        createdBy: null == createdBy
-            ? _value.createdBy
-            : createdBy // ignore: cast_nullable_to_non_nullable
+        inviteLink: null == inviteLink
+            ? _value.inviteLink
+            : inviteLink // ignore: cast_nullable_to_non_nullable
                   as String,
-        createdAt: null == createdAt
+        createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+                  as DateTime?,
         expiresAt: null == expiresAt
             ? _value.expiresAt
             : expiresAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as String,
-        acceptedBy: freezed == acceptedBy
-            ? _value.acceptedBy
-            : acceptedBy // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        acceptedAt: freezed == acceptedAt
-            ? _value.acceptedAt
-            : acceptedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
       ),
     );
   }
@@ -222,50 +167,34 @@ class __$$FamilyInviteDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
   const _$FamilyInviteDtoImpl({
-    required this.id,
-    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    this.id,
     @JsonKey(name: 'invite_code') required this.inviteCode,
-    @JsonKey(name: 'created_by') required this.createdBy,
-    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'invite_link') required this.inviteLink,
+    @JsonKey(name: 'created_at') this.createdAt,
     @JsonKey(name: 'expires_at') required this.expiresAt,
-    this.status = 'pending',
-    @JsonKey(name: 'accepted_by') this.acceptedBy,
-    @JsonKey(name: 'accepted_at') this.acceptedAt,
   }) : super._();
 
   factory _$FamilyInviteDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FamilyInviteDtoImplFromJson(json);
 
   @override
-  final String id;
-  @override
-  @JsonKey(name: 'aquarium_id')
-  final String aquariumId;
+  final String? id;
   @override
   @JsonKey(name: 'invite_code')
   final String inviteCode;
   @override
-  @JsonKey(name: 'created_by')
-  final String createdBy;
+  @JsonKey(name: 'invite_link')
+  final String inviteLink;
   @override
   @JsonKey(name: 'created_at')
-  final DateTime createdAt;
+  final DateTime? createdAt;
   @override
   @JsonKey(name: 'expires_at')
   final DateTime expiresAt;
-  @override
-  @JsonKey()
-  final String status;
-  @override
-  @JsonKey(name: 'accepted_by')
-  final String? acceptedBy;
-  @override
-  @JsonKey(name: 'accepted_at')
-  final DateTime? acceptedAt;
 
   @override
   String toString() {
-    return 'FamilyInviteDto(id: $id, aquariumId: $aquariumId, inviteCode: $inviteCode, createdBy: $createdBy, createdAt: $createdAt, expiresAt: $expiresAt, status: $status, acceptedBy: $acceptedBy, acceptedAt: $acceptedAt)';
+    return 'FamilyInviteDto(id: $id, inviteCode: $inviteCode, inviteLink: $inviteLink, createdAt: $createdAt, expiresAt: $expiresAt)';
   }
 
   @override
@@ -274,21 +203,14 @@ class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
         (other.runtimeType == runtimeType &&
             other is _$FamilyInviteDtoImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.aquariumId, aquariumId) ||
-                other.aquariumId == aquariumId) &&
             (identical(other.inviteCode, inviteCode) ||
                 other.inviteCode == inviteCode) &&
-            (identical(other.createdBy, createdBy) ||
-                other.createdBy == createdBy) &&
+            (identical(other.inviteLink, inviteLink) ||
+                other.inviteLink == inviteLink) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.expiresAt, expiresAt) ||
-                other.expiresAt == expiresAt) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.acceptedBy, acceptedBy) ||
-                other.acceptedBy == acceptedBy) &&
-            (identical(other.acceptedAt, acceptedAt) ||
-                other.acceptedAt == acceptedAt));
+                other.expiresAt == expiresAt));
   }
 
   @JsonKey(ignore: true)
@@ -296,14 +218,10 @@ class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
   int get hashCode => Object.hash(
     runtimeType,
     id,
-    aquariumId,
     inviteCode,
-    createdBy,
+    inviteLink,
     createdAt,
     expiresAt,
-    status,
-    acceptedBy,
-    acceptedAt,
   );
 
   @JsonKey(ignore: true)
@@ -323,15 +241,11 @@ class _$FamilyInviteDtoImpl extends _FamilyInviteDto {
 
 abstract class _FamilyInviteDto extends FamilyInviteDto {
   const factory _FamilyInviteDto({
-    required final String id,
-    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    final String? id,
     @JsonKey(name: 'invite_code') required final String inviteCode,
-    @JsonKey(name: 'created_by') required final String createdBy,
-    @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'invite_link') required final String inviteLink,
+    @JsonKey(name: 'created_at') final DateTime? createdAt,
     @JsonKey(name: 'expires_at') required final DateTime expiresAt,
-    final String status,
-    @JsonKey(name: 'accepted_by') final String? acceptedBy,
-    @JsonKey(name: 'accepted_at') final DateTime? acceptedAt,
   }) = _$FamilyInviteDtoImpl;
   const _FamilyInviteDto._() : super._();
 
@@ -339,30 +253,19 @@ abstract class _FamilyInviteDto extends FamilyInviteDto {
       _$FamilyInviteDtoImpl.fromJson;
 
   @override
-  String get id;
-  @override
-  @JsonKey(name: 'aquarium_id')
-  String get aquariumId;
+  String? get id;
   @override
   @JsonKey(name: 'invite_code')
   String get inviteCode;
   @override
-  @JsonKey(name: 'created_by')
-  String get createdBy;
+  @JsonKey(name: 'invite_link')
+  String get inviteLink;
   @override
   @JsonKey(name: 'created_at')
-  DateTime get createdAt;
+  DateTime? get createdAt;
   @override
   @JsonKey(name: 'expires_at')
   DateTime get expiresAt;
-  @override
-  String get status;
-  @override
-  @JsonKey(name: 'accepted_by')
-  String? get acceptedBy;
-  @override
-  @JsonKey(name: 'accepted_at')
-  DateTime? get acceptedAt;
   @override
   @JsonKey(ignore: true)
   _$$FamilyInviteDtoImplCopyWith<_$FamilyInviteDtoImpl> get copyWith =>

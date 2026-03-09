@@ -79,7 +79,7 @@ void main() {
     mockAuthLocalDs = _MockAuthLocalDataSource();
     mockSyncService = createMockSyncService();
 
-    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
+    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
     when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
     when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
 
@@ -569,7 +569,7 @@ void main() {
         ).thenAnswer((_) async => Right(testUser));
 
         when(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+          () => mockAquariumLocalDs.getAllAquariums(),
         ).thenReturn([activeAquariumModel]);
 
         await authNotifier.login(
@@ -580,9 +580,7 @@ void main() {
         expect(authNotifier.state.isAuthenticated, true);
         expect(authNotifier.state.hasCompletedOnboarding, true);
         verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
-        verify(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
-        ).called(1);
+        verify(() => mockAquariumLocalDs.getAllAquariums()).called(1);
       },
     );
 
@@ -596,9 +594,7 @@ void main() {
           ),
         ).thenAnswer((_) async => Right(testUser));
 
-        when(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
-        ).thenReturn([]);
+        when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -621,7 +617,7 @@ void main() {
         ).thenAnswer((_) async => Right(testUser));
 
         when(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+          () => mockAquariumLocalDs.getAllAquariums(),
         ).thenReturn([deletedAquariumModel]);
 
         await authNotifier.login(
@@ -651,7 +647,7 @@ void main() {
 
       // But local data has aquariums
       when(
-        () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+        () => mockAquariumLocalDs.getAllAquariums(),
       ).thenReturn([activeAquariumModel]);
 
       await authNotifier.login(
@@ -678,9 +674,7 @@ void main() {
           () => mockSyncService.syncAll(),
         ).thenAnswer((_) async => throw Exception('Network error'));
 
-        when(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
-        ).thenReturn([]);
+        when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -712,7 +706,7 @@ void main() {
         expect(authNotifier.state.hasCompletedOnboarding, true);
         // syncAll is called for background sync, but getAquariumsByUserId
         // should NOT be called since we skip _syncAndCheckOnboarding
-        verifyNever(() => mockAquariumLocalDs.getAquariumsByUserId(any()));
+        verifyNever(() => mockAquariumLocalDs.getAllAquariums());
       },
     );
 
@@ -726,7 +720,7 @@ void main() {
           () => mockRepository.getCurrentUser(),
         ).thenAnswer((_) async => Right(testUser));
         when(
-          () => mockAquariumLocalDs.getAquariumsByUserId('user-123'),
+          () => mockAquariumLocalDs.getAllAquariums(),
         ).thenReturn([activeAquariumModel]);
 
         await authNotifier.initialize();

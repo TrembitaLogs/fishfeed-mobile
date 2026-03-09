@@ -9,9 +9,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/screens/feeding/feeding_cards_screen.dart';
 import 'package:fishfeed/presentation/widgets/feeding/feeding_card.dart';
@@ -42,6 +45,15 @@ void main() {
 
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
+
+  final testUser = User(
+    id: 'user1',
+    email: 'test@example.com',
+    displayName: 'Test User',
+    createdAt: DateTime(2024, 1, 1),
+    subscriptionStatus: const SubscriptionStatus.free(),
+    freeAiScansRemaining: 5,
+  );
 
   final testAquarium = Aquarium(
     id: 'aq1',
@@ -113,6 +125,7 @@ void main() {
           );
         }),
         syncServiceProvider.overrideWithValue(sync),
+        currentUserProvider.overrideWithValue(testUser),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,

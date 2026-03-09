@@ -121,7 +121,7 @@ void main() {
 
       expect(notifier.state.invites, isEmpty);
       expect(notifier.state.members, [testOwner]);
-      expect(notifier.state.error, isA<NetworkFailure>());
+      expect(notifier.state.error, isNull);
     });
 
     test('handles member fetch failure', () async {
@@ -176,10 +176,13 @@ void main() {
       await notifier.createInvite(aquariumId);
 
       when(
-        () => mockRepository.cancelInvite(inviteId: testInvite.id),
+        () => mockRepository.cancelInvite(
+          aquariumId: aquariumId,
+          inviteId: testInvite.id,
+        ),
       ).thenAnswer((_) async => const Right(unit));
 
-      await notifier.cancelInvite(testInvite.id);
+      await notifier.cancelInvite(aquariumId, testInvite.id);
 
       expect(notifier.state.invites, isEmpty);
       expect(notifier.state.isLoading, false);
@@ -187,10 +190,13 @@ void main() {
 
     test('handles cancel invite failure', () async {
       when(
-        () => mockRepository.cancelInvite(inviteId: 'invalid'),
+        () => mockRepository.cancelInvite(
+          aquariumId: aquariumId,
+          inviteId: 'invalid',
+        ),
       ).thenAnswer((_) async => const Left(ServerFailure()));
 
-      await notifier.cancelInvite('invalid');
+      await notifier.cancelInvite(aquariumId, 'invalid');
 
       expect(notifier.state.error, isA<ServerFailure>());
     });
@@ -208,10 +214,13 @@ void main() {
       await notifier.loadFamilyData(aquariumId);
 
       when(
-        () => mockRepository.removeMember(memberId: testMember.id),
+        () => mockRepository.removeMember(
+          aquariumId: aquariumId,
+          userId: testMember.userId,
+        ),
       ).thenAnswer((_) async => const Right(unit));
 
-      await notifier.removeMember(testMember.id);
+      await notifier.removeMember(aquariumId, testMember.userId);
 
       expect(notifier.state.members, [testOwner]);
       expect(notifier.state.isLoading, false);
@@ -219,10 +228,13 @@ void main() {
 
     test('handles remove member failure', () async {
       when(
-        () => mockRepository.removeMember(memberId: 'invalid'),
+        () => mockRepository.removeMember(
+          aquariumId: aquariumId,
+          userId: 'invalid',
+        ),
       ).thenAnswer((_) async => const Left(ValidationFailure()));
 
-      await notifier.removeMember('invalid');
+      await notifier.removeMember(aquariumId, 'invalid');
 
       expect(notifier.state.error, isA<ValidationFailure>());
     });

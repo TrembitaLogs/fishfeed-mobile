@@ -1054,6 +1054,18 @@
   "@remove": {
     "description": "Remove button text"
   },
+  "leaveFamily": "Leave family?",
+  "@leaveFamily": {
+    "description": "Leave family dialog title"
+  },
+  "leaveFamilyDescription": "You will lose access to this shared aquarium.",
+  "@leaveFamilyDescription": {
+    "description": "Leave family dialog description"
+  },
+  "leave": "Leave",
+  "@leave": {
+    "description": "Leave button text"
+  },
   "invitationCreated": "Invitation created!",
   "@invitationCreated": {
     "description": "Title when invitation is created"

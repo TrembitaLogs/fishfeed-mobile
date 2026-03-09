@@ -6,47 +6,39 @@ part 'family_invite_dto.freezed.dart';
 part 'family_invite_dto.g.dart';
 
 /// DTO for family invitation data from the API.
+///
+/// Maps to backend's `InviteResponse` (create) and `InviteDetailResponse` (list).
 @freezed
 class FamilyInviteDto with _$FamilyInviteDto {
   const FamilyInviteDto._();
 
   const factory FamilyInviteDto({
-    required String id,
-    @JsonKey(name: 'aquarium_id') required String aquariumId,
+    String? id,
     @JsonKey(name: 'invite_code') required String inviteCode,
-    @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'invite_link') required String inviteLink,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'expires_at') required DateTime expiresAt,
-    @Default('pending') String status,
-    @JsonKey(name: 'accepted_by') String? acceptedBy,
-    @JsonKey(name: 'accepted_at') DateTime? acceptedAt,
   }) = _FamilyInviteDto;
 
   factory FamilyInviteDto.fromJson(Map<String, dynamic> json) =>
       _$FamilyInviteDtoFromJson(json);
 
   /// Converts this DTO to a domain entity.
-  FamilyInvite toEntity() {
+  ///
+  /// [aquariumId] and [createdBy] must be provided from context
+  /// since the create-invite response doesn't include them.
+  FamilyInvite toEntity({
+    required String aquariumId,
+    required String createdBy,
+  }) {
     return FamilyInvite(
-      id: id,
+      id: id ?? inviteCode,
       aquariumId: aquariumId,
       inviteCode: inviteCode,
       createdBy: createdBy,
-      createdAt: createdAt,
+      createdAt: createdAt ?? DateTime.now(),
       expiresAt: expiresAt,
-      status: _parseStatus(status),
-      acceptedBy: acceptedBy,
-      acceptedAt: acceptedAt,
+      status: FamilyInviteStatus.pending,
     );
-  }
-
-  FamilyInviteStatus _parseStatus(String status) {
-    return switch (status) {
-      'pending' => FamilyInviteStatus.pending,
-      'accepted' => FamilyInviteStatus.accepted,
-      'expired' => FamilyInviteStatus.expired,
-      'cancelled' => FamilyInviteStatus.cancelled,
-      _ => FamilyInviteStatus.pending,
-    };
   }
 }

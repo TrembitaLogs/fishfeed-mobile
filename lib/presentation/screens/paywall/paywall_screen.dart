@@ -658,7 +658,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              onPressed: () => _openUrl(context, 'https://fishfeed.app/terms'),
+              onPressed: () => _openUrl(context, 'https://fishfeed.club/terms'),
               child: Text(
                 l.termsOfService,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -673,7 +673,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             ),
             TextButton(
               onPressed: () =>
-                  _openUrl(context, 'https://fishfeed.app/privacy'),
+                  _openUrl(context, 'https://fishfeed.club/privacy'),
               child: Text(
                 l.privacyPolicy,
                 style: theme.textTheme.bodySmall?.copyWith(

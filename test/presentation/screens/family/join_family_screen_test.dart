@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
@@ -6,20 +7,70 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/data/repositories/family_repository_impl.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/family_member.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/family_repository.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/screens/family/join_family_screen.dart';
+import 'package:fishfeed/services/auth/apple_auth_service.dart';
+import 'package:fishfeed/services/auth/google_auth_service.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
+
+import '../../../helpers/test_helpers.dart';
 
 class MockFamilyRepository extends Mock implements FamilyRepository {}
 
+/// Mock notifier for UserAquariumsNotifier.
+class _MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
+    implements UserAquariumsNotifier {
+  _MockUserAquariumsNotifier()
+    : super(const UserAquariumsState(aquariums: [], isLoading: false));
+
+  @override
+  Future<void> loadAquariums() async {}
+
+  @override
+  Future<void> refresh() async {}
+
+  @override
+  Future<Aquarium?> createAquarium({
+    required String name,
+    WaterType? waterType,
+    double? capacity,
+  }) async => null;
+
+  @override
+  Future<Aquarium?> updateAquarium({
+    required String aquariumId,
+    String? name,
+    WaterType? waterType,
+    double? capacity,
+    String? photoKey,
+    bool clearPhotoKey = false,
+  }) async => null;
+
+  @override
+  Future<bool> deleteAquarium(String aquariumId) async => false;
+
+  @override
+  void clearError() {}
+}
+
 void main() {
   late MockFamilyRepository mockRepository;
+  late MockSyncService mockSyncService;
+  late Directory tempDir;
 
   final testMember = FamilyMember(
     id: 'member-123',
@@ -30,17 +81,26 @@ void main() {
     displayName: 'Test User',
   );
 
-  setUpAll(() {
+  setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
+    tempDir = await Directory.systemTemp.createTemp('join_family_test_');
+    Hive.init(tempDir.path);
+    await HiveBoxes.initForTesting();
   });
 
   tearDownAll(() {
     AppTheme.useDefaultFonts = false;
+    // Hive boxes cleaned up automatically when test isolate exits.
+    // Explicit close/delete can hang if async operations are still pending.
   });
 
   setUp(() {
     mockRepository = MockFamilyRepository();
+    mockSyncService = createMockSyncService();
+    when(
+      () => mockSyncService.syncAll(fullSync: any(named: 'fullSync')),
+    ).thenAnswer((_) async => 0);
   });
 
   Widget buildTestWidget({
@@ -71,6 +131,19 @@ void main() {
     return ProviderScope(
       overrides: [
         familyRepositoryProvider.overrideWithValue(mockRepository),
+        syncServiceProvider.overrideWithValue(mockSyncService),
+        userAquariumsProvider.overrideWith(
+          (ref) => _MockUserAquariumsNotifier(),
+        ),
+        authRepositoryProvider.overrideWithValue(MockAuthRepository()),
+        googleAuthServiceProvider.overrideWithValue(MockGoogleAuthService()),
+        appleAuthServiceProvider.overrideWithValue(MockAppleAuthService()),
+        aquariumLocalDataSourceProvider.overrideWithValue(
+          createMockAquariumLocalDataSource(),
+        ),
+        authLocalDataSourceProvider.overrideWithValue(
+          createMockAuthLocalDataSource(),
+        ),
         ...additionalOverrides,
       ],
       child: MaterialApp.router(

@@ -811,6 +811,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remove => 'Remove';
 
   @override
+  String get leaveFamily => 'Leave family?';
+
+  @override
+  String get leaveFamilyDescription =>
+      'You will lose access to this shared aquarium.';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
   String get invitationCreated => 'Invitation created!';
 
   @override

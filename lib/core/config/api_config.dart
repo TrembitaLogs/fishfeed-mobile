@@ -32,6 +32,19 @@ abstract final class ApiEndpoints {
 
   // Aquarium endpoints
   static const String aquariums = '/aquariums';
+
+  // Family endpoints
+  static String familyMembers(String aquariumId) =>
+      '/aquariums/$aquariumId/family';
+  static String familyCreateInvite(String aquariumId) =>
+      '/aquariums/$aquariumId/family/invite';
+  static String familyInvites(String aquariumId) =>
+      '/aquariums/$aquariumId/family/invites';
+  static String familyCancelInvite(String aquariumId, String inviteId) =>
+      '/aquariums/$aquariumId/family/invites/$inviteId';
+  static const String familyAccept = '/family/accept';
+  static String familyRemoveMember(String aquariumId, String userId) =>
+      '/aquariums/$aquariumId/family/$userId';
 }
 
 /// API timeout configuration for different operation types.

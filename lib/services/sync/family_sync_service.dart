@@ -464,7 +464,7 @@ class FamilySyncService with WidgetsBindingObserver {
   // ignore: unused_element
   Future<void> _connectWebSocket() async {
     // TODO: Implement WebSocket connection for v2
-    // - Connect to wss://api.fishfeed.app/ws
+    // - Connect to wss://api.fishfeed.club/ws
     // - Subscribe to aquarium channel
     // - Handle real-time feeding events
   }

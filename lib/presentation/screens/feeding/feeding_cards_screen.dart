@@ -10,6 +10,7 @@ import 'package:fishfeed/core/config/animation_config.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/widgets/feeding/confirm_feeding_dialog.dart';
@@ -196,6 +197,8 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
   @override
   Widget build(BuildContext context) {
     final aquarium = ref.watch(aquariumByIdProvider(widget.aquariumId));
+    final currentUser = ref.watch(currentUserProvider);
+    final isOwner = currentUser != null && aquarium?.userId == currentUser.id;
     final groupedByTime = ref.watch(
       feedingsGroupedByTimeProvider(widget.aquariumId),
     );
@@ -243,7 +246,7 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
-        child: _buildBody(groupedByTime, notifier, l10n),
+        child: _buildBody(groupedByTime, notifier, l10n, isOwner: isOwner),
       ),
     );
   }
@@ -251,8 +254,9 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
   Widget _buildBody(
     Map<String, List<ComputedFeedingEvent>> groupedByTime,
     TodayFeedingsNotifier notifier,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    required bool isOwner,
+  }) {
     if (groupedByTime.isEmpty) {
       return _EmptyState(l10n: l10n);
     }
@@ -279,6 +283,7 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
           key: Key('feeding_${feeding.scheduleId}'),
           feeding: feeding,
           onMarkAsFed: notifier.markAsFed,
+          isOwner: isOwner,
         );
         if (reduceMotion) {
           items.add(card);

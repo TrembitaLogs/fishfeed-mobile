@@ -101,7 +101,7 @@ void main() {
       ).thenReturn(testUserModel);
 
       when(
-        () => mockLocalDataSource.getAquariumsByUserId('user-123'),
+        () => mockLocalDataSource.getAllAquariums(),
       ).thenReturn([testAquariumModel]);
 
       final result = await repository.getAquariums();
@@ -118,9 +118,7 @@ void main() {
         () => mockAuthLocalDataSource.getCurrentUser(),
       ).thenReturn(testUserModel);
 
-      when(
-        () => mockLocalDataSource.getAquariumsByUserId('user-123'),
-      ).thenReturn([]);
+      when(() => mockLocalDataSource.getAllAquariums()).thenReturn([]);
 
       final result = await repository.getAquariums();
 
@@ -144,7 +142,7 @@ void main() {
       ).thenReturn(testUserModel);
 
       when(
-        () => mockLocalDataSource.getAquariumsByUserId('user-123'),
+        () => mockLocalDataSource.getAllAquariums(),
       ).thenReturn([testAquariumModel, deletedModel]);
 
       final result = await repository.getAquariums();

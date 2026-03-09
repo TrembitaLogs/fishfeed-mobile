@@ -21,18 +21,14 @@ FamilyMemberDto _$FamilyMemberDtoFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FamilyMemberDto {
-  String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'user_id')
   String get userId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'aquarium_id')
-  String get aquariumId => throw _privateConstructorUsedError;
+  String? get nickname => throw _privateConstructorUsedError;
+  @JsonKey(name: 'avatar_url')
+  String? get avatarUrl => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
   @JsonKey(name: 'joined_at')
   DateTime get joinedAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'display_name')
-  String? get displayName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'avatar_url')
-  String? get avatarUrl => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,13 +44,11 @@ abstract class $FamilyMemberDtoCopyWith<$Res> {
   ) = _$FamilyMemberDtoCopyWithImpl<$Res, FamilyMemberDto>;
   @useResult
   $Res call({
-    String id,
     @JsonKey(name: 'user_id') String userId,
-    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String? nickname,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
     String role,
     @JsonKey(name: 'joined_at') DateTime joinedAt,
-    @JsonKey(name: 'display_name') String? displayName,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
   });
 }
 
@@ -71,28 +65,26 @@ class _$FamilyMemberDtoCopyWithImpl<$Res, $Val extends FamilyMemberDto>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
     Object? userId = null,
-    Object? aquariumId = null,
+    Object? nickname = freezed,
+    Object? avatarUrl = freezed,
     Object? role = null,
     Object? joinedAt = null,
-    Object? displayName = freezed,
-    Object? avatarUrl = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
             userId: null == userId
                 ? _value.userId
                 : userId // ignore: cast_nullable_to_non_nullable
                       as String,
-            aquariumId: null == aquariumId
-                ? _value.aquariumId
-                : aquariumId // ignore: cast_nullable_to_non_nullable
-                      as String,
+            nickname: freezed == nickname
+                ? _value.nickname
+                : nickname // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatarUrl: freezed == avatarUrl
+                ? _value.avatarUrl
+                : avatarUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
             role: null == role
                 ? _value.role
                 : role // ignore: cast_nullable_to_non_nullable
@@ -101,14 +93,6 @@ class _$FamilyMemberDtoCopyWithImpl<$Res, $Val extends FamilyMemberDto>
                 ? _value.joinedAt
                 : joinedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
-            displayName: freezed == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            avatarUrl: freezed == avatarUrl
-                ? _value.avatarUrl
-                : avatarUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -125,13 +109,11 @@ abstract class _$$FamilyMemberDtoImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String id,
     @JsonKey(name: 'user_id') String userId,
-    @JsonKey(name: 'aquarium_id') String aquariumId,
+    String? nickname,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
     String role,
     @JsonKey(name: 'joined_at') DateTime joinedAt,
-    @JsonKey(name: 'display_name') String? displayName,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
   });
 }
 
@@ -147,28 +129,26 @@ class __$$FamilyMemberDtoImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
     Object? userId = null,
-    Object? aquariumId = null,
+    Object? nickname = freezed,
+    Object? avatarUrl = freezed,
     Object? role = null,
     Object? joinedAt = null,
-    Object? displayName = freezed,
-    Object? avatarUrl = freezed,
   }) {
     return _then(
       _$FamilyMemberDtoImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
         userId: null == userId
             ? _value.userId
             : userId // ignore: cast_nullable_to_non_nullable
                   as String,
-        aquariumId: null == aquariumId
-            ? _value.aquariumId
-            : aquariumId // ignore: cast_nullable_to_non_nullable
-                  as String,
+        nickname: freezed == nickname
+            ? _value.nickname
+            : nickname // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatarUrl: freezed == avatarUrl
+            ? _value.avatarUrl
+            : avatarUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
         role: null == role
             ? _value.role
             : role // ignore: cast_nullable_to_non_nullable
@@ -177,14 +157,6 @@ class __$$FamilyMemberDtoImplCopyWithImpl<$Res>
             ? _value.joinedAt
             : joinedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
-        displayName: freezed == displayName
-            ? _value.displayName
-            : displayName // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        avatarUrl: freezed == avatarUrl
-            ? _value.avatarUrl
-            : avatarUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -194,42 +166,34 @@ class __$$FamilyMemberDtoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$FamilyMemberDtoImpl extends _FamilyMemberDto {
   const _$FamilyMemberDtoImpl({
-    required this.id,
     @JsonKey(name: 'user_id') required this.userId,
-    @JsonKey(name: 'aquarium_id') required this.aquariumId,
+    this.nickname,
+    @JsonKey(name: 'avatar_url') this.avatarUrl,
     this.role = 'member',
     @JsonKey(name: 'joined_at') required this.joinedAt,
-    @JsonKey(name: 'display_name') this.displayName,
-    @JsonKey(name: 'avatar_url') this.avatarUrl,
   }) : super._();
 
   factory _$FamilyMemberDtoImpl.fromJson(Map<String, dynamic> json) =>
       _$$FamilyMemberDtoImplFromJson(json);
 
   @override
-  final String id;
-  @override
   @JsonKey(name: 'user_id')
   final String userId;
   @override
-  @JsonKey(name: 'aquarium_id')
-  final String aquariumId;
+  final String? nickname;
+  @override
+  @JsonKey(name: 'avatar_url')
+  final String? avatarUrl;
   @override
   @JsonKey()
   final String role;
   @override
   @JsonKey(name: 'joined_at')
   final DateTime joinedAt;
-  @override
-  @JsonKey(name: 'display_name')
-  final String? displayName;
-  @override
-  @JsonKey(name: 'avatar_url')
-  final String? avatarUrl;
 
   @override
   String toString() {
-    return 'FamilyMemberDto(id: $id, userId: $userId, aquariumId: $aquariumId, role: $role, joinedAt: $joinedAt, displayName: $displayName, avatarUrl: $avatarUrl)';
+    return 'FamilyMemberDto(userId: $userId, nickname: $nickname, avatarUrl: $avatarUrl, role: $role, joinedAt: $joinedAt)';
   }
 
   @override
@@ -237,31 +201,20 @@ class _$FamilyMemberDtoImpl extends _FamilyMemberDto {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FamilyMemberDtoImpl &&
-            (identical(other.id, id) || other.id == id) &&
             (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.aquariumId, aquariumId) ||
-                other.aquariumId == aquariumId) &&
+            (identical(other.nickname, nickname) ||
+                other.nickname == nickname) &&
+            (identical(other.avatarUrl, avatarUrl) ||
+                other.avatarUrl == avatarUrl) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.joinedAt, joinedAt) ||
-                other.joinedAt == joinedAt) &&
-            (identical(other.displayName, displayName) ||
-                other.displayName == displayName) &&
-            (identical(other.avatarUrl, avatarUrl) ||
-                other.avatarUrl == avatarUrl));
+                other.joinedAt == joinedAt));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    userId,
-    aquariumId,
-    role,
-    joinedAt,
-    displayName,
-    avatarUrl,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, userId, nickname, avatarUrl, role, joinedAt);
 
   @JsonKey(ignore: true)
   @override
@@ -280,13 +233,11 @@ class _$FamilyMemberDtoImpl extends _FamilyMemberDto {
 
 abstract class _FamilyMemberDto extends FamilyMemberDto {
   const factory _FamilyMemberDto({
-    required final String id,
     @JsonKey(name: 'user_id') required final String userId,
-    @JsonKey(name: 'aquarium_id') required final String aquariumId,
+    final String? nickname,
+    @JsonKey(name: 'avatar_url') final String? avatarUrl,
     final String role,
     @JsonKey(name: 'joined_at') required final DateTime joinedAt,
-    @JsonKey(name: 'display_name') final String? displayName,
-    @JsonKey(name: 'avatar_url') final String? avatarUrl,
   }) = _$FamilyMemberDtoImpl;
   const _FamilyMemberDto._() : super._();
 
@@ -294,24 +245,18 @@ abstract class _FamilyMemberDto extends FamilyMemberDto {
       _$FamilyMemberDtoImpl.fromJson;
 
   @override
-  String get id;
-  @override
   @JsonKey(name: 'user_id')
   String get userId;
   @override
-  @JsonKey(name: 'aquarium_id')
-  String get aquariumId;
+  String? get nickname;
+  @override
+  @JsonKey(name: 'avatar_url')
+  String? get avatarUrl;
   @override
   String get role;
   @override
   @JsonKey(name: 'joined_at')
   DateTime get joinedAt;
-  @override
-  @JsonKey(name: 'display_name')
-  String? get displayName;
-  @override
-  @JsonKey(name: 'avatar_url')
-  String? get avatarUrl;
   @override
   @JsonKey(ignore: true)
   _$$FamilyMemberDtoImplCopyWith<_$FamilyMemberDtoImpl> get copyWith =>

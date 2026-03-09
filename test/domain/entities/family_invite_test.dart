@@ -16,7 +16,7 @@ void main() {
     );
 
     test('deepLink returns correct format', () {
-      expect(validInvite.deepLink, 'fishfeed://join/ABC12345');
+      expect(validInvite.deepLink, 'https://api.fishfeed.club/join/ABC12345');
     });
 
     test('isValid returns true for pending invite before expiration', () {

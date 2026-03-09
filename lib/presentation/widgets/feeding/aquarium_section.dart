@@ -16,6 +16,7 @@ class AquariumSection extends StatelessWidget {
     required this.aquarium,
     required this.feedings,
     required this.onMarkAsFed,
+    this.isOwner = true,
   });
 
   /// The aquarium to display.
@@ -27,6 +28,9 @@ class AquariumSection extends StatelessWidget {
   /// Callback when feeding is marked as fed.
   final void Function(String scheduleId) onMarkAsFed;
 
+  /// Whether the current user is the owner of this aquarium.
+  final bool isOwner;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -36,14 +40,21 @@ class AquariumSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Aquarium header
-        _AquariumHeader(aquarium: aquarium, feedingsCount: feedings.length),
+        _AquariumHeader(
+          aquarium: aquarium,
+          feedingsCount: feedings.length,
+          isOwner: isOwner,
+        ),
         // Feedings list or empty state
         if (feedings.isEmpty)
           _EmptyFeedingsState(theme: theme, l10n: l10n)
         else
           ...feedings.map(
-            (feeding) =>
-                FeedingCard(feeding: feeding, onMarkAsFed: onMarkAsFed),
+            (feeding) => FeedingCard(
+              feeding: feeding,
+              onMarkAsFed: onMarkAsFed,
+              isOwner: isOwner,
+            ),
           ),
       ],
     );
@@ -52,10 +63,15 @@ class AquariumSection extends StatelessWidget {
 
 /// Header for aquarium section showing name and icon.
 class _AquariumHeader extends StatelessWidget {
-  const _AquariumHeader({required this.aquarium, required this.feedingsCount});
+  const _AquariumHeader({
+    required this.aquarium,
+    required this.feedingsCount,
+    this.isOwner = true,
+  });
 
   final Aquarium aquarium;
   final int feedingsCount;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
@@ -100,14 +116,15 @@ class _AquariumHeader extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => context.push('/aquarium/${aquarium.id}/edit'),
-            icon: Icon(
-              Icons.settings_outlined,
-              color: theme.colorScheme.onSurfaceVariant,
+          if (isOwner)
+            IconButton(
+              onPressed: () => context.push('/aquarium/${aquarium.id}/edit'),
+              icon: Icon(
+                Icons.settings_outlined,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              tooltip: AppLocalizations.of(context)!.editAquarium,
             ),
-            tooltip: AppLocalizations.of(context)!.editAquarium,
-          ),
         ],
       ),
     );

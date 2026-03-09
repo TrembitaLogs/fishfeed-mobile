@@ -255,24 +255,49 @@ class _AquariumContent extends ConsumerWidget {
           ...fishList.map(
             (fish) => _FishRow(
               fish: fish,
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/aquarium/fish/${fish.id}/edit');
-              },
+              onTap: isOwner
+                  ? () {
+                      Navigator.pop(context);
+                      context.push('/aquarium/fish/${fish.id}/edit');
+                    }
+                  : null,
             ),
           ),
         const SizedBox(height: 16),
 
-        // Add Fish button
+        // Add Fish button (owner only)
+        if (isOwner)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                context.push('${AppRouter.addFish}?aquariumId=${aquarium.id}');
+              },
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addFish),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
+        // Family Mode button (available to all members)
+        const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: OutlinedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              context.push('${AppRouter.addFish}?aquariumId=${aquarium.id}');
+              context.push(
+                '/family/${aquarium.id}?name=${Uri.encodeComponent(aquarium.name)}',
+              );
             },
-            icon: const Icon(Icons.add),
-            label: Text(l10n.addFish),
+            icon: const Icon(Icons.family_restroom, size: 20),
+            label: Text(l10n.familyMode),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
@@ -442,10 +467,10 @@ class _EmptyFishState extends StatelessWidget {
 
 /// A single fish row in the fish list.
 class _FishRow extends ConsumerWidget {
-  const _FishRow({required this.fish, required this.onTap});
+  const _FishRow({required this.fish, this.onTap});
 
   final Fish fish;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

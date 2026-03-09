@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fishfeed/core/core.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/premium/premium_badge.dart';
@@ -113,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.family_restroom,
             title: l10n.familyMode,
             subtitle: l10n.settingsFamilySubtitle,
-            onTap: () => context.push('/family/default?name=My%20Aquarium'),
+            onTap: () => _openFamilyMode(context, ref),
           ),
           _SettingsTile(
             icon: Icons.delete_forever_outlined,
@@ -129,13 +130,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.privacy_tip_outlined,
             title: l10n.settingsPrivacyPolicy,
             subtitle: l10n.settingsPrivacyPolicySubtitle,
-            onTap: () => _openUrl(context, 'https://fishfeed.app/privacy'),
+            onTap: () => _openUrl(context, 'https://fishfeed.club/privacy'),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
             title: l10n.termsOfService,
             subtitle: l10n.settingsTermsSubtitle,
-            onTap: () => _openUrl(context, 'https://fishfeed.app/terms'),
+            onTap: () => _openUrl(context, 'https://fishfeed.club/terms'),
           ),
           _SettingsTile(
             icon: Icons.article_outlined,
@@ -151,7 +152,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.mail_outlined,
             title: l10n.settingsContactSupport,
             subtitle: l10n.settingsContactSupportSubtitle,
-            onTap: () => _openUrl(context, 'mailto:support@fishfeed.app'),
+            onTap: () => _openUrl(context, 'mailto:support@fishfeed.club'),
           ),
           _SettingsTile(
             icon: Icons.star_outline,
@@ -181,6 +182,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  void _openFamilyMode(BuildContext context, WidgetRef ref) {
+    final aquariums = ref.read(aquariumsListProvider);
+
+    if (aquariums.isEmpty) return;
+
+    if (aquariums.length == 1) {
+      final aq = aquariums.first;
+      context.push('/family/${aq.id}?name=${Uri.encodeComponent(aq.name)}');
+      return;
+    }
+
+    // Multiple aquariums — show picker dialog
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.selectAquarium),
+        children: aquariums.map((aq) {
+          return SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push(
+                '/family/${aq.id}?name=${Uri.encodeComponent(aq.name)}',
+              );
+            },
+            child: ListTile(
+              leading: const Icon(Icons.water),
+              title: Text(aq.name),
+              contentPadding: EdgeInsets.zero,
+            ),
+          );
+        }).toList(),
       ),
     );
   }

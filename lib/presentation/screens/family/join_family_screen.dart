@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/data/repositories/family_repository_impl.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
-import 'package:fishfeed/presentation/providers/join_invite_provider.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
+import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Screen for accepting a family invite via deep link.
 ///
-/// Handles the following scenarios:
-/// - Loading: Shows progress while accepting the invite
-/// - Success: Shows confirmation and redirects to the aquarium
-/// - Invalid code: Shows error with option to go home
-/// - Expired code: Shows error with option to go home
-/// - Not authenticated: Redirects to login
+/// Handles the full accept flow directly (without autoDispose StateNotifier)
+/// to avoid disposal race conditions when GoRouter redirects mid-flight.
 class JoinFamilyScreen extends ConsumerStatefulWidget {
   const JoinFamilyScreen({super.key, required this.inviteCode});
 
@@ -24,8 +24,12 @@ class JoinFamilyScreen extends ConsumerStatefulWidget {
   ConsumerState<JoinFamilyScreen> createState() => _JoinFamilyScreenState();
 }
 
+enum _ScreenState { loading, success, error }
+
 class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
-  bool _hasAccepted = false;
+  _ScreenState _screenState = _ScreenState.loading;
+  String? _errorMessage;
+  bool _requiresAuth = false;
 
   @override
   void initState() {
@@ -35,63 +39,73 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
     });
   }
 
-  void _acceptInvite() {
-    if (_hasAccepted) return;
-    _hasAccepted = true;
+  Future<void> _acceptInvite() async {
+    final repository = ref.read(familyRepositoryProvider);
+    final result = await repository.acceptInvite(inviteCode: widget.inviteCode);
 
-    ref
-        .read(joinInviteNotifierProvider.notifier)
-        .acceptInvite(widget.inviteCode);
-  }
+    if (!mounted) return;
 
-  void _goHome() {
-    context.go(AppRouter.home);
-  }
+    await result.fold(
+      (failure) async {
+        if (!mounted) return;
+        setState(() {
+          _screenState = _ScreenState.error;
+          _requiresAuth = failure is AuthenticationFailure;
+          _errorMessage = switch (failure) {
+            ValidationFailure(:final message) => message ?? 'Validation failed',
+            AuthenticationFailure(:final message) =>
+              message ?? 'Authentication required',
+            _ => 'Failed to accept invitation. Please try again.',
+          };
+        });
+        if (_requiresAuth) {
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) context.go(AppRouter.auth);
+          });
+        }
+      },
+      (member) async {
+        if (!mounted) return;
+        setState(() {
+          _screenState = _ScreenState.success;
+        });
 
-  void _goToAquarium(String aquariumId) {
-    context.go('${AppRouter.home}?selectedAquarium=$aquariumId');
-  }
+        // Wait for any in-progress sync to finish, then do a full sync
+        // to fetch the shared aquarium. Delta sync misses it because
+        // the aquarium's updated_at didn't change when the member was added.
+        final syncService = ref.read(syncServiceProvider);
+        while (syncService.isProcessing) {
+          await Future<void>.delayed(const Duration(milliseconds: 200));
+          if (!mounted) return;
+        }
+        await syncService.syncAll(fullSync: true);
+        if (!mounted) return;
 
-  void _goToLogin() {
-    context.go(AppRouter.auth);
+        // Reload aquariums from local storage after sync
+        await ref.read(userAquariumsProvider.notifier).loadAquariums();
+        if (!mounted) return;
+
+        // Complete onboarding and navigate. This triggers GoRouter
+        // refreshListenable which redirects away from this screen.
+        ref.read(authNotifierProvider.notifier).completeOnboarding();
+        context.go('${AppRouter.home}?selectedAquarium=${member.aquariumId}');
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(joinInviteNotifierProvider);
     final theme = Theme.of(context);
-
-    ref.listen<JoinInviteState>(joinInviteNotifierProvider, (previous, next) {
-      if (next is JoinInviteSuccess) {
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            _goToAquarium(next.member.aquariumId);
-          }
-        });
-      }
-      if (next is JoinInviteError && next.requiresAuth) {
-        Future.delayed(const Duration(seconds: 1), () {
-          if (mounted) {
-            _goToLogin();
-          }
-        });
-      }
-    });
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: switch (state) {
-              JoinInviteInitial() => _buildLoading(theme),
-              JoinInviteLoading() => _buildLoading(theme),
-              JoinInviteSuccess(:final member) => _buildSuccess(
-                theme,
-                member.aquariumId,
-              ),
-              JoinInviteError(:final message, :final requiresAuth) =>
-                _buildError(theme, message, requiresAuth),
+            child: switch (_screenState) {
+              _ScreenState.loading => _buildLoading(theme),
+              _ScreenState.success => _buildSuccess(theme),
+              _ScreenState.error => _buildError(theme),
             },
           ),
         ),
@@ -131,7 +145,7 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
     );
   }
 
-  Widget _buildSuccess(ThemeData theme, String aquariumId) {
+  Widget _buildSuccess(ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -174,7 +188,7 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
     );
   }
 
-  Widget _buildError(ThemeData theme, String message, bool requiresAuth) {
+  Widget _buildError(ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -187,35 +201,35 @@ class _JoinFamilyScreenState extends ConsumerState<JoinFamilyScreen> {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            requiresAuth ? Icons.lock_outline : Icons.error_outline,
+            _requiresAuth ? Icons.lock_outline : Icons.error_outline,
             size: 48,
             color: theme.colorScheme.error,
           ),
         ),
         const SizedBox(height: 24),
         Text(
-          requiresAuth ? l10n.loginRequired : l10n.invitationError,
+          _requiresAuth ? l10n.loginRequired : l10n.invitationError,
           style: theme.textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          requiresAuth ? l10n.loginToAcceptInvitation : message,
+          _requiresAuth ? l10n.loginToAcceptInvitation : (_errorMessage ?? ''),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        if (requiresAuth)
+        if (_requiresAuth)
           FilledButton.icon(
-            onPressed: _goToLogin,
+            onPressed: () => context.go(AppRouter.auth),
             icon: const Icon(Icons.login),
             label: Text(l10n.logIn),
           )
         else
           OutlinedButton.icon(
-            onPressed: _goHome,
+            onPressed: () => context.go(AppRouter.home),
             icon: const Icon(Icons.home),
             label: Text(l10n.toHome),
           ),

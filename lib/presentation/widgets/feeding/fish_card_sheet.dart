@@ -216,14 +216,16 @@ class FishCardSheet extends ConsumerWidget {
                 ),
               if (!feedingEvent.isCompleted) const SizedBox(height: 12),
 
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _editFish(context),
-                  icon: const Icon(Icons.edit),
-                  label: Text(l10n.editFishButton),
+              if (isOwner) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _editFish(context),
+                    icon: const Icon(Icons.edit),
+                    label: Text(l10n.editFishButton),
+                  ),
                 ),
-              ),
+              ],
 
               if (isOwner) ...[
                 const SizedBox(height: 12),

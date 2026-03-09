@@ -564,9 +564,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       debugPrint('[AuthNotifier] Syncing to check onboarding status...');
       await _syncService.syncAll();
 
-      final localAquariums = _aquariumLocalDataSource.getAquariumsByUserId(
-        userId,
-      );
+      // Use getAllAquariums — sync only returns accessible aquariums
+      // (owned + shared via family), so all local aquariums belong to this user.
+      final localAquariums = _aquariumLocalDataSource.getAllAquariums();
       final hasAquariums = localAquariums.any((a) => !a.isDeleted);
       debugPrint(
         '[AuthNotifier] After sync: ${localAquariums.length} aquariums, '
@@ -581,9 +581,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       debugPrint('[AuthNotifier] Sync failed during onboarding check: $e');
 
       // Fallback: check local data even without sync
-      final localAquariums = _aquariumLocalDataSource.getAquariumsByUserId(
-        userId,
-      );
+      final localAquariums = _aquariumLocalDataSource.getAllAquariums();
       final hasAquariums = localAquariums.any((a) => !a.isDeleted);
       if (hasAquariums) {
         await HiveBoxes.setOnboardingCompleted(true);

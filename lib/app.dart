@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,18 +50,51 @@ class FishFeedApp extends ConsumerStatefulWidget {
 class _FishFeedAppState extends ConsumerState<FishFeedApp> {
   late final GoRouter _router;
   AuthStateListenable? _authListenable;
+  StreamSubscription<Uri>? _deepLinkSub;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Initialize router once we have access to ref
-    _authListenable ??= ref.read(authListenableProvider);
-    _router = AppRouter.createRouter(_authListenable!);
+    if (_authListenable == null) {
+      _authListenable = ref.read(authListenableProvider);
+      _router = AppRouter.createRouter(_authListenable!);
+      _initDeepLinks();
+    }
 
     // Initialize auth state from local storage
     Future.microtask(() {
       ref.read(authNotifierProvider.notifier).initialize();
     });
+  }
+
+  void _initDeepLinks() {
+    final appLinks = AppLinks();
+
+    // Handle deep links while app is running (warm start / foreground)
+    _deepLinkSub = appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    });
+
+    // Handle initial deep link (cold start)
+    appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    final path = uri.path;
+    if (path.startsWith('/join/') && path.length > 6) {
+      _router.go(path);
+    }
+  }
+
+  @override
+  void dispose() {
+    _deepLinkSub?.cancel();
+    super.dispose();
   }
 
   @override

@@ -102,12 +102,12 @@ class AppRouter {
     final isLoggedIn = authState.isLoggedIn;
     final hasCompletedOnboarding = authState.hasCompletedOnboarding;
     final currentPath = state.matchedLocation;
+    final uri = state.uri;
 
-    // While initializing auth state, show splash screen
-    // This prevents login screen flash on app startup
-    if (isInitializing) {
-      if (currentPath == splash) return null;
-      return splash;
+    // Handle custom scheme deep links: fishfeed://join/CODE → /join/CODE
+    // URI parser treats "join" as host, so path is just "/CODE"
+    if (uri.scheme == 'fishfeed' && uri.host == 'join' && uri.path.length > 1) {
+      return '/join${uri.path}';
     }
 
     // Public routes that don't require authentication
@@ -115,6 +115,14 @@ class AppRouter {
     final isOnboardingRoute = currentPath == onboarding;
     final isJoinRoute = currentPath.startsWith('/join/');
     final isSplashRoute = currentPath == splash;
+
+    // While initializing auth state, show splash screen
+    // But allow join route to pass through — it handles auth itself
+    if (isInitializing) {
+      if (isJoinRoute) return null;
+      if (currentPath == splash) return null;
+      return splash;
+    }
 
     // Not logged in
     if (!isLoggedIn) {
@@ -130,6 +138,8 @@ class AppRouter {
     if (!hasCompletedOnboarding) {
       // Allow staying on onboarding page
       if (isOnboardingRoute) return null;
+      // Allow join route - accepting an invite can serve as onboarding
+      if (isJoinRoute) return null;
       // Redirect to onboarding (from auth, splash, or any other route)
       if (isAuthRoute || isSplashRoute) return onboarding;
       return onboarding;
@@ -250,10 +260,27 @@ class AppRouter {
       name: 'joinFamily',
       pageBuilder: (context, state) {
         final inviteCode = state.pathParameters['inviteCode']!;
-        return _buildPage(
-          state: state,
+        // Use inviteCode as key to force rebuild when code changes
+        return CustomTransitionPage<void>(
+          key: ValueKey('join_$inviteCode'),
           child: JoinFamilyScreen(inviteCode: inviteCode),
-          transitionType: _PageTransitionType.slideUp,
+          transitionDuration: AnimationConfig.pageTransitionDuration,
+          reverseTransitionDuration: AnimationConfig.pageTransitionDuration,
+          transitionsBuilder: (context, animation, _, child) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0.0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: AnimationConfig.pageTransitionCurve,
+                    ),
+                  ),
+              child: FadeTransition(opacity: animation, child: child),
+            );
+          },
         );
       },
     ),

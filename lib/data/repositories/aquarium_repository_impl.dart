@@ -67,7 +67,10 @@ class AquariumRepositoryImpl implements AquariumRepository {
     }
 
     try {
-      final models = _localDataSource.getAquariumsByUserId(currentUser.id);
+      // Use getAllAquariums instead of filtering by userId.
+      // Server sync already returns only accessible aquariums (owned + shared),
+      // so everything in Hive belongs to the current user.
+      final models = _localDataSource.getAllAquariums();
       final aquariums = models
           .where((m) => !m.isDeleted)
           .map((m) => m.toEntity())
