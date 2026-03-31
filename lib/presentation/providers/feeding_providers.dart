@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/domain/repositories/streak_repository.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
@@ -614,17 +614,17 @@ class StreakState {
 /// Mobile is the source of truth for streak state; server is sync-only storage.
 class StreakNotifier extends StateNotifier<StreakState> {
   StreakNotifier({
-    required StreakLocalDataSource streakDataSource,
+    required StreakRepository streakRepository,
     required CalculateStreakUseCase calculateStreakUseCase,
     required Ref ref,
-  }) : _streakDataSource = streakDataSource,
+  }) : _streakRepository = streakRepository,
        _calculateStreakUseCase = calculateStreakUseCase,
        _ref = ref,
        super(const StreakState()) {
     loadStreak();
   }
 
-  final StreakLocalDataSource _streakDataSource;
+  final StreakRepository _streakRepository;
   final CalculateStreakUseCase _calculateStreakUseCase;
   final Ref _ref;
 
@@ -677,22 +677,29 @@ class StreakNotifier extends StateNotifier<StreakState> {
     try {
       final userId = _ref.read(currentUserProvider)?.id ?? 'default_user';
       final previousStreak = state.streak?.currentStreak ?? 0;
-      final updatedModel = await _streakDataSource.incrementStreak(
+      final result = await _streakRepository.incrementStreak(
         userId,
         DateTime.now(),
       );
 
-      state = state.copyWith(streak: updatedModel.toEntity());
+      result.fold(
+        (failure) {
+          state = state.copyWith(error: 'Failed to increment streak: $failure');
+        },
+        (updatedStreak) {
+          state = state.copyWith(streak: updatedStreak);
 
-      // Track streak analytics
-      final newStreak = updatedModel.currentStreak;
-      if (previousStreak == 0 && newStreak > 0) {
-        AnalyticsService.instance.trackStreakStarted();
-      } else if (newStreak > previousStreak) {
-        AnalyticsService.instance.trackStreakIncremented(
-          streakCount: newStreak,
-        );
-      }
+          // Track streak analytics
+          final newStreak = updatedStreak.currentStreak;
+          if (previousStreak == 0 && newStreak > 0) {
+            AnalyticsService.instance.trackStreakStarted();
+          } else if (newStreak > previousStreak) {
+            AnalyticsService.instance.trackStreakIncremented(
+              streakCount: newStreak,
+            );
+          }
+        },
+      );
     } catch (e) {
       state = state.copyWith(error: 'Failed to increment streak: $e');
     }
@@ -702,6 +709,7 @@ class StreakNotifier extends StateNotifier<StreakState> {
 /// Provider for current streak state.
 final currentStreakProvider =
     StateNotifierProvider<StreakNotifier, StreakState>((ref) {
+      final streakRepo = ref.watch(streakRepositoryProvider);
       final streakDs = ref.watch(streakLocalDataSourceProvider);
       final feedingLogDs = ref.watch(feedingLogLocalDataSourceProvider);
       final calculateStreakUseCase = CalculateStreakUseCase(
@@ -710,7 +718,7 @@ final currentStreakProvider =
       );
 
       return StreakNotifier(
-        streakDataSource: streakDs,
+        streakRepository: streakRepo,
         calculateStreakUseCase: calculateStreakUseCase,
         ref: ref,
       );
