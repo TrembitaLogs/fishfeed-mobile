@@ -121,8 +121,7 @@ final syncSubscriptionStatusProvider = FutureProvider<SubscriptionStatus>((
 /// }
 /// ```
 final isPremiumProvider = Provider<bool>((ref) {
-  final status = ref.watch(subscriptionStatusProvider);
-  return status.isPremium;
+  return ref.watch(subscriptionStatusProvider.select((s) => s.isPremium));
 });
 
 /// Provider for checking if the user has remove ads access.
@@ -138,8 +137,7 @@ final isPremiumProvider = Provider<bool>((ref) {
 /// }
 /// ```
 final hasRemoveAdsProvider = Provider<bool>((ref) {
-  final status = ref.watch(subscriptionStatusProvider);
-  return status.hasRemoveAds;
+  return ref.watch(subscriptionStatusProvider.select((s) => s.hasRemoveAds));
 });
 
 /// Provider for checking if the user is in a trial period.
@@ -152,6 +150,5 @@ final hasRemoveAdsProvider = Provider<bool>((ref) {
 /// }
 /// ```
 final isTrialActiveProvider = Provider<bool>((ref) {
-  final status = ref.watch(subscriptionStatusProvider);
-  return status.isTrialActive;
+  return ref.watch(subscriptionStatusProvider.select((s) => s.isTrialActive));
 });

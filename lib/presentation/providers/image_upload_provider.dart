@@ -278,17 +278,17 @@ final imageUploadNotifierProvider =
 
 /// Number of pending image uploads in the queue.
 final pendingUploadsCountProvider = Provider<int>((ref) {
-  return ref.watch(imageUploadNotifierProvider).pendingCount;
+  return ref.watch(imageUploadNotifierProvider.select((s) => s.pendingCount));
 });
 
 /// Number of failed image uploads in the queue.
 final failedUploadsCountProvider = Provider<int>((ref) {
-  return ref.watch(imageUploadNotifierProvider).failedCount;
+  return ref.watch(imageUploadNotifierProvider.select((s) => s.failedCount));
 });
 
 /// Whether image uploads are currently being processed.
 final isUploadingImagesProvider = Provider<bool>((ref) {
-  return ref.watch(imageUploadNotifierProvider).isProcessing;
+  return ref.watch(imageUploadNotifierProvider.select((s) => s.isProcessing));
 });
 
 /// Provides the local file path for a `local://` key.

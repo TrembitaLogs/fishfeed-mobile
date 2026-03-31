@@ -246,15 +246,15 @@ final familyStateProvider = Provider<FamilyState>((ref) {
 
 /// Provider for family members list.
 final familyMembersProvider = Provider<List<FamilyMember>>((ref) {
-  return ref.watch(familyNotifierProvider).members;
+  return ref.watch(familyNotifierProvider.select((s) => s.members));
 });
 
 /// Provider for active invites list.
 final familyInvitesProvider = Provider<List<FamilyInvite>>((ref) {
-  return ref.watch(familyNotifierProvider).invites;
+  return ref.watch(familyNotifierProvider.select((s) => s.invites));
 });
 
 /// Provider for checking if family is loading.
 final familyLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(familyNotifierProvider).isLoading;
+  return ref.watch(familyNotifierProvider.select((s) => s.isLoading));
 });

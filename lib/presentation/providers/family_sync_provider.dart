@@ -165,12 +165,12 @@ final familySyncProvider =
 
 /// Provider for checking if family sync is active.
 final isFamilySyncActiveProvider = Provider<bool>((ref) {
-  return ref.watch(familySyncProvider).isPolling;
+  return ref.watch(familySyncProvider.select((s) => s.isPolling));
 });
 
 /// Provider for the last family feeding event.
 final lastFamilyFeedingProvider = Provider<FeedingEvent?>((ref) {
-  return ref.watch(familySyncProvider).lastFamilyFeeding;
+  return ref.watch(familySyncProvider.select((s) => s.lastFamilyFeeding));
 });
 
 /// Widget wrapper that shows family feeding toasts.

@@ -194,8 +194,7 @@ final unlockedAchievementsProvider = FutureProvider<List<Achievement>>((
 
 /// Provider for unlocked achievements count.
 final unlockedAchievementsCountProvider = Provider<int>((ref) {
-  final state = ref.watch(achievementsProvider);
-  return state.unlockedCount;
+  return ref.watch(achievementsProvider.select((s) => s.unlockedCount));
 });
 
 /// Provider for total achievements count.

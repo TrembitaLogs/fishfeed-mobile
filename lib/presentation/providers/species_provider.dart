@@ -115,12 +115,12 @@ final speciesListProvider =
 
 /// Provider for current species list (convenience accessor).
 final availableSpeciesProvider = Provider<List<Species>>((ref) {
-  return ref.watch(speciesListProvider).species;
+  return ref.watch(speciesListProvider.select((s) => s.species));
 });
 
 /// Provider for species loading state.
 final speciesLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(speciesListProvider).isLoading;
+  return ref.watch(speciesListProvider.select((s) => s.isLoading));
 });
 
 /// Cache for species fetched by ID.

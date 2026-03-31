@@ -294,27 +294,27 @@ final selectedAquariumProvider = Provider<Aquarium?>((ref) {
 ///
 /// Convenience provider for widgets that only need the list.
 final aquariumsListProvider = Provider<List<Aquarium>>((ref) {
-  return ref.watch(userAquariumsProvider).aquariums;
+  return ref.watch(userAquariumsProvider.select((s) => s.aquariums));
 });
 
 /// Provider for aquariums count.
 final aquariumsCountProvider = Provider<int>((ref) {
-  return ref.watch(userAquariumsProvider).count;
+  return ref.watch(userAquariumsProvider.select((s) => s.count));
 });
 
 /// Provider for checking if user has any aquariums.
 final hasAquariumsProvider = Provider<bool>((ref) {
-  return ref.watch(userAquariumsProvider).aquariums.isNotEmpty;
+  return ref.watch(userAquariumsProvider.select((s) => s.aquariums.isNotEmpty));
 });
 
 /// Provider for aquariums loading state.
 final aquariumsLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(userAquariumsProvider).isLoading;
+  return ref.watch(userAquariumsProvider.select((s) => s.isLoading));
 });
 
 /// Provider for aquariums error state.
 final aquariumsErrorProvider = Provider<String?>((ref) {
-  return ref.watch(userAquariumsProvider).error;
+  return ref.watch(userAquariumsProvider.select((s) => s.error));
 });
 
 /// Provider for getting a specific aquarium by ID.

@@ -399,8 +399,7 @@ final todayFeedingsProvider =
 /// Returns a map with keys: 'morning', 'afternoon', 'evening'.
 final groupedFeedingsProvider =
     Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
-      final state = ref.watch(todayFeedingsProvider);
-      final feedings = state.feedings;
+      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
 
       final grouped = <String, List<ComputedFeedingEvent>>{
         'morning': [],
@@ -437,8 +436,8 @@ String _getTimePeriod(int hour) {
 /// ```
 final aquariumFeedingsProvider =
     Provider.family<List<ComputedFeedingEvent>, String>((ref, aquariumId) {
-      final state = ref.watch(todayFeedingsProvider);
-      return state.feedings
+      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
+      return feedings
           .where((feeding) => feeding.aquariumId == aquariumId)
           .toList();
     });
@@ -448,8 +447,7 @@ final aquariumFeedingsProvider =
 /// Returns a map with aquarium IDs as keys and list of feedings as values.
 final feedingsGroupedByAquariumProvider =
     Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
-      final state = ref.watch(todayFeedingsProvider);
-      final feedings = state.feedings;
+      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
 
       final grouped = <String, List<ComputedFeedingEvent>>{};
 
@@ -729,10 +727,10 @@ final currentStreakProvider =
 ///
 /// Convenience provider for widgets that only need the count.
 final currentStreakCountProvider = Provider<int>((ref) {
-  return ref.watch(currentStreakProvider).currentStreak;
+  return ref.watch(currentStreakProvider.select((s) => s.currentStreak));
 });
 
 /// Provider for streak active status.
 final isStreakActiveProvider = Provider<bool>((ref) {
-  return ref.watch(currentStreakProvider).isActive;
+  return ref.watch(currentStreakProvider.select((s) => s.isActive));
 });

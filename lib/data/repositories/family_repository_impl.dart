@@ -209,10 +209,10 @@ class FamilyRepositoryImpl implements FamilyRepository {
 /// Provider for [FamilyRepository].
 final familyRepositoryProvider = Provider<FamilyRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  final currentUser = ref.watch(currentUserProvider);
+  final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
 
   return FamilyRepositoryImpl(
     apiClient: apiClient,
-    currentUserId: currentUser?.id,
+    currentUserId: currentUserId,
   );
 });

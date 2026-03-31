@@ -168,8 +168,7 @@ class _FeedingsList extends ConsumerWidget {
     final isPremium = ref.watch(isPremiumProvider);
     final shouldShowAds = ref.watch(shouldShowAdsProvider);
     final upsellDismissed = ref.watch(_upsellDismissedProvider);
-    final aquariumsState = ref.watch(userAquariumsProvider);
-    final aquariums = aquariumsState.aquariums;
+    final aquariums = ref.watch(userAquariumsProvider.select((s) => s.aquariums));
 
     // Group feedings by aquarium ID
     final groupedByAquarium = <String, List<ComputedFeedingEvent>>{};

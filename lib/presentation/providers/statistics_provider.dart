@@ -114,9 +114,9 @@ final calculateStatisticsUseCaseProvider = Provider<CalculateStatisticsUseCase>(
 final statisticsProvider =
     StateNotifierProvider<StatisticsNotifier, StatisticsState>((ref) {
       final useCase = ref.watch(calculateStatisticsUseCaseProvider);
-      final user = ref.watch(currentUserProvider);
+      final userId = ref.watch(currentUserProvider.select((u) => u?.id));
       return StatisticsNotifier(
         calculateStatisticsUseCase: useCase,
-        userId: user?.id,
+        userId: userId,
       );
     });

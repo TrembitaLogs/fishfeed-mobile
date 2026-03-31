@@ -485,17 +485,17 @@ final onboardingNotifierProvider =
 
 /// Provider for current onboarding step.
 final onboardingStepProvider = Provider<int>((ref) {
-  return ref.watch(onboardingNotifierProvider).currentStep;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.currentStep));
 });
 
 /// Provider for selected species list.
 final selectedSpeciesProvider = Provider<List<SpeciesSelection>>((ref) {
-  return ref.watch(onboardingNotifierProvider).selectedSpecies;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.selectedSpecies));
 });
 
 /// Provider for whether user can proceed to next step.
 final canProceedProvider = Provider<bool>((ref) {
-  return ref.watch(onboardingNotifierProvider).canProceed;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.canProceed));
 });
 
 /// Provider for species search query.
@@ -503,20 +503,20 @@ final speciesSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Provider for current aquarium ID during onboarding.
 final currentOnboardingAquariumIdProvider = Provider<String?>((ref) {
-  return ref.watch(onboardingNotifierProvider).currentAquariumId;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.currentAquariumId));
 });
 
 /// Provider for current aquarium name during onboarding.
 final currentOnboardingAquariumNameProvider = Provider<String?>((ref) {
-  return ref.watch(onboardingNotifierProvider).currentAquariumName;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.currentAquariumName));
 });
 
 /// Provider for list of created aquariums during onboarding.
 final createdAquariumsProvider = Provider<List<Aquarium>>((ref) {
-  return ref.watch(onboardingNotifierProvider).createdAquariums;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.createdAquariums));
 });
 
 /// Provider for aquarium creation loading state.
 final isCreatingAquariumProvider = Provider<bool>((ref) {
-  return ref.watch(onboardingNotifierProvider).isCreatingAquarium;
+  return ref.watch(onboardingNotifierProvider.select((s) => s.isCreatingAquarium));
 });

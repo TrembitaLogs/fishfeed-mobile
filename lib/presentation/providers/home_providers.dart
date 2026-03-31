@@ -71,7 +71,7 @@ final greetingProvider = Provider<GreetingData>((ref) {
 ///
 /// Convenience provider for widgets that only need the text.
 final greetingMessageProvider = Provider<String>((ref) {
-  return ref.watch(greetingProvider).greeting;
+  return ref.watch(greetingProvider.select((s) => s.greeting));
 });
 
 /// Provider for greeting with user's name.
@@ -82,7 +82,7 @@ final personalizedGreetingProvider = Provider.family<String, String?>((
   ref,
   userName,
 ) {
-  final greeting = ref.watch(greetingProvider).greeting;
+  final greeting = ref.watch(greetingProvider.select((s) => s.greeting));
 
   if (userName != null && userName.isNotEmpty) {
     return '$greeting, $userName!';

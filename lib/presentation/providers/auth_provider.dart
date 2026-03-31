@@ -610,12 +610,12 @@ final authStateProvider = Provider<AuthenticationState>((ref) {
 ///
 /// Returns null if not authenticated.
 final currentUserProvider = Provider<User?>((ref) {
-  return ref.watch(authNotifierProvider).user;
+  return ref.watch(authNotifierProvider.select((s) => s.user));
 });
 
 /// Provider for authentication status.
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  return ref.watch(authNotifierProvider).isAuthenticated;
+  return ref.watch(authNotifierProvider.select((s) => s.isAuthenticated));
 });
 
 /// Listenable adapter for GoRouter integration.

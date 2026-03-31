@@ -165,8 +165,8 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 final dayDetailProvider = StateNotifierProvider.autoDispose
     .family<DayDetailNotifier, DayDetailState, DateTime>((ref, date) {
       final eventGenerator = ref.watch(feedingEventGeneratorProvider);
-      final aquariumsState = ref.watch(userAquariumsProvider);
-      final aquariumIds = aquariumsState.aquariums.map((a) => a.id).toList();
+      final aquariums = ref.watch(userAquariumsProvider.select((s) => s.aquariums));
+      final aquariumIds = aquariums.map((a) => a.id).toList();
 
       // Build fish name lookup from local data source
       final fishDs = ref.watch(fishLocalDataSourceProvider);

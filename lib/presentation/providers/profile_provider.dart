@@ -280,15 +280,15 @@ final profileNotifierProvider =
 
 /// Provider for profile loading state.
 final profileLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(profileNotifierProvider).isLoading;
+  return ref.watch(profileNotifierProvider.select((s) => s.isLoading));
 });
 
 /// Provider for nickname update loading state.
 final nicknameUpdatingProvider = Provider<bool>((ref) {
-  return ref.watch(profileNotifierProvider).isUpdatingNickname;
+  return ref.watch(profileNotifierProvider.select((s) => s.isUpdatingNickname));
 });
 
 /// Provider for avatar update loading state.
 final avatarUpdatingProvider = Provider<bool>((ref) {
-  return ref.watch(profileNotifierProvider).isUpdatingAvatar;
+  return ref.watch(profileNotifierProvider.select((s) => s.isUpdatingAvatar));
 });

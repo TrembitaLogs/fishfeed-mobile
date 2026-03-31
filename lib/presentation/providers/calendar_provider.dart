@@ -105,15 +105,15 @@ final calendarProvider = NotifierProvider<CalendarNotifier, CalendarState>(
 
 /// Provider for the currently focused day.
 final focusedDayProvider = Provider<DateTime>((ref) {
-  return ref.watch(calendarProvider).focusedDay;
+  return ref.watch(calendarProvider.select((s) => s.focusedDay));
 });
 
 /// Provider for the currently selected day.
 final selectedDayProvider = Provider<DateTime>((ref) {
-  return ref.watch(calendarProvider).selectedDay;
+  return ref.watch(calendarProvider.select((s) => s.selectedDay));
 });
 
 /// Provider for the current calendar format.
 final calendarFormatProvider = Provider<CalendarFormat>((ref) {
-  return ref.watch(calendarProvider).calendarFormat;
+  return ref.watch(calendarProvider.select((s) => s.calendarFormat));
 });

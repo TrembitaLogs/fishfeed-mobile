@@ -323,30 +323,30 @@ final settingsNotifierProvider =
 
 /// Provider for the current theme mode.
 final themeModeProvider = Provider<ThemeMode>((ref) {
-  return ref.watch(settingsNotifierProvider).themeMode.toThemeMode();
+  return ref.watch(settingsNotifierProvider.select((s) => s.themeMode)).toThemeMode();
 });
 
 /// Provider for the current app theme mode enum.
 final appThemeModeProvider = Provider<AppThemeMode>((ref) {
-  return ref.watch(settingsNotifierProvider).themeMode;
+  return ref.watch(settingsNotifierProvider.select((s) => s.themeMode));
 });
 
 /// Provider for whether notifications are enabled.
 final notificationsEnabledProvider = Provider<bool>((ref) {
-  return ref.watch(settingsNotifierProvider).notificationsEnabled;
+  return ref.watch(settingsNotifierProvider.select((s) => s.notificationsEnabled));
 });
 
 /// Provider for the current language.
 final languageProvider = Provider<String>((ref) {
-  return ref.watch(settingsNotifierProvider).language;
+  return ref.watch(settingsNotifierProvider.select((s) => s.language));
 });
 
 /// Provider for settings loading state.
 final settingsLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(settingsNotifierProvider).isLoading;
+  return ref.watch(settingsNotifierProvider.select((s) => s.isLoading));
 });
 
 /// Provider for settings saving state.
 final settingsSavingProvider = Provider<bool>((ref) {
-  return ref.watch(settingsNotifierProvider).isSaving;
+  return ref.watch(settingsNotifierProvider.select((s) => s.isSaving));
 });

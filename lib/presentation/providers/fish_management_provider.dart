@@ -342,31 +342,31 @@ final fishManagementProvider =
 ///
 /// Convenience provider for accessing just the fish list.
 final userFishListProvider = Provider<List<Fish>>((ref) {
-  return ref.watch(fishManagementProvider).userFish;
+  return ref.watch(fishManagementProvider.select((s) => s.userFish));
 });
 
 /// Provider for total fish count.
 ///
 /// Returns the sum of all fish quantities.
 final totalFishCountProvider = Provider<int>((ref) {
-  return ref.watch(fishManagementProvider).totalFishCount;
+  return ref.watch(fishManagementProvider.select((s) => s.totalFishCount));
 });
 
 /// Provider for fish species count.
 ///
 /// Returns the number of unique fish species.
 final fishSpeciesCountProvider = Provider<int>((ref) {
-  return ref.watch(fishManagementProvider).speciesCount;
+  return ref.watch(fishManagementProvider.select((s) => s.speciesCount));
 });
 
 /// Provider for fish loading state.
 final isFishLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(fishManagementProvider).isLoading;
+  return ref.watch(fishManagementProvider.select((s) => s.isLoading));
 });
 
 /// Provider for checking if aquarium is empty.
 final isAquariumEmptyProvider = Provider<bool>((ref) {
-  return ref.watch(fishManagementProvider).isEmpty;
+  return ref.watch(fishManagementProvider.select((s) => s.isEmpty));
 });
 
 /// Provider for getting fish by aquarium ID.
