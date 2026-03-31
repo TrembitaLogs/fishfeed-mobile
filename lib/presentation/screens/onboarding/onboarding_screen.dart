@@ -21,6 +21,7 @@ import 'package:fishfeed/presentation/screens/onboarding/steps/species_selection
 import 'package:fishfeed/presentation/screens/onboarding/steps/quantity_step.dart';
 import 'package:fishfeed/presentation/screens/onboarding/steps/schedule_preview_step.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/presentation/screens/onboarding/widgets/onboarding_navigation.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -387,7 +388,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildProgressIndicator(state.currentStep),
+            OnboardingProgressIndicator(
+              currentStep: state.currentStep,
+              totalSteps: _getTotalSteps(),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -396,7 +400,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 itemBuilder: (context, index) => _buildStep(index),
               ),
             ),
-            _buildNavigationButtons(state),
+            OnboardingNavigationButtons(
+              isFirstStep: state.isFirstStep,
+              isAddFlow: widget.isAddMode || widget.isAddAquariumMode,
+              isLoading: _isCompletingOnboarding || state.isCreatingAquarium,
+              canProceed: _canProceed(state),
+              nextButtonText: _getNextButtonText(state),
+              onBack: _onBackPressed,
+              onCancel: _onCancelPressed,
+              onNext: _onNextPressed,
+            ),
           ],
         ),
       ),
@@ -409,25 +422,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return 4; // Aquarium Selection + Species + Quantity + Schedule
     if (widget.isAddAquariumMode) return 4; // Skip AddMoreAquariumStep
     return OnboardingState.totalSteps;
-  }
-
-  Widget _buildProgressIndicator(int currentStep) {
-    final totalSteps = _getTotalSteps();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        children: List.generate(
-          totalSteps,
-          (index) => Expanded(
-            child: _ProgressDot(
-              isActive: index == currentStep,
-              isCompleted: index < currentStep,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildStep(int index) {
@@ -486,67 +480,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _onCancelPressed() {
     context.pop();
-  }
-
-  Widget _buildNavigationButtons(OnboardingState state) {
-    final theme = Theme.of(context);
-    final isLoading = _isCompletingOnboarding || state.isCreatingAquarium;
-    final isAddFlow = widget.isAddMode || widget.isAddAquariumMode;
-
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          if (!state.isFirstStep)
-            // Back button for non-first steps
-            Expanded(
-              child: OutlinedButton(
-                onPressed: isLoading ? null : _onBackPressed,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Back'),
-              ),
-            )
-          else if (isAddFlow)
-            // Cancel button on first step in add mode
-            Expanded(
-              child: OutlinedButton(
-                onPressed: isLoading ? null : _onCancelPressed,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Cancel'),
-              ),
-            )
-          else
-            const Spacer(),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: FilledButton(
-              onPressed: _canProceed(state) && !isLoading
-                  ? _onNextPressed
-                  : null,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: theme.colorScheme.primary,
-              ),
-              child: isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(_getNextButtonText(state)),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   String _getNextButtonText(OnboardingState state) {
@@ -661,33 +594,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     // Reset state for new aquarium (keeps createdAquariums list)
     notifier.resetForNewAquarium();
-  }
-}
-
-/// Progress dot indicator for onboarding steps.
-class _ProgressDot extends StatelessWidget {
-  const _ProgressDot({required this.isActive, required this.isCompleted});
-
-  final bool isActive;
-  final bool isCompleted;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 4,
-        decoration: BoxDecoration(
-          color: isActive || isCompleted
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
   }
 }
 

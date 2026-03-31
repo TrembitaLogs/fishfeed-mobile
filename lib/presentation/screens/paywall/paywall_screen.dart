@@ -6,9 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
-import 'package:fishfeed/presentation/widgets/paywall/benefit_item.dart';
-import 'package:fishfeed/presentation/widgets/paywall/product_card.dart';
-import 'package:fishfeed/presentation/widgets/paywall/remove_ads_card.dart';
+import 'package:fishfeed/presentation/screens/paywall/widgets/paywall_sections.dart';
 import 'package:fishfeed/presentation/widgets/paywall/trial_banner.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 
@@ -253,10 +251,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     context.pop();
   }
 
-  Future<void> _openUrl(BuildContext context, String url) async {
+  Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.couldNotOpenLink),
@@ -275,7 +273,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -290,401 +287,60 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       ),
       body: _isLoadingOfferings
           ? const Center(child: CircularProgressIndicator())
-          : _buildContent(theme),
-    );
-  }
-
-  Widget _buildContent(ThemeData theme) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Hero section
-          _buildHeroSection(theme),
-          const SizedBox(height: 24),
-
-          // Trial banner
-          const TrialBanner(),
-          const SizedBox(height: 24),
-
-          // Benefits list
-          _buildBenefitsList(theme),
-          const SizedBox(height: 24),
-
-          // Product options
-          _buildProductOptions(theme),
-          const SizedBox(height: 24),
-
-          // Error message
-          if (_errorMessage != null) ...[
-            _buildErrorBanner(theme),
-            const SizedBox(height: 16),
-          ],
-
-          // CTA button
-          _buildCtaButton(theme),
-          const SizedBox(height: 24),
-
-          // Remove Ads alternative (if available)
-          if (_removeAdsPackage != null) ...[
-            _buildRemoveAdsSection(theme),
-            const SizedBox(height: 24),
-          ],
-
-          // Terms and restore
-          _buildTermsAndRestore(theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeroSection(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        // Premium badge
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFFFFD700).withValues(alpha: 0.3),
-                const Color(0xFFFFA500).withValues(alpha: 0.2),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.workspace_premium,
-            size: 56,
-            color: Color(0xFFFFD700),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Headline
-        Text(
-          l.paywallUnlockPremium,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l.paywallSubtitle,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBenefitsList(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    final premiumBenefits = [
-      (Icons.block, l.noAds),
-      (Icons.camera_enhance, l.paywallUnlimitedAiScans),
-      (Icons.analytics, l.paywallExtendedStatistics),
-      (Icons.family_restroom, l.paywallFamilyMode),
-      (Icons.water, l.paywallMultipleAquariums),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l.paywallPremiumBenefits,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...premiumBenefits.map(
-          (benefit) => BenefitItem(icon: benefit.$1, text: benefit.$2),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProductOptions(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    final current = _offerings?.current;
-    if (current == null) {
-      return _buildFallbackProducts(theme);
-    }
-
-    final packages = <Package>[];
-    if (current.monthly != null) packages.add(current.monthly!);
-    if (current.annual != null) packages.add(current.annual!);
-
-    if (packages.isEmpty) {
-      return _buildFallbackProducts(theme);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l.paywallChooseYourPlan,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...packages.map((package) => _buildPackageCard(package, theme)),
-      ],
-    );
-  }
-
-  Widget _buildPackageCard(Package package, ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    final product = package.storeProduct;
-    final isAnnual = package.packageType == PackageType.annual;
-    final isMonthly = package.packageType == PackageType.monthly;
-
-    String title;
-    String? subtitle;
-    String? badge;
-    String? savings;
-
-    if (isAnnual) {
-      title = l.paywallAnnual;
-      badge = l.paywallBestValue;
-      // Calculate monthly equivalent and savings
-      final annualPrice = product.price;
-      final monthlyEquivalent = annualPrice / 12;
-      subtitle = l.paywallPerMonth(monthlyEquivalent.toStringAsFixed(2));
-      savings = l.paywallSavePercent(37);
-    } else if (isMonthly) {
-      title = l.paywallMonthly;
-      subtitle = l.paywallMostFlexible;
-    } else {
-      title = product.title;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: ProductCard(
-        title: title,
-        price: product.priceString,
-        subtitle: subtitle,
-        badge: badge,
-        savings: savings,
-        isSelected: _selectedPackage == package,
-        onTap: () => setState(() => _selectedPackage = package),
-      ),
-    );
-  }
-
-  Widget _buildFallbackProducts(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    // Fallback UI when offerings aren't available
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l.paywallChooseYourPlan,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ProductCard(
-          title: l.paywallMonthly,
-          price: l.paywallPerMonth('3.99'),
-          subtitle: l.paywallMostFlexible,
-          isSelected: _selectedFallbackPlan == 'monthly',
-          onTap: () => setState(() => _selectedFallbackPlan = 'monthly'),
-        ),
-        const SizedBox(height: 12),
-        ProductCard(
-          title: l.paywallAnnual,
-          price: '\$29.99/year',
-          subtitle: l.paywallPerMonth('2.50'),
-          badge: l.paywallBestValue,
-          savings: l.paywallSavePercent(37),
-          isSelected: _selectedFallbackPlan == 'annual',
-          onTap: () => setState(() => _selectedFallbackPlan = 'annual'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorBanner(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(color: theme.colorScheme.onErrorContainer),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 18),
-            onPressed: () => setState(() => _errorMessage = null),
-            color: theme.colorScheme.onErrorContainer,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCtaButton(ThemeData theme) {
-    final isLoading = _isPurchasing || _isRestoring;
-    final hasSelection =
-        _selectedPackage != null || _offerings?.current == null;
-
-    return FilledButton(
-      onPressed: isLoading || !hasSelection ? null : _purchaseSelectedPackage,
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: _isPurchasing
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.card_giftcard),
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context)!.paywallStartFreeTrial,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const PaywallHeroSection(),
+                  const SizedBox(height: 24),
+                  const TrialBanner(),
+                  const SizedBox(height: 24),
+                  const PaywallBenefitsList(),
+                  const SizedBox(height: 24),
+                  PaywallProductOptions(
+                    offerings: _offerings,
+                    selectedPackage: _selectedPackage,
+                    selectedFallbackPlan: _selectedFallbackPlan,
+                    onPackageSelected: (package) =>
+                        setState(() => _selectedPackage = package),
+                    onFallbackPlanSelected: (plan) =>
+                        setState(() => _selectedFallbackPlan = plan),
                   ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildRemoveAdsSection(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    final price = _removeAdsPackage?.storeProduct.priceString ?? '\$3.99';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Divider with "or" text
-        Row(
-          children: [
-            Expanded(
-              child: Divider(
-                color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                  const SizedBox(height: 24),
+                  if (_errorMessage != null) ...[
+                    PaywallErrorBanner(
+                      message: _errorMessage!,
+                      onDismiss: () => setState(() => _errorMessage = null),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  PaywallCtaButton(
+                    isPurchasing: _isPurchasing,
+                    isRestoring: _isRestoring,
+                    hasSelection:
+                        _selectedPackage != null || _offerings?.current == null,
+                    onPurchase: _purchaseSelectedPackage,
+                  ),
+                  const SizedBox(height: 24),
+                  if (_removeAdsPackage != null) ...[
+                    PaywallRemoveAdsSection(
+                      price:
+                          _removeAdsPackage?.storeProduct.priceString ??
+                          '\$3.99',
+                      isLoading: _isPurchasingRemoveAds,
+                      onPurchase: _purchaseRemoveAds,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  PaywallTermsAndRestore(
+                    isRestoring: _isRestoring,
+                    onRestore: _restorePurchases,
+                    onOpenUrl: _openUrl,
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                l.paywallOr,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Divider(
-                color: theme.colorScheme.outline.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Remove Ads card
-        RemoveAdsCard(
-          price: price,
-          isLoading: _isPurchasingRemoveAds,
-          onTap: _purchaseRemoveAds,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTermsAndRestore(ThemeData theme) {
-    final l = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        // Trial terms
-        Text(
-          l.paywallTrialTerms,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-
-        // Restore purchases link
-        TextButton(
-          onPressed: _isRestoring ? null : _restorePurchases,
-          child: _isRestoring
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(
-                  l.restorePurchases,
-                  style: TextStyle(color: theme.colorScheme.primary),
-                ),
-        ),
-
-        // Links to terms and privacy
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () => _openUrl(context, 'https://fishfeed.club/terms'),
-              child: Text(
-                l.termsOfService,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-            Text(
-              ' | ',
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            TextButton(
-              onPressed: () =>
-                  _openUrl(context, 'https://fishfeed.club/privacy'),
-              child: Text(
-                l.privacyPolicy,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
