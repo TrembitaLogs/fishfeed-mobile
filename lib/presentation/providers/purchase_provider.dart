@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -21,8 +22,8 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
   try {
     final apiClient = ref.watch(apiClientProvider);
     purchaseService.configureDio(apiClient.dio);
-  } catch (_) {
-    // ApiClient not available yet, sync will work without backend
+  } catch (e) {
+    debugPrint('PurchaseProvider: ApiClient not available yet: $e');
   }
 
   return purchaseService;

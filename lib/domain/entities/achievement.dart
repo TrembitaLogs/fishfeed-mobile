@@ -85,7 +85,8 @@ class Achievement extends Equatable {
   AchievementType? get achievementType {
     try {
       return AchievementType.values.firstWhere((t) => t.name == type);
-    } catch (_) {
+    } catch (e) {
+      // Unknown achievement type — may be from a newer server version
       return null;
     }
   }

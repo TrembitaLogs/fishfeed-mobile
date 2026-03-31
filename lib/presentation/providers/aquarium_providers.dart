@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/di/repository_providers.dart';
@@ -45,7 +46,8 @@ class UserAquariumsState {
   Aquarium? getById(String id) {
     try {
       return aquariums.firstWhere((a) => a.id == id);
-    } catch (_) {
+    } catch (e) {
+      // Aquarium not found in current state
       return null;
     }
   }
@@ -108,8 +110,9 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
 
     try {
       await _syncService.syncAll();
-    } catch (_) {
-      // Sync failure is non-fatal; we still reload local data below
+    } catch (e) {
+      debugPrint('AquariumProviders: Sync failed during refresh: $e');
+      // Non-fatal; continue with local data reload below
     }
 
     final result = await _aquariumRepository.getAquariums();

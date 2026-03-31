@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -280,7 +281,8 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
   Fish? getFishById(String id) {
     try {
       return state.userFish.firstWhere((f) => f.id == id);
-    } catch (_) {
+    } catch (e) {
+      // Fish not found in current state
       return null;
     }
   }
@@ -307,8 +309,8 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
       // Sync with backend - this creates feeding events for new fish
       // UI refresh is handled globally by _SyncCompletionRefreshListener
       await syncService.syncNow();
-    } catch (_) {
-      // Sync errors are handled by SyncService
+    } catch (e) {
+      debugPrint('FishManagement: Sync failed after fish update: $e');
     }
   }
 }

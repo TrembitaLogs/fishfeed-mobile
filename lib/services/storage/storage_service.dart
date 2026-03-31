@@ -119,8 +119,8 @@ class StorageService {
           if (entity is File) {
             try {
               size += await entity.length();
-            } catch (_) {
-              // Skip files we can't read
+            } catch (e) {
+              debugPrint('StorageService: Cannot read file size: $e');
             }
           }
         }

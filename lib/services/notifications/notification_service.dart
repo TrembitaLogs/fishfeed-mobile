@@ -252,7 +252,8 @@ class NotificationService {
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       return timezoneInfo.identifier;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('NotificationService: Failed to get local timezone: $e');
       return 'UTC';
     }
   }

@@ -95,8 +95,8 @@ class ShareService {
       // Clean up temp file
       try {
         await file.delete();
-      } catch (_) {
-        // Ignore cleanup errors
+      } catch (e) {
+        debugPrint('ShareService: Failed to clean up temp file: $e');
       }
 
       return ShareOperationResult(status: _mapShareResult(result.status));
@@ -165,8 +165,8 @@ class ShareService {
       // Clean up temp file
       try {
         await file.delete();
-      } catch (_) {
-        // Ignore cleanup errors
+      } catch (e) {
+        debugPrint('ShareService: Failed to clean up temp file: $e');
       }
 
       return ShareOperationResult(status: _mapShareResult(result.status));

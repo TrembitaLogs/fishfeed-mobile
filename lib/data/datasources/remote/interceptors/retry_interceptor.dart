@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Configuration for retry behavior.
 class RetryConfig {
@@ -49,9 +50,9 @@ class DefaultConnectivityChecker implements ConnectivityChecker {
     try {
       final results = await _connectivity.checkConnectivity();
       return !results.contains(ConnectivityResult.none);
-    } catch (_) {
-      // If we can't check connectivity, assume we have connection
-      // and let the request fail naturally if there's no network
+    } catch (e) {
+      debugPrint('RetryInterceptor: Connectivity check failed: $e');
+      // Assume connection exists and let the request fail naturally
       return true;
     }
   }
