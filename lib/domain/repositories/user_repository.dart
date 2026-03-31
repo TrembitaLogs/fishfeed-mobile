@@ -51,4 +51,10 @@ abstract interface class UserRepository {
     required User currentUser,
     required String? avatarKey,
   });
+
+  /// Updates the avatar key on the local user model directly.
+  ///
+  /// Used by the image upload system after a successful avatar upload.
+  /// Unlike [updateAvatarKeyLocally], does not require the current user entity.
+  Future<void> updateAvatarKeyFromUpload(String avatarKey);
 }

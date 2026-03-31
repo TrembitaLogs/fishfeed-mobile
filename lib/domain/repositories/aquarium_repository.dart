@@ -87,4 +87,13 @@ abstract interface class AquariumRepository {
   /// Returns [Right(List<Aquarium>)] with cached data.
   /// Returns [Left(CacheFailure)] if cache is empty.
   Either<Failure, List<Aquarium>> getCachedAquariums();
+
+  /// Updates an aquarium's photo key in local storage only.
+  ///
+  /// Sets `updatedAt` to now and marks as unsynced to prevent LWW conflicts.
+  /// Used by the image upload system after a successful photo upload.
+  Future<void> updatePhotoKeyLocally({
+    required String aquariumId,
+    required String photoKey,
+  });
 }

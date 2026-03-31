@@ -148,6 +148,16 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
+  @override
+  Future<void> updateAvatarKeyFromUpload(String avatarKey) async {
+    final user = _localDataSource.getCurrentUser();
+    if (user != null) {
+      user.avatarKey = avatarKey;
+      user.synced = false;
+      await user.save();
+    }
+  }
+
   /// Parses subscription status string to enum.
   SubscriptionStatus _parseSubscriptionStatus(String status) {
     return switch (status.toLowerCase()) {

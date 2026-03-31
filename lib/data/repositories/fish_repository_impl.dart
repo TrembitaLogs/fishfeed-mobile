@@ -57,6 +57,20 @@ class FishRepositoryImpl implements FishRepository {
   Future<void> softDelete(String id) async {
     await _localDataSource.softDelete(id);
   }
+
+  @override
+  Future<void> updatePhotoKeyLocally({
+    required String fishId,
+    required String photoKey,
+  }) async {
+    final fish = _localDataSource.getFishById(fishId);
+    if (fish != null) {
+      fish.photoKey = photoKey;
+      fish.updatedAt = DateTime.now();
+      fish.synced = false;
+      await fish.save();
+    }
+  }
 }
 
 /// Provider for [FishRepository].

@@ -31,4 +31,13 @@ abstract interface class FishRepository {
   /// Sets deletedAt timestamp instead of removing from storage,
   /// allowing sync to propagate the deletion to the server.
   Future<void> softDelete(String id);
+
+  /// Updates a fish's photo key in local storage only.
+  ///
+  /// Sets `updatedAt` to now and marks as unsynced to prevent LWW conflicts.
+  /// Used by the image upload system after a successful photo upload.
+  Future<void> updatePhotoKeyLocally({
+    required String fishId,
+    required String photoKey,
+  });
 }

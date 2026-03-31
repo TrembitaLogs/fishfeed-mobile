@@ -159,6 +159,20 @@ class AquariumRepositoryImpl implements AquariumRepository {
     final aquariums = models.map((m) => m.toEntity()).toList();
     return Right(aquariums);
   }
+
+  @override
+  Future<void> updatePhotoKeyLocally({
+    required String aquariumId,
+    required String photoKey,
+  }) async {
+    final aquarium = _localDataSource.getAquariumById(aquariumId);
+    if (aquarium != null) {
+      aquarium.photoKey = photoKey;
+      aquarium.updatedAt = DateTime.now();
+      aquarium.synced = false;
+      await aquarium.save();
+    }
+  }
 }
 
 /// Provider for [AquariumRepository].

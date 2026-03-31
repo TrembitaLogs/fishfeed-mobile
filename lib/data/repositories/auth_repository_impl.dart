@@ -155,6 +155,28 @@ class AuthRepositoryImpl implements AuthRepository {
     return _secureStorageService.hasTokens();
   }
 
+  @override
+  Future<void> saveUserLocally(User user) async {
+    final userModel = UserModel.fromEntity(user);
+    await _localDataSource.saveUserLocally(userModel);
+  }
+
+  @override
+  User? getLocalUser() {
+    final model = _localDataSource.getCurrentUser();
+    return model?.toEntity();
+  }
+
+  @override
+  bool getOnboardingCompleted() {
+    return HiveBoxes.getOnboardingCompleted();
+  }
+
+  @override
+  Future<void> setOnboardingCompleted(bool completed) async {
+    await HiveBoxes.setOnboardingCompleted(completed);
+  }
+
   /// Saves authentication data to local storage.
   Future<void> _saveAuthData(
     UserDto userDto,

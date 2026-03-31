@@ -69,4 +69,21 @@ abstract interface class AuthRepository {
   ///
   /// Returns `true` if valid tokens exist locally.
   Future<bool> isAuthenticated();
+
+  /// Saves a user to local storage for offline access.
+  ///
+  /// Used after login/OAuth to persist user data locally.
+  Future<void> saveUserLocally(User user);
+
+  /// Gets the current user from local storage synchronously.
+  ///
+  /// Returns the locally cached user, or null if not found.
+  /// Unlike [getCurrentUser], this returns the domain entity directly.
+  User? getLocalUser();
+
+  /// Gets whether onboarding has been completed.
+  bool getOnboardingCompleted();
+
+  /// Sets the onboarding completion flag.
+  Future<void> setOnboardingCompleted(bool completed);
 }

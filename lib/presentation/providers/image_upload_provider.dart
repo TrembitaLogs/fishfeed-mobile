@@ -3,18 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/core/di/datasource_providers.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/services/image_sync_queue.dart';
-import 'package:fishfeed/data/services/image_upload_service.dart';
-import 'package:fishfeed/data/services/image_upload_task.dart';
-import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
-import 'package:fishfeed/presentation/providers/auth_provider.dart';
-import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
+import 'package:fishfeed/core/di/service_providers.dart';
 import 'package:fishfeed/services/connectivity/connectivity_service.dart';
-import 'package:fishfeed/services/image_processing_service.dart';
 
 // ============ State ============
 
@@ -240,115 +230,7 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus> {
   }
 }
 
-// ============ Entity Photo Key Updater ============
-
-/// Creates an [EntityPhotoKeyUpdater] callback that updates local Hive models
-/// after a successful image upload.
-///
-/// CRITICAL: For aquarium and fish entities, sets `updatedAt = DateTime.now()`
-/// to prevent LWW conflicts during the next sync cycle. Without this, the
-/// server's `updated_at` (set during upload) would be newer than the client's,
-/// causing the server to reject the entire changeset — potentially losing
-/// other local changes like name edits.
-///
-/// For avatar (user), only sets `synced = false` since UserModel does not
-/// have an `updatedAt` field.
-@visibleForTesting
-EntityPhotoKeyUpdater createPhotoKeyUpdater({
-  required AquariumLocalDataSource aquariumDs,
-  required FishLocalDataSource fishDs,
-  required AuthLocalDataSource authDs,
-  void Function(String entityId, String photoKey)? onAquariumKeyUpdated,
-  void Function(String entityId, String photoKey)? onFishKeyUpdated,
-  void Function(String photoKey)? onAvatarKeyUpdated,
-}) {
-  return ({
-    required String entityType,
-    required String entityId,
-    required String photoKey,
-  }) async {
-    switch (entityType) {
-      case 'aquarium':
-        final aquarium = aquariumDs.getAquariumById(entityId);
-        if (aquarium != null) {
-          aquarium.photoKey = photoKey;
-          aquarium.updatedAt = DateTime.now();
-          aquarium.synced = false;
-          await aquarium.save();
-        }
-        onAquariumKeyUpdated?.call(entityId, photoKey);
-      case 'fish':
-        final fish = fishDs.getFishById(entityId);
-        if (fish != null) {
-          fish.photoKey = photoKey;
-          fish.updatedAt = DateTime.now();
-          fish.synced = false;
-          await fish.save();
-        }
-        onFishKeyUpdated?.call(entityId, photoKey);
-      case 'avatar':
-        final user = authDs.getCurrentUser();
-        if (user != null) {
-          user.avatarKey = photoKey;
-          user.synced = false;
-          await user.save();
-        }
-        onAvatarKeyUpdated?.call(photoKey);
-    }
-  };
-}
-
 // ============ Riverpod Providers ============
-
-/// Provider for [ImageSyncQueue].
-///
-/// Provides singleton access to the file-based image upload queue.
-/// The queue is initialized lazily when [imageUploadNotifierProvider]
-/// is first watched.
-final imageSyncQueueProvider = Provider<ImageSyncQueue>((ref) {
-  return ImageSyncQueue();
-});
-
-/// Provider for [ImageProcessingService].
-///
-/// Provides singleton access to the image compression service.
-final imageProcessingServiceProvider = Provider<ImageProcessingService>((ref) {
-  return ImageProcessingService();
-});
-
-/// Provider for [ImageUploadService].
-///
-/// Wires together the queue, image processor, Dio client, and the
-/// [EntityPhotoKeyUpdater] callback that updates Hive models after
-/// successful uploads.
-final imageUploadServiceProvider = Provider<ImageUploadService>((ref) {
-  final queue = ref.watch(imageSyncQueueProvider);
-  final imageProcessor = ref.watch(imageProcessingServiceProvider);
-  final apiClient = ref.watch(apiClientProvider);
-  final aquariumDs = ref.read(aquariumLocalDataSourceProvider);
-  final fishDs = ref.read(fishLocalDataSourceProvider);
-  final authDs = ref.read(authLocalDataSourceProvider);
-  return ImageUploadService(
-    queue: queue,
-    imageProcessor: imageProcessor,
-    dio: apiClient.dio,
-    onUploadComplete: createPhotoKeyUpdater(
-      aquariumDs: aquariumDs,
-      fishDs: fishDs,
-      authDs: authDs,
-      onAquariumKeyUpdated: (entityId, photoKey) {
-        ref.read(userAquariumsProvider.notifier).loadAquariums();
-      },
-      onFishKeyUpdated: (entityId, photoKey) {
-        ref.invalidate(fishByAquariumIdProvider);
-      },
-      onAvatarKeyUpdated: (photoKey) {
-        final notifier = ref.read(authNotifierProvider.notifier);
-        notifier.updateAvatarKey(photoKey);
-      },
-    ),
-  );
-});
 
 /// Provider for [ImageUploadNotifier].
 ///

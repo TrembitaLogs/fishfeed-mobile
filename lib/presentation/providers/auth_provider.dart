@@ -5,13 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/core/services/session_expired_notifier.dart';
-import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
-import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/domain/entities/user.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
 import 'package:fishfeed/domain/usecases/login_usecase.dart';
 import 'package:fishfeed/domain/usecases/logout_usecase.dart';
@@ -157,14 +153,12 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     required AuthRepository repository,
     required GoogleAuthService googleAuthService,
     required AppleAuthService appleAuthService,
-    required AquariumLocalDataSource aquariumLocalDataSource,
-    required AuthLocalDataSource authLocalDataSource,
+    required AquariumRepository aquariumRepository,
     required SyncService syncService,
   }) : _repository = repository,
        _googleAuthService = googleAuthService,
        _appleAuthService = appleAuthService,
-       _aquariumLocalDataSource = aquariumLocalDataSource,
-       _authLocalDataSource = authLocalDataSource,
+       _aquariumRepository = aquariumRepository,
        _syncService = syncService,
        _loginUseCase = LoginUseCase(repository),
        _registerUseCase = RegisterUseCase(repository),
@@ -180,8 +174,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   final AuthRepository _repository;
   final GoogleAuthService _googleAuthService;
   final AppleAuthService _appleAuthService;
-  final AquariumLocalDataSource _aquariumLocalDataSource;
-  final AuthLocalDataSource _authLocalDataSource;
+  final AquariumRepository _aquariumRepository;
   final SyncService _syncService;
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
@@ -228,7 +221,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           );
         },
         (user) async {
-          var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
+          var hasCompletedOnboarding = _repository.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Initialize: restored user ${user.email}');
           debugPrint(
             '[AuthNotifier] Initialize: Hive flag=$hasCompletedOnboarding',
@@ -263,13 +256,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             );
             unawaited(
               _syncService.syncAll().then((_) {
-                // Re-read user from Hive after sync to pick up server changes
-                final updatedModel = _authLocalDataSource.getCurrentUser();
-                if (updatedModel != null) {
-                  final updatedUser = updatedModel.toEntity();
-                  if (updatedUser != state.user) {
-                    updateUser(updatedUser);
-                  }
+                // Re-read user from local storage after sync to pick up server changes
+                final updatedUser = _repository.getLocalUser();
+                if (updatedUser != null && updatedUser != state.user) {
+                  updateUser(updatedUser);
                 }
               }),
             );
@@ -300,10 +290,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         state = state.copyWith(isLoading: false, error: failure);
       },
       (user) async {
-        // Save user to Hive before sync so profile updates can be applied
-        await _authLocalDataSource.saveUserLocally(UserModel.fromEntity(user));
+        // Save user locally before sync so profile updates can be applied
+        await _repository.saveUserLocally(user);
 
-        var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
+        var hasCompletedOnboarding = _repository.getOnboardingCompleted();
         debugPrint('[AuthNotifier] Login success for ${user.email}');
         debugPrint(
           '[AuthNotifier] Local Hive onboarding flag: $hasCompletedOnboarding',
@@ -313,9 +303,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
         }
 
-        // Re-read user from Hive after sync (may have nickname from server)
-        final syncedModel = _authLocalDataSource.getCurrentUser();
-        final syncedUser = syncedModel?.toEntity() ?? user;
+        // Re-read user from local storage after sync (may have nickname from server)
+        final syncedUser = _repository.getLocalUser() ?? user;
 
         debugPrint(
           '[AuthNotifier] Setting state with hasCompletedOnboarding=$hasCompletedOnboarding',
@@ -379,19 +368,16 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
-          await _authLocalDataSource.saveUserLocally(
-            UserModel.fromEntity(user),
-          );
+          await _repository.saveUserLocally(user);
 
-          var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
+          var hasCompletedOnboarding = _repository.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Google login success for ${user.email}');
 
           if (!hasCompletedOnboarding) {
             hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
-          final syncedModel = _authLocalDataSource.getCurrentUser();
-          final syncedUser = syncedModel?.toEntity() ?? user;
+          final syncedUser = _repository.getLocalUser() ?? user;
 
           state = AuthenticationState.authenticated(
             syncedUser,
@@ -440,19 +426,16 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
-          await _authLocalDataSource.saveUserLocally(
-            UserModel.fromEntity(user),
-          );
+          await _repository.saveUserLocally(user);
 
-          var hasCompletedOnboarding = HiveBoxes.getOnboardingCompleted();
+          var hasCompletedOnboarding = _repository.getOnboardingCompleted();
           debugPrint('[AuthNotifier] Apple login success for ${user.email}');
 
           if (!hasCompletedOnboarding) {
             hasCompletedOnboarding = await _syncAndCheckOnboarding(user.id);
           }
 
-          final syncedModel = _authLocalDataSource.getCurrentUser();
-          final syncedUser = syncedModel?.toEntity() ?? user;
+          final syncedUser = _repository.getLocalUser() ?? user;
 
           state = AuthenticationState.authenticated(
             syncedUser,
@@ -525,7 +508,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
   /// Mark onboarding as completed.
   Future<void> completeOnboarding() async {
-    await HiveBoxes.setOnboardingCompleted(true);
+    await _repository.setOnboardingCompleted(true);
     state = state.copyWith(hasCompletedOnboarding: true);
   }
 
@@ -564,31 +547,37 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       debugPrint('[AuthNotifier] Syncing to check onboarding status...');
       await _syncService.syncAll();
 
-      // Use getAllAquariums — sync only returns accessible aquariums
-      // (owned + shared via family), so all local aquariums belong to this user.
-      final localAquariums = _aquariumLocalDataSource.getAllAquariums();
-      final hasAquariums = localAquariums.any((a) => !a.isDeleted);
-      debugPrint(
-        '[AuthNotifier] After sync: ${localAquariums.length} aquariums, '
-        'active: $hasAquariums',
-      );
+      final hasAquariums = _checkLocalAquariums();
 
       if (hasAquariums) {
-        await HiveBoxes.setOnboardingCompleted(true);
+        await _repository.setOnboardingCompleted(true);
         return true;
       }
     } catch (e) {
       debugPrint('[AuthNotifier] Sync failed during onboarding check: $e');
 
       // Fallback: check local data even without sync
-      final localAquariums = _aquariumLocalDataSource.getAllAquariums();
-      final hasAquariums = localAquariums.any((a) => !a.isDeleted);
+      final hasAquariums = _checkLocalAquariums();
       if (hasAquariums) {
-        await HiveBoxes.setOnboardingCompleted(true);
+        await _repository.setOnboardingCompleted(true);
         return true;
       }
     }
     return false;
+  }
+
+  /// Checks if user has any active aquariums in local cache.
+  bool _checkLocalAquariums() {
+    final result = _aquariumRepository.getCachedAquariums();
+    return result.fold(
+      (_) => false,
+      (aquariums) {
+        debugPrint(
+          '[AuthNotifier] Local aquariums: ${aquariums.length}',
+        );
+        return aquariums.isNotEmpty;
+      },
+    );
   }
 }
 
@@ -598,18 +587,14 @@ final authNotifierProvider =
       final repository = ref.watch(authRepositoryProvider);
       final googleAuthService = ref.watch(googleAuthServiceProvider);
       final appleAuthService = ref.watch(appleAuthServiceProvider);
-      final aquariumLocalDataSource = ref.watch(
-        aquariumLocalDataSourceProvider,
-      );
-      final authLocalDataSource = ref.watch(authLocalDataSourceProvider);
+      final aquariumRepository = ref.watch(aquariumRepositoryProvider);
       final syncService = ref.watch(syncServiceProvider);
 
       return AuthNotifier(
         repository: repository,
         googleAuthService: googleAuthService,
         appleAuthService: appleAuthService,
-        aquariumLocalDataSource: aquariumLocalDataSource,
-        authLocalDataSource: authLocalDataSource,
+        aquariumRepository: aquariumRepository,
         syncService: syncService,
       );
     });
