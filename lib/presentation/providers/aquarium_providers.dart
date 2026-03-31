@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/repositories/aquarium_repository_impl.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/aquarium_repository.dart';

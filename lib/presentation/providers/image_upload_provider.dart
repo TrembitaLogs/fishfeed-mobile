@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/services/image_sync_queue.dart';
 import 'package:fishfeed/data/services/image_upload_service.dart';
 import 'package:fishfeed/data/services/image_upload_task.dart';

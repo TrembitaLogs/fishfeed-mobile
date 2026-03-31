@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/config/api_config.dart';
-import 'package:fishfeed/data/datasources/remote/api_client.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 
 // ============ Request ============
 

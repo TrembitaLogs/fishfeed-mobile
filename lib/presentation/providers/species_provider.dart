@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
-import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
-import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
-import 'package:fishfeed/data/models/species_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/entities/species.dart';
+import 'package:fishfeed/domain/repositories/species_repository.dart';
 
 /// State for species list.
 class SpeciesListState {
@@ -37,26 +36,23 @@ class SpeciesListState {
 /// Fetches species from the API and provides search functionality.
 class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
   SpeciesListNotifier({
-    required SpeciesRemoteDataSource speciesDataSource,
-    required SpeciesLocalDataSource localDataSource,
-  }) : _speciesDataSource = speciesDataSource,
-       _localDataSource = localDataSource,
+    required SpeciesRepository repository,
+  }) : _repository = repository,
        super(const SpeciesListState()) {
     loadAllSpecies();
   }
 
-  final SpeciesRemoteDataSource _speciesDataSource;
-  final SpeciesLocalDataSource _localDataSource;
+  final SpeciesRepository _repository;
 
   /// All species (used for local filtering).
   List<Species> _allSpecies = [];
 
-  /// Loads all species: instantly from Hive cache, then refreshes from API.
+  /// Loads all species: instantly from cache, then refreshes from API.
   Future<void> loadAllSpecies() async {
     // 1. Show cached species immediately (no loading spinner)
-    final cached = _localDataSource.getAllSpecies();
+    final cached = _repository.getCachedSpecies();
     if (cached.isNotEmpty) {
-      _allSpecies = cached.map((m) => m.toEntity()).toList();
+      _allSpecies = cached;
       state = state.copyWith(species: _allSpecies);
     } else {
       state = state.copyWith(isLoading: true);
@@ -64,28 +60,10 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
 
     // 2. Fetch all pages from API
     try {
-      final fetched = <Species>[];
-      var page = 1;
-      const perPage = 100;
-
-      while (true) {
-        final response = await _speciesDataSource.listSpecies(
-          page: page,
-          perPage: perPage,
-        );
-        fetched.addAll(response.items.map((dto) => dto.toEntity()));
-
-        if (page >= response.pages) break;
-        page++;
-      }
+      final fetched = await _repository.fetchAllSpecies();
 
       _allSpecies = fetched;
       state = state.copyWith(species: fetched, isLoading: false);
-
-      // 3. Save to Hive for next launch
-      for (final species in fetched) {
-        await _localDataSource.saveSpecies(SpeciesModel.fromEntity(species));
-      }
     } catch (e) {
       // If cache was empty and API failed, use hardcoded fallback
       if (_allSpecies.isEmpty) {
@@ -131,12 +109,8 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
 /// Provider for species list state.
 final speciesListProvider =
     StateNotifierProvider<SpeciesListNotifier, SpeciesListState>((ref) {
-      final speciesDataSource = ref.watch(speciesRemoteDataSourceProvider);
-      final localDataSource = ref.watch(speciesLocalDataSourceProvider);
-      return SpeciesListNotifier(
-        speciesDataSource: speciesDataSource,
-        localDataSource: localDataSource,
-      );
+      final repository = ref.watch(speciesRepositoryProvider);
+      return SpeciesListNotifier(repository: repository);
     });
 
 /// Provider for current species list (convenience accessor).
@@ -181,17 +155,16 @@ final speciesByIdProvider = FutureProvider.family<Species?, String>((
     return memoryCache[speciesId];
   }
 
-  // 2. Check local Hive cache
-  final localDs = ref.read(speciesLocalDataSourceProvider);
-  final cachedModel = localDs.getSpeciesById(speciesId);
-  if (cachedModel != null) {
-    final species = cachedModel.toEntity();
+  // 2. Check local cache via repository
+  final repository = ref.read(speciesRepositoryProvider);
+  final cached = repository.getCachedSpeciesById(speciesId);
+  if (cached != null) {
     // Store in memory cache for faster future access
     ref.read(_speciesCacheProvider.notifier).state = {
       ...memoryCache,
-      speciesId: species,
+      speciesId: cached,
     };
-    return species;
+    return cached;
   }
 
   // 3. Check hardcoded SpeciesData as fallback
@@ -204,14 +177,9 @@ final speciesByIdProvider = FutureProvider.family<Species?, String>((
     return hardcoded;
   }
 
-  // 4. Fetch from server
+  // 4. Fetch from server via repository
   try {
-    final remoteDs = ref.read(speciesRemoteDataSourceProvider);
-    final dto = await remoteDs.getSpeciesById(speciesId);
-    final species = dto.toEntity();
-
-    // Save to local cache
-    await localDs.saveSpecies(SpeciesModel.fromEntity(species));
+    final species = await repository.fetchSpeciesById(speciesId);
 
     // Save to memory cache
     ref.read(_speciesCacheProvider.notifier).state = {
@@ -243,11 +211,11 @@ final speciesNameByIdProvider = Provider.family<String, String>((
     return memoryCache[speciesId]!.name;
   }
 
-  // Check local cache
-  final localDs = ref.read(speciesLocalDataSourceProvider);
-  final cachedModel = localDs.getSpeciesById(speciesId);
-  if (cachedModel != null) {
-    return cachedModel.name;
+  // Check local cache via repository
+  final repository = ref.read(speciesRepositoryProvider);
+  final cached = repository.getCachedSpeciesById(speciesId);
+  if (cached != null) {
+    return cached.name;
   }
 
   // Check hardcoded data

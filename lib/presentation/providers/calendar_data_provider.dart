@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
 import 'package:fishfeed/domain/usecases/get_calendar_data_usecase.dart';

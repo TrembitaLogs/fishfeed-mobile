@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/models/user_model.dart';
-import 'package:fishfeed/data/repositories/user_repository_impl.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';

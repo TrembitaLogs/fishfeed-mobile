@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
+import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
@@ -85,13 +88,13 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
   TodayFeedingsNotifier({
     required FeedingEventGenerator feedingEventGenerator,
     required FeedingService feedingService,
-    required AquariumLocalDataSource aquariumDataSource,
-    required FishLocalDataSource fishDataSource,
+    required AquariumRepository aquariumRepository,
+    required FishRepository fishRepository,
     required Ref ref,
   }) : _feedingEventGenerator = feedingEventGenerator,
        _feedingService = feedingService,
-       _aquariumDataSource = aquariumDataSource,
-       _fishDataSource = fishDataSource,
+       _aquariumRepository = aquariumRepository,
+       _fishRepository = fishRepository,
        _ref = ref,
        super(const TodayFeedingsState()) {
     loadFeedings();
@@ -99,8 +102,8 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
   final FeedingEventGenerator _feedingEventGenerator;
   final FeedingService _feedingService;
-  final AquariumLocalDataSource _aquariumDataSource;
-  final FishLocalDataSource _fishDataSource;
+  final AquariumRepository _aquariumRepository;
+  final FishRepository _fishRepository;
   final Ref _ref;
 
   /// Loads today's feedings using FeedingEventGenerator.
@@ -110,8 +113,12 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Get all user's aquariums
-      final aquariums = _aquariumDataSource.getAllAquariums();
+      // Get all user's aquariums via repository
+      final aquariumsResult = _aquariumRepository.getCachedAquariums();
+      final aquariums = aquariumsResult.fold(
+        (_) => <Aquarium>[],
+        (list) => list,
+      );
       final aquariumIds = aquariums.map((a) => a.id).toList();
 
       if (aquariumIds.isEmpty) {
@@ -122,7 +129,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
       // Build resolver functions for display names and quantity
       final fishNameResolver = _buildFishNameResolver();
       final fishQuantityResolver = _buildFishQuantityResolver();
-      final aquariumNameResolver = _buildAquariumNameResolver();
+      final aquariumNameResolver = _buildAquariumNameResolver(aquariums);
       final avatarResolver = _buildAvatarResolver();
 
       // Generate events for all aquariums for today
@@ -161,7 +168,11 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
     await Future<void>.delayed(const Duration(milliseconds: 100));
 
     try {
-      final aquariums = _aquariumDataSource.getAllAquariums();
+      final aquariumsResult = _aquariumRepository.getCachedAquariums();
+      final aquariums = aquariumsResult.fold(
+        (_) => <Aquarium>[],
+        (list) => list,
+      );
       final aquariumIds = aquariums.map((a) => a.id).toList();
 
       if (aquariumIds.isEmpty) {
@@ -171,7 +182,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
       final fishNameResolver = _buildFishNameResolver();
       final fishQuantityResolver = _buildFishQuantityResolver();
-      final aquariumNameResolver = _buildAquariumNameResolver();
+      final aquariumNameResolver = _buildAquariumNameResolver(aquariums);
       final avatarResolver = _buildAvatarResolver();
 
       final eventsByAquarium = _feedingEventGenerator
@@ -308,7 +319,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
   /// Builds a resolver for fish display names.
   String? Function(String) _buildFishNameResolver() {
-    final allFish = _fishDataSource.getAllFish();
+    final allFish = _fishRepository.getAllFish();
     final fishMap = <String, String>{};
     for (final fish in allFish) {
       // Use custom name if available, otherwise use speciesId as fallback
@@ -320,7 +331,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
   /// Builds a resolver for fish quantities.
   int Function(String) _buildFishQuantityResolver() {
-    final allFish = _fishDataSource.getAllFish();
+    final allFish = _fishRepository.getAllFish();
     final quantityMap = <String, int>{};
     for (final fish in allFish) {
       quantityMap[fish.id] = fish.quantity;
@@ -329,8 +340,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
   }
 
   /// Builds a resolver for aquarium display names.
-  String? Function(String) _buildAquariumNameResolver() {
-    final aquariums = _aquariumDataSource.getAllAquariums();
+  String? Function(String) _buildAquariumNameResolver(
+    List<Aquarium> aquariums,
+  ) {
     final aquariumMap = <String, String>{};
     for (final aquarium in aquariums) {
       aquariumMap[aquarium.id] = aquarium.name;
@@ -369,14 +381,14 @@ final todayFeedingsProvider =
     StateNotifierProvider<TodayFeedingsNotifier, TodayFeedingsState>((ref) {
       final generator = ref.watch(feedingEventGeneratorProvider);
       final feedingService = ref.watch(feedingServiceProvider);
-      final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
-      final fishDs = ref.watch(fishLocalDataSourceProvider);
+      final aquariumRepository = ref.watch(aquariumRepositoryProvider);
+      final fishRepository = ref.watch(fishRepositoryProvider);
 
       return TodayFeedingsNotifier(
         feedingEventGenerator: generator,
         feedingService: feedingService,
-        aquariumDataSource: aquariumDs,
-        fishDataSource: fishDs,
+        aquariumRepository: aquariumRepository,
+        fishRepository: fishRepository,
         ref: ref,
       );
     });

@@ -2,13 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
+import 'package:fishfeed/domain/repositories/fish_repository.dart';
+import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -16,19 +15,14 @@ import 'package:fishfeed/services/sync/sync_service.dart';
 // Mocks
 // ============================================================================
 
-class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
-
-class MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
+class MockFishRepository extends Mock implements FishRepository {}
 
 class MockSyncService extends Mock implements SyncService {}
 
-class FakeFishModel extends Fake implements FishModel {}
-
 const _testAquariumId = 'test-aquarium-id';
 
-AquariumModel _createTestAquarium() {
-  return AquariumModel(
+Aquarium _createTestAquarium() {
+  return Aquarium(
     id: _testAquariumId,
     userId: 'test-user',
     name: 'Test Aquarium',
@@ -38,10 +32,6 @@ AquariumModel _createTestAquarium() {
 }
 
 void main() {
-  setUpAll(() {
-    registerFallbackValue(FakeFishModel());
-  });
-
   group('FishManagementState', () {
     test(
       'isEmpty returns true when fish list empty, not loading, no error',
@@ -117,19 +107,13 @@ void main() {
   });
 
   group('FishManagementNotifier', () {
-    late MockFishLocalDataSource mockFishDs;
-    late MockAquariumLocalDataSource mockAquariumDs;
+    late MockFishRepository mockFishRepo;
     late MockSyncService mockSyncService;
     late ProviderContainer container;
 
     setUp(() {
-      mockFishDs = MockFishLocalDataSource();
-      mockAquariumDs = MockAquariumLocalDataSource();
+      mockFishRepo = MockFishRepository();
       mockSyncService = MockSyncService();
-      // Default setup: return a test aquarium
-      when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createTestAquarium()]);
       // Default sync service setup
       when(() => mockSyncService.syncNow()).thenAnswer((_) async => 0);
     });
@@ -138,22 +122,28 @@ void main() {
       container.dispose();
     });
 
-    test('loadUserFish fetches fish from data source', () async {
-      final fishModels = [
-        _createFishModel('1', 'guppy', 5),
-        _createFishModel('2', 'betta', 1),
+    ProviderContainer _createContainer({MockSyncService? syncService}) {
+      return ProviderContainer(
+        overrides: [
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          if (syncService != null)
+            syncServiceProvider.overrideWithValue(syncService),
+        ],
+      );
+    }
+
+    test('loadUserFish fetches fish from repository', () async {
+      final fishList = [
+        _createFish('1', 'guppy', 5),
+        _createFish('2', 'betta', 1),
       ];
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
-      ).thenReturn(fishModels);
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn(fishList);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       // Wait for initial load
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -165,20 +155,15 @@ void main() {
       expect(state.userFish[0].speciesId, equals('guppy'));
       expect(state.userFish[0].quantity, equals(5));
 
-      verify(() => mockFishDs.getFishByAquariumId(_testAquariumId)).called(1);
+      verify(() => mockFishRepo.getFishByAquariumId(_testAquariumId)).called(1);
     });
 
     test('loadUserFish sets error state on failure', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenThrow(Exception('Database error'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -191,16 +176,11 @@ void main() {
 
     test('addFish saves fish and updates state', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
-      when(() => mockFishDs.saveFish(any())).thenAnswer((_) async {});
+      when(() => mockFishRepo.saveFish(any())).thenAnswer((_) async {});
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -217,23 +197,18 @@ void main() {
       final state = container.read(fishManagementProvider);
       expect(state.userFish.length, equals(1));
 
-      verify(() => mockFishDs.saveFish(any())).called(1);
+      verify(() => mockFishRepo.saveFish(any())).called(1);
     });
 
     test('addFish returns null and sets error on failure', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
       when(
-        () => mockFishDs.saveFish(any()),
+        () => mockFishRepo.saveFish(any()),
       ).thenThrow(Exception('Save failed'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -252,19 +227,14 @@ void main() {
       'addFish always creates new record even if same species exists',
       () async {
         // Arrange: Create existing fish of same species
-        final existingFish = _createFishModel('fish_1', 'guppy', 3);
+        final existingFish = _createFish('fish_1', 'guppy', 3);
 
         when(
-          () => mockFishDs.getFishByAquariumId(_testAquariumId),
+          () => mockFishRepo.getFishByAquariumId(_testAquariumId),
         ).thenReturn([existingFish]);
-        when(() => mockFishDs.saveFish(any())).thenAnswer((_) async {});
+        when(() => mockFishRepo.saveFish(any())).thenAnswer((_) async {});
 
-        container = ProviderContainer(
-          overrides: [
-            fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-            aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          ],
-        );
+        container = _createContainer();
 
         await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -284,29 +254,24 @@ void main() {
         expect(state.userFish.length, equals(2));
 
         // Verify saveFish was called (not updateFish)
-        verify(() => mockFishDs.saveFish(any())).called(1);
-        verifyNever(() => mockFishDs.updateFish(any()));
+        verify(() => mockFishRepo.saveFish(any())).called(1);
+        verifyNever(() => mockFishRepo.updateFish(any()));
       },
     );
 
     test('updateFish updates fish and state', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
-      when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => true);
+      when(() => mockFishRepo.updateFish(any())).thenAnswer((_) async => true);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
-      final updatedFish = existingFish.toEntity().copyWith(quantity: 10);
+      final updatedFish = existingFish.copyWith(quantity: 10);
       final success = await container
           .read(fishManagementProvider.notifier)
           .updateFish(updatedFish);
@@ -316,29 +281,26 @@ void main() {
       final state = container.read(fishManagementProvider);
       expect(state.userFish.first.quantity, equals(10));
 
-      verify(() => mockFishDs.updateFish(any())).called(1);
+      verify(() => mockFishRepo.updateFish(any())).called(1);
     });
 
     test(
-      'updateFish returns false when fish not found in data source',
+      'updateFish returns false when fish not found in repository',
       () async {
-        final existingFish = _createFishModel('fish_1', 'guppy', 5);
+        final existingFish = _createFish('fish_1', 'guppy', 5);
 
         when(
-          () => mockFishDs.getFishByAquariumId(_testAquariumId),
+          () => mockFishRepo.getFishByAquariumId(_testAquariumId),
         ).thenReturn([existingFish]);
-        when(() => mockFishDs.updateFish(any())).thenAnswer((_) async => false);
+        when(
+          () => mockFishRepo.updateFish(any()),
+        ).thenAnswer((_) async => false);
 
-        container = ProviderContainer(
-          overrides: [
-            fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-            aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          ],
-        );
+        container = _createContainer();
 
         await Future<void>.delayed(const Duration(milliseconds: 100));
 
-        final updatedFish = existingFish.toEntity().copyWith(quantity: 10);
+        final updatedFish = existingFish.copyWith(quantity: 10);
         final success = await container
             .read(fishManagementProvider.notifier)
             .updateFish(updatedFish);
@@ -352,25 +314,20 @@ void main() {
     );
 
     test('updateFish sets error state on exception', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
       when(
-        () => mockFishDs.updateFish(any()),
+        () => mockFishRepo.updateFish(any()),
       ).thenThrow(Exception('Update failed'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
-      final updatedFish = existingFish.toEntity().copyWith(quantity: 10);
+      final updatedFish = existingFish.copyWith(quantity: 10);
       final success = await container
           .read(fishManagementProvider.notifier)
           .updateFish(updatedFish);
@@ -383,20 +340,16 @@ void main() {
     });
 
     test('deleteFish soft deletes fish, syncs, and updates state', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
-      when(() => mockFishDs.softDelete('fish_1')).thenAnswer((_) async {});
+      when(
+        () => mockFishRepo.softDelete('fish_1'),
+      ).thenAnswer((_) async {});
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
-      );
+      container = _createContainer(syncService: mockSyncService);
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -409,23 +362,18 @@ void main() {
       final state = container.read(fishManagementProvider);
       expect(state.userFish, isEmpty);
 
-      // Verify softDelete was called instead of deleteFish
-      verify(() => mockFishDs.softDelete('fish_1')).called(1);
+      // Verify softDelete was called
+      verify(() => mockFishRepo.softDelete('fish_1')).called(1);
       // Verify sync was triggered
       verify(() => mockSyncService.syncNow()).called(1);
     });
 
     test('deleteFish returns false when fish not in state', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -441,22 +389,16 @@ void main() {
     });
 
     test('deleteFish returns false when soft delete fails', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
       when(
-        () => mockFishDs.softDelete('fish_1'),
+        () => mockFishRepo.softDelete('fish_1'),
       ).thenThrow(Exception('Soft delete failed'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
-      );
+      container = _createContainer(syncService: mockSyncService);
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -472,21 +414,17 @@ void main() {
     });
 
     test('deleteFish continues even if sync fails', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
-      when(() => mockFishDs.softDelete('fish_1')).thenAnswer((_) async {});
+      when(
+        () => mockFishRepo.softDelete('fish_1'),
+      ).thenAnswer((_) async {});
       when(() => mockSyncService.syncNow()).thenThrow(Exception('Sync failed'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-          syncServiceProvider.overrideWithValue(mockSyncService),
-        ],
-      );
+      container = _createContainer(syncService: mockSyncService);
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -506,18 +444,13 @@ void main() {
     });
 
     test('getFishById returns fish when found', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -531,15 +464,10 @@ void main() {
 
     test('getFishById returns null when not found', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -552,15 +480,10 @@ void main() {
 
     test('clearError removes error from state', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenThrow(Exception('Error'));
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -575,17 +498,12 @@ void main() {
       expect(state.hasError, isFalse);
     });
 
-    test('refresh reloads fish from data source', () async {
+    test('refresh reloads fish from repository', () async {
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
-      container = ProviderContainer(
-        overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
-        ],
-      );
+      container = _createContainer();
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -595,35 +513,36 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Initial load + refresh = 2 calls total
-      verify(() => mockFishDs.getFishByAquariumId(_testAquariumId)).called(2);
+      verify(
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).called(2);
     });
   });
 
   group('userFishListProvider', () {
     test('returns userFish from fishManagementProvider', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
-      final fishModels = [
-        _createFishModel('1', 'guppy', 5),
-        _createFishModel('2', 'betta', 1),
+      final mockFishRepo = MockFishRepository();
+      final fishList = [
+        _createFish('1', 'guppy', 5),
+        _createFish('2', 'betta', 1),
       ];
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
-      ).thenReturn(fishModels);
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn(fishList);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
-      final fishList = container.read(userFishListProvider);
+      final result = container.read(userFishListProvider);
 
-      expect(fishList.length, equals(2));
+      expect(result.length, equals(2));
 
       container.dispose();
     });
@@ -631,21 +550,20 @@ void main() {
 
   group('totalFishCountProvider', () {
     test('returns total fish count', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
-      final fishModels = [
-        _createFishModel('1', 'guppy', 5),
-        _createFishModel('2', 'betta', 3),
+      final mockFishRepo = MockFishRepository();
+      final fishList = [
+        _createFish('1', 'guppy', 5),
+        _createFish('2', 'betta', 3),
       ];
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
-      ).thenReturn(fishModels);
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn(fishList);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
@@ -661,22 +579,21 @@ void main() {
 
   group('fishSpeciesCountProvider', () {
     test('returns species count', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
-      final fishModels = [
-        _createFishModel('1', 'guppy', 5),
-        _createFishModel('2', 'betta', 3),
-        _createFishModel('3', 'goldfish', 2),
+      final mockFishRepo = MockFishRepository();
+      final fishList = [
+        _createFish('1', 'guppy', 5),
+        _createFish('2', 'betta', 3),
+        _createFish('3', 'goldfish', 2),
       ];
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
-      ).thenReturn(fishModels);
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn(fishList);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
@@ -692,17 +609,16 @@ void main() {
 
   group('isFishLoadingProvider', () {
     test('returns loading state', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
+      final mockFishRepo = MockFishRepository();
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
@@ -719,17 +635,16 @@ void main() {
 
   group('isAquariumEmptyProvider', () {
     test('returns true when no fish', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
+      final mockFishRepo = MockFishRepository();
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
@@ -743,18 +658,17 @@ void main() {
     });
 
     test('returns false when has fish', () async {
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = _createMockAquariumDs();
-      final fishModels = [_createFishModel('1', 'guppy', 5)];
+      final mockFishRepo = MockFishRepository();
+      final fishList = [_createFish('1', 'guppy', 5)];
 
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
-      ).thenReturn(fishModels);
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn(fishList);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
         ],
       );
 
@@ -769,24 +683,26 @@ void main() {
   });
 
   group('deleteFishByIdProvider', () {
-    late MockFishLocalDataSource mockFishDs;
+    late MockFishRepository mockFishRepo;
     late MockSyncService mockSyncService;
 
     setUp(() {
-      mockFishDs = MockFishLocalDataSource();
+      mockFishRepo = MockFishRepository();
       mockSyncService = MockSyncService();
       when(() => mockSyncService.syncNow()).thenAnswer((_) async => 0);
     });
 
     test('soft deletes fish and triggers sync', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
-      when(() => mockFishDs.getFishById('fish_1')).thenReturn(existingFish);
-      when(() => mockFishDs.softDelete('fish_1')).thenAnswer((_) async {});
+      when(() => mockFishRepo.getFishById('fish_1')).thenReturn(existingFish);
+      when(
+        () => mockFishRepo.softDelete('fish_1'),
+      ).thenAnswer((_) async {});
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
           syncServiceProvider.overrideWithValue(mockSyncService),
         ],
       );
@@ -796,18 +712,18 @@ void main() {
       );
 
       expect(result, isTrue);
-      verify(() => mockFishDs.softDelete('fish_1')).called(1);
+      verify(() => mockFishRepo.softDelete('fish_1')).called(1);
       verify(() => mockSyncService.syncNow()).called(1);
 
       container.dispose();
     });
 
     test('returns false when fish not found', () async {
-      when(() => mockFishDs.getFishById('nonexistent')).thenReturn(null);
+      when(() => mockFishRepo.getFishById('nonexistent')).thenReturn(null);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
           syncServiceProvider.overrideWithValue(mockSyncService),
         ],
       );
@@ -817,25 +733,27 @@ void main() {
       );
 
       expect(result, isFalse);
-      verifyNever(() => mockFishDs.softDelete(any()));
+      verifyNever(() => mockFishRepo.softDelete(any()));
       verifyNever(() => mockSyncService.syncNow());
 
       container.dispose();
     });
 
     test('invalidates fish providers after deletion', () async {
-      final existingFish = _createFishModel('fish_1', 'guppy', 5);
+      final existingFish = _createFish('fish_1', 'guppy', 5);
 
-      when(() => mockFishDs.getFishById('fish_1')).thenReturn(existingFish);
-      when(() => mockFishDs.softDelete('fish_1')).thenAnswer((_) async {});
-      // Mock for fishByIdProvider and fishByAquariumIdProvider
+      when(() => mockFishRepo.getFishById('fish_1')).thenReturn(existingFish);
       when(
-        () => mockFishDs.getFishByAquariumId(_testAquariumId),
+        () => mockFishRepo.softDelete('fish_1'),
+      ).thenAnswer((_) async {});
+      // Mock for fishByAquariumIdProvider
+      when(
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([]);
 
       final container = ProviderContainer(
         overrides: [
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
           syncServiceProvider.overrideWithValue(mockSyncService),
         ],
       );
@@ -848,37 +766,17 @@ void main() {
       await container.read(deleteFishByIdProvider('fish_1').future);
 
       // Verify providers were invalidated by reading them again
-      // (they should re-read from data source)
-      verify(() => mockFishDs.getFishById('fish_1')).called(2);
+      // (they should re-read from repository)
+      verify(() => mockFishRepo.getFishById('fish_1')).called(2);
 
       container.dispose();
     });
   });
 }
 
-/// Creates a mock AquariumLocalDataSource with default setup.
-MockAquariumLocalDataSource _createMockAquariumDs() {
-  final mockAquariumDs = MockAquariumLocalDataSource();
-  when(
-    () => mockAquariumDs.getAllAquariums(),
-  ).thenReturn([_createTestAquarium()]);
-  return mockAquariumDs;
-}
-
 /// Helper to create a Fish entity for testing.
 Fish _createFish(String id, String speciesId, int quantity) {
   return Fish(
-    id: id,
-    aquariumId: _testAquariumId,
-    speciesId: speciesId,
-    quantity: quantity,
-    addedAt: DateTime(2024, 1, 15),
-  );
-}
-
-/// Helper to create a FishModel for testing.
-FishModel _createFishModel(String id, String speciesId, int quantity) {
-  return FishModel(
     id: id,
     aquariumId: _testAquariumId,
     speciesId: speciesId,

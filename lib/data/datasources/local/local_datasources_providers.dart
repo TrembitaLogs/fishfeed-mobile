@@ -8,6 +8,7 @@ import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/sync_queue_ds.dart';
+import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 
 /// Provider for [AuthLocalDataSource].
 ///
@@ -127,4 +128,19 @@ final feedingLogLocalDataSourceProvider = Provider<FeedingLogLocalDataSource>((
   ref,
 ) {
   return FeedingLogLocalDataSource();
+});
+
+/// Provider for [UserProgressLocalDataSource].
+///
+/// Provides singleton access to user progress local data source
+/// for managing user XP, levels, and progress in local storage.
+///
+/// Example:
+/// ```dart
+/// final progressDs = ref.watch(userProgressLocalDataSourceProvider);
+/// final progress = progressDs.getProgress(userId);
+/// ```
+final userProgressLocalDataSourceProvider =
+    Provider<UserProgressLocalDataSource>((ref) {
+  return UserProgressLocalDataSource();
 });

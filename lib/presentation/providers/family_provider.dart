@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/repositories/family_repository_impl.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/entities/family_invite.dart';
 import 'package:fishfeed/domain/entities/family_member.dart';
 import 'package:fishfeed/domain/repositories/family_repository.dart';

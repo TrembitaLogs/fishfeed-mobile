@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
 import 'package:fishfeed/domain/usecases/achievement_usecase.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
@@ -9,12 +8,6 @@ import 'package:fishfeed/presentation/providers/auth_provider.dart';
 // ============================================================================
 // Use Case Provider
 // ============================================================================
-
-/// Provider for [UserProgressLocalDataSource].
-final userProgressLocalDataSourceProvider =
-    Provider<UserProgressLocalDataSource>((ref) {
-      return UserProgressLocalDataSource();
-    });
 
 /// Provider for [AchievementUseCase].
 ///

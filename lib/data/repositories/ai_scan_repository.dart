@@ -7,19 +7,7 @@ import 'package:fishfeed/core/errors/api_exceptions.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/remote/ai_scan_remote_ds.dart';
 import 'package:fishfeed/data/models/ai_scan_result.dart';
-
-/// Repository interface for AI fish scanning operations.
-abstract interface class AiScanRepository {
-  /// Scans a fish image and returns the detected species.
-  ///
-  /// [imageBytes] - Compressed image bytes to upload.
-  ///
-  /// Returns [Right] with [AiScanResult] on success.
-  /// Returns [Left] with [Failure] on error.
-  Future<Either<Failure, AiScanResult>> scanFishImage({
-    required Uint8List imageBytes,
-  });
-}
+import 'package:fishfeed/domain/repositories/ai_scan_repository.dart';
 
 /// Implementation of [AiScanRepository].
 ///

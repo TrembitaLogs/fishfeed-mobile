@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import 'package:fishfeed/data/datasources/remote/api_client.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 

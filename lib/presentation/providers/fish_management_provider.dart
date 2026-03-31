@@ -3,11 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/sync_refresh_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
@@ -69,24 +67,21 @@ class FishManagementState {
 
 /// Notifier for managing fish state.
 ///
-/// Provides CRUD operations for fish with Hive persistence.
+/// Provides CRUD operations for fish via [FishRepository].
 /// Integrates with analytics and feeding schedule updates.
 class FishManagementNotifier extends StateNotifier<FishManagementState> {
   FishManagementNotifier({
-    required FishLocalDataSource fishDataSource,
-    required AquariumLocalDataSource aquariumDataSource,
+    required FishRepository fishRepository,
     required Ref ref,
     String? selectedAquariumId,
-  }) : _fishDataSource = fishDataSource,
-       _aquariumDataSource = aquariumDataSource,
+  }) : _fishRepository = fishRepository,
        _ref = ref,
        _selectedAquariumId = selectedAquariumId,
        super(const FishManagementState()) {
     loadUserFish();
   }
 
-  final FishLocalDataSource _fishDataSource;
-  final AquariumLocalDataSource _aquariumDataSource;
+  final FishRepository _fishRepository;
   final Ref _ref;
   String? _selectedAquariumId;
 
@@ -99,9 +94,11 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
     if (_selectedAquariumId != null) {
       return _selectedAquariumId;
     }
-    // Fallback to first aquarium
-    final aquariums = _aquariumDataSource.getAllAquariums();
-    return aquariums.isNotEmpty ? aquariums.first.id : null;
+    // Fallback to first aquarium via aquarium provider
+    final aquariumState = _ref.read(userAquariumsProvider);
+    return aquariumState.aquariums.isNotEmpty
+        ? aquariumState.aquariums.first.id
+        : null;
   }
 
   /// Updates the selected aquarium ID and reloads fish.
@@ -114,7 +111,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
   /// Loads all fish for the current aquarium.
   ///
-  /// Fetches fish from local Hive storage and updates state.
+  /// Fetches fish from local storage via repository and updates state.
   Future<void> loadUserFish() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -125,8 +122,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
         return;
       }
 
-      final fishModels = _fishDataSource.getFishByAquariumId(aquariumId);
-      final fish = fishModels.map((m) => m.toEntity()).toList();
+      final fish = _fishRepository.getFishByAquariumId(aquariumId);
 
       state = state.copyWith(userFish: fish, isLoading: false);
     } catch (e) {
@@ -175,8 +171,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
         addedAt: now,
       );
 
-      final model = FishModel.fromEntity(fish);
-      await _fishDataSource.saveFish(model);
+      await _fishRepository.saveFish(fish);
 
       // Update state
       state = state.copyWith(userFish: [...state.userFish, fish]);
@@ -206,8 +201,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
   /// Returns true on success, false on failure.
   Future<bool> updateFish(Fish fish) async {
     try {
-      final model = FishModel.fromEntity(fish);
-      final success = await _fishDataSource.updateFish(model);
+      final success = await _fishRepository.updateFish(fish);
 
       if (!success) {
         state = state.copyWith(error: 'Fish not found');
@@ -256,9 +250,8 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
         return false;
       }
 
-      // Soft delete - marks fish with deletedAt timestamp
-      // Sync service will pick this up and send to server
-      await _fishDataSource.softDelete(id);
+      // Soft delete via repository
+      await _fishRepository.softDelete(id);
 
       // Update state immediately for responsive UI
       final updatedList = state.userFish.where((f) => f.id != id).toList();
@@ -333,13 +326,11 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 /// ```
 final fishManagementProvider =
     StateNotifierProvider<FishManagementNotifier, FishManagementState>((ref) {
-      final fishDs = ref.watch(fishLocalDataSourceProvider);
-      final aquariumDs = ref.watch(aquariumLocalDataSourceProvider);
+      final fishRepository = ref.watch(fishRepositoryProvider);
       final selectedAquariumId = ref.watch(selectedAquariumIdProvider);
 
       return FishManagementNotifier(
-        fishDataSource: fishDs,
-        aquariumDataSource: aquariumDs,
+        fishRepository: fishRepository,
         ref: ref,
         selectedAquariumId: selectedAquariumId,
       );
@@ -378,39 +369,27 @@ final isAquariumEmptyProvider = Provider<bool>((ref) {
 
 /// Provider for getting fish by aquarium ID.
 ///
-/// Loads fish directly from local storage for a specific aquarium.
+/// Loads fish directly from repository for a specific aquarium.
 /// Useful for screens that need fish for a different aquarium than selected.
-/// Includes deduplication to handle potential Hive file corruption.
 final fishByAquariumIdProvider = Provider.family<List<Fish>, String>((
   ref,
   aquariumId,
 ) {
-  // Re-read from Hive when sync completes (e.g. server-side photo_key update)
+  // Re-read when sync completes (e.g. server-side photo_key update)
   ref.watch(syncRefreshProvider);
-  final fishDs = ref.watch(fishLocalDataSourceProvider);
-  final fishModels = fishDs.getFishByAquariumId(aquariumId);
-
-  // Deduplicate by fish ID (in case of Hive file corruption)
-  final seen = <String>{};
-  final uniqueFish = <Fish>[];
-  for (final model in fishModels) {
-    if (seen.add(model.id)) {
-      uniqueFish.add(model.toEntity());
-    }
-  }
-  return uniqueFish;
+  final fishRepository = ref.watch(fishRepositoryProvider);
+  return fishRepository.getFishByAquariumId(aquariumId);
 });
 
 /// Provider for getting a single fish by ID.
 ///
-/// Loads fish directly from local storage regardless of selected aquarium.
+/// Loads fish directly from repository regardless of selected aquarium.
 /// Useful for edit screens that need to find a specific fish.
 final fishByIdProvider = Provider.family<Fish?, String>((ref, fishId) {
-  // Re-read from Hive when sync completes (e.g. server-side photo_key update)
+  // Re-read when sync completes (e.g. server-side photo_key update)
   ref.watch(syncRefreshProvider);
-  final fishDs = ref.watch(fishLocalDataSourceProvider);
-  final fishModel = fishDs.getFishById(fishId);
-  return fishModel?.toEntity();
+  final fishRepository = ref.watch(fishRepositoryProvider);
+  return fishRepository.getFishById(fishId);
 });
 
 /// Provider for deleting a fish by ID.
@@ -422,20 +401,19 @@ final deleteFishByIdProvider = FutureProvider.family<bool, String>((
   ref,
   fishId,
 ) async {
-  final fishDs = ref.watch(fishLocalDataSourceProvider);
+  final fishRepository = ref.watch(fishRepositoryProvider);
   final syncService = ref.watch(syncServiceProvider);
 
   // Get fish to find aquariumId before deletion
-  final fish = fishDs.getFishById(fishId);
+  final fish = fishRepository.getFishById(fishId);
   if (fish == null) {
     return false;
   }
 
   final aquariumId = fish.aquariumId;
 
-  // Soft delete - marks fish with deletedAt timestamp
-  // Sync service will send this to server
-  await fishDs.softDelete(fishId);
+  // Soft delete via repository
+  await fishRepository.softDelete(fishId);
 
   // Invalidate fish providers immediately for responsive UI
   ref.invalidate(fishByIdProvider(fishId));

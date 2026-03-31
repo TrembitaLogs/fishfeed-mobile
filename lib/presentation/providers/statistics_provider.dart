@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/user_statistics.dart';
 import 'package:fishfeed/domain/usecases/calculate_statistics_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';

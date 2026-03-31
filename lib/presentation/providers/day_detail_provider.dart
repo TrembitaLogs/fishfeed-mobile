@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/day_feeding_status.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';

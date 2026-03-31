@@ -3,29 +3,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
-import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/repositories/species_repository.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
 
 // ============================================================================
 // Mocks
 // ============================================================================
 
-class MockSpeciesLocalDataSource extends Mock
-    implements SpeciesLocalDataSource {}
+class MockSpeciesRepository extends Mock implements SpeciesRepository {}
 
 void main() {
-  late MockSpeciesLocalDataSource mockLocalDs;
+  late MockSpeciesRepository mockRepository;
   late ProviderContainer container;
 
   setUp(() {
-    mockLocalDs = MockSpeciesLocalDataSource();
+    mockRepository = MockSpeciesRepository();
 
-    // Local DS returns null for all species (nothing cached)
-    when(() => mockLocalDs.getSpeciesById(any())).thenReturn(null);
+    // Repository returns null for all species (nothing cached)
+    when(() => mockRepository.getCachedSpeciesById(any())).thenReturn(null);
 
     container = ProviderContainer(
       overrides: [
-        speciesLocalDataSourceProvider.overrideWithValue(mockLocalDs),
+        speciesRepositoryProvider.overrideWithValue(mockRepository),
       ],
     );
   });

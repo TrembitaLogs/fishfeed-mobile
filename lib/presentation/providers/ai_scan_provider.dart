@@ -3,8 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/data/models/ai_scan_result.dart';
-import 'package:fishfeed/data/repositories/ai_scan_repository.dart';
+import 'package:fishfeed/domain/repositories/ai_scan_repository.dart';
 
 // ============================================================================
 // AI Scan State

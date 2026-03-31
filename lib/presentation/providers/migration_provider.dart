@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/services/migration/migration_service.dart';
 
 /// Provider for [MigrationService].

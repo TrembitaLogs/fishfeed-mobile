@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/repositories/settings_repository.dart';
 
 /// Theme mode options for the app.
 enum AppThemeMode {
@@ -185,23 +186,27 @@ class SettingsState {
 /// Provides methods for loading, updating, and persisting user settings.
 /// All settings are persisted to local storage via Hive.
 class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier() : super(const SettingsState.initial()) {
+  SettingsNotifier({required SettingsRepository repository})
+    : _repository = repository,
+      super(const SettingsState.initial()) {
     _loadSettings();
   }
+
+  final SettingsRepository _repository;
 
   /// Loads settings from local storage.
   Future<void> _loadSettings() async {
     state = state.copyWith(isLoading: true);
 
     try {
-      final themeMode = AppThemeMode.fromString(HiveBoxes.getThemeMode());
-      final notificationsEnabled = HiveBoxes.getNotificationsEnabled();
-      final feedingRemindersEnabled = HiveBoxes.getFeedingRemindersEnabled();
-      final streakAlertsEnabled = HiveBoxes.getStreakAlertsEnabled();
-      final weeklySummaryEnabled = HiveBoxes.getWeeklySummaryEnabled();
-      final quietHoursStart = HiveBoxes.getQuietHoursStart();
-      final quietHoursEnd = HiveBoxes.getQuietHoursEnd();
-      final language = HiveBoxes.getLanguage();
+      final themeMode = AppThemeMode.fromString(_repository.getThemeMode());
+      final notificationsEnabled = _repository.getNotificationsEnabled();
+      final feedingRemindersEnabled = _repository.getFeedingRemindersEnabled();
+      final streakAlertsEnabled = _repository.getStreakAlertsEnabled();
+      final weeklySummaryEnabled = _repository.getWeeklySummaryEnabled();
+      final quietHoursStart = _repository.getQuietHoursStart();
+      final quietHoursEnd = _repository.getQuietHoursEnd();
+      final language = _repository.getLanguage();
 
       state = SettingsState(
         themeMode: themeMode,
@@ -225,7 +230,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.themeMode == mode) return;
 
     state = state.copyWith(themeMode: mode, isSaving: true);
-    await HiveBoxes.setThemeMode(mode.name);
+    await _repository.setThemeMode(mode.name);
     state = state.copyWith(isSaving: false);
   }
 
@@ -234,7 +239,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.notificationsEnabled == enabled) return;
 
     state = state.copyWith(notificationsEnabled: enabled, isSaving: true);
-    await HiveBoxes.setNotificationsEnabled(enabled);
+    await _repository.setNotificationsEnabled(enabled);
     state = state.copyWith(isSaving: false);
   }
 
@@ -243,7 +248,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.feedingRemindersEnabled == enabled) return;
 
     state = state.copyWith(feedingRemindersEnabled: enabled, isSaving: true);
-    await HiveBoxes.setFeedingRemindersEnabled(enabled);
+    await _repository.setFeedingRemindersEnabled(enabled);
     state = state.copyWith(isSaving: false);
   }
 
@@ -252,7 +257,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.streakAlertsEnabled == enabled) return;
 
     state = state.copyWith(streakAlertsEnabled: enabled, isSaving: true);
-    await HiveBoxes.setStreakAlertsEnabled(enabled);
+    await _repository.setStreakAlertsEnabled(enabled);
     state = state.copyWith(isSaving: false);
   }
 
@@ -261,7 +266,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.weeklySummaryEnabled == enabled) return;
 
     state = state.copyWith(weeklySummaryEnabled: enabled, isSaving: true);
-    await HiveBoxes.setWeeklySummaryEnabled(enabled);
+    await _repository.setWeeklySummaryEnabled(enabled);
     state = state.copyWith(isSaving: false);
   }
 
@@ -282,8 +287,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     );
 
     await Future.wait([
-      HiveBoxes.setQuietHoursStart(startMinutes),
-      HiveBoxes.setQuietHoursEnd(endMinutes),
+      _repository.setQuietHoursStart(startMinutes),
+      _repository.setQuietHoursEnd(endMinutes),
     ]);
 
     state = state.copyWith(isSaving: false);
@@ -299,7 +304,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (state.language == languageCode) return;
 
     state = state.copyWith(language: languageCode, isSaving: true);
-    await HiveBoxes.setLanguage(languageCode);
+    await _repository.setLanguage(languageCode);
     state = state.copyWith(isSaving: false);
   }
 
@@ -312,7 +317,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 /// Provider for [SettingsNotifier].
 final settingsNotifierProvider =
     StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-      return SettingsNotifier();
+      final repository = ref.watch(settingsRepositoryProvider);
+      return SettingsNotifier(repository: repository);
     });
 
 /// Provider for the current theme mode.
