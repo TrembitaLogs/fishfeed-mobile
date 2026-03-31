@@ -20,6 +20,8 @@ export 'package:fishfeed/data/repositories/settings_repository_impl.dart'
     show settingsRepositoryProvider;
 export 'package:fishfeed/data/repositories/species_repository_impl.dart'
     show speciesRepositoryProvider;
+export 'package:fishfeed/data/repositories/schedule_repository_impl.dart'
+    show scheduleRepositoryProvider;
 export 'package:fishfeed/data/repositories/streak_repository_impl.dart'
     show streakRepositoryProvider;
 export 'package:fishfeed/data/repositories/user_repository_impl.dart'

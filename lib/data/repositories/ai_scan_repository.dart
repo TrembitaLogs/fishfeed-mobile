@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishfeed/core/errors/api_exceptions.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/remote/ai_scan_remote_ds.dart';
-import 'package:fishfeed/data/models/ai_scan_result.dart';
+import 'package:fishfeed/domain/entities/ai_scan_result.dart';
 import 'package:fishfeed/domain/repositories/ai_scan_repository.dart';
 
 /// Implementation of [AiScanRepository].
@@ -26,7 +26,7 @@ class AiScanRepositoryImpl implements AiScanRepository {
       final result = await _remoteDataSource.scanFishImage(
         imageBytes: imageBytes,
       );
-      return Right(result);
+      return Right(result.toEntity());
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
     } catch (e) {

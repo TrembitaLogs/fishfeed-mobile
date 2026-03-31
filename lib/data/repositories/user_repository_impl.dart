@@ -94,6 +94,60 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, User>> updateDisplayNameLocally({
+    required User currentUser,
+    required String displayName,
+  }) async {
+    try {
+      final localUser = _localDataSource.getCurrentUser();
+      if (localUser != null) {
+        localUser.displayName = displayName;
+        localUser.synced = false;
+        await localUser.save();
+      } else {
+        final updatedUser = currentUser.copyWith(displayName: displayName);
+        final newModel = UserModel.fromEntity(updatedUser);
+        newModel.synced = false;
+        await _localDataSource.saveUserLocally(newModel);
+      }
+
+      final updatedUser = currentUser.copyWith(displayName: displayName);
+      return Right(updatedUser);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> updateAvatarKeyLocally({
+    required User currentUser,
+    required String? avatarKey,
+  }) async {
+    try {
+      final localUser = _localDataSource.getCurrentUser();
+      if (localUser != null) {
+        localUser.avatarKey = avatarKey;
+        localUser.synced = false;
+        await localUser.save();
+      }
+
+      final updatedUser = User(
+        id: currentUser.id,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        avatarKey: avatarKey,
+        createdAt: currentUser.createdAt,
+        subscriptionStatus: currentUser.subscriptionStatus,
+        freeAiScansRemaining: currentUser.freeAiScansRemaining,
+        settings: currentUser.settings,
+      );
+      return Right(updatedUser);
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
   /// Parses subscription status string to enum.
   SubscriptionStatus _parseSubscriptionStatus(String status) {
     return switch (status.toLowerCase()) {

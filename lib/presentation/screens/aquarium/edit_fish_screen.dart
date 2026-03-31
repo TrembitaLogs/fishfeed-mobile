@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/domain/entities/schedule.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
@@ -61,7 +62,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
   bool _photoKeyInitialized = false;
 
   // Schedule state
-  List<ScheduleModel> _schedules = [];
+  List<Schedule> _schedules = [];
   String _selectedFoodType = 'flakes';
   int _selectedIntervalDays = 1;
   List<String> _feedingTimes = [];
@@ -218,22 +219,25 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
         : null;
 
     // Build a set of times that currently exist in schedules
-    final existingTimes = <String, ScheduleModel>{
+    final existingTimes = <String, Schedule>{
       for (final s in _schedules) s.time: s,
     };
 
     // Update existing schedules and add new ones
     for (final time in _feedingTimes) {
       if (existingTimes.containsKey(time)) {
-        // Update existing schedule
+        // Update existing schedule via datasource (fetch Hive object by ID)
         final schedule = existingTimes[time]!;
-        final updated = schedule.copyWith(
-          foodType: _selectedFoodType,
-          portionHint: effectivePortionHint,
-          intervalDays: _selectedIntervalDays,
-        );
-        updated.markAsModified();
-        await scheduleDs.update(updated);
+        final hiveModel = scheduleDs.getById(schedule.id);
+        if (hiveModel != null) {
+          final updated = hiveModel.copyWith(
+            foodType: _selectedFoodType,
+            portionHint: effectivePortionHint,
+            intervalDays: _selectedIntervalDays,
+          );
+          updated.markAsModified();
+          await scheduleDs.update(updated);
+        }
         existingTimes.remove(time);
       } else {
         // Add new schedule for this time
@@ -259,9 +263,12 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
     // Deactivate removed schedules
     for (final removed in existingTimes.values) {
-      final deactivated = removed.copyWith(active: false);
-      deactivated.markAsModified();
-      await scheduleDs.update(deactivated);
+      final hiveModel = scheduleDs.getById(removed.id);
+      if (hiveModel != null) {
+        final deactivated = hiveModel.copyWith(active: false);
+        deactivated.markAsModified();
+        await scheduleDs.update(deactivated);
+      }
     }
 
     // Invalidate feeding providers to refresh UI

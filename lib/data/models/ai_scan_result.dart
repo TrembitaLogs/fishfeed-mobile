@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:fishfeed/domain/entities/ai_scan_result.dart' as domain;
+
 part 'ai_scan_result.freezed.dart';
 part 'ai_scan_result.g.dart';
 
@@ -35,6 +37,19 @@ class AiScanResult with _$AiScanResult {
 
   factory AiScanResult.fromJson(Map<String, dynamic> json) =>
       _$AiScanResultFromJson(json);
+
+  /// Converts this data model to a domain entity.
+  domain.AiScanResult toEntity() {
+    return domain.AiScanResult(
+      speciesId: speciesId,
+      speciesName: speciesName,
+      confidence: confidence,
+      recommendations: recommendations,
+      imageUrl: imageUrl,
+      feedingFrequency: feedingFrequency,
+      careLevel: careLevel,
+    );
+  }
 
   /// Whether the confidence is high enough to auto-confirm.
   bool get isHighConfidence => confidence >= 0.8;

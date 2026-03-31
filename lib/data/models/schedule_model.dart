@@ -1,5 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:fishfeed/domain/entities/schedule.dart';
+
 part 'schedule_model.g.dart';
 
 /// Hive model for feeding schedule rules.
@@ -205,6 +207,24 @@ class ScheduleModel extends HiveObject {
   void markAsSynced(DateTime serverTime) {
     serverUpdatedAt = serverTime;
     synced = true;
+  }
+
+  /// Converts this Hive model to a domain entity.
+  Schedule toEntity() {
+    return Schedule(
+      id: id,
+      fishId: fishId,
+      aquariumId: aquariumId,
+      time: time,
+      intervalDays: intervalDays,
+      anchorDate: anchorDate,
+      foodType: foodType,
+      portionHint: portionHint,
+      active: active,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      createdByUserId: createdByUserId,
+    );
   }
 
   /// Creates a copy of this schedule with optional field overrides.

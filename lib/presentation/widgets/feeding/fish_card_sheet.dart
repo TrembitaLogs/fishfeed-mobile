@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/schedule.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
@@ -473,7 +473,7 @@ class _FeedingScheduleSection extends StatelessWidget {
     required this.l10n,
   });
 
-  final List<ScheduleModel> schedules;
+  final List<Schedule> schedules;
   final ThemeData theme;
   final AppLocalizations l10n;
 

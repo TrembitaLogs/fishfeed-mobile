@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:fishfeed/domain/entities/schedule.dart';
+import 'package:fishfeed/domain/repositories/schedule_repository.dart';
 import 'package:fishfeed/domain/repositories/streak_repository.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
@@ -495,9 +496,9 @@ final feedingsGroupedByTimeProvider =
 /// final schedules = ref.watch(activeSchedulesForFishProvider('fish-123'));
 /// ```
 final activeSchedulesForFishProvider =
-    Provider.family<List<ScheduleModel>, String>((ref, fishId) {
-      final scheduleDs = ref.watch(scheduleLocalDataSourceProvider);
-      return scheduleDs.getByFishId(fishId, activeOnly: true);
+    Provider.family<List<Schedule>, String>((ref, fishId) {
+      final scheduleRepo = ref.watch(scheduleRepositoryProvider);
+      return scheduleRepo.getSchedulesForFish(fishId, activeOnly: true);
     });
 
 /// Aquarium feeding status for the aquarium list screen.

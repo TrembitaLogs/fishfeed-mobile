@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/models/ai_scan_result.dart';
+import 'package:fishfeed/domain/entities/ai_scan_result.dart';
 
 /// Repository interface for AI fish scanning operations.
 abstract interface class AiScanRepository {

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:fishfeed/data/models/ai_scan_result.dart';
+import 'package:fishfeed/domain/entities/ai_scan_result.dart';
 import 'package:fishfeed/presentation/widgets/confidence_indicator.dart';
 
 /// Result returned from ScanResultScreen when user confirms the detection.

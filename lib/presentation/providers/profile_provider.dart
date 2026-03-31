@@ -3,10 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
@@ -88,17 +85,14 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     required UserRepository userRepository,
     required AuthNotifier authNotifier,
     required SyncService syncService,
-    required AuthLocalDataSource authLocalDataSource,
   }) : _userRepository = userRepository,
        _authNotifier = authNotifier,
        _syncService = syncService,
-       _authLocalDs = authLocalDataSource,
        super(const ProfileState.initial());
 
   final UserRepository _userRepository;
   final AuthNotifier _authNotifier;
   final SyncService _syncService;
-  final AuthLocalDataSource _authLocalDs;
 
   /// Minimum nickname length.
   static const int minNicknameLength = 3;
@@ -151,29 +145,28 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         return false;
       }
 
-      // 2. Create updated User entity
-      final updatedUser = currentUser.copyWith(displayName: trimmedNickname);
+      // 2. Save to local storage via repository (offline-first)
+      final result = await _userRepository.updateDisplayNameLocally(
+        currentUser: currentUser,
+        displayName: trimmedNickname,
+      );
 
-      // 3. Save to Hive via AuthLocalDataSource (offline-first)
-      final localUser = _authLocalDs.getCurrentUser();
-      if (localUser != null) {
-        localUser.displayName = trimmedNickname;
-        localUser.synced = false;
-        await localUser.save();
-      } else {
-        final newModel = UserModel.fromEntity(updatedUser);
-        newModel.synced = false;
-        await _authLocalDs.saveUserLocally(newModel);
-      }
+      return result.fold(
+        (failure) {
+          state = state.copyWith(isUpdatingNickname: false, error: failure);
+          return false;
+        },
+        (updatedUser) async {
+          // 3. Update auth state
+          _authNotifier.updateUser(updatedUser);
 
-      // 4. Update auth state
-      _authNotifier.updateUser(updatedUser);
+          // 4. Trigger sync to push changes to server
+          await _syncService.syncAll();
 
-      // 5. Trigger sync to push changes to server
-      await _syncService.syncAll();
-
-      state = state.copyWith(isUpdatingNickname: false);
-      return true;
+          state = state.copyWith(isUpdatingNickname: false);
+          return true;
+        },
+      );
     } catch (e) {
       state = state.copyWith(
         isUpdatingNickname: false,
@@ -216,28 +209,23 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       final currentUser = _authNotifier.state.user;
       if (currentUser == null) return false;
 
-      // 2. Save to Hive (offline-first)
-      final localUser = _authLocalDs.getCurrentUser();
-      if (localUser != null) {
-        localUser.avatarKey = avatarKey;
-        localUser.synced = false;
-        await localUser.save();
-      }
-
-      // 3. Update auth state for immediate UI reactivity
-      final updatedUser = User(
-        id: currentUser.id,
-        email: currentUser.email,
-        displayName: currentUser.displayName,
+      // 2. Save to local storage via repository (offline-first)
+      final result = await _userRepository.updateAvatarKeyLocally(
+        currentUser: currentUser,
         avatarKey: avatarKey,
-        createdAt: currentUser.createdAt,
-        subscriptionStatus: currentUser.subscriptionStatus,
-        freeAiScansRemaining: currentUser.freeAiScansRemaining,
-        settings: currentUser.settings,
       );
-      _authNotifier.updateUser(updatedUser);
 
-      return true;
+      return result.fold(
+        (failure) {
+          state = state.copyWith(error: failure);
+          return false;
+        },
+        (updatedUser) {
+          // 3. Update auth state for immediate UI reactivity
+          _authNotifier.updateUser(updatedUser);
+          return true;
+        },
+      );
     } catch (e) {
       state = state.copyWith(error: UnexpectedFailure(message: e.toString()));
       return false;
@@ -282,13 +270,11 @@ final profileNotifierProvider =
       final userRepository = ref.watch(userRepositoryProvider);
       final authNotifier = ref.watch(authNotifierProvider.notifier);
       final syncService = ref.watch(syncServiceProvider);
-      final authLocalDs = ref.watch(authLocalDataSourceProvider);
 
       return ProfileNotifier(
         userRepository: userRepository,
         authNotifier: authNotifier,
         syncService: syncService,
-        authLocalDataSource: authLocalDs,
       );
     });
 
