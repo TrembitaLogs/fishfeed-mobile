@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';

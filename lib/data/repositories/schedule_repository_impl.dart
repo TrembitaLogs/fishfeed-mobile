@@ -13,10 +13,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   final ScheduleLocalDataSource _localDataSource;
 
   @override
-  List<Schedule> getSchedulesForFish(
-    String fishId, {
-    bool activeOnly = false,
-  }) {
+  List<Schedule> getSchedulesForFish(String fishId, {bool activeOnly = false}) {
     return _localDataSource
         .getByFishId(fishId, activeOnly: activeOnly)
         .map((model) => model.toEntity())

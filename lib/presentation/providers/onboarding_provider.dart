@@ -503,20 +503,28 @@ final speciesSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Provider for current aquarium ID during onboarding.
 final currentOnboardingAquariumIdProvider = Provider<String?>((ref) {
-  return ref.watch(onboardingNotifierProvider.select((s) => s.currentAquariumId));
+  return ref.watch(
+    onboardingNotifierProvider.select((s) => s.currentAquariumId),
+  );
 });
 
 /// Provider for current aquarium name during onboarding.
 final currentOnboardingAquariumNameProvider = Provider<String?>((ref) {
-  return ref.watch(onboardingNotifierProvider.select((s) => s.currentAquariumName));
+  return ref.watch(
+    onboardingNotifierProvider.select((s) => s.currentAquariumName),
+  );
 });
 
 /// Provider for list of created aquariums during onboarding.
 final createdAquariumsProvider = Provider<List<Aquarium>>((ref) {
-  return ref.watch(onboardingNotifierProvider.select((s) => s.createdAquariums));
+  return ref.watch(
+    onboardingNotifierProvider.select((s) => s.createdAquariums),
+  );
 });
 
 /// Provider for aquarium creation loading state.
 final isCreatingAquariumProvider = Provider<bool>((ref) {
-  return ref.watch(onboardingNotifierProvider.select((s) => s.isCreatingAquarium));
+  return ref.watch(
+    onboardingNotifierProvider.select((s) => s.isCreatingAquarium),
+  );
 });

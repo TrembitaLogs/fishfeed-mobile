@@ -95,16 +95,19 @@ void main() {
     mockAquariumRepository = MockAquariumRepository();
 
     // Stub AuthRepository methods called during login success flow
-    when(() => mockAuthRepository.saveUserLocally(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockAuthRepository.saveUserLocally(any()),
+    ).thenAnswer((_) async {});
     when(() => mockAuthRepository.getOnboardingCompleted()).thenReturn(false);
-    when(() => mockAuthRepository.setOnboardingCompleted(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockAuthRepository.setOnboardingCompleted(any()),
+    ).thenAnswer((_) async {});
     when(() => mockAuthRepository.getLocalUser()).thenReturn(null);
 
     // Stub AquariumRepository for onboarding check
-    when(() => mockAquariumRepository.getCachedAquariums())
-        .thenReturn(const Right([]));
+    when(
+      () => mockAquariumRepository.getCachedAquariums(),
+    ).thenReturn(const Right([]));
   });
 
   Widget buildTestWidget({AuthenticationState? initialState}) {

@@ -35,10 +35,9 @@ class SpeciesListState {
 ///
 /// Fetches species from the API and provides search functionality.
 class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
-  SpeciesListNotifier({
-    required SpeciesRepository repository,
-  }) : _repository = repository,
-       super(const SpeciesListState()) {
+  SpeciesListNotifier({required SpeciesRepository repository})
+    : _repository = repository,
+      super(const SpeciesListState()) {
     loadAllSpecies();
   }
 

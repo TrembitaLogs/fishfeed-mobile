@@ -29,12 +29,12 @@ class StreakRepositoryImpl implements StreakRepository {
 
   @override
   Stream<Streak> watchStreak(String userId) {
-    return _localDataSource.watchStreak(userId).map(
-      (model) => model?.toEntity() ?? Streak(
-        id: 'streak_$userId',
-        userId: userId,
-      ),
-    );
+    return _localDataSource
+        .watchStreak(userId)
+        .map(
+          (model) =>
+              model?.toEntity() ?? Streak(id: 'streak_$userId', userId: userId),
+        );
   }
 
   @override
@@ -89,9 +89,7 @@ class StreakRepositoryImpl implements StreakRepository {
     try {
       final model = await _localDataSource.useFreeze(userId, freezeDate);
       if (model == null) {
-        return Left(
-          ValidationFailure(message: 'No freeze days available'),
-        );
+        return Left(ValidationFailure(message: 'No freeze days available'));
       }
       return Right(model.toEntity());
     } catch (e) {

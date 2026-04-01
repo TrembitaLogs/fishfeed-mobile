@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
+import 'package:fishfeed/presentation/providers/ad_provider.dart';
+import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/services/ads/ad_service.dart';
+import 'package:fishfeed/services/analytics/analytics_service.dart';
 
 /// Streak section widget for the profile screen.
 ///
@@ -251,20 +256,20 @@ class _StatCard extends StatelessWidget {
 }
 
 /// Freeze days card with tap handler for info dialog.
-class _FreezeCard extends StatelessWidget {
+class _FreezeCard extends ConsumerWidget {
   const _FreezeCard({required this.freezeAvailable});
 
   final int freezeAvailable;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
     final isDark = theme.brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: () => _showFreezeInfoDialog(context),
+      onTap: () => _showFreezeInfoDialog(context, ref),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
@@ -313,13 +318,15 @@ class _FreezeCard extends StatelessWidget {
     );
   }
 
-  void _showFreezeInfoDialog(BuildContext context) {
+  void _showFreezeInfoDialog(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final shouldShowAds = ref.read(shouldShowAdsProvider);
+    final isRewardedReady = ref.read(isRewardedAdReadyProvider);
 
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Icon(Icons.ac_unit, color: Colors.blue.shade400),
@@ -348,12 +355,52 @@ class _FreezeCard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.gotItButton),
           ),
+          if (shouldShowAds && isRewardedReady)
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _watchAdForFreezeDay(context, ref);
+              },
+              icon: const Icon(Icons.play_circle_outline, size: 18),
+              label: Text(l10n.watchAdForFreezeDay),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _watchAdForFreezeDay(BuildContext context, WidgetRef ref) async {
+    final adShown = await AdService.instance.showRewardedAd(
+      onRewardEarned: (reward) async {
+        final user = ref.read(currentUserProvider);
+        final userId = user?.id ?? 'default_user';
+        final streakDs = ref.read(streakLocalDataSourceProvider);
+
+        await streakDs.addFreezeDay(userId);
+
+        // Refresh streak display
+        ref.invalidate(currentStreakProvider);
+
+        // Track analytics
+        AnalyticsService.instance.trackAdImpression(
+          adType: AdType.rewarded,
+          placement: 'freeze_day_earned',
+        );
+      },
+    );
+
+    if (adShown && context.mounted) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.freezeDayEarned),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }
 

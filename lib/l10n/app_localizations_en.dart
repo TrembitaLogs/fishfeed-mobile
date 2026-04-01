@@ -617,6 +617,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get watchAdForFreezeDay => 'Watch Ad for +1 Freeze Day';
+
+  @override
+  String get freezeDayEarned => 'You earned +1 freeze day!';
+
+  @override
   String get gotItButton => 'Got it';
 
   @override

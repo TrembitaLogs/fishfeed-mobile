@@ -111,9 +111,7 @@ void main() {
 
   group('CameraControls', () {
     testWidgets('renders flash, capture, and flip buttons', (tester) async {
-      await tester.pumpWidget(
-        _buildControlsTestApp(onCapture: () {}),
-      );
+      await tester.pumpWidget(_buildControlsTestApp(onCapture: () {}));
       await tester.pumpAndSettle();
 
       // Flash off icon (default state)
@@ -123,9 +121,7 @@ void main() {
     });
 
     testWidgets('flash button cycles through modes', (tester) async {
-      await tester.pumpWidget(
-        _buildControlsTestApp(onCapture: () {}),
-      );
+      await tester.pumpWidget(_buildControlsTestApp(onCapture: () {}));
       await tester.pumpAndSettle();
 
       // Initially flash_off
@@ -173,13 +169,11 @@ void main() {
         _buildControlsTestApp(
           onCapture: () {},
           overrides: [
-            cameraProvider.overrideWith(
-              (ref) {
-                final notifier = CameraNotifier();
-                notifier.setUsingFrontCamera(true);
-                return notifier;
-              },
-            ),
+            cameraProvider.overrideWith((ref) {
+              final notifier = CameraNotifier();
+              notifier.setUsingFrontCamera(true);
+              return notifier;
+            }),
           ],
         ),
       );
@@ -193,27 +187,17 @@ void main() {
     });
 
     testWidgets('capture button has correct semantic label', (tester) async {
-      await tester.pumpWidget(
-        _buildControlsTestApp(onCapture: () {}),
-      );
+      await tester.pumpWidget(_buildControlsTestApp(onCapture: () {}));
       await tester.pumpAndSettle();
 
-      expect(
-        find.bySemanticsLabel('Take photo'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Take photo'), findsOneWidget);
     });
 
     testWidgets('flip button has correct semantic label', (tester) async {
-      await tester.pumpWidget(
-        _buildControlsTestApp(onCapture: () {}),
-      );
+      await tester.pumpWidget(_buildControlsTestApp(onCapture: () {}));
       await tester.pumpAndSettle();
 
-      expect(
-        find.bySemanticsLabel('Switch camera'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Switch camera'), findsOneWidget);
     });
   });
 
@@ -236,7 +220,11 @@ void main() {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
                     const Text('Camera Error'),
                     const SizedBox(height: 8),

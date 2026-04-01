@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -25,24 +26,22 @@ class TestAdUnitIds {
       'ca-app-pub-3940256099942544/5224354917';
 }
 
-/// Production Ad Unit IDs.
-/// Replace these with your actual Ad Unit IDs from AdMob dashboard.
+/// Production Ad Unit IDs from AdMob dashboard.
 class AdUnitIds {
   AdUnitIds._();
 
-  // TODO: Replace with actual production Ad Unit IDs from AdMob dashboard
   // iOS Production Ad Unit IDs
-  static const String iosBanner = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+  static const String iosBanner = 'ca-app-pub-2443089239840781/3232538382';
   static const String iosInterstitial =
-      'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
-  static const String iosRewarded = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+      'ca-app-pub-2443089239840781/6221188440';
+  static const String iosRewarded = 'ca-app-pub-2443089239840781/8293293375';
 
   // Android Production Ad Unit IDs
-  static const String androidBanner = 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+  static const String androidBanner = 'ca-app-pub-2443089239840781/2910401927';
   static const String androidInterstitial =
-      'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+      'ca-app-pub-2443089239840781/1620073813';
   static const String androidRewarded =
-      'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx';
+      'ca-app-pub-2443089239840781/6620789481';
 }
 
 /// Callback type for when user earns a reward from rewarded ad.
@@ -107,6 +106,20 @@ class AdService {
     }
 
     try {
+      // Request App Tracking Transparency permission on iOS before
+      // initializing the AdMob SDK. This allows the SDK to use the
+      // IDFA for personalized ads if the user grants permission.
+      if (Platform.isIOS) {
+        final status =
+            await AppTrackingTransparency.trackingAuthorizationStatus;
+        if (status == TrackingStatus.notDetermined) {
+          // Small delay to ensure the app UI is ready before showing
+          // the system dialog (Apple requirement).
+          await Future<void>.delayed(const Duration(seconds: 1));
+          await AppTrackingTransparency.requestTrackingAuthorization();
+        }
+      }
+
       final initStatus = await MobileAds.instance.initialize();
 
       if (kDebugMode) {

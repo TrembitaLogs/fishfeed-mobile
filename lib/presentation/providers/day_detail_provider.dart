@@ -165,7 +165,9 @@ class DayDetailNotifier extends StateNotifier<DayDetailState> {
 final dayDetailProvider = StateNotifierProvider.autoDispose
     .family<DayDetailNotifier, DayDetailState, DateTime>((ref, date) {
       final eventGenerator = ref.watch(feedingEventGeneratorProvider);
-      final aquariums = ref.watch(userAquariumsProvider.select((s) => s.aquariums));
+      final aquariums = ref.watch(
+        userAquariumsProvider.select((s) => s.aquariums),
+      );
       final aquariumIds = aquariums.map((a) => a.id).toList();
 
       // Build fish name lookup from local data source
@@ -181,9 +183,7 @@ final dayDetailProvider = StateNotifierProvider.autoDispose
       }
 
       String? aquariumNameResolver(String aquariumId) {
-        final aquarium = aquariums
-            .where((a) => a.id == aquariumId)
-            .firstOrNull;
+        final aquarium = aquariums.where((a) => a.id == aquariumId).firstOrNull;
         return aquarium?.name;
       }
 

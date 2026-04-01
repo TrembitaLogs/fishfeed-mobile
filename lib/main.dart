@@ -15,6 +15,7 @@ import 'package:fishfeed/services/migration/migration_service.dart';
 import 'package:fishfeed/services/notifications/fcm_service.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/ads/ad_service.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/sentry/sentry_service.dart';
 import 'package:fishfeed/services/sync/background_sync_service.dart';
@@ -63,6 +64,9 @@ Future<void> main() async {
 
       // Initialize purchase service (RevenueCat)
       await PurchaseService.instance.initialize();
+
+      // Initialize AdMob for advertisements
+      await AdService.instance.initialize();
 
       // Initialize background sync service (Workmanager)
       await BackgroundSyncService.instance.initialize(

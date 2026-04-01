@@ -142,5 +142,5 @@ final feedingLogLocalDataSourceProvider = Provider<FeedingLogLocalDataSource>((
 /// ```
 final userProgressLocalDataSourceProvider =
     Provider<UserProgressLocalDataSource>((ref) {
-  return UserProgressLocalDataSource();
-});
+      return UserProgressLocalDataSource();
+    });

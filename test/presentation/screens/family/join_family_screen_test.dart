@@ -113,11 +113,13 @@ void main() {
     ).thenAnswer((_) async => 0);
 
     // Stub AuthRepository methods called during post-accept flow
-    when(() => mockAuthRepository.saveUserLocally(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockAuthRepository.saveUserLocally(any()),
+    ).thenAnswer((_) async {});
     when(() => mockAuthRepository.getOnboardingCompleted()).thenReturn(false);
-    when(() => mockAuthRepository.setOnboardingCompleted(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockAuthRepository.setOnboardingCompleted(any()),
+    ).thenAnswer((_) async {});
     when(() => mockAuthRepository.getLocalUser()).thenReturn(null);
   });
 

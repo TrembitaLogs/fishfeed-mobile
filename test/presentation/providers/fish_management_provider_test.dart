@@ -3,9 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/di/repository_providers.dart';
-import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
-import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
@@ -20,16 +18,6 @@ class MockFishRepository extends Mock implements FishRepository {}
 class MockSyncService extends Mock implements SyncService {}
 
 const _testAquariumId = 'test-aquarium-id';
-
-Aquarium _createTestAquarium() {
-  return Aquarium(
-    id: _testAquariumId,
-    userId: 'test-user',
-    name: 'Test Aquarium',
-    waterType: WaterType.freshwater,
-    createdAt: DateTime.now(),
-  );
-}
 
 void main() {
   setUpAll(() {
@@ -356,9 +344,7 @@ void main() {
       when(
         () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
-      when(
-        () => mockFishRepo.softDelete('fish_1'),
-      ).thenAnswer((_) async {});
+      when(() => mockFishRepo.softDelete('fish_1')).thenAnswer((_) async {});
 
       container = _createContainer(syncService: mockSyncService);
 
@@ -430,9 +416,7 @@ void main() {
       when(
         () => mockFishRepo.getFishByAquariumId(_testAquariumId),
       ).thenReturn([existingFish]);
-      when(
-        () => mockFishRepo.softDelete('fish_1'),
-      ).thenAnswer((_) async {});
+      when(() => mockFishRepo.softDelete('fish_1')).thenAnswer((_) async {});
       when(() => mockSyncService.syncNow()).thenThrow(Exception('Sync failed'));
 
       container = _createContainer(syncService: mockSyncService);
@@ -524,9 +508,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Initial load + refresh = 2 calls total
-      verify(
-        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
-      ).called(2);
+      verify(() => mockFishRepo.getFishByAquariumId(_testAquariumId)).called(2);
     });
   });
 
@@ -707,9 +689,7 @@ void main() {
       final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(() => mockFishRepo.getFishById('fish_1')).thenReturn(existingFish);
-      when(
-        () => mockFishRepo.softDelete('fish_1'),
-      ).thenAnswer((_) async {});
+      when(() => mockFishRepo.softDelete('fish_1')).thenAnswer((_) async {});
 
       final container = ProviderContainer(
         overrides: [
@@ -754,9 +734,7 @@ void main() {
       final existingFish = _createFish('fish_1', 'guppy', 5);
 
       when(() => mockFishRepo.getFishById('fish_1')).thenReturn(existingFish);
-      when(
-        () => mockFishRepo.softDelete('fish_1'),
-      ).thenAnswer((_) async {});
+      when(() => mockFishRepo.softDelete('fish_1')).thenAnswer((_) async {});
       // Mock for fishByAquariumIdProvider
       when(
         () => mockFishRepo.getFishByAquariumId(_testAquariumId),

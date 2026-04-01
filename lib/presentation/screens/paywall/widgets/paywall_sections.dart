@@ -140,7 +140,9 @@ class PaywallProductOptions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ...packages.map((package) => _buildPackageCard(context, package, theme)),
+        ...packages.map(
+          (package) => _buildPackageCard(context, package, theme),
+        ),
       ],
     );
   }
@@ -369,11 +371,7 @@ class PaywallRemoveAdsSection extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Remove Ads card
-        RemoveAdsCard(
-          price: price,
-          isLoading: isLoading,
-          onTap: onPurchase,
-        ),
+        RemoveAdsCard(price: price, isLoading: isLoading, onTap: onPurchase),
       ],
     );
   }

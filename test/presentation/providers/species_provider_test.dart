@@ -24,9 +24,7 @@ void main() {
     when(() => mockRepository.getCachedSpeciesById(any())).thenReturn(null);
 
     container = ProviderContainer(
-      overrides: [
-        speciesRepositoryProvider.overrideWithValue(mockRepository),
-      ],
+      overrides: [speciesRepositoryProvider.overrideWithValue(mockRepository)],
     );
   });
 

@@ -58,10 +58,8 @@ void main() {
         displayName: any(named: 'displayName'),
       ),
     ).thenAnswer((invocation) async {
-      final displayName =
-          invocation.namedArguments[#displayName] as String;
-      final currentUser =
-          invocation.namedArguments[#currentUser] as User;
+      final displayName = invocation.namedArguments[#displayName] as String;
+      final currentUser = invocation.namedArguments[#currentUser] as User;
       return Right(currentUser.copyWith(displayName: displayName));
     });
 

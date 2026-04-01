@@ -253,7 +253,11 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                         ),
                       )
                     : const Icon(Icons.check),
-                label: Text(_isProcessing ? AppLocalizations.of(context)!.processing : AppLocalizations.of(context)!.usePhoto),
+                label: Text(
+                  _isProcessing
+                      ? AppLocalizations.of(context)!.processing
+                      : AppLocalizations.of(context)!.usePhoto,
+                ),
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,

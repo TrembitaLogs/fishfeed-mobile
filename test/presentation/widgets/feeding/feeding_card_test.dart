@@ -128,9 +128,7 @@ void main() {
         speciesByIdProvider.overrideWith(
           (ref, id) => Future<Species?>.value(null),
         ),
-        activeSchedulesForFishProvider.overrideWith(
-          (ref, id) => <Schedule>[],
-        ),
+        activeSchedulesForFishProvider.overrideWith((ref, id) => <Schedule>[]),
         speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
         speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),
       ],

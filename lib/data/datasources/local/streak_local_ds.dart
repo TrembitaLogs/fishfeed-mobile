@@ -458,6 +458,25 @@ class StreakLocalDataSource {
     return streak;
   }
 
+  /// Adds one bonus freeze day earned from a rewarded ad.
+  ///
+  /// [userId] - The ID of the user.
+  ///
+  /// Returns the updated streak, or `null` if no streak exists.
+  Future<StreakModel?> addFreezeDay(String userId) async {
+    final streak = getStreakByUserId(userId);
+    if (streak == null) {
+      return null;
+    }
+
+    streak.freezeAvailable++;
+    streak.synced = false;
+    streak.updatedAt = DateTime.now().toUtc();
+
+    await saveStreak(streak);
+    return streak;
+  }
+
   /// Resets the monthly freeze availability.
   ///
   /// [userId] - The ID of the user.

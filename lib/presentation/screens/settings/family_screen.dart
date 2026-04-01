@@ -147,9 +147,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                     ),
                   ),
                   if (state.members.isEmpty)
-                    const SliverToBoxAdapter(
-                      child: FamilyEmptyMembersMessage(),
-                    )
+                    const SliverToBoxAdapter(child: FamilyEmptyMembersMessage())
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {

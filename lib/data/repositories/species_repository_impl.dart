@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
-import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/species_model.dart';
 import 'package:fishfeed/domain/entities/species.dart';

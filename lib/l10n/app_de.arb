@@ -277,6 +277,8 @@
   "freezeDaysPerMonth": "Sie erhalten {count} Freeze-Tage pro Monat",
   "freezeDaysAutoUsed": "Freeze wird automatisch verwendet, wenn Sie einen Tag verpassen",
   "freezeDaysAvailable": "Verfügbare Freeze-Tage: {count}",
+  "watchAdForFreezeDay": "Werbung ansehen für +1 Freeze-Tag",
+  "freezeDayEarned": "Du hast +1 Freeze-Tag verdient!",
   "gotItButton": "Verstanden",
   "milestoneDays": "{count} Tage",
   "streakDaysInRow": "{count} Tage hintereinander!",

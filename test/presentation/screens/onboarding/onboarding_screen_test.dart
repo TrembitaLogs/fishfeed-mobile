@@ -25,10 +25,7 @@ class MockAuthNotifier extends Mock implements AuthNotifier {}
 class MockSpeciesRepository extends Mock implements SpeciesRepository {}
 
 class TestSpeciesListNotifier extends SpeciesListNotifier {
-  TestSpeciesListNotifier()
-    : super(
-        repository: MockSpeciesRepository(),
-      );
+  TestSpeciesListNotifier() : super(repository: MockSpeciesRepository());
 
   @override
   Future<void> loadAllSpecies() async {

@@ -554,7 +554,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.failedToCreateAquarium),
+              content: Text(
+                AppLocalizations.of(context)!.failedToCreateAquarium,
+              ),
               behavior: SnackBarBehavior.floating,
             ),
           );

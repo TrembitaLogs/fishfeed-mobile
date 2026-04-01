@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -151,9 +150,11 @@ class ApiClient {
       ..onHttpClientCreate = (client) {
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) {
-          final fingerprint = sha256.convert(cert.der).toString();
-          return PinnedCertificates.sha256Fingerprints.contains(fingerprint);
-        };
+              final fingerprint = sha256.convert(cert.der).toString();
+              return PinnedCertificates.sha256Fingerprints.contains(
+                fingerprint,
+              );
+            };
         return client;
       };
     _dio.httpClientAdapter = httpClientAdapter;

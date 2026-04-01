@@ -79,9 +79,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
-            allAchievementsProvider.overrideWith(
-              (ref) => completer.future,
-            ),
+            allAchievementsProvider.overrideWith((ref) => completer.future),
           ],
         ),
       );
@@ -94,14 +92,10 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows empty state when no achievements exist', (
-      tester,
-    ) async {
+    testWidgets('shows empty state when no achievements exist', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(
-          overrides: [
-            allAchievementsProvider.overrideWith((ref) async => []),
-          ],
+          overrides: [allAchievementsProvider.overrideWith((ref) async => [])],
         ),
       );
       await tester.pumpAndSettle();
@@ -149,9 +143,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
-            allAchievementsProvider.overrideWith(
-              (ref) async => achievements,
-            ),
+            allAchievementsProvider.overrideWith((ref) async => achievements),
           ],
         ),
       );
@@ -350,17 +342,12 @@ void main() {
     testWidgets('header progress bar reflects achievements ratio', (
       tester,
     ) async {
-      final achievements = [
-        _unlockedAchievement,
-        _lockedAchievement,
-      ];
+      final achievements = [_unlockedAchievement, _lockedAchievement];
 
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
-            allAchievementsProvider.overrideWith(
-              (ref) async => achievements,
-            ),
+            allAchievementsProvider.overrideWith((ref) async => achievements),
           ],
         ),
       );
@@ -376,9 +363,7 @@ void main() {
     testWidgets('app bar shows achievements title', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(
-          overrides: [
-            allAchievementsProvider.overrideWith((ref) async => []),
-          ],
+          overrides: [allAchievementsProvider.overrideWith((ref) async => [])],
         ),
       );
       await tester.pumpAndSettle();
@@ -399,9 +384,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
-            allAchievementsProvider.overrideWith(
-              (ref) async => achievements,
-            ),
+            allAchievementsProvider.overrideWith((ref) async => achievements),
           ],
         ),
       );

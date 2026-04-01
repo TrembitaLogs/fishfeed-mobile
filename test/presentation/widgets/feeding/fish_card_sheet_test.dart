@@ -15,7 +15,6 @@ import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
-import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
@@ -24,7 +23,6 @@ import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
-import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/widgets/feeding/fish_card_sheet.dart';
 
 // ============================================================================
@@ -216,8 +214,7 @@ ScheduleModel _createSchedule({
 
 MockFishLocalDataSource _createFishDs({Fish? fish}) {
   final ds = MockFishLocalDataSource();
-  final fishModel =
-      fish != null ? FishModel.fromEntity(fish) : null;
+  final fishModel = fish != null ? FishModel.fromEntity(fish) : null;
   when(() => ds.getFishById(any())).thenReturn(fishModel);
   when(() => ds.getFishByAquariumId(any())).thenReturn([]);
   return ds;
@@ -331,13 +328,15 @@ void main() {
       testWidgets('displays fish name from feeding event', (tester) async {
         final event = _createFeedingEvent(fishName: 'Guppy');
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -348,13 +347,15 @@ void main() {
       testWidgets('displays food type', (tester) async {
         final event = _createFeedingEvent(foodType: 'Pellets');
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -365,13 +366,15 @@ void main() {
       testWidgets('displays scheduled time', (tester) async {
         final event = _createFeedingEvent(time: '14:30');
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -383,13 +386,15 @@ void main() {
         final event = _createFeedingEvent(fishQuantity: 5);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('5'), findsWidgets);
@@ -400,13 +405,15 @@ void main() {
         final event = _createFeedingEvent(aquariumName: 'Bedroom Tank');
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Bedroom Tank'), findsWidgets);
@@ -417,13 +424,15 @@ void main() {
         final event = _createFeedingEvent(portionHint: '2 pinches');
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('2 pinches'), findsWidgets);
@@ -434,13 +443,15 @@ void main() {
         final event = _createFeedingEvent(portionHint: null);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
@@ -451,13 +462,15 @@ void main() {
         final event = _createFeedingEvent();
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Handle bar is a 32x4 Container
@@ -471,35 +484,41 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('shows placeholder icon when no fish photo or species image',
-          (tester) async {
-        final event = _createFeedingEvent();
+      testWidgets(
+        'shows placeholder icon when no fish photo or species image',
+        (tester) async {
+          final event = _createFeedingEvent();
 
-        await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
-          ),
-        ));
-        await tester.pumpAndSettle();
+          await tester.binding.setSurfaceSize(const Size(400, 1600));
+          await tester.pumpWidget(
+            _buildSheetDirect(
+              event: event,
+              overrides: _buildOverrides(
+                currentUser: _testOwner,
+                aquariums: [_testAquarium],
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.set_meal_rounded), findsOneWidget);
-        await tester.binding.setSurfaceSize(null);
-      });
+          expect(find.byIcon(Icons.set_meal_rounded), findsOneWidget);
+          await tester.binding.setSurfaceSize(null);
+        },
+      );
 
       testWidgets('displays detail row icons', (tester) async {
         final event = _createFeedingEvent();
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Quantity icon
@@ -513,20 +532,23 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('displays fish notes when fish record has notes',
-          (tester) async {
+      testWidgets('displays fish notes when fish record has notes', (
+        tester,
+      ) async {
         final event = _createFeedingEvent();
         final fishDs = _createFishDs(fish: _testFish);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
-            fishDs: fishDs,
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+              fishDs: fishDs,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Loves flakes'), findsOneWidget);
@@ -534,20 +556,23 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('displays added date when fish record exists',
-          (tester) async {
+      testWidgets('displays added date when fish record exists', (
+        tester,
+      ) async {
         final event = _createFeedingEvent();
         final fishDs = _createFishDs(fish: _testFish);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
-            fishDs: fishDs,
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+              fishDs: fishDs,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.calendar_today), findsOneWidget);
@@ -560,13 +585,15 @@ void main() {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         final checkIcon = find.descendant(
@@ -577,18 +604,21 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('hides Mark as Fed button for completed event',
-          (tester) async {
+      testWidgets('hides Mark as Fed button for completed event', (
+        tester,
+      ) async {
         final event = _createFeedingEvent(status: EventStatus.fed);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         final checkIcon = find.descendant(
@@ -603,13 +633,15 @@ void main() {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -626,13 +658,15 @@ void main() {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -650,13 +684,15 @@ void main() {
       testWidgets('hides Edit Fish button for non-owner', (tester) async {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testNonOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testNonOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -667,13 +703,15 @@ void main() {
       testWidgets('hides Delete Fish button for non-owner', (tester) async {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testNonOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testNonOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -681,17 +719,20 @@ void main() {
         expect(find.byIcon(Icons.delete_outline), findsNothing);
       });
 
-      testWidgets('shows Mark as Fed for non-owner pending event',
-          (tester) async {
+      testWidgets('shows Mark as Fed for non-owner pending event', (
+        tester,
+      ) async {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testNonOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testNonOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -708,14 +749,16 @@ void main() {
         final scheduleDs = _createScheduleDs(schedules: [schedule]);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
-            scheduleDs: scheduleDs,
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+              scheduleDs: scheduleDs,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.repeat), findsOneWidget);
@@ -723,8 +766,9 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('shows multiple time chips for multiple schedules',
-          (tester) async {
+      testWidgets('shows multiple time chips for multiple schedules', (
+        tester,
+      ) async {
         final event = _createFeedingEvent(status: EventStatus.pending);
         final schedule1 = _createSchedule(
           id: 's1',
@@ -736,18 +780,19 @@ void main() {
           time: '20:00',
           intervalDays: 1,
         );
-        final scheduleDs =
-            _createScheduleDs(schedules: [schedule1, schedule2]);
+        final scheduleDs = _createScheduleDs(schedules: [schedule1, schedule2]);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
-            scheduleDs: scheduleDs,
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+              scheduleDs: scheduleDs,
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         // Two time chips
@@ -757,18 +802,21 @@ void main() {
         await tester.binding.setSurfaceSize(null);
       });
 
-      testWidgets('hides schedule section when no active schedules',
-          (tester) async {
+      testWidgets('hides schedule section when no active schedules', (
+        tester,
+      ) async {
         final event = _createFeedingEvent(status: EventStatus.pending);
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.repeat), findsNothing);
@@ -780,13 +828,15 @@ void main() {
       testWidgets('opens as modal bottom sheet', (tester) async {
         final event = _createFeedingEvent(fishName: 'Betta');
 
-        await tester.pumpWidget(_buildSheetViaModal(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetViaModal(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Open Sheet'));
         await tester.pumpAndSettle();
@@ -801,13 +851,15 @@ void main() {
         final event = _createFeedingEvent();
 
         await tester.binding.setSurfaceSize(const Size(400, 1600));
-        await tester.pumpWidget(_buildSheetDirect(
-          event: event,
-          overrides: _buildOverrides(
-            currentUser: _testOwner,
-            aquariums: [_testAquarium],
+        await tester.pumpWidget(
+          _buildSheetDirect(
+            event: event,
+            overrides: _buildOverrides(
+              currentUser: _testOwner,
+              aquariums: [_testAquarium],
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(DraggableScrollableSheet), findsOneWidget);

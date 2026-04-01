@@ -771,6 +771,14 @@
       }
     }
   },
+  "watchAdForFreezeDay": "Watch Ad for +1 Freeze Day",
+  "@watchAdForFreezeDay": {
+    "description": "Button text to watch rewarded ad to earn a freeze day"
+  },
+  "freezeDayEarned": "You earned +1 freeze day!",
+  "@freezeDayEarned": {
+    "description": "Snackbar message after earning a freeze day from a rewarded ad"
+  },
   "gotItButton": "Got it",
   "@gotItButton": {
     "description": "Got it button text"

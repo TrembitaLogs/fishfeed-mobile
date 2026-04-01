@@ -569,15 +569,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   /// Checks if user has any active aquariums in local cache.
   bool _checkLocalAquariums() {
     final result = _aquariumRepository.getCachedAquariums();
-    return result.fold(
-      (_) => false,
-      (aquariums) {
-        debugPrint(
-          '[AuthNotifier] Local aquariums: ${aquariums.length}',
-        );
-        return aquariums.isNotEmpty;
-      },
-    );
+    return result.fold((_) => false, (aquariums) {
+      debugPrint('[AuthNotifier] Local aquariums: ${aquariums.length}');
+      return aquariums.isNotEmpty;
+    });
   }
 }
 

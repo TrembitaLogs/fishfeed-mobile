@@ -1100,6 +1100,18 @@ abstract class AppLocalizations {
   /// **'Available freeze days: {count}'**
   String freezeDaysAvailable(int count);
 
+  /// Button text to watch rewarded ad to earn a freeze day
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Ad for +1 Freeze Day'**
+  String get watchAdForFreezeDay;
+
+  /// Snackbar message after earning a freeze day from a rewarded ad
+  ///
+  /// In en, this message translates to:
+  /// **'You earned +1 freeze day!'**
+  String get freezeDayEarned;
+
   /// Got it button text
   ///
   /// In en, this message translates to:

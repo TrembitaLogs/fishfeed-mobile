@@ -446,10 +446,7 @@ void main() {
 /// Test-only FishManagementNotifier that returns a fixed state.
 class _TestFishManagementNotifier extends FishManagementNotifier {
   _TestFishManagementNotifier(this._initialState)
-    : super(
-        fishRepository: _MockFishRepository(),
-        ref: _MockRef(),
-      );
+    : super(fishRepository: _MockFishRepository(), ref: _MockRef());
 
   final FishManagementState _initialState;
 

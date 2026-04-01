@@ -323,7 +323,9 @@ final settingsNotifierProvider =
 
 /// Provider for the current theme mode.
 final themeModeProvider = Provider<ThemeMode>((ref) {
-  return ref.watch(settingsNotifierProvider.select((s) => s.themeMode)).toThemeMode();
+  return ref
+      .watch(settingsNotifierProvider.select((s) => s.themeMode))
+      .toThemeMode();
 });
 
 /// Provider for the current app theme mode enum.
@@ -333,7 +335,9 @@ final appThemeModeProvider = Provider<AppThemeMode>((ref) {
 
 /// Provider for whether notifications are enabled.
 final notificationsEnabledProvider = Provider<bool>((ref) {
-  return ref.watch(settingsNotifierProvider.select((s) => s.notificationsEnabled));
+  return ref.watch(
+    settingsNotifierProvider.select((s) => s.notificationsEnabled),
+  );
 });
 
 /// Provider for the current language.

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/user_statistics.dart';
 import 'package:fishfeed/domain/usecases/calculate_statistics_usecase.dart';
-import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 
 /// State for user statistics.

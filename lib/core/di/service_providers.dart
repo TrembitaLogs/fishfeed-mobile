@@ -47,28 +47,29 @@ final imageUploadServiceProvider = Provider<ImageUploadService>((ref) {
     queue: queue,
     imageProcessor: imageProcessor,
     dio: apiClient.dio,
-    onUploadComplete: ({
-      required String entityType,
-      required String entityId,
-      required String photoKey,
-    }) async {
-      switch (entityType) {
-        case 'aquarium':
-          await aquariumRepo.updatePhotoKeyLocally(
-            aquariumId: entityId,
-            photoKey: photoKey,
-          );
-          ref.read(userAquariumsProvider.notifier).loadAquariums();
-        case 'fish':
-          await fishRepo.updatePhotoKeyLocally(
-            fishId: entityId,
-            photoKey: photoKey,
-          );
-          ref.invalidate(fishByAquariumIdProvider);
-        case 'avatar':
-          await userRepo.updateAvatarKeyFromUpload(photoKey);
-          ref.read(authNotifierProvider.notifier).updateAvatarKey(photoKey);
-      }
-    },
+    onUploadComplete:
+        ({
+          required String entityType,
+          required String entityId,
+          required String photoKey,
+        }) async {
+          switch (entityType) {
+            case 'aquarium':
+              await aquariumRepo.updatePhotoKeyLocally(
+                aquariumId: entityId,
+                photoKey: photoKey,
+              );
+              ref.read(userAquariumsProvider.notifier).loadAquariums();
+            case 'fish':
+              await fishRepo.updatePhotoKeyLocally(
+                fishId: entityId,
+                photoKey: photoKey,
+              );
+              ref.invalidate(fishByAquariumIdProvider);
+            case 'avatar':
+              await userRepo.updateAvatarKeyFromUpload(photoKey);
+              ref.read(authNotifierProvider.notifier).updateAvatarKey(photoKey);
+          }
+        },
   );
 });

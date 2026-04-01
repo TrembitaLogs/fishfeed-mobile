@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
-
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
@@ -80,9 +79,7 @@ void main() {
     when(
       () => mockAquariumRepository.getCachedAquariums(),
     ).thenReturn(const Right([]));
-    when(
-      () => mockRepository.getOnboardingCompleted(),
-    ).thenReturn(false);
+    when(() => mockRepository.getOnboardingCompleted()).thenReturn(false);
     when(
       () => mockRepository.setOnboardingCompleted(any()),
     ).thenAnswer((_) async {});
@@ -470,9 +467,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );
@@ -489,9 +484,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );
@@ -509,9 +502,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );
@@ -528,9 +519,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );
@@ -691,9 +680,7 @@ void main() {
     test(
       'login should skip sync check when onboarding already completed',
       () async {
-        when(
-          () => mockRepository.getOnboardingCompleted(),
-        ).thenReturn(true);
+        when(() => mockRepository.getOnboardingCompleted()).thenReturn(true);
 
         when(
           () => mockRepository.login(
@@ -737,9 +724,7 @@ void main() {
     test(
       'initialize should trigger background sync when onboarding complete',
       () async {
-        when(
-          () => mockRepository.getOnboardingCompleted(),
-        ).thenReturn(true);
+        when(() => mockRepository.getOnboardingCompleted()).thenReturn(true);
 
         when(
           () => mockRepository.isAuthenticated(),
@@ -764,9 +749,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );
@@ -783,9 +766,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumRepositoryProvider.overrideWithValue(
-            mockAquariumRepository,
-          ),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
       );

@@ -1747,10 +1747,7 @@ FeedingLogModel _createFeedingLog({String action = 'fed'}) {
 }
 
 /// Helper to create an Aquarium entity for testing.
-Aquarium _createAquarium({
-  String id = 'aq_1',
-  String name = 'Test Tank',
-}) {
+Aquarium _createAquarium({String id = 'aq_1', String name = 'Test Tank'}) {
   return Aquarium(
     id: id,
     userId: 'user_123',

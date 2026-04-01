@@ -3,18 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/entities/schedule.dart';
-import 'package:fishfeed/domain/repositories/schedule_repository.dart';
 import 'package:fishfeed/domain/repositories/streak_repository.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
-import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
+import 'package:fishfeed/presentation/providers/ad_provider.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/services/ads/ad_service.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/feeding/feeding_service.dart';
 
@@ -255,6 +255,12 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
           );
         }
 
+        // Show interstitial ad after feeding (free users only)
+        final shouldShowAds = _ref.read(shouldShowAdsProvider);
+        if (shouldShowAds) {
+          await AdService.instance.onFeedingCompleted();
+        }
+
       case FeedingAlreadyDone(:final message):
         // Show conflict - feeding was already marked by another device
         state = state.copyWith(error: message);
@@ -399,7 +405,9 @@ final todayFeedingsProvider =
 /// Returns a map with keys: 'morning', 'afternoon', 'evening'.
 final groupedFeedingsProvider =
     Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
-      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
+      final feedings = ref.watch(
+        todayFeedingsProvider.select((s) => s.feedings),
+      );
 
       final grouped = <String, List<ComputedFeedingEvent>>{
         'morning': [],
@@ -436,7 +444,9 @@ String _getTimePeriod(int hour) {
 /// ```
 final aquariumFeedingsProvider =
     Provider.family<List<ComputedFeedingEvent>, String>((ref, aquariumId) {
-      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
+      final feedings = ref.watch(
+        todayFeedingsProvider.select((s) => s.feedings),
+      );
       return feedings
           .where((feeding) => feeding.aquariumId == aquariumId)
           .toList();
@@ -447,7 +457,9 @@ final aquariumFeedingsProvider =
 /// Returns a map with aquarium IDs as keys and list of feedings as values.
 final feedingsGroupedByAquariumProvider =
     Provider<Map<String, List<ComputedFeedingEvent>>>((ref) {
-      final feedings = ref.watch(todayFeedingsProvider.select((s) => s.feedings));
+      final feedings = ref.watch(
+        todayFeedingsProvider.select((s) => s.feedings),
+      );
 
       final grouped = <String, List<ComputedFeedingEvent>>{};
 
@@ -493,11 +505,13 @@ final feedingsGroupedByTimeProvider =
 /// ```dart
 /// final schedules = ref.watch(activeSchedulesForFishProvider('fish-123'));
 /// ```
-final activeSchedulesForFishProvider =
-    Provider.family<List<Schedule>, String>((ref, fishId) {
-      final scheduleRepo = ref.watch(scheduleRepositoryProvider);
-      return scheduleRepo.getSchedulesForFish(fishId, activeOnly: true);
-    });
+final activeSchedulesForFishProvider = Provider.family<List<Schedule>, String>((
+  ref,
+  fishId,
+) {
+  final scheduleRepo = ref.watch(scheduleRepositoryProvider);
+  return scheduleRepo.getSchedulesForFish(fishId, activeOnly: true);
+});
 
 /// Aquarium feeding status for the aquarium list screen.
 enum AquariumFeedingStatus {
