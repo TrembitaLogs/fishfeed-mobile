@@ -28,3 +28,6 @@
 
 # Keep classes for flutter_secure_storage
 -keep class com.it_nomads.fluttersecurestorage.** { *; }
+
+# Suppress missing Play Core classes (used by Flutter for deferred components)
+-dontwarn com.google.android.play.core.**
