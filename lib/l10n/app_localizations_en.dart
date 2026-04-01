@@ -2126,4 +2126,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get everyOtherDay => 'Every 2 Days';
+
+  @override
+  String get themeDescriptionSystem => 'Automatically matches your device settings';
+
+  @override
+  String get themeDescriptionLight => 'Always use light theme';
+
+  @override
+  String get themeDescriptionDark => 'Always use dark theme';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageGerman => 'German';
+
+  @override
+  String get languageEnglishNative => 'English';
+
+  @override
+  String get languageGermanNative => 'Deutsch';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationPreferencesSavedLocally => 'Notification preferences are saved locally and will be synced with your account when online.';
+
+  @override
+  String get enableNotifications => 'Enable Notifications';
+
+  @override
+  String get receiveRemindersAndAlerts => 'Receive feeding reminders and alerts';
+
+  @override
+  String get allNotificationsDisabled => 'All notifications are disabled';
+
+  @override
+  String get notificationTypes => 'Notification Types';
+
+  @override
+  String get feedingReminders => 'Feeding Reminders';
+
+  @override
+  String get feedingRemindersSubtitle => 'Get notified when it\'s time to feed';
+
+  @override
+  String get streakAlerts => 'Streak Alerts';
+
+  @override
+  String get streakAlertsSubtitle => 'Warnings when your streak is at risk';
+
+  @override
+  String get weeklySummary => 'Weekly Summary';
+
+  @override
+  String get weeklySummarySubtitle => 'Weekly feeding activity overview';
+
+  @override
+  String get quietHours => 'Quiet Hours';
+
+  @override
+  String get enableQuietHours => 'Enable Quiet Hours';
+
+  @override
+  String get muteNotificationsDuringHours => 'Mute notifications during specified hours';
+
+  @override
+  String get feedingTimeNotificationTitle => 'Feeding Time!';
+
+  @override
+  String feedingTimeNotificationBody(String speciesText) {
+    return 'Time to feed your $speciesText';
+  }
+
+  @override
+  String get failedToCreateAquarium => 'Failed to create aquarium. Please try again.';
+
+  @override
+  String get failedToLoadImage => 'Failed to load image';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get processing => 'Processing...';
+
+  @override
+  String get usePhoto => 'Use Photo';
+
+  @override
+  String get preparingImage => 'Preparing image...';
+
+  @override
+  String get failedToProcessImage => 'Failed to process image';
+
+  @override
+  String get aiResult => 'AI Result';
+
+  @override
+  String get lowConfidenceWarning => 'Low confidence. Please verify or select manually.';
+
+  @override
+  String get selectManually => 'Select Manually';
+
+  @override
+  String get confirmAnyway => 'Confirm Anyway';
+
+  @override
+  String get notCorrect => 'Not correct?';
+
+  @override
+  String get careLevelBeginner => 'Beginner';
+
+  @override
+  String get careLevelIntermediate => 'Intermediate';
+
+  @override
+  String get careLevelAdvanced => 'Advanced';
+
+  @override
+  String get feedingFreqOnceDaily => 'Once daily';
+
+  @override
+  String get feedingFreqTwiceDaily => 'Twice daily';
+
+  @override
+  String get feedingFreqDaily => 'Daily';
+
+  @override
+  String get feedingFreqEveryOtherDay => 'Every other day';
+
+  @override
+  String get recommendations => 'Recommendations';
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Disallow cleartext (HTTP) traffic for all domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Pin certificates for the API domain -->
+    <domain-config>
+        <domain includeSubdomains="true">api.fishfeed.club</domain>
+        <pin-set expiration="2027-01-01">
+            <!-- Leaf certificate SHA-256 pin -->
+            <!-- TODO: Replace with actual pin from: openssl s_client -connect api.fishfeed.club:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 -->
+            <pin digest="SHA-256">PLACEHOLDER_BASE64_LEAF_PIN=</pin>
+            <!-- Backup intermediate CA pin -->
+            <pin digest="SHA-256">PLACEHOLDER_BASE64_INTERMEDIATE_PIN=</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- Allow cleartext for localhost in debug builds (emulator/dev server) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

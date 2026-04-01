@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -75,6 +78,7 @@ class HiveBoxes {
   HiveBoxes._();
 
   static bool _isInitialized = false;
+  static HiveAesCipher? _cipher;
 
   /// Whether Hive has been initialized.
   static bool get isInitialized => _isInitialized;
@@ -186,6 +190,9 @@ class HiveBoxes {
     // Initialize Hive for Flutter
     await Hive.initFlutter();
 
+    // Retrieve or generate the Hive encryption key from secure storage
+    _cipher = HiveAesCipher(await _getOrCreateEncryptionKey());
+
     // Register TypeAdapters (will be added in subsequent tasks)
     _registerAdapters();
 
@@ -193,6 +200,22 @@ class HiveBoxes {
     await _openBoxes();
 
     _isInitialized = true;
+  }
+
+  /// Retrieves the Hive AES encryption key from secure storage,
+  /// generating a new one on first launch.
+  static Future<List<int>> _getOrCreateEncryptionKey() async {
+    const storage = FlutterSecureStorage();
+    const keyName = 'hive_encryption_key';
+
+    final encoded = await storage.read(key: keyName);
+    if (encoded != null) {
+      return base64Url.decode(encoded);
+    }
+
+    final key = Hive.generateSecureKey();
+    await storage.write(key: keyName, value: base64UrlEncode(key));
+    return key;
   }
 
   /// Initializes HiveBoxes for testing without calling Hive.initFlutter().
@@ -295,30 +318,59 @@ class HiveBoxes {
     }
   }
 
-  /// Opens all Hive boxes.
+  /// Opens all Hive boxes with AES encryption.
   static Future<void> _openBoxes() async {
-    _usersBox = await Hive.openBox<UserModel>(HiveBoxNames.users);
-    _aquariumsBox = await Hive.openBox<AquariumModel>(HiveBoxNames.aquariums);
-    _fishBox = await Hive.openBox<FishModel>(HiveBoxNames.fish);
-    _speciesBox = await Hive.openBox<SpeciesModel>(HiveBoxNames.species);
-    _streaksBox = await Hive.openBox<StreakModel>(HiveBoxNames.streaks);
+    _usersBox = await Hive.openBox<UserModel>(
+      HiveBoxNames.users,
+      encryptionCipher: _cipher,
+    );
+    _aquariumsBox = await Hive.openBox<AquariumModel>(
+      HiveBoxNames.aquariums,
+      encryptionCipher: _cipher,
+    );
+    _fishBox = await Hive.openBox<FishModel>(
+      HiveBoxNames.fish,
+      encryptionCipher: _cipher,
+    );
+    _speciesBox = await Hive.openBox<SpeciesModel>(
+      HiveBoxNames.species,
+      encryptionCipher: _cipher,
+    );
+    _streaksBox = await Hive.openBox<StreakModel>(
+      HiveBoxNames.streaks,
+      encryptionCipher: _cipher,
+    );
     _achievementsBox = await Hive.openBox<AchievementModel>(
       HiveBoxNames.achievements,
+      encryptionCipher: _cipher,
     );
     _syncQueueBox = await Hive.openBox<SyncOperationModel>(
       HiveBoxNames.syncQueue,
+      encryptionCipher: _cipher,
     );
-    _appPreferencesBox = await Hive.openBox(HiveBoxNames.appPreferences);
+    _appPreferencesBox = await Hive.openBox(
+      HiveBoxNames.appPreferences,
+      encryptionCipher: _cipher,
+    );
     _userProgressBox = await Hive.openBox<UserProgressModel>(
       HiveBoxNames.userProgress,
+      encryptionCipher: _cipher,
     );
-    _subscriptionCacheBox = await Hive.openBox(HiveBoxNames.subscriptionCache);
+    _subscriptionCacheBox = await Hive.openBox(
+      HiveBoxNames.subscriptionCache,
+      encryptionCipher: _cipher,
+    );
     _syncMetadataBox = await Hive.openBox<SyncMetadataModel>(
       HiveBoxNames.syncMetadata,
+      encryptionCipher: _cipher,
     );
-    _schedulesBox = await Hive.openBox<ScheduleModel>(HiveBoxNames.schedules);
+    _schedulesBox = await Hive.openBox<ScheduleModel>(
+      HiveBoxNames.schedules,
+      encryptionCipher: _cipher,
+    );
     _feedingLogsBox = await Hive.openBox<FeedingLogModel>(
       HiveBoxNames.feedingLogs,
+      encryptionCipher: _cipher,
     );
   }
 

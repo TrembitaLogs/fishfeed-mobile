@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// Keys for secure storage operations.
 abstract final class SecureStorageKeys {
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
+
+  // Hive encryption key
+  static const String hiveEncryptionKey = 'hive_encryption_key';
 
   // Apple Sign-In user info keys
   static const String appleUserIdentifier = 'apple_user_identifier';
@@ -66,6 +72,30 @@ class SecureStorageService {
   Future<bool> hasTokens() async {
     final accessToken = await getAccessToken();
     return accessToken != null && accessToken.isNotEmpty;
+  }
+
+  // Hive encryption key methods
+
+  /// Retrieves the Hive encryption key, generating one if it doesn't exist.
+  ///
+  /// The key is a base64-encoded 256-bit AES key stored in platform-secure
+  /// storage (Keychain on iOS, EncryptedSharedPreferences on Android).
+  Future<List<int>> getOrCreateHiveEncryptionKey() async {
+    final encoded = await _storage.read(
+      key: SecureStorageKeys.hiveEncryptionKey,
+    );
+
+    if (encoded != null) {
+      return base64Url.decode(encoded);
+    }
+
+    // Generate a new 256-bit key (32 bytes)
+    final key = Hive.generateSecureKey();
+    await _storage.write(
+      key: SecureStorageKeys.hiveEncryptionKey,
+      value: base64UrlEncode(key),
+    );
+    return key;
   }
 
   // Apple Sign-In user info methods

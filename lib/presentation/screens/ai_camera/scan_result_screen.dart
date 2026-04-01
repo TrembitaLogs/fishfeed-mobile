@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/domain/entities/ai_scan_result.dart';
 import 'package:fishfeed/presentation/widgets/confidence_indicator.dart';
 
@@ -204,14 +205,14 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
               color: Colors.black54,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_awesome, color: Colors.amber, size: 16),
-                SizedBox(width: 4),
+                const Icon(Icons.auto_awesome, color: Colors.amber, size: 16),
+                const SizedBox(width: 4),
                 Text(
-                  'AI Result',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.aiResult,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -319,7 +320,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Low confidence. Please verify or select manually.',
+              AppLocalizations.of(context)!.lowConfidenceWarning,
               style: TextStyle(
                 color: Colors.amber.shade900,
                 fontSize: 13,
@@ -344,7 +345,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
             Icon(Icons.lightbulb_outline, size: 18, color: colorScheme.primary),
             const SizedBox(width: 8),
             Text(
-              'Recommendations',
+              AppLocalizations.of(context)!.recommendations,
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -439,20 +440,22 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
   }
 
   String _formatCareLevel(String level) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (level.toLowerCase()) {
-      'beginner' => 'Beginner',
-      'intermediate' => 'Intermediate',
-      'advanced' => 'Advanced',
+      'beginner' => l10n.careLevelBeginner,
+      'intermediate' => l10n.careLevelIntermediate,
+      'advanced' => l10n.careLevelAdvanced,
       _ => level,
     };
   }
 
   String _formatFeedingFrequency(String frequency) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (frequency.toLowerCase()) {
-      'once_daily' => 'Once daily',
-      'twice_daily' => 'Twice daily',
-      'daily' => 'Daily',
-      'every_other_day' => 'Every other day',
+      'once_daily' => l10n.feedingFreqOnceDaily,
+      'twice_daily' => l10n.feedingFreqTwiceDaily,
+      'daily' => l10n.feedingFreqDaily,
+      'every_other_day' => l10n.feedingFreqEveryOtherDay,
       _ => frequency.replaceAll('_', ' '),
     };
   }
@@ -472,7 +475,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
               child: FilledButton.icon(
                 onPressed: _onEdit,
                 icon: const Icon(Icons.edit_outlined),
-                label: const Text('Select Manually'),
+                label: Text(AppLocalizations.of(context)!.selectManually),
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
@@ -490,7 +493,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
               child: OutlinedButton.icon(
                 onPressed: _onConfirm,
                 icon: const Icon(Icons.check),
-                label: const Text('Confirm Anyway'),
+                label: Text(AppLocalizations.of(context)!.confirmAnyway),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white70,
                   side: const BorderSide(color: Colors.white38),
@@ -516,7 +519,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
             child: OutlinedButton.icon(
               onPressed: _onEdit,
               icon: const Icon(Icons.edit_outlined),
-              label: const Text('Not correct?'),
+              label: Text(AppLocalizations.of(context)!.notCorrect),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white70,
                 side: const BorderSide(color: Colors.white38),
@@ -533,7 +536,7 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
             child: FilledButton.icon(
               onPressed: _onConfirm,
               icon: const Icon(Icons.check),
-              label: const Text('Confirm'),
+              label: Text(AppLocalizations.of(context)!.confirm),
               style: FilledButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,

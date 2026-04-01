@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +27,21 @@ abstract final class ApiTimeouts {
   static const Duration connect = Duration(seconds: 30);
   static const Duration receive = Duration(seconds: 30);
   static const Duration send = Duration(seconds: 30);
+}
+
+/// SHA-256 fingerprints of pinned TLS certificates for api.fishfeed.club.
+///
+/// Includes the leaf certificate and one intermediate CA for rotation safety.
+/// Update these when certificates are renewed.
+abstract final class PinnedCertificates {
+  static const Set<String> sha256Fingerprints = {
+    // Primary leaf certificate for api.fishfeed.club
+    // TODO: Replace with actual SHA-256 fingerprint before production release
+    'PLACEHOLDER_LEAF_CERT_SHA256_FINGERPRINT',
+    // Backup intermediate CA
+    // TODO: Replace with actual SHA-256 fingerprint before production release
+    'PLACEHOLDER_INTERMEDIATE_CA_SHA256_FINGERPRINT',
+  };
 }
 
 /// Callback type for logout operation triggered by token refresh failure.
@@ -117,7 +135,30 @@ class ApiClient {
       },
     );
 
+    // Enable certificate pinning in release builds
+    if (!kDebugMode) {
+      _configureCertificatePinning();
+    }
+
     _addInterceptors();
+  }
+
+  /// Configures TLS certificate pinning using SHA-256 fingerprint validation.
+  ///
+  /// Verifies that the server's leaf certificate matches one of the pinned
+  /// fingerprints, protecting against MITM attacks with rogue certificates.
+  /// Only active in release builds to allow proxy-based debugging in dev.
+  void _configureCertificatePinning() {
+    final httpClientAdapter = IOHttpClientAdapter()
+      ..onHttpClientCreate = (client) {
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) {
+          final fingerprint = sha256.convert(cert.der).toString();
+          return PinnedCertificates.sha256Fingerprints.contains(fingerprint);
+        };
+        return client;
+      };
+    _dio.httpClientAdapter = httpClientAdapter;
   }
 
   /// Adds interceptors to the Dio instance.

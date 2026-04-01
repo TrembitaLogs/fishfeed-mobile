@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/services/image_processing_service.dart';
 
 /// Result returned from PhotoPreviewScreen.
@@ -84,7 +85,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to process image';
+        _error = AppLocalizations.of(context)!.failedToProcessImage;
         _isProcessing = false;
       });
     }
@@ -138,15 +139,15 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
       File(widget.imagePath),
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
-        return const Center(
+        return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.broken_image, color: Colors.white54, size: 64),
-              SizedBox(height: 16),
+              const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+              const SizedBox(height: 16),
               Text(
-                'Failed to load image',
-                style: TextStyle(color: Colors.white54),
+                AppLocalizations.of(context)!.failedToLoadImage,
+                style: const TextStyle(color: Colors.white54),
               ),
             ],
           ),
@@ -183,14 +184,14 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.preview, color: Colors.white70, size: 16),
-                  SizedBox(width: 4),
+                  const Icon(Icons.preview, color: Colors.white70, size: 16),
+                  const SizedBox(width: 4),
                   Text(
-                    'Preview',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.preview,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -224,7 +225,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
               child: OutlinedButton.icon(
                 onPressed: _isProcessing ? null : _onRetake,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retake'),
+                label: Text(AppLocalizations.of(context)!.retake),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.white70),
@@ -252,7 +253,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                         ),
                       )
                     : const Icon(Icons.check),
-                label: Text(_isProcessing ? 'Processing...' : 'Use Photo'),
+                label: Text(_isProcessing ? AppLocalizations.of(context)!.processing : AppLocalizations.of(context)!.usePhoto),
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
@@ -272,17 +273,17 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
   Widget _buildProcessingOverlay() {
     return Container(
       color: Colors.black54,
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'Preparing image...',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              AppLocalizations.of(context)!.preparingImage,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),

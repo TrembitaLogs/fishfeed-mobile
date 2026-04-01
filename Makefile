@@ -38,7 +38,7 @@ run_prod:
 
 # Building
 build_ios:
-	flutter build ios --release
+	flutter build ios --release --obfuscate --split-debug-info=build/debug-info
 
 build_android:
-	flutter build appbundle --release
+	flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info

@@ -2863,5 +2863,186 @@
   "everyOtherDay": "Every 2 Days",
   "@everyOtherDay": {
     "description": "Label for every-other-day feeding interval"
+  },
+  "themeDescriptionSystem": "Automatically matches your device settings",
+  "@themeDescriptionSystem": {
+    "description": "Description for system theme mode"
+  },
+  "themeDescriptionLight": "Always use light theme",
+  "@themeDescriptionLight": {
+    "description": "Description for light theme mode"
+  },
+  "themeDescriptionDark": "Always use dark theme",
+  "@themeDescriptionDark": {
+    "description": "Description for dark theme mode"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "English language name"
+  },
+  "languageGerman": "German",
+  "@languageGerman": {
+    "description": "German language name"
+  },
+  "languageEnglishNative": "English",
+  "@languageEnglishNative": {
+    "description": "English language native name"
+  },
+  "languageGermanNative": "Deutsch",
+  "@languageGermanNative": {
+    "description": "German language native name"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications screen title"
+  },
+  "notificationPreferencesSavedLocally": "Notification preferences are saved locally and will be synced with your account when online.",
+  "@notificationPreferencesSavedLocally": {
+    "description": "Info text about notification preferences sync"
+  },
+  "enableNotifications": "Enable Notifications",
+  "@enableNotifications": {
+    "description": "Master toggle title for notifications"
+  },
+  "receiveRemindersAndAlerts": "Receive feeding reminders and alerts",
+  "@receiveRemindersAndAlerts": {
+    "description": "Subtitle when notifications are enabled"
+  },
+  "allNotificationsDisabled": "All notifications are disabled",
+  "@allNotificationsDisabled": {
+    "description": "Subtitle when notifications are disabled"
+  },
+  "notificationTypes": "Notification Types",
+  "@notificationTypes": {
+    "description": "Section header for notification types"
+  },
+  "feedingReminders": "Feeding Reminders",
+  "@feedingReminders": {
+    "description": "Notification type title"
+  },
+  "feedingRemindersSubtitle": "Get notified when it's time to feed",
+  "@feedingRemindersSubtitle": {
+    "description": "Subtitle for feeding reminders toggle"
+  },
+  "streakAlerts": "Streak Alerts",
+  "@streakAlerts": {
+    "description": "Notification type title"
+  },
+  "streakAlertsSubtitle": "Warnings when your streak is at risk",
+  "@streakAlertsSubtitle": {
+    "description": "Subtitle for streak alerts toggle"
+  },
+  "weeklySummary": "Weekly Summary",
+  "@weeklySummary": {
+    "description": "Notification type title"
+  },
+  "weeklySummarySubtitle": "Weekly feeding activity overview",
+  "@weeklySummarySubtitle": {
+    "description": "Subtitle for weekly summary toggle"
+  },
+  "quietHours": "Quiet Hours",
+  "@quietHours": {
+    "description": "Section header for quiet hours"
+  },
+  "enableQuietHours": "Enable Quiet Hours",
+  "@enableQuietHours": {
+    "description": "Toggle title for quiet hours"
+  },
+  "muteNotificationsDuringHours": "Mute notifications during specified hours",
+  "@muteNotificationsDuringHours": {
+    "description": "Subtitle for quiet hours toggle"
+  },
+  "feedingTimeNotificationTitle": "Feeding Time!",
+  "@feedingTimeNotificationTitle": {
+    "description": "Notification title for feeding time"
+  },
+  "feedingTimeNotificationBody": "Time to feed your {speciesText}",
+  "@feedingTimeNotificationBody": {
+    "description": "Notification body for feeding time",
+    "placeholders": {
+      "speciesText": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToCreateAquarium": "Failed to create aquarium. Please try again.",
+  "@failedToCreateAquarium": {
+    "description": "Error message when aquarium creation fails"
+  },
+  "failedToLoadImage": "Failed to load image",
+  "@failedToLoadImage": {
+    "description": "Error message when image fails to load"
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "Badge label for photo preview"
+  },
+  "processing": "Processing...",
+  "@processing": {
+    "description": "Button label while processing"
+  },
+  "usePhoto": "Use Photo",
+  "@usePhoto": {
+    "description": "Button label to use captured photo"
+  },
+  "preparingImage": "Preparing image...",
+  "@preparingImage": {
+    "description": "Loading overlay text during image preparation"
+  },
+  "failedToProcessImage": "Failed to process image",
+  "@failedToProcessImage": {
+    "description": "Error message when image processing fails"
+  },
+  "aiResult": "AI Result",
+  "@aiResult": {
+    "description": "Badge label for AI scan result"
+  },
+  "lowConfidenceWarning": "Low confidence. Please verify or select manually.",
+  "@lowConfidenceWarning": {
+    "description": "Warning when AI confidence is low"
+  },
+  "selectManually": "Select Manually",
+  "@selectManually": {
+    "description": "Button label for manual species selection"
+  },
+  "confirmAnyway": "Confirm Anyway",
+  "@confirmAnyway": {
+    "description": "Button label to confirm despite low confidence"
+  },
+  "notCorrect": "Not correct?",
+  "@notCorrect": {
+    "description": "Button label to indicate incorrect detection"
+  },
+  "careLevelBeginner": "Beginner",
+  "@careLevelBeginner": {
+    "description": "Care level label"
+  },
+  "careLevelIntermediate": "Intermediate",
+  "@careLevelIntermediate": {
+    "description": "Care level label"
+  },
+  "careLevelAdvanced": "Advanced",
+  "@careLevelAdvanced": {
+    "description": "Care level label"
+  },
+  "feedingFreqOnceDaily": "Once daily",
+  "@feedingFreqOnceDaily": {
+    "description": "Feeding frequency label"
+  },
+  "feedingFreqTwiceDaily": "Twice daily",
+  "@feedingFreqTwiceDaily": {
+    "description": "Feeding frequency label"
+  },
+  "feedingFreqDaily": "Daily",
+  "@feedingFreqDaily": {
+    "description": "Feeding frequency label"
+  },
+  "feedingFreqEveryOtherDay": "Every other day",
+  "@feedingFreqEveryOtherDay": {
+    "description": "Feeding frequency label"
+  },
+  "recommendations": "Recommendations",
+  "@recommendations": {
+    "description": "Section header for AI recommendations"
   }
 }

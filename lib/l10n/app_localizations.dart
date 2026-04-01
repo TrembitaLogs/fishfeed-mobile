@@ -3739,6 +3739,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Every 2 Days'**
   String get everyOtherDay;
+
+  /// No description provided for @themeDescriptionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically matches your device settings'**
+  String get themeDescriptionSystem;
+
+  /// No description provided for @themeDescriptionLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use light theme'**
+  String get themeDescriptionLight;
+
+  /// No description provided for @themeDescriptionDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Always use dark theme'**
+  String get themeDescriptionDark;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageGerman;
+
+  /// No description provided for @languageEnglishNative.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglishNative;
+
+  /// No description provided for @languageGermanNative.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageGermanNative;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @notificationPreferencesSavedLocally.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification preferences are saved locally and will be synced with your account when online.'**
+  String get notificationPreferencesSavedLocally;
+
+  /// No description provided for @enableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get enableNotifications;
+
+  /// No description provided for @receiveRemindersAndAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive feeding reminders and alerts'**
+  String get receiveRemindersAndAlerts;
+
+  /// No description provided for @allNotificationsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications are disabled'**
+  String get allNotificationsDisabled;
+
+  /// No description provided for @notificationTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Types'**
+  String get notificationTypes;
+
+  /// No description provided for @feedingReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Reminders'**
+  String get feedingReminders;
+
+  /// No description provided for @feedingRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when it\'s time to feed'**
+  String get feedingRemindersSubtitle;
+
+  /// No description provided for @streakAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Alerts'**
+  String get streakAlerts;
+
+  /// No description provided for @streakAlertsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings when your streak is at risk'**
+  String get streakAlertsSubtitle;
+
+  /// No description provided for @weeklySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Summary'**
+  String get weeklySummary;
+
+  /// No description provided for @weeklySummarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly feeding activity overview'**
+  String get weeklySummarySubtitle;
+
+  /// No description provided for @quietHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet Hours'**
+  String get quietHours;
+
+  /// No description provided for @enableQuietHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Quiet Hours'**
+  String get enableQuietHours;
+
+  /// No description provided for @muteNotificationsDuringHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute notifications during specified hours'**
+  String get muteNotificationsDuringHours;
+
+  /// No description provided for @feedingTimeNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Time!'**
+  String get feedingTimeNotificationTitle;
+
+  /// No description provided for @feedingTimeNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to feed your {speciesText}'**
+  String feedingTimeNotificationBody(String speciesText);
+
+  /// No description provided for @failedToCreateAquarium.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create aquarium. Please try again.'**
+  String get failedToCreateAquarium;
+
+  /// No description provided for @failedToLoadImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load image'**
+  String get failedToLoadImage;
+
+  /// No description provided for @preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get preview;
+
+  /// No description provided for @processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get processing;
+
+  /// No description provided for @usePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Photo'**
+  String get usePhoto;
+
+  /// No description provided for @preparingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing image...'**
+  String get preparingImage;
+
+  /// No description provided for @failedToProcessImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to process image'**
+  String get failedToProcessImage;
+
+  /// No description provided for @aiResult.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Result'**
+  String get aiResult;
+
+  /// No description provided for @lowConfidenceWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Low confidence. Please verify or select manually.'**
+  String get lowConfidenceWarning;
+
+  /// No description provided for @selectManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Manually'**
+  String get selectManually;
+
+  /// No description provided for @confirmAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Anyway'**
+  String get confirmAnyway;
+
+  /// No description provided for @notCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Not correct?'**
+  String get notCorrect;
+
+  /// No description provided for @careLevelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get careLevelBeginner;
+
+  /// No description provided for @careLevelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get careLevelIntermediate;
+
+  /// No description provided for @careLevelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get careLevelAdvanced;
+
+  /// No description provided for @feedingFreqOnceDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Once daily'**
+  String get feedingFreqOnceDaily;
+
+  /// No description provided for @feedingFreqTwiceDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Twice daily'**
+  String get feedingFreqTwiceDaily;
+
+  /// No description provided for @feedingFreqDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get feedingFreqDaily;
+
+  /// No description provided for @feedingFreqEveryOtherDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every other day'**
+  String get feedingFreqEveryOtherDay;
+
+  /// No description provided for @recommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get recommendations;
 }
 
 class _AppLocalizationsDelegate

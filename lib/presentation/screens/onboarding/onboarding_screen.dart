@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
@@ -336,10 +337,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final paddedHour = hour.toString().padLeft(2, '0');
       final paddedMinute = minute.toString().padLeft(2, '0');
 
+      final l10n = AppLocalizations.of(context)!;
+
       await NotificationService.instance.scheduleDailyFeeding(
         id: 1000 + i,
-        title: 'Feeding Time!',
-        body: 'Time to feed your $speciesText',
+        title: l10n.feedingTimeNotificationTitle,
+        body: l10n.feedingTimeNotificationBody(speciesText),
         hour: hour,
         minute: minute,
         payload: 'feeding_daily_${paddedHour}_$paddedMinute',
@@ -550,8 +553,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // Show error - aquarium creation failed
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to create aquarium. Please try again.'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.failedToCreateAquarium),
               behavior: SnackBarBehavior.floating,
             ),
           );

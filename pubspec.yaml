@@ -48,6 +48,7 @@ dependencies:
 
   # Networking
   dio: ^5.7.0
+  crypto: ^3.0.6
 
   # Local Storage
   hive_flutter: ^1.1.0

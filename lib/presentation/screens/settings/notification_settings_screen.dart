@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/settings_provider.dart';
 
 /// Screen for managing notification settings.
@@ -17,9 +18,10 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsNotifierProvider);
     final notifier = ref.read(settingsNotifierProvider.notifier);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
+      appBar: AppBar(title: Text(l10n.notifications)),
       body: ListView(
         children: [
           // Master toggle section
@@ -75,7 +77,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Notification preferences are saved locally and will be synced with your account when online.',
+              l10n.notificationPreferencesSavedLocally,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -100,13 +102,14 @@ class _MasterToggleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SwitchListTile(
-      title: const Text('Enable Notifications'),
+      title: Text(l10n.enableNotifications),
       subtitle: Text(
         isEnabled
-            ? 'Receive feeding reminders and alerts'
-            : 'All notifications are disabled',
+            ? l10n.receiveRemindersAndAlerts
+            : l10n.allNotificationsDisabled,
         style: theme.textTheme.bodyMedium?.copyWith(
           color: theme.colorScheme.onSurfaceVariant,
         ),
@@ -155,6 +158,7 @@ class _NotificationTogglesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +166,7 @@ class _NotificationTogglesSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: Text(
-            'Notification Types',
+            l10n.notificationTypes,
             style: theme.textTheme.titleSmall?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -171,24 +175,24 @@ class _NotificationTogglesSection extends StatelessWidget {
         ),
         _NotificationToggleTile(
           icon: Icons.restaurant,
-          title: 'Feeding Reminders',
-          subtitle: 'Get notified when it\'s time to feed',
+          title: l10n.feedingReminders,
+          subtitle: l10n.feedingRemindersSubtitle,
           value: feedingRemindersEnabled,
           enabled: masterEnabled,
           onChanged: onFeedingRemindersChanged,
         ),
         _NotificationToggleTile(
           icon: Icons.local_fire_department,
-          title: 'Streak Alerts',
-          subtitle: 'Warnings when your streak is at risk',
+          title: l10n.streakAlerts,
+          subtitle: l10n.streakAlertsSubtitle,
           value: streakAlertsEnabled,
           enabled: masterEnabled,
           onChanged: onStreakAlertsChanged,
         ),
         _NotificationToggleTile(
           icon: Icons.summarize,
-          title: 'Weekly Summary',
-          subtitle: 'Weekly feeding activity overview',
+          title: l10n.weeklySummary,
+          subtitle: l10n.weeklySummarySubtitle,
           value: weeklySummaryEnabled,
           enabled: masterEnabled,
           onChanged: onWeeklySummaryChanged,
@@ -282,13 +286,15 @@ class _QuietHoursSection extends StatelessWidget {
     final theme = Theme.of(context);
     final enabled = masterEnabled;
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: Text(
-            'Quiet Hours',
+            l10n.quietHours,
             style: theme.textTheme.titleSmall?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -297,13 +303,13 @@ class _QuietHoursSection extends StatelessWidget {
         ),
         SwitchListTile(
           title: Text(
-            'Enable Quiet Hours',
+            l10n.enableQuietHours,
             style: TextStyle(
               color: enabled ? null : theme.colorScheme.onSurfaceVariant,
             ),
           ),
           subtitle: Text(
-            'Mute notifications during specified hours',
+            l10n.muteNotificationsDuringHours,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -366,7 +372,7 @@ class _TimeRangePicker extends StatelessWidget {
         children: [
           Expanded(
             child: _TimePickerButton(
-              label: 'From',
+              label: AppLocalizations.of(context)!.from,
               minutes: startMinutes,
               onChanged: onStartTimeChanged,
             ),
@@ -380,7 +386,7 @@ class _TimeRangePicker extends StatelessWidget {
           ),
           Expanded(
             child: _TimePickerButton(
-              label: 'To',
+              label: AppLocalizations.of(context)!.to,
               minutes: endMinutes,
               onChanged: onEndTimeChanged,
             ),

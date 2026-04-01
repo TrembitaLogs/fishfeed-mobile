@@ -2158,4 +2158,138 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get everyOtherDay => 'Alle 2 Tage';
+
+  @override
+  String get themeDescriptionSystem => 'Passt sich automatisch an Ihre Geräteeinstellungen an';
+
+  @override
+  String get themeDescriptionLight => 'Immer helles Design verwenden';
+
+  @override
+  String get themeDescriptionDark => 'Immer dunkles Design verwenden';
+
+  @override
+  String get languageEnglish => 'Englisch';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageEnglishNative => 'English';
+
+  @override
+  String get languageGermanNative => 'Deutsch';
+
+  @override
+  String get notifications => 'Benachrichtigungen';
+
+  @override
+  String get notificationPreferencesSavedLocally => 'Benachrichtigungseinstellungen werden lokal gespeichert und mit Ihrem Konto synchronisiert, sobald Sie online sind.';
+
+  @override
+  String get enableNotifications => 'Benachrichtigungen aktivieren';
+
+  @override
+  String get receiveRemindersAndAlerts => 'Erhalten Sie Fütterungserinnerungen und Warnungen';
+
+  @override
+  String get allNotificationsDisabled => 'Alle Benachrichtigungen sind deaktiviert';
+
+  @override
+  String get notificationTypes => 'Benachrichtigungstypen';
+
+  @override
+  String get feedingReminders => 'Fütterungserinnerungen';
+
+  @override
+  String get feedingRemindersSubtitle => 'Benachrichtigung, wenn es Zeit zum Füttern ist';
+
+  @override
+  String get streakAlerts => 'Serie-Warnungen';
+
+  @override
+  String get streakAlertsSubtitle => 'Warnungen, wenn Ihre Serie gefährdet ist';
+
+  @override
+  String get weeklySummary => 'Wochenzusammenfassung';
+
+  @override
+  String get weeklySummarySubtitle => 'Wöchentliche Übersicht der Fütterungsaktivität';
+
+  @override
+  String get quietHours => 'Ruhezeiten';
+
+  @override
+  String get enableQuietHours => 'Ruhezeiten aktivieren';
+
+  @override
+  String get muteNotificationsDuringHours => 'Benachrichtigungen während festgelegter Zeiten stummschalten';
+
+  @override
+  String get feedingTimeNotificationTitle => 'Fütterungszeit!';
+
+  @override
+  String feedingTimeNotificationBody(String speciesText) {
+    return 'Zeit, Ihre $speciesText zu füttern';
+  }
+
+  @override
+  String get failedToCreateAquarium => 'Aquarium konnte nicht erstellt werden. Bitte versuchen Sie es erneut.';
+
+  @override
+  String get failedToLoadImage => 'Bild konnte nicht geladen werden';
+
+  @override
+  String get preview => 'Vorschau';
+
+  @override
+  String get processing => 'Verarbeitung...';
+
+  @override
+  String get usePhoto => 'Foto verwenden';
+
+  @override
+  String get preparingImage => 'Bild wird vorbereitet...';
+
+  @override
+  String get failedToProcessImage => 'Bild konnte nicht verarbeitet werden';
+
+  @override
+  String get aiResult => 'KI-Ergebnis';
+
+  @override
+  String get lowConfidenceWarning => 'Geringe Zuverlässigkeit. Bitte überprüfen oder manuell auswählen.';
+
+  @override
+  String get selectManually => 'Manuell auswählen';
+
+  @override
+  String get confirmAnyway => 'Trotzdem bestätigen';
+
+  @override
+  String get notCorrect => 'Nicht korrekt?';
+
+  @override
+  String get careLevelBeginner => 'Anfänger';
+
+  @override
+  String get careLevelIntermediate => 'Fortgeschritten';
+
+  @override
+  String get careLevelAdvanced => 'Experte';
+
+  @override
+  String get feedingFreqOnceDaily => 'Einmal täglich';
+
+  @override
+  String get feedingFreqTwiceDaily => 'Zweimal täglich';
+
+  @override
+  String get feedingFreqDaily => 'Täglich';
+
+  @override
+  String get feedingFreqEveryOtherDay => 'Jeden zweiten Tag';
+
+  @override
+  String get recommendations => 'Empfehlungen';
 }

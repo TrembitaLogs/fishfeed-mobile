@@ -19,7 +19,7 @@ class AppearanceScreen extends ConsumerWidget {
     final settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Appearance')),
+      appBar: AppBar(title: Text(l10n.appearance)),
       body: ListView(
         children: [
           // Theme section
@@ -59,9 +59,9 @@ class AppearanceScreen extends ConsumerWidget {
 
   String _getThemeDescription(AppThemeMode mode, AppLocalizations l10n) {
     return switch (mode) {
-      AppThemeMode.system => 'Automatically matches your device settings',
-      AppThemeMode.light => 'Always use light theme',
-      AppThemeMode.dark => 'Always use dark theme',
+      AppThemeMode.system => l10n.themeDescriptionSystem,
+      AppThemeMode.light => l10n.themeDescriptionLight,
+      AppThemeMode.dark => l10n.themeDescriptionDark,
     };
   }
 
@@ -155,7 +155,7 @@ class _LanguageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final languageName = _getLanguageName(languageCode);
+    final languageName = _getLanguageName(context, languageCode);
 
     return ListTile(
       leading: Container(
@@ -167,7 +167,7 @@ class _LanguageTile extends StatelessWidget {
         child: Icon(Icons.language, color: theme.colorScheme.onSurfaceVariant),
       ),
       title: Text(languageName),
-      subtitle: Text(_getLanguageNativeName(languageCode)),
+      subtitle: Text(_getLanguageNativeName(context, languageCode)),
       trailing: Icon(
         Icons.chevron_right,
         color: theme.colorScheme.onSurfaceVariant,
@@ -176,19 +176,21 @@ class _LanguageTile extends StatelessWidget {
     );
   }
 
-  String _getLanguageName(String code) {
+  String _getLanguageName(BuildContext context, String code) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (code) {
-      'en' => 'English',
-      'de' => 'German',
-      _ => 'English',
+      'en' => l10n.languageEnglish,
+      'de' => l10n.languageGerman,
+      _ => l10n.languageEnglish,
     };
   }
 
-  String _getLanguageNativeName(String code) {
+  String _getLanguageNativeName(BuildContext context, String code) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (code) {
-      'en' => 'English',
-      'de' => 'Deutsch',
-      _ => 'English',
+      'en' => l10n.languageEnglishNative,
+      'de' => l10n.languageGermanNative,
+      _ => l10n.languageEnglishNative,
     };
   }
 }
@@ -203,15 +205,17 @@ class _LanguageBottomSheet extends StatelessWidget {
   final String currentLanguage;
   final ValueChanged<String> onSelected;
 
-  static const _languages = [
-    ('en', 'English', 'English'),
-    ('de', 'German', 'Deutsch'),
-  ];
+  static const _languageCodes = ['en', 'de'];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+
+    final languageNames = {
+      'en': (l10n.languageEnglish, l10n.languageEnglishNative),
+      'de': (l10n.languageGerman, l10n.languageGermanNative),
+    };
 
     return SafeArea(
       child: Column(
@@ -223,9 +227,9 @@ class _LanguageBottomSheet extends StatelessWidget {
             child: Text(l10n.language, style: theme.textTheme.titleLarge),
           ),
           const Divider(),
-          ..._languages.map((lang) {
-            final (code, name, nativeName) = lang;
+          ..._languageCodes.map((code) {
             final isSelected = code == currentLanguage;
+            final (name, nativeName) = languageNames[code] ?? (code, code);
 
             return ListTile(
               leading: isSelected
