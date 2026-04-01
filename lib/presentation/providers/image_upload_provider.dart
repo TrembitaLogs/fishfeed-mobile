@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/di/service_providers.dart';
+import 'package:fishfeed/data/services/image_sync_queue.dart';
+import 'package:fishfeed/data/services/image_upload_service.dart';
+import 'package:fishfeed/data/services/image_upload_task.dart';
 import 'package:fishfeed/services/connectivity/connectivity_service.dart';
 
 // ============ State ============

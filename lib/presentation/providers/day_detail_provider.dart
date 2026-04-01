@@ -181,7 +181,7 @@ final dayDetailProvider = StateNotifierProvider.autoDispose
       }
 
       String? aquariumNameResolver(String aquariumId) {
-        final aquarium = aquariumsState.aquariums
+        final aquarium = aquariums
             .where((a) => a.id == aquariumId)
             .firstOrNull;
         return aquarium?.name;

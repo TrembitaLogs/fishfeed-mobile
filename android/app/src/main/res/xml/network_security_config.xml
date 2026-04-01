@@ -11,11 +11,10 @@
     <domain-config>
         <domain includeSubdomains="true">api.fishfeed.club</domain>
         <pin-set expiration="2027-01-01">
-            <!-- Leaf certificate SHA-256 pin -->
-            <!-- TODO: Replace with actual pin from: openssl s_client -connect api.fishfeed.club:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 -->
-            <pin digest="SHA-256">PLACEHOLDER_BASE64_LEAF_PIN=</pin>
-            <!-- Backup intermediate CA pin -->
-            <pin digest="SHA-256">PLACEHOLDER_BASE64_INTERMEDIATE_PIN=</pin>
+            <!-- Leaf certificate SPKI pin (updated 2026-04-01) -->
+            <pin digest="SHA-256">whqW8lnFKCQeaFc0A1/HY2dYRNSpCii8Xdh2ON3syVc=</pin>
+            <!-- Intermediate CA SPKI pin (updated 2026-04-01) -->
+            <pin digest="SHA-256">kZwN96eHtZftBWrOZUsd6cA4es80n3NzSk/XtYz2EqQ=</pin>
         </pin-set>
     </domain-config>
 

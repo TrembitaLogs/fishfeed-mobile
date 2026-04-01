@@ -35,12 +35,10 @@ abstract final class ApiTimeouts {
 /// Update these when certificates are renewed.
 abstract final class PinnedCertificates {
   static const Set<String> sha256Fingerprints = {
-    // Primary leaf certificate for api.fishfeed.club
-    // TODO: Replace with actual SHA-256 fingerprint before production release
-    'PLACEHOLDER_LEAF_CERT_SHA256_FINGERPRINT',
-    // Backup intermediate CA
-    // TODO: Replace with actual SHA-256 fingerprint before production release
-    'PLACEHOLDER_INTERMEDIATE_CA_SHA256_FINGERPRINT',
+    // Leaf certificate for api.fishfeed.club (updated 2026-04-01)
+    'd75f0257358402bd5e47cfbc588e38e18f324fa423b7318de8f5a5f0a07c6141',
+    // Intermediate CA (updated 2026-04-01)
+    '131fce7784016899a5a00203a9efc80f18ebbd75580717edc1553580930836ec',
   };
 }
 
