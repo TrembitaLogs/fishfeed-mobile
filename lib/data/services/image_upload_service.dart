@@ -198,7 +198,7 @@ class ImageUploadService {
 
     for (var attempt = 0; attempt < totalAttempts; attempt++) {
       if (attempt > 0) {
-        final delay = Duration(seconds: 1 << (attempt - 1));
+        final delay = Duration(seconds: (1 << (attempt - 1)).clamp(1, 16));
         debugPrint(
           'Image upload retry $attempt/${ImageUploadTask.maxRetries} '
           'for task ${task.id}, waiting ${delay.inSeconds}s',
