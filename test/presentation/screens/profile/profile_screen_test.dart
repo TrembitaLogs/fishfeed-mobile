@@ -21,10 +21,8 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/profile/profile_screen.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/models/user_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -39,14 +37,9 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
-
-class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
+class MockAquariumRepository extends Mock implements AquariumRepository {}
 
 class FakeFile extends Fake implements File {}
-
-class FakeUserModel extends Fake implements UserModel {}
 
 /// AuthNotifier subclass that allows setting initial authenticated state.
 class _TestableAuthNotifier extends AuthNotifier {
@@ -54,8 +47,7 @@ class _TestableAuthNotifier extends AuthNotifier {
     required super.repository,
     required super.googleAuthService,
     required super.appleAuthService,
-    required super.aquariumLocalDataSource,
-    required super.authLocalDataSource,
+    required super.aquariumRepository,
     required super.syncService,
     User? initialUser,
   }) {
@@ -73,8 +65,7 @@ void main() {
   late MockUserRepository mockUserRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late MockAquariumLocalDataSource mockAquariumLocalDs;
-  late MockAuthLocalDataSource mockAuthLocalDs;
+  late MockAquariumRepository mockAquariumRepo;
 
   // Use removeAdsOnly() so "View Premium" button appears in tests
   final testUser = User(
@@ -108,7 +99,13 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
     registerFallbackValue(FakeFile());
-    registerFallbackValue(FakeUserModel());
+    registerFallbackValue(
+      User(
+        id: 'fallback',
+        email: 'fallback@test.com',
+        createdAt: DateTime(2024),
+      ),
+    );
   });
 
   tearDownAll(() {
@@ -120,15 +117,26 @@ void main() {
     mockUserRepository = MockUserRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumLocalDs = MockAquariumLocalDataSource();
-    mockAuthLocalDs = MockAuthLocalDataSource();
+    mockAquariumRepo = MockAquariumRepository();
 
     // Setup default mock behavior
-    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
-    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
-    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
-    when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
-    when(() => mockAuthLocalDs.getUnsyncedUser()).thenReturn(null);
+    when(
+      () => mockAquariumRepo.getCachedAquariums(),
+    ).thenReturn(const Right([]));
+
+    // Stub updateDisplayNameLocally to return updated user
+    when(
+      () => mockUserRepository.updateDisplayNameLocally(
+        currentUser: any(named: 'currentUser'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenAnswer((invocation) async {
+      final displayName =
+          invocation.namedArguments[#displayName] as String;
+      final currentUser =
+          invocation.namedArguments[#currentUser] as User;
+      return Right(currentUser.copyWith(displayName: displayName));
+    });
   });
 
   Widget buildTestWidget({User? user, SyncService? syncService}) {
@@ -155,14 +163,13 @@ void main() {
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
         syncServiceProvider.overrideWithValue(mockSyncService),
-        authLocalDataSourceProvider.overrideWithValue(mockAuthLocalDs),
+        aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
         authNotifierProvider.overrideWith((ref) {
           final notifier = _TestableAuthNotifier(
             repository: mockAuthRepository,
             googleAuthService: mockGoogleAuthService,
             appleAuthService: mockAppleAuthService,
-            aquariumLocalDataSource: mockAquariumLocalDs,
-            authLocalDataSource: mockAuthLocalDs,
+            aquariumRepository: mockAquariumRepo,
             syncService: mockSyncService,
             initialUser: effectiveUser,
           );

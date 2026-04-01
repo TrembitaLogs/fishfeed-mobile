@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/models/ai_scan_result.dart';
-import 'package:fishfeed/data/repositories/ai_scan_repository.dart';
+import 'package:fishfeed/domain/entities/ai_scan_result.dart';
+import 'package:fishfeed/domain/repositories/ai_scan_repository.dart';
 import 'package:fishfeed/presentation/providers/ai_scan_provider.dart';
 
 class MockAiScanRepository extends Mock implements AiScanRepository {}

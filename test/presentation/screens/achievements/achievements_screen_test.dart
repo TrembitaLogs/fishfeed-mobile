@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +10,7 @@ import 'package:fishfeed/domain/entities/achievement.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/screens/achievements/achievements_screen.dart';
+import 'package:fishfeed/presentation/widgets/common/error_state_widget.dart';
 
 // ============================================================================
 // Test Data
@@ -71,22 +74,24 @@ void main() {
     testWidgets('shows loading indicator while achievements load', (
       tester,
     ) async {
+      final completer = Completer<List<Achievement>>();
+
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
-            allAchievementsProvider.overrideWith((ref) async {
-              // Never complete — simulates loading
-              return await Future.delayed(
-                const Duration(days: 1),
-                () => <Achievement>[],
-              );
-            }),
+            allAchievementsProvider.overrideWith(
+              (ref) => completer.future,
+            ),
           ],
         ),
       );
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // Complete the future to avoid pending timer issues
+      completer.complete(<Achievement>[]);
+      await tester.pumpAndSettle();
     });
 
     testWidgets('shows empty state when no achievements exist', (
@@ -115,15 +120,26 @@ void main() {
           ],
         ),
       );
+      // Pump once to let the FutureProvider resolve, then settle animations
+      await tester.pump();
+      await tester.pump();
       await tester.pumpAndSettle();
 
-      // ErrorStateWidget shows a retry button
-      expect(find.byType(ElevatedButton), findsWidgets);
+      // ErrorStateWidget shows a retry button (FilledButton.icon)
+      expect(find.byType(ErrorStateWidget), findsOneWidget);
     });
 
     testWidgets('displays achievements grid with unlocked and locked items', (
       tester,
     ) async {
+      // Use a taller surface so all grid items are rendered by SliverGrid
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       final achievements = [
         _unlockedAchievement,
         _lockedAchievement,
@@ -218,6 +234,13 @@ void main() {
     testWidgets('tapping achievement card opens detail bottom sheet', (
       tester,
     ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
@@ -240,6 +263,13 @@ void main() {
     testWidgets('detail bottom sheet shows unlock date for unlocked', (
       tester,
     ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
@@ -262,6 +292,13 @@ void main() {
     testWidgets('detail bottom sheet shows progress bar for partial', (
       tester,
     ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [
@@ -284,6 +321,13 @@ void main() {
     testWidgets('detail bottom sheet shows lock for locked achievements', (
       tester,
     ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         _buildTestApp(
           overrides: [

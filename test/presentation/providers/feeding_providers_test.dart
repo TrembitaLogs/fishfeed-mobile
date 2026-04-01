@@ -3,17 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
-import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
-import 'package:fishfeed/data/models/aquarium_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/streak_model.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
+import 'package:fishfeed/domain/repositories/fish_repository.dart';
+import 'package:fishfeed/domain/repositories/streak_repository.dart';
 import 'package:fishfeed/domain/services/feeding_event_generator.dart';
 import 'package:fishfeed/domain/entities/achievement.dart';
 import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
@@ -30,12 +31,11 @@ class MockFeedingEventGenerator extends Mock implements FeedingEventGenerator {}
 
 class MockFeedingService extends Mock implements FeedingService {}
 
-class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
+class MockFishRepository extends Mock implements FishRepository {}
 
-class MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
+class MockAquariumRepository extends Mock implements AquariumRepository {}
 
-class MockStreakLocalDataSource extends Mock implements StreakLocalDataSource {}
+class MockStreakRepository extends Mock implements StreakRepository {}
 
 class MockCalculateStreakUseCase extends Mock
     implements CalculateStreakUseCase {}
@@ -46,7 +46,7 @@ class MockCalculateStreakUseCase extends Mock
 /// gets invalidated (e.g., after markAsFed/markAsMissed).
 class TestStreakNotifier extends StreakNotifier {
   TestStreakNotifier({
-    required super.streakDataSource,
+    required super.streakRepository,
     required super.calculateStreakUseCase,
     required super.ref,
     this.initialStreak,
@@ -201,9 +201,9 @@ void main() {
   group('TodayFeedingsNotifier', () {
     late MockFeedingEventGenerator mockGenerator;
     late MockFeedingService mockFeedingService;
-    late MockFishLocalDataSource mockFishDs;
-    late MockAquariumLocalDataSource mockAquariumDs;
-    late MockStreakLocalDataSource mockStreakDs;
+    late MockFishRepository mockFishRepo;
+    late MockAquariumRepository mockAquariumRepo;
+    late MockStreakRepository mockStreakRepo;
     late MockCalculateStreakUseCase mockCalculateStreakUseCase;
     late ProviderContainer container;
 
@@ -219,14 +219,16 @@ void main() {
     setUp(() {
       mockGenerator = MockFeedingEventGenerator();
       mockFeedingService = MockFeedingService();
-      mockFishDs = MockFishLocalDataSource();
-      mockAquariumDs = MockAquariumLocalDataSource();
-      mockStreakDs = MockStreakLocalDataSource();
+      mockFishRepo = MockFishRepository();
+      mockAquariumRepo = MockAquariumRepository();
+      mockStreakRepo = MockStreakRepository();
       mockCalculateStreakUseCase = MockCalculateStreakUseCase();
 
-      // Set up default empty responses for fish and aquarium data sources
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
-      when(() => mockAquariumDs.getAllAquariums()).thenReturn([]);
+      // Set up default empty responses for fish and aquarium repositories
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
+      when(
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(const Right([]));
 
       // Default mock for CalculateStreakUseCase used by StreakNotifier
       when(() => mockCalculateStreakUseCase.call(any())).thenAnswer(
@@ -267,8 +269,8 @@ void main() {
           overrides: [
             feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
             feedingServiceProvider.overrideWithValue(mockFeedingService),
-            fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-            aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+            fishRepositoryProvider.overrideWithValue(mockFishRepo),
+            aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
             currentUserProvider.overrideWithValue(testUser),
           ],
         );
@@ -289,8 +291,8 @@ void main() {
 
       // Return an aquarium so events get loaded
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
 
       // Track call count to return different values on subsequent calls
       var callCount = 0;
@@ -349,11 +351,11 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentStreakProvider.overrideWith(
             (ref) => TestStreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockCalculateStreakUseCase,
               ref: ref,
             ),
@@ -403,8 +405,8 @@ void main() {
 
         // Return an aquarium so events get loaded
         when(
-          () => mockAquariumDs.getAllAquariums(),
-        ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+          () => mockAquariumRepo.getCachedAquariums(),
+        ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
 
         // Setup generator to return an event
         when(
@@ -455,11 +457,11 @@ void main() {
           overrides: [
             feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
             feedingServiceProvider.overrideWithValue(mockFeedingService),
-            fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-            aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+            fishRepositoryProvider.overrideWithValue(mockFishRepo),
+            aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
             currentStreakProvider.overrideWith(
               (ref) => TestStreakNotifier(
-                streakDataSource: mockStreakDs,
+                streakRepository: mockStreakRepo,
                 calculateStreakUseCase: mockCalculateStreakUseCase,
                 ref: ref,
               ),
@@ -511,8 +513,8 @@ void main() {
 
       // Return an aquarium so events get loaded
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
 
       when(
         () => mockGenerator.generateTodayEventsForAllAquariums(
@@ -557,8 +559,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -662,7 +664,7 @@ void main() {
   });
 
   group('StreakNotifier', () {
-    late MockStreakLocalDataSource mockStreakDs;
+    late MockStreakRepository mockStreakRepo;
     late MockCalculateStreakUseCase mockCalculateStreakUseCase;
     late ProviderContainer container;
 
@@ -676,7 +678,7 @@ void main() {
     );
 
     setUp(() {
-      mockStreakDs = MockStreakLocalDataSource();
+      mockStreakRepo = MockStreakRepository();
       mockCalculateStreakUseCase = MockCalculateStreakUseCase();
     });
 
@@ -706,7 +708,7 @@ void main() {
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockCalculateStreakUseCase,
               ref: ref,
             ),
@@ -746,7 +748,7 @@ void main() {
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockCalculateStreakUseCase,
               ref: ref,
             ),
@@ -789,14 +791,14 @@ void main() {
         ),
       );
       when(
-        () => mockStreakDs.incrementStreak('user_123', any()),
-      ).thenAnswer((_) async => updatedStreak);
+        () => mockStreakRepo.incrementStreak('user_123', any()),
+      ).thenAnswer((_) async => Right(updatedStreak.toEntity()));
 
       container = ProviderContainer(
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockCalculateStreakUseCase,
               ref: ref,
             ),
@@ -811,7 +813,7 @@ void main() {
 
       await container.read(currentStreakProvider.notifier).incrementStreak();
 
-      verify(() => mockStreakDs.incrementStreak('user_123', any())).called(1);
+      verify(() => mockStreakRepo.incrementStreak('user_123', any())).called(1);
 
       final state = container.read(currentStreakProvider);
       expect(state.currentStreak, equals(6));
@@ -842,7 +844,7 @@ void main() {
 
   group('currentStreakCountProvider', () {
     test('returns currentStreak from streakProvider', () async {
-      final mockStreakDs = MockStreakLocalDataSource();
+      final mockStreakRepo = MockStreakRepository();
       final mockUseCase = MockCalculateStreakUseCase();
 
       when(() => mockUseCase.call(any())).thenAnswer(
@@ -873,7 +875,7 @@ void main() {
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockUseCase,
               ref: ref,
             ),
@@ -895,7 +897,7 @@ void main() {
 
   group('isStreakActiveProvider', () {
     test('returns true when streak > 0', () async {
-      final mockStreakDs = MockStreakLocalDataSource();
+      final mockStreakRepo = MockStreakRepository();
       final mockUseCase = MockCalculateStreakUseCase();
 
       when(() => mockUseCase.call(any())).thenAnswer(
@@ -926,7 +928,7 @@ void main() {
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockUseCase,
               ref: ref,
             ),
@@ -946,7 +948,7 @@ void main() {
     });
 
     test('returns false when streak is 0', () async {
-      final mockStreakDs = MockStreakLocalDataSource();
+      final mockStreakRepo = MockStreakRepository();
       final mockUseCase = MockCalculateStreakUseCase();
 
       when(() => mockUseCase.call(any())).thenAnswer(
@@ -977,7 +979,7 @@ void main() {
         overrides: [
           currentStreakProvider.overrideWith(
             (ref) => StreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockUseCase,
               ref: ref,
             ),
@@ -1001,11 +1003,13 @@ void main() {
     test('groups feedings by time period', () async {
       final mockGenerator = MockFeedingEventGenerator();
       final mockFeedingService = MockFeedingService();
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = MockAquariumLocalDataSource();
+      final mockFishRepo = MockFishRepository();
+      final mockAquariumRepo = MockAquariumRepository();
 
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
-      when(() => mockAquariumDs.getAllAquariums()).thenReturn([]);
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
+      when(
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(const Right([]));
       when(
         () => mockGenerator.generateTodayEventsForAllAquariums(
           aquariumIds: any(named: 'aquariumIds'),
@@ -1029,8 +1033,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1060,19 +1064,19 @@ void main() {
     test('markAsFed triggers streak increment via FeedingService', () async {
       final mockGenerator = MockFeedingEventGenerator();
       final mockFeedingService = MockFeedingService();
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = MockAquariumLocalDataSource();
-      final mockStreakDs = MockStreakLocalDataSource();
+      final mockFishRepo = MockFishRepository();
+      final mockAquariumRepo = MockAquariumRepository();
+      final mockStreakRepo = MockStreakRepository();
       final mockUseCase = MockCalculateStreakUseCase();
 
       final now = DateTime.now();
       final scheduledFor = DateTime(now.year, now.month, now.day, 9, 0);
 
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
       // Return an aquarium so events get loaded
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
       when(
         () => mockGenerator.generateTodayEventsForAllAquariums(
           aquariumIds: any(named: 'aquariumIds'),
@@ -1146,11 +1150,11 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentStreakProvider.overrideWith(
             (ref) => TestStreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockUseCase,
               ref: ref,
             ),
@@ -1190,19 +1194,19 @@ void main() {
     test('markAsMissed does NOT call any streak reset method', () async {
       final mockGenerator = MockFeedingEventGenerator();
       final mockFeedingService = MockFeedingService();
-      final mockFishDs = MockFishLocalDataSource();
-      final mockAquariumDs = MockAquariumLocalDataSource();
-      final mockStreakDs = MockStreakLocalDataSource();
+      final mockFishRepo = MockFishRepository();
+      final mockAquariumRepo = MockAquariumRepository();
+      final mockStreakRepo = MockStreakRepository();
       final mockUseCase = MockCalculateStreakUseCase();
 
       final now = DateTime.now();
       final scheduledFor = DateTime(now.year, now.month, now.day, 9, 0);
 
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
       // Return an aquarium so events get loaded
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
       when(
         () => mockGenerator.generateTodayEventsForAllAquariums(
           aquariumIds: any(named: 'aquariumIds'),
@@ -1276,11 +1280,11 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentStreakProvider.overrideWith(
             (ref) => TestStreakNotifier(
-              streakDataSource: mockStreakDs,
+              streakRepository: mockStreakRepo,
               calculateStreakUseCase: mockUseCase,
               ref: ref,
             ),
@@ -1309,7 +1313,7 @@ void main() {
       ).called(1);
 
       // 2. resetStreak was NOT called on streakDs during markAsMissed
-      verifyNever(() => mockStreakDs.resetStreak(any()));
+      verifyNever(() => mockStreakRepo.handleMissedDay(any(), any()));
 
       // Wait for invalidated currentStreakProvider to re-create and complete
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -1321,8 +1325,8 @@ void main() {
   group('feedingsGroupedByTimeProvider', () {
     late MockFeedingEventGenerator mockGenerator;
     late MockFeedingService mockFeedingService;
-    late MockFishLocalDataSource mockFishDs;
-    late MockAquariumLocalDataSource mockAquariumDs;
+    late MockFishRepository mockFishRepo;
+    late MockAquariumRepository mockAquariumRepo;
 
     final testUser = User(
       id: 'user_123',
@@ -1336,13 +1340,13 @@ void main() {
     setUp(() {
       mockGenerator = MockFeedingEventGenerator();
       mockFeedingService = MockFeedingService();
-      mockFishDs = MockFishLocalDataSource();
-      mockAquariumDs = MockAquariumLocalDataSource();
+      mockFishRepo = MockFishRepository();
+      mockAquariumRepo = MockAquariumRepository();
 
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
     });
 
     test('groups feedings by exact time string', () async {
@@ -1381,8 +1385,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1434,8 +1438,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1463,8 +1467,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1513,8 +1517,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1532,8 +1536,8 @@ void main() {
   group('aquariumFeedingStatusProvider', () {
     late MockFeedingEventGenerator mockGenerator;
     late MockFeedingService mockFeedingService;
-    late MockFishLocalDataSource mockFishDs;
-    late MockAquariumLocalDataSource mockAquariumDs;
+    late MockFishRepository mockFishRepo;
+    late MockAquariumRepository mockAquariumRepo;
 
     final testUser = User(
       id: 'user_123',
@@ -1547,13 +1551,13 @@ void main() {
     setUp(() {
       mockGenerator = MockFeedingEventGenerator();
       mockFeedingService = MockFeedingService();
-      mockFishDs = MockFishLocalDataSource();
-      mockAquariumDs = MockAquariumLocalDataSource();
+      mockFishRepo = MockFishRepository();
+      mockAquariumRepo = MockAquariumRepository();
 
-      when(() => mockFishDs.getAllFish()).thenReturn([]);
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
       when(
-        () => mockAquariumDs.getAllAquariums(),
-      ).thenReturn([_createAquariumModel(id: 'aq_1')]);
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
     });
 
     test('returns pendingFeeding when there are overdue feedings', () async {
@@ -1576,8 +1580,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1622,8 +1626,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1656,8 +1660,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1686,8 +1690,8 @@ void main() {
         overrides: [
           feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
           feedingServiceProvider.overrideWithValue(mockFeedingService),
-          fishLocalDataSourceProvider.overrideWithValue(mockFishDs),
-          aquariumLocalDataSourceProvider.overrideWithValue(mockAquariumDs),
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
           currentUserProvider.overrideWithValue(testUser),
         ],
       );
@@ -1742,16 +1746,16 @@ FeedingLogModel _createFeedingLog({String action = 'fed'}) {
   );
 }
 
-/// Helper to create an AquariumModel for testing.
-AquariumModel _createAquariumModel({
+/// Helper to create an Aquarium entity for testing.
+Aquarium _createAquarium({
   String id = 'aq_1',
   String name = 'Test Tank',
 }) {
-  return AquariumModel(
+  return Aquarium(
     id: id,
     userId: 'user_123',
     name: name,
+    waterType: WaterType.freshwater,
     createdAt: DateTime(2024, 1, 1),
-    synced: true,
   );
 }

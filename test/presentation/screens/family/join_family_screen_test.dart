@@ -18,6 +18,7 @@ import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
 import 'package:fishfeed/data/repositories/family_repository_impl.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/family_member.dart';
+import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/family_repository.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
@@ -70,6 +71,7 @@ class _MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
 void main() {
   late MockFamilyRepository mockRepository;
   late MockSyncService mockSyncService;
+  late MockAuthRepository mockAuthRepository;
   late Directory tempDir;
 
   final testMember = FamilyMember(
@@ -84,6 +86,13 @@ void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
+    registerFallbackValue(
+      User(
+        id: 'fallback',
+        email: 'fallback@test.com',
+        createdAt: DateTime(2024),
+      ),
+    );
     tempDir = await Directory.systemTemp.createTemp('join_family_test_');
     Hive.init(tempDir.path);
     await HiveBoxes.initForTesting();
@@ -98,9 +107,18 @@ void main() {
   setUp(() {
     mockRepository = MockFamilyRepository();
     mockSyncService = createMockSyncService();
+    mockAuthRepository = MockAuthRepository();
     when(
       () => mockSyncService.syncAll(fullSync: any(named: 'fullSync')),
     ).thenAnswer((_) async => 0);
+
+    // Stub AuthRepository methods called during post-accept flow
+    when(() => mockAuthRepository.saveUserLocally(any()))
+        .thenAnswer((_) async {});
+    when(() => mockAuthRepository.getOnboardingCompleted()).thenReturn(false);
+    when(() => mockAuthRepository.setOnboardingCompleted(any()))
+        .thenAnswer((_) async {});
+    when(() => mockAuthRepository.getLocalUser()).thenReturn(null);
   });
 
   Widget buildTestWidget({
@@ -135,7 +153,7 @@ void main() {
         userAquariumsProvider.overrideWith(
           (ref) => _MockUserAquariumsNotifier(),
         ),
-        authRepositoryProvider.overrideWithValue(MockAuthRepository()),
+        authRepositoryProvider.overrideWithValue(mockAuthRepository),
         googleAuthServiceProvider.overrideWithValue(MockGoogleAuthService()),
         appleAuthServiceProvider.overrideWithValue(MockAppleAuthService()),
         aquariumLocalDataSourceProvider.overrideWithValue(

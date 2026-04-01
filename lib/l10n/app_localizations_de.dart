@@ -1807,7 +1807,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get failedToCreateAquarium =>
-      'Aquarium konnte nicht erstellt werden. Bitte erneut versuchen.';
+      'Aquarium konnte nicht erstellt werden. Bitte versuchen Sie es erneut.';
 
   @override
   String get enterAquariumName => 'Geben Sie den Namen Ihres Aquariums ein';
@@ -2160,7 +2160,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get everyOtherDay => 'Alle 2 Tage';
 
   @override
-  String get themeDescriptionSystem => 'Passt sich automatisch an Ihre Geräteeinstellungen an';
+  String get themeDescriptionSystem =>
+      'Passt sich automatisch an Ihre Geräteeinstellungen an';
 
   @override
   String get themeDescriptionLight => 'Immer helles Design verwenden';
@@ -2184,16 +2185,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notifications => 'Benachrichtigungen';
 
   @override
-  String get notificationPreferencesSavedLocally => 'Benachrichtigungseinstellungen werden lokal gespeichert und mit Ihrem Konto synchronisiert, sobald Sie online sind.';
+  String get notificationPreferencesSavedLocally =>
+      'Benachrichtigungseinstellungen werden lokal gespeichert und mit Ihrem Konto synchronisiert, sobald Sie online sind.';
 
   @override
   String get enableNotifications => 'Benachrichtigungen aktivieren';
 
   @override
-  String get receiveRemindersAndAlerts => 'Erhalten Sie Fütterungserinnerungen und Warnungen';
+  String get receiveRemindersAndAlerts =>
+      'Erhalten Sie Fütterungserinnerungen und Warnungen';
 
   @override
-  String get allNotificationsDisabled => 'Alle Benachrichtigungen sind deaktiviert';
+  String get allNotificationsDisabled =>
+      'Alle Benachrichtigungen sind deaktiviert';
 
   @override
   String get notificationTypes => 'Benachrichtigungstypen';
@@ -2202,7 +2206,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get feedingReminders => 'Fütterungserinnerungen';
 
   @override
-  String get feedingRemindersSubtitle => 'Benachrichtigung, wenn es Zeit zum Füttern ist';
+  String get feedingRemindersSubtitle =>
+      'Benachrichtigung, wenn es Zeit zum Füttern ist';
 
   @override
   String get streakAlerts => 'Serie-Warnungen';
@@ -2214,7 +2219,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get weeklySummary => 'Wochenzusammenfassung';
 
   @override
-  String get weeklySummarySubtitle => 'Wöchentliche Übersicht der Fütterungsaktivität';
+  String get weeklySummarySubtitle =>
+      'Wöchentliche Übersicht der Fütterungsaktivität';
 
   @override
   String get quietHours => 'Ruhezeiten';
@@ -2223,7 +2229,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enableQuietHours => 'Ruhezeiten aktivieren';
 
   @override
-  String get muteNotificationsDuringHours => 'Benachrichtigungen während festgelegter Zeiten stummschalten';
+  String get muteNotificationsDuringHours =>
+      'Benachrichtigungen während festgelegter Zeiten stummschalten';
 
   @override
   String get feedingTimeNotificationTitle => 'Fütterungszeit!';
@@ -2232,9 +2239,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String feedingTimeNotificationBody(String speciesText) {
     return 'Zeit, Ihre $speciesText zu füttern';
   }
-
-  @override
-  String get failedToCreateAquarium => 'Aquarium konnte nicht erstellt werden. Bitte versuchen Sie es erneut.';
 
   @override
   String get failedToLoadImage => 'Bild konnte nicht geladen werden';
@@ -2258,16 +2262,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiResult => 'KI-Ergebnis';
 
   @override
-  String get lowConfidenceWarning => 'Geringe Zuverlässigkeit. Bitte überprüfen oder manuell auswählen.';
-
-  @override
-  String get selectManually => 'Manuell auswählen';
-
-  @override
-  String get confirmAnyway => 'Trotzdem bestätigen';
-
-  @override
-  String get notCorrect => 'Nicht korrekt?';
+  String get lowConfidenceWarning =>
+      'Geringe Zuverlässigkeit. Bitte überprüfen oder manuell auswählen.';
 
   @override
   String get careLevelBeginner => 'Anfänger';

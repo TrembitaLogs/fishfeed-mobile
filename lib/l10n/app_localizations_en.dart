@@ -2128,7 +2128,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get everyOtherDay => 'Every 2 Days';
 
   @override
-  String get themeDescriptionSystem => 'Automatically matches your device settings';
+  String get themeDescriptionSystem =>
+      'Automatically matches your device settings';
 
   @override
   String get themeDescriptionLight => 'Always use light theme';
@@ -2152,13 +2153,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications => 'Notifications';
 
   @override
-  String get notificationPreferencesSavedLocally => 'Notification preferences are saved locally and will be synced with your account when online.';
+  String get notificationPreferencesSavedLocally =>
+      'Notification preferences are saved locally and will be synced with your account when online.';
 
   @override
   String get enableNotifications => 'Enable Notifications';
 
   @override
-  String get receiveRemindersAndAlerts => 'Receive feeding reminders and alerts';
+  String get receiveRemindersAndAlerts =>
+      'Receive feeding reminders and alerts';
 
   @override
   String get allNotificationsDisabled => 'All notifications are disabled';
@@ -2191,7 +2194,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enableQuietHours => 'Enable Quiet Hours';
 
   @override
-  String get muteNotificationsDuringHours => 'Mute notifications during specified hours';
+  String get muteNotificationsDuringHours =>
+      'Mute notifications during specified hours';
 
   @override
   String get feedingTimeNotificationTitle => 'Feeding Time!';
@@ -2200,9 +2204,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String feedingTimeNotificationBody(String speciesText) {
     return 'Time to feed your $speciesText';
   }
-
-  @override
-  String get failedToCreateAquarium => 'Failed to create aquarium. Please try again.';
 
   @override
   String get failedToLoadImage => 'Failed to load image';
@@ -2226,16 +2227,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiResult => 'AI Result';
 
   @override
-  String get lowConfidenceWarning => 'Low confidence. Please verify or select manually.';
-
-  @override
-  String get selectManually => 'Select Manually';
-
-  @override
-  String get confirmAnyway => 'Confirm Anyway';
-
-  @override
-  String get notCorrect => 'Not correct?';
+  String get lowConfidenceWarning =>
+      'Low confidence. Please verify or select manually.';
 
   @override
   String get careLevelBeginner => 'Beginner';

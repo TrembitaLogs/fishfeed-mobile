@@ -6,16 +6,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
+
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
-import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
+import 'package:fishfeed/domain/entities/water_type.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/domain/repositories/auth_repository.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
@@ -30,19 +29,13 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class _MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
-
-class _MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
-
-class _FakeUserModel extends Fake implements UserModel {}
+class MockAquariumRepository extends Mock implements AquariumRepository {}
 
 void main() {
   late MockAuthRepository mockRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late _MockAquariumLocalDataSource mockAquariumLocalDs;
-  late _MockAuthLocalDataSource mockAuthLocalDs;
+  late MockAquariumRepository mockAquariumRepository;
   late MockSyncService mockSyncService;
   late AuthNotifier authNotifier;
   late Directory tempDir;
@@ -57,7 +50,13 @@ void main() {
   );
 
   setUpAll(() async {
-    registerFallbackValue(_FakeUserModel());
+    registerFallbackValue(
+      User(
+        id: 'fallback',
+        email: 'fallback@test.com',
+        createdAt: DateTime(2024),
+      ),
+    );
     tempDir = await Directory.systemTemp.createTemp('auth_provider_test_');
     Hive.init(tempDir.path);
     await HiveBoxes.initForTesting();
@@ -75,20 +74,26 @@ void main() {
     mockRepository = MockAuthRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumLocalDs = _MockAquariumLocalDataSource();
-    mockAuthLocalDs = _MockAuthLocalDataSource();
+    mockAquariumRepository = MockAquariumRepository();
     mockSyncService = createMockSyncService();
 
-    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
-    when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
-    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
+    when(
+      () => mockAquariumRepository.getCachedAquariums(),
+    ).thenReturn(const Right([]));
+    when(
+      () => mockRepository.getOnboardingCompleted(),
+    ).thenReturn(false);
+    when(
+      () => mockRepository.setOnboardingCompleted(any()),
+    ).thenAnswer((_) async {});
+    when(() => mockRepository.saveUserLocally(any())).thenAnswer((_) async {});
+    when(() => mockRepository.getLocalUser()).thenReturn(null);
 
     authNotifier = AuthNotifier(
       repository: mockRepository,
       googleAuthService: mockGoogleAuthService,
       appleAuthService: mockAppleAuthService,
-      aquariumLocalDataSource: mockAquariumLocalDs,
-      authLocalDataSource: mockAuthLocalDs,
+      aquariumRepository: mockAquariumRepository,
       syncService: mockSyncService,
     );
   });
@@ -465,8 +470,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -484,8 +489,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -504,8 +509,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -523,8 +528,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -538,19 +543,12 @@ void main() {
   });
 
   group('sync and onboarding check', () {
-    final activeAquariumModel = AquariumModel(
+    final activeAquarium = Aquarium(
       id: 'aq-1',
       userId: 'user-123',
       name: 'Test Aquarium',
+      waterType: WaterType.freshwater,
       createdAt: DateTime(2024, 1, 15),
-    );
-
-    final deletedAquariumModel = AquariumModel(
-      id: 'aq-deleted',
-      userId: 'user-123',
-      name: 'Deleted Aquarium',
-      createdAt: DateTime(2024, 1, 15),
-      deletedAt: DateTime(2024, 2, 1),
     );
 
     setUp(() async {
@@ -569,8 +567,8 @@ void main() {
         ).thenAnswer((_) async => Right(testUser));
 
         when(
-          () => mockAquariumLocalDs.getAllAquariums(),
-        ).thenReturn([activeAquariumModel]);
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(Right([activeAquarium]));
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -580,7 +578,7 @@ void main() {
         expect(authNotifier.state.isAuthenticated, true);
         expect(authNotifier.state.hasCompletedOnboarding, true);
         verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
-        verify(() => mockAquariumLocalDs.getAllAquariums()).called(1);
+        verify(() => mockAquariumRepository.getCachedAquariums()).called(1);
       },
     );
 
@@ -594,7 +592,9 @@ void main() {
           ),
         ).thenAnswer((_) async => Right(testUser));
 
-        when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
+        when(
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(const Right([]));
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -607,7 +607,7 @@ void main() {
     );
 
     test(
-      'login should ignore soft-deleted aquariums for onboarding check',
+      'login should return empty when no active aquariums for onboarding check',
       () async {
         when(
           () => mockRepository.login(
@@ -617,8 +617,8 @@ void main() {
         ).thenAnswer((_) async => Right(testUser));
 
         when(
-          () => mockAquariumLocalDs.getAllAquariums(),
-        ).thenReturn([deletedAquariumModel]);
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(const Right([]));
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -647,8 +647,8 @@ void main() {
 
       // But local data has aquariums
       when(
-        () => mockAquariumLocalDs.getAllAquariums(),
-      ).thenReturn([activeAquariumModel]);
+        () => mockAquariumRepository.getCachedAquariums(),
+      ).thenReturn(Right([activeAquarium]));
 
       await authNotifier.login(
         email: 'test@example.com',
@@ -674,7 +674,9 @@ void main() {
           () => mockSyncService.syncAll(),
         ).thenAnswer((_) async => throw Exception('Network error'));
 
-        when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
+        when(
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(const Right([]));
 
         await authNotifier.login(
           email: 'test@example.com',
@@ -689,7 +691,9 @@ void main() {
     test(
       'login should skip sync check when onboarding already completed',
       () async {
-        await HiveBoxes.setOnboardingCompleted(true);
+        when(
+          () => mockRepository.getOnboardingCompleted(),
+        ).thenReturn(true);
 
         when(
           () => mockRepository.login(
@@ -704,9 +708,8 @@ void main() {
         );
 
         expect(authNotifier.state.hasCompletedOnboarding, true);
-        // syncAll is called for background sync, but getAquariumsByUserId
-        // should NOT be called since we skip _syncAndCheckOnboarding
-        verifyNever(() => mockAquariumLocalDs.getAllAquariums());
+        // getCachedAquariums should NOT be called since we skip _syncAndCheckOnboarding
+        verifyNever(() => mockAquariumRepository.getCachedAquariums());
       },
     );
 
@@ -720,8 +723,8 @@ void main() {
           () => mockRepository.getCurrentUser(),
         ).thenAnswer((_) async => Right(testUser));
         when(
-          () => mockAquariumLocalDs.getAllAquariums(),
-        ).thenReturn([activeAquariumModel]);
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(Right([activeAquarium]));
 
         await authNotifier.initialize();
 
@@ -734,7 +737,9 @@ void main() {
     test(
       'initialize should trigger background sync when onboarding complete',
       () async {
-        await HiveBoxes.setOnboardingCompleted(true);
+        when(
+          () => mockRepository.getOnboardingCompleted(),
+        ).thenReturn(true);
 
         when(
           () => mockRepository.isAuthenticated(),
@@ -759,8 +764,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],
@@ -778,8 +783,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockRepository),
           googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
           appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
-          aquariumLocalDataSourceProvider.overrideWithValue(
-            mockAquariumLocalDs,
+          aquariumRepositoryProvider.overrideWithValue(
+            mockAquariumRepository,
           ),
           syncServiceProvider.overrideWithValue(createMockSyncService()),
         ],

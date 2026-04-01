@@ -14,8 +14,7 @@ import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/screens/onboarding/onboarding_screen.dart';
-import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
-import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
+import 'package:fishfeed/domain/repositories/species_repository.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 
 // Mock classes
@@ -23,18 +22,12 @@ class MockNotificationService extends Mock implements NotificationService {}
 
 class MockAuthNotifier extends Mock implements AuthNotifier {}
 
-class MockSpeciesRemoteDataSource extends Mock
-    implements SpeciesRemoteDataSource {}
-
-/// Mock SpeciesListNotifier that provides test data without API calls.
-class MockSpeciesLocalDataSource extends Mock
-    implements SpeciesLocalDataSource {}
+class MockSpeciesRepository extends Mock implements SpeciesRepository {}
 
 class TestSpeciesListNotifier extends SpeciesListNotifier {
   TestSpeciesListNotifier()
     : super(
-        speciesDataSource: MockSpeciesRemoteDataSource(),
-        localDataSource: MockSpeciesLocalDataSource(),
+        repository: MockSpeciesRepository(),
       );
 
   @override
@@ -43,7 +36,7 @@ class TestSpeciesListNotifier extends SpeciesListNotifier {
   }
 
   @override
-  Future<void> searchSpecies(String query) async {
+  void searchSpecies(String query) {
     if (query.isEmpty) {
       state = SpeciesListState(species: SpeciesData.popularSpecies);
     } else {

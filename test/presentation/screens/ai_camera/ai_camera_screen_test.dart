@@ -84,7 +84,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Badge should be visible with scan count
-      expect(find.text('5'), findsOneWidget);
+      expect(find.text('5 scans left'), findsOneWidget);
     });
 
     testWidgets('hides badge when scans is null', (tester) async {

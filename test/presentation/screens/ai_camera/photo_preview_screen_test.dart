@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/screens/ai_camera/photo_preview_screen.dart';
 import 'package:fishfeed/services/image_processing_service.dart';
 
@@ -61,6 +62,8 @@ void main() {
   }) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       navigatorObservers: observer != null ? [observer] : [],
       home: PhotoPreviewScreen(
         imagePath: imagePath,
@@ -121,6 +124,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) {
               return ElevatedButton(
@@ -160,6 +165,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) {
               return ElevatedButton(
@@ -208,6 +215,8 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) {
               return ElevatedButton(

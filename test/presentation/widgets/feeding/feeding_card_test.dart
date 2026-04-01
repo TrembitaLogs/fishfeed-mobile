@@ -9,8 +9,8 @@ import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
-import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/domain/entities/schedule.dart';
 import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
@@ -129,7 +129,7 @@ void main() {
           (ref, id) => Future<Species?>.value(null),
         ),
         activeSchedulesForFishProvider.overrideWith(
-          (ref, id) => <ScheduleModel>[],
+          (ref, id) => <Schedule>[],
         ),
         speciesLocalDataSourceProvider.overrideWithValue(mockSpeciesLocalDs),
         speciesRemoteDataSourceProvider.overrideWithValue(mockSpeciesRemoteDs),

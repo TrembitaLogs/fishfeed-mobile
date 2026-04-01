@@ -22,6 +22,8 @@ import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/models/user_model.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 import 'package:hive/hive.dart';
 import 'dart:io';
@@ -36,6 +38,8 @@ class MockAppleAuthService extends Mock implements AppleAuthService {}
 
 class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
+class MockAquariumRepository extends Mock implements AquariumRepository {}
+
 class _FakeUserModel extends Fake implements UserModel {}
 
 void main() {
@@ -43,6 +47,7 @@ void main() {
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
   late MockAuthLocalDataSource mockAuthLocalDs;
+  late MockAquariumRepository mockAquariumRepository;
 
   final testUser = User(
     id: 'user-123',
@@ -59,6 +64,13 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
     AppTheme.useDefaultFonts = true;
     registerFallbackValue(_FakeUserModel());
+    registerFallbackValue(
+      User(
+        id: 'fallback',
+        email: 'fallback@test.com',
+        createdAt: DateTime(2024),
+      ),
+    );
     tempDir = await Directory.systemTemp.createTemp('login_screen_test_');
     Hive.init(tempDir.path);
     await HiveBoxes.initForTesting();
@@ -79,6 +91,20 @@ void main() {
     mockAuthLocalDs = MockAuthLocalDataSource();
     when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
     when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
+
+    mockAquariumRepository = MockAquariumRepository();
+
+    // Stub AuthRepository methods called during login success flow
+    when(() => mockAuthRepository.saveUserLocally(any()))
+        .thenAnswer((_) async {});
+    when(() => mockAuthRepository.getOnboardingCompleted()).thenReturn(false);
+    when(() => mockAuthRepository.setOnboardingCompleted(any()))
+        .thenAnswer((_) async {});
+    when(() => mockAuthRepository.getLocalUser()).thenReturn(null);
+
+    // Stub AquariumRepository for onboarding check
+    when(() => mockAquariumRepository.getCachedAquariums())
+        .thenReturn(const Right([]));
   });
 
   Widget buildTestWidget({AuthenticationState? initialState}) {
@@ -89,6 +115,7 @@ void main() {
         appleAuthServiceProvider.overrideWithValue(mockAppleAuthService),
         syncServiceProvider.overrideWithValue(createMockSyncService()),
         authLocalDataSourceProvider.overrideWithValue(mockAuthLocalDs),
+        aquariumRepositoryProvider.overrideWithValue(mockAquariumRepository),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,

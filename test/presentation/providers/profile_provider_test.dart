@@ -5,8 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/domain/entities/user.dart';
 import 'package:fishfeed/domain/repositories/user_repository.dart';
@@ -20,17 +18,12 @@ class MockAuthNotifier extends Mock implements AuthNotifier {}
 
 class MockSyncService extends Mock implements SyncService {}
 
-class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
-
 class FakeFile extends Fake implements File {}
-
-class FakeUserModel extends Fake implements UserModel {}
 
 void main() {
   late MockUserRepository mockUserRepository;
   late MockAuthNotifier mockAuthNotifier;
   late MockSyncService mockSyncService;
-  late MockAuthLocalDataSource mockAuthLocalDs;
   late ProfileNotifier profileNotifier;
 
   final testUser = User(
@@ -45,28 +38,37 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FakeFile());
     registerFallbackValue(testUser);
-    registerFallbackValue(FakeUserModel());
   });
 
   setUp(() {
     mockUserRepository = MockUserRepository();
     mockAuthNotifier = MockAuthNotifier();
     mockSyncService = MockSyncService();
-    mockAuthLocalDs = MockAuthLocalDataSource();
 
     // Default mock behavior for offline-first nickname update
     when(
       () => mockAuthNotifier.state,
     ).thenReturn(AuthenticationState.authenticated(testUser));
-    when(() => mockAuthLocalDs.getCurrentUser()).thenReturn(null);
-    when(() => mockAuthLocalDs.saveUserLocally(any())).thenAnswer((_) async {});
     when(() => mockSyncService.syncAll()).thenAnswer((_) async => 0);
+
+    // Mock updateDisplayNameLocally to succeed by default
+    when(
+      () => mockUserRepository.updateDisplayNameLocally(
+        currentUser: any(named: 'currentUser'),
+        displayName: any(named: 'displayName'),
+      ),
+    ).thenAnswer((invocation) async {
+      final displayName =
+          invocation.namedArguments[#displayName] as String;
+      final currentUser =
+          invocation.namedArguments[#currentUser] as User;
+      return Right(currentUser.copyWith(displayName: displayName));
+    });
 
     profileNotifier = ProfileNotifier(
       userRepository: mockUserRepository,
       authNotifier: mockAuthNotifier,
       syncService: mockSyncService,
-      authLocalDataSource: mockAuthLocalDs,
     );
   });
 

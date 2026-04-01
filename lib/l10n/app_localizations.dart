@@ -2282,19 +2282,19 @@ abstract class AppLocalizations {
   /// **'Retake'**
   String get retake;
 
-  /// Select manually button
+  /// Button label for manual species selection
   ///
   /// In en, this message translates to:
   /// **'Select Manually'**
   String get selectManually;
 
-  /// Confirm anyway button
+  /// Button label to confirm despite low confidence
   ///
   /// In en, this message translates to:
   /// **'Confirm Anyway'**
   String get confirmAnyway;
 
-  /// Not correct button
+  /// Button label to indicate incorrect detection
   ///
   /// In en, this message translates to:
   /// **'Not correct?'**
@@ -3740,265 +3740,241 @@ abstract class AppLocalizations {
   /// **'Every 2 Days'**
   String get everyOtherDay;
 
-  /// No description provided for @themeDescriptionSystem.
+  /// Description for system theme mode
   ///
   /// In en, this message translates to:
   /// **'Automatically matches your device settings'**
   String get themeDescriptionSystem;
 
-  /// No description provided for @themeDescriptionLight.
+  /// Description for light theme mode
   ///
   /// In en, this message translates to:
   /// **'Always use light theme'**
   String get themeDescriptionLight;
 
-  /// No description provided for @themeDescriptionDark.
+  /// Description for dark theme mode
   ///
   /// In en, this message translates to:
   /// **'Always use dark theme'**
   String get themeDescriptionDark;
 
-  /// No description provided for @languageEnglish.
+  /// English language name
   ///
   /// In en, this message translates to:
   /// **'English'**
   String get languageEnglish;
 
-  /// No description provided for @languageGerman.
+  /// German language name
   ///
   /// In en, this message translates to:
   /// **'German'**
   String get languageGerman;
 
-  /// No description provided for @languageEnglishNative.
+  /// English language native name
   ///
   /// In en, this message translates to:
   /// **'English'**
   String get languageEnglishNative;
 
-  /// No description provided for @languageGermanNative.
+  /// German language native name
   ///
   /// In en, this message translates to:
   /// **'Deutsch'**
   String get languageGermanNative;
 
-  /// No description provided for @notifications.
+  /// Notifications screen title
   ///
   /// In en, this message translates to:
   /// **'Notifications'**
   String get notifications;
 
-  /// No description provided for @notificationPreferencesSavedLocally.
+  /// Info text about notification preferences sync
   ///
   /// In en, this message translates to:
   /// **'Notification preferences are saved locally and will be synced with your account when online.'**
   String get notificationPreferencesSavedLocally;
 
-  /// No description provided for @enableNotifications.
+  /// Master toggle title for notifications
   ///
   /// In en, this message translates to:
   /// **'Enable Notifications'**
   String get enableNotifications;
 
-  /// No description provided for @receiveRemindersAndAlerts.
+  /// Subtitle when notifications are enabled
   ///
   /// In en, this message translates to:
   /// **'Receive feeding reminders and alerts'**
   String get receiveRemindersAndAlerts;
 
-  /// No description provided for @allNotificationsDisabled.
+  /// Subtitle when notifications are disabled
   ///
   /// In en, this message translates to:
   /// **'All notifications are disabled'**
   String get allNotificationsDisabled;
 
-  /// No description provided for @notificationTypes.
+  /// Section header for notification types
   ///
   /// In en, this message translates to:
   /// **'Notification Types'**
   String get notificationTypes;
 
-  /// No description provided for @feedingReminders.
+  /// Notification type title
   ///
   /// In en, this message translates to:
   /// **'Feeding Reminders'**
   String get feedingReminders;
 
-  /// No description provided for @feedingRemindersSubtitle.
+  /// Subtitle for feeding reminders toggle
   ///
   /// In en, this message translates to:
   /// **'Get notified when it\'s time to feed'**
   String get feedingRemindersSubtitle;
 
-  /// No description provided for @streakAlerts.
+  /// Notification type title
   ///
   /// In en, this message translates to:
   /// **'Streak Alerts'**
   String get streakAlerts;
 
-  /// No description provided for @streakAlertsSubtitle.
+  /// Subtitle for streak alerts toggle
   ///
   /// In en, this message translates to:
   /// **'Warnings when your streak is at risk'**
   String get streakAlertsSubtitle;
 
-  /// No description provided for @weeklySummary.
+  /// Notification type title
   ///
   /// In en, this message translates to:
   /// **'Weekly Summary'**
   String get weeklySummary;
 
-  /// No description provided for @weeklySummarySubtitle.
+  /// Subtitle for weekly summary toggle
   ///
   /// In en, this message translates to:
   /// **'Weekly feeding activity overview'**
   String get weeklySummarySubtitle;
 
-  /// No description provided for @quietHours.
+  /// Section header for quiet hours
   ///
   /// In en, this message translates to:
   /// **'Quiet Hours'**
   String get quietHours;
 
-  /// No description provided for @enableQuietHours.
+  /// Toggle title for quiet hours
   ///
   /// In en, this message translates to:
   /// **'Enable Quiet Hours'**
   String get enableQuietHours;
 
-  /// No description provided for @muteNotificationsDuringHours.
+  /// Subtitle for quiet hours toggle
   ///
   /// In en, this message translates to:
   /// **'Mute notifications during specified hours'**
   String get muteNotificationsDuringHours;
 
-  /// No description provided for @feedingTimeNotificationTitle.
+  /// Notification title for feeding time
   ///
   /// In en, this message translates to:
   /// **'Feeding Time!'**
   String get feedingTimeNotificationTitle;
 
-  /// No description provided for @feedingTimeNotificationBody.
+  /// Notification body for feeding time
   ///
   /// In en, this message translates to:
   /// **'Time to feed your {speciesText}'**
   String feedingTimeNotificationBody(String speciesText);
 
-  /// No description provided for @failedToCreateAquarium.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to create aquarium. Please try again.'**
-  String get failedToCreateAquarium;
-
-  /// No description provided for @failedToLoadImage.
+  /// Error message when image fails to load
   ///
   /// In en, this message translates to:
   /// **'Failed to load image'**
   String get failedToLoadImage;
 
-  /// No description provided for @preview.
+  /// Badge label for photo preview
   ///
   /// In en, this message translates to:
   /// **'Preview'**
   String get preview;
 
-  /// No description provided for @processing.
+  /// Button label while processing
   ///
   /// In en, this message translates to:
   /// **'Processing...'**
   String get processing;
 
-  /// No description provided for @usePhoto.
+  /// Button label to use captured photo
   ///
   /// In en, this message translates to:
   /// **'Use Photo'**
   String get usePhoto;
 
-  /// No description provided for @preparingImage.
+  /// Loading overlay text during image preparation
   ///
   /// In en, this message translates to:
   /// **'Preparing image...'**
   String get preparingImage;
 
-  /// No description provided for @failedToProcessImage.
+  /// Error message when image processing fails
   ///
   /// In en, this message translates to:
   /// **'Failed to process image'**
   String get failedToProcessImage;
 
-  /// No description provided for @aiResult.
+  /// Badge label for AI scan result
   ///
   /// In en, this message translates to:
   /// **'AI Result'**
   String get aiResult;
 
-  /// No description provided for @lowConfidenceWarning.
+  /// Warning when AI confidence is low
   ///
   /// In en, this message translates to:
   /// **'Low confidence. Please verify or select manually.'**
   String get lowConfidenceWarning;
 
-  /// No description provided for @selectManually.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Manually'**
-  String get selectManually;
-
-  /// No description provided for @confirmAnyway.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Anyway'**
-  String get confirmAnyway;
-
-  /// No description provided for @notCorrect.
-  ///
-  /// In en, this message translates to:
-  /// **'Not correct?'**
-  String get notCorrect;
-
-  /// No description provided for @careLevelBeginner.
+  /// Care level label
   ///
   /// In en, this message translates to:
   /// **'Beginner'**
   String get careLevelBeginner;
 
-  /// No description provided for @careLevelIntermediate.
+  /// Care level label
   ///
   /// In en, this message translates to:
   /// **'Intermediate'**
   String get careLevelIntermediate;
 
-  /// No description provided for @careLevelAdvanced.
+  /// Care level label
   ///
   /// In en, this message translates to:
   /// **'Advanced'**
   String get careLevelAdvanced;
 
-  /// No description provided for @feedingFreqOnceDaily.
+  /// Feeding frequency label
   ///
   /// In en, this message translates to:
   /// **'Once daily'**
   String get feedingFreqOnceDaily;
 
-  /// No description provided for @feedingFreqTwiceDaily.
+  /// Feeding frequency label
   ///
   /// In en, this message translates to:
   /// **'Twice daily'**
   String get feedingFreqTwiceDaily;
 
-  /// No description provided for @feedingFreqDaily.
+  /// Feeding frequency label
   ///
   /// In en, this message translates to:
   /// **'Daily'**
   String get feedingFreqDaily;
 
-  /// No description provided for @feedingFreqEveryOtherDay.
+  /// Feeding frequency label
   ///
   /// In en, this message translates to:
   /// **'Every other day'**
   String get feedingFreqEveryOtherDay;
 
-  /// No description provided for @recommendations.
+  /// Section header for AI recommendations
   ///
   /// In en, this message translates to:
   /// **'Recommendations'**

@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,8 +24,8 @@ import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/home/home_screen.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
+import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -43,10 +44,7 @@ class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockAppleAuthService extends Mock implements AppleAuthService {}
 
-class MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
-
-class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
+class MockAquariumRepository extends Mock implements AquariumRepository {}
 
 /// Mock UserAquariumsNotifier that doesn't make async calls.
 class MockUserAquariumsNotifier extends StateNotifier<UserAquariumsState>
@@ -188,8 +186,7 @@ void main() {
   late MockUserRepository mockUserRepository;
   late MockGoogleAuthService mockGoogleAuthService;
   late MockAppleAuthService mockAppleAuthService;
-  late MockAquariumLocalDataSource mockAquariumLocalDs;
-  late MockAuthLocalDataSource mockAuthLocalDs;
+  late MockAquariumRepository mockAquariumRepo;
 
   final testUser = User(
     id: 'user-123',
@@ -223,12 +220,12 @@ void main() {
     mockUserRepository = MockUserRepository();
     mockGoogleAuthService = MockGoogleAuthService();
     mockAppleAuthService = MockAppleAuthService();
-    mockAquariumLocalDs = MockAquariumLocalDataSource();
-    mockAuthLocalDs = MockAuthLocalDataSource();
+    mockAquariumRepo = MockAquariumRepository();
 
     // Setup mock to return empty list by default
-    when(() => mockAquariumLocalDs.getAllAquariums()).thenReturn([]);
-    when(() => mockAquariumLocalDs.getAquariumsByUserId(any())).thenReturn([]);
+    when(
+      () => mockAquariumRepo.getCachedAquariums(),
+    ).thenReturn(const Right([]));
   });
 
   Widget buildTestWidget({User? user, List<ComputedFeedingEvent>? feedings}) {
@@ -272,8 +269,7 @@ void main() {
               repository: mockAuthRepository,
               googleAuthService: mockGoogleAuthService,
               appleAuthService: mockAppleAuthService,
-              aquariumLocalDataSource: mockAquariumLocalDs,
-              authLocalDataSource: mockAuthLocalDs,
+              aquariumRepository: mockAquariumRepo,
               syncService: createMockSyncService(),
             );
             // Manually set authenticated state with user
@@ -472,8 +468,7 @@ void main() {
                   repository: mockAuthRepository,
                   googleAuthService: mockGoogleAuthService,
                   appleAuthService: mockAppleAuthService,
-                  aquariumLocalDataSource: mockAquariumLocalDs,
-                  authLocalDataSource: mockAuthLocalDs,
+                  aquariumRepository: mockAquariumRepo,
                   syncService: createMockSyncService(),
                 );
                 return notifier;

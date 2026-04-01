@@ -8,6 +8,7 @@ import 'package:fishfeed/core/config/theme.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/species_remote_ds.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
@@ -215,7 +216,9 @@ ScheduleModel _createSchedule({
 
 MockFishLocalDataSource _createFishDs({Fish? fish}) {
   final ds = MockFishLocalDataSource();
-  when(() => ds.getFishById(any())).thenReturn(fish);
+  final fishModel =
+      fish != null ? FishModel.fromEntity(fish) : null;
+  when(() => ds.getFishById(any())).thenReturn(fishModel);
   when(() => ds.getFishByAquariumId(any())).thenReturn([]);
   return ds;
 }

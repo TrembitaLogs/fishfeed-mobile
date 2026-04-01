@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
-import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
+import 'package:fishfeed/domain/repositories/streak_repository.dart';
 import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
@@ -387,7 +387,7 @@ void main() {
 class _TestStreakNotifier extends StreakNotifier {
   _TestStreakNotifier(this._initialState)
     : super(
-        streakDataSource: _MockStreakLocalDataSource(),
+        streakRepository: _MockStreakRepository(),
         calculateStreakUseCase: _MockCalculateStreakUseCase(),
         ref: _MockRef(),
       );
@@ -409,8 +409,7 @@ class _TestStreakNotifier extends StreakNotifier {
 }
 
 /// Minimal mock for StreakLocalDataSource.
-class _MockStreakLocalDataSource extends Mock
-    implements StreakLocalDataSource {}
+class _MockStreakRepository extends Mock implements StreakRepository {}
 
 /// Minimal mock for CalculateStreakUseCase.
 class _MockCalculateStreakUseCase extends Mock

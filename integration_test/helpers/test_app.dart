@@ -12,8 +12,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/app.dart';
 import 'package:fishfeed/core/config/theme.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
+import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/species_local_ds.dart';
 import 'package:fishfeed/domain/entities/calendar_month_data.dart';
@@ -246,8 +245,7 @@ Future<void> initTestApp(
             repository: authRepo,
             googleAuthService: googleAuth,
             appleAuthService: appleAuth,
-            aquariumLocalDataSource: AquariumLocalDataSource(),
-            authLocalDataSource: AuthLocalDataSource(),
+            aquariumRepository: ref.read(aquariumRepositoryProvider),
             syncService: syncService,
           ),
         ),

@@ -4,12 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
-import 'package:fishfeed/data/models/aquarium_model.dart';
-import 'package:fishfeed/data/models/fish_model.dart';
-import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/services/image_sync_queue.dart';
 import 'package:fishfeed/data/services/image_upload_service.dart';
 import 'package:fishfeed/data/services/image_upload_task.dart';
@@ -23,19 +17,6 @@ class MockImageSyncQueue extends Mock implements ImageSyncQueue {}
 class MockImageUploadService extends Mock implements ImageUploadService {}
 
 class MockConnectivityService extends Mock implements ConnectivityService {}
-
-class MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
-
-class MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
-
-class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
-
-class MockAquariumModel extends Mock implements AquariumModel {}
-
-class MockFishModel extends Mock implements FishModel {}
-
-class MockUserModel extends Mock implements UserModel {}
 
 void main() {
   setUpAll(() {
@@ -125,169 +106,6 @@ void main() {
       expect(str, contains('pending: 3'));
       expect(str, contains('failed: 1'));
       expect(str, contains('processing: true'));
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // createPhotoKeyUpdater
-  // ---------------------------------------------------------------------------
-  group('createPhotoKeyUpdater', () {
-    late MockAquariumLocalDataSource mockAquariumDs;
-    late MockFishLocalDataSource mockFishDs;
-    late MockAuthLocalDataSource mockAuthDs;
-    late EntityPhotoKeyUpdater updater;
-
-    setUp(() {
-      mockAquariumDs = MockAquariumLocalDataSource();
-      mockFishDs = MockFishLocalDataSource();
-      mockAuthDs = MockAuthLocalDataSource();
-
-      updater = createPhotoKeyUpdater(
-        aquariumDs: mockAquariumDs,
-        fishDs: mockFishDs,
-        authDs: mockAuthDs,
-      );
-    });
-
-    group('aquarium entity', () {
-      test(
-        'updates photoKey, updatedAt, and synced on aquarium model',
-        () async {
-          final mockAquarium = MockAquariumModel();
-          when(
-            () => mockAquariumDs.getAquariumById('aq-1'),
-          ).thenReturn(mockAquarium);
-          when(() => mockAquarium.save()).thenAnswer((_) async {});
-
-          final beforeUpdate = DateTime.now();
-
-          await updater(
-            entityType: 'aquarium',
-            entityId: 'aq-1',
-            photoKey: 'aquariums/aq-1/f7a3b.webp',
-          );
-
-          verify(
-            () => mockAquarium.photoKey = 'aquariums/aq-1/f7a3b.webp',
-          ).called(1);
-          verify(() => mockAquarium.synced = false).called(1);
-
-          final captured = verify(
-            () => mockAquarium.updatedAt = captureAny(),
-          ).captured;
-          expect(captured, hasLength(1));
-          final setTime = captured.first as DateTime;
-          expect(
-            setTime.isAfter(beforeUpdate) ||
-                setTime.isAtSameMomentAs(beforeUpdate),
-            isTrue,
-            reason: 'updatedAt should be >= time before update call',
-          );
-
-          verify(() => mockAquarium.save()).called(1);
-        },
-      );
-
-      test('does nothing when aquarium not found', () async {
-        when(() => mockAquariumDs.getAquariumById('missing')).thenReturn(null);
-
-        await updater(
-          entityType: 'aquarium',
-          entityId: 'missing',
-          photoKey: 'aquariums/missing/abc.webp',
-        );
-
-        verify(() => mockAquariumDs.getAquariumById('missing')).called(1);
-        // No model returned, so no save should occur
-      });
-    });
-
-    group('fish entity', () {
-      test('updates photoKey, updatedAt, and synced on fish model', () async {
-        final mockFish = MockFishModel();
-        when(() => mockFishDs.getFishById('fish-1')).thenReturn(mockFish);
-        when(() => mockFish.save()).thenAnswer((_) async {});
-
-        final beforeUpdate = DateTime.now();
-
-        await updater(
-          entityType: 'fish',
-          entityId: 'fish-1',
-          photoKey: 'fish/fish-1/c4e82.webp',
-        );
-
-        verify(() => mockFish.photoKey = 'fish/fish-1/c4e82.webp').called(1);
-        verify(() => mockFish.synced = false).called(1);
-
-        final captured = verify(
-          () => mockFish.updatedAt = captureAny(),
-        ).captured;
-        final setTime = captured.first as DateTime;
-        expect(
-          setTime.isAfter(beforeUpdate) ||
-              setTime.isAtSameMomentAs(beforeUpdate),
-          isTrue,
-        );
-
-        verify(() => mockFish.save()).called(1);
-      });
-
-      test('does nothing when fish not found', () async {
-        when(() => mockFishDs.getFishById('missing')).thenReturn(null);
-
-        await updater(
-          entityType: 'fish',
-          entityId: 'missing',
-          photoKey: 'fish/missing/abc.webp',
-        );
-
-        verify(() => mockFishDs.getFishById('missing')).called(1);
-        // No model returned, so no save should occur
-      });
-    });
-
-    group('avatar entity', () {
-      test('updates avatarKey and synced on user model', () async {
-        final mockUser = MockUserModel();
-        when(() => mockAuthDs.getCurrentUser()).thenReturn(mockUser);
-        when(() => mockUser.save()).thenAnswer((_) async {});
-
-        await updater(
-          entityType: 'avatar',
-          entityId: 'user-1',
-          photoKey: 'avatars/user-1/a1b2c.webp',
-        );
-
-        verify(
-          () => mockUser.avatarKey = 'avatars/user-1/a1b2c.webp',
-        ).called(1);
-        verify(() => mockUser.synced = false).called(1);
-        verify(() => mockUser.save()).called(1);
-      });
-
-      test('does nothing when user not found', () async {
-        when(() => mockAuthDs.getCurrentUser()).thenReturn(null);
-
-        await updater(
-          entityType: 'avatar',
-          entityId: 'user-1',
-          photoKey: 'avatars/user-1/abc.webp',
-        );
-
-        // No save should be called
-      });
-    });
-
-    test('ignores unknown entity types', () async {
-      await updater(
-        entityType: 'unknown',
-        entityId: 'x',
-        photoKey: 'unknown/x/abc.webp',
-      );
-
-      verifyZeroInteractions(mockAquariumDs);
-      verifyZeroInteractions(mockFishDs);
-      verifyZeroInteractions(mockAuthDs);
     });
   });
 

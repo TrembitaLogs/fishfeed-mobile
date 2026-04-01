@@ -32,6 +32,17 @@ Aquarium _createTestAquarium() {
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(
+      Fish(
+        id: 'fallback',
+        aquariumId: 'fallback-aq',
+        speciesId: 'fallback-species',
+        addedAt: DateTime(2024),
+      ),
+    );
+  });
+
   group('FishManagementState', () {
     test(
       'isEmpty returns true when fish list empty, not loading, no error',
@@ -126,7 +137,7 @@ void main() {
       return ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
           if (syncService != null)
             syncServiceProvider.overrideWithValue(syncService),
         ],
@@ -534,7 +545,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 
@@ -563,7 +574,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 
@@ -593,7 +604,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 
@@ -618,7 +629,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 
@@ -644,7 +655,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 
@@ -668,7 +679,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
-          selectedAquariumIdProvider.overrideWithValue(_testAquariumId),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
         ],
       );
 

@@ -6,9 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/config/theme.dart';
-import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
-import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/domain/entities/fish.dart';
+import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
 import 'package:fishfeed/presentation/router/app_router.dart';
@@ -448,8 +447,7 @@ void main() {
 class _TestFishManagementNotifier extends FishManagementNotifier {
   _TestFishManagementNotifier(this._initialState)
     : super(
-        fishDataSource: _MockFishLocalDataSource(),
-        aquariumDataSource: _MockAquariumLocalDataSource(),
+        fishRepository: _MockFishRepository(),
         ref: _MockRef(),
       );
 
@@ -469,11 +467,8 @@ class _TestFishManagementNotifier extends FishManagementNotifier {
   }
 }
 
-/// Minimal mock for FishLocalDataSource.
-class _MockFishLocalDataSource extends Mock implements FishLocalDataSource {}
-
-class _MockAquariumLocalDataSource extends Mock
-    implements AquariumLocalDataSource {}
+/// Minimal mock for FishRepository.
+class _MockFishRepository extends Mock implements FishRepository {}
 
 /// Minimal mock for Ref.
 class _MockRef extends Mock implements Ref {}

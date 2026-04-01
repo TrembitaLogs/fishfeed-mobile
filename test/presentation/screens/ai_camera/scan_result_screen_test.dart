@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
 
 import 'package:fishfeed/core/config/theme.dart';
-import 'package:fishfeed/data/models/ai_scan_result.dart';
+import 'package:fishfeed/domain/entities/ai_scan_result.dart';
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/screens/ai_camera/scan_result_screen.dart';
 import 'package:fishfeed/presentation/widgets/confidence_indicator.dart';
 
@@ -59,6 +60,8 @@ void main() {
     return ProviderScope(
       child: MaterialApp(
         theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: ScanResultScreen(
           result: result,
           imageBytes: imageBytes,
@@ -329,6 +332,8 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: Builder(
                 builder: (context) {
                   return ElevatedButton(
@@ -372,6 +377,8 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: Builder(
                 builder: (context) {
                   return ElevatedButton(
@@ -424,6 +431,8 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: Builder(
                 builder: (context) {
                   return ElevatedButton(
@@ -469,6 +478,8 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: Builder(
                 builder: (context) {
                   return ElevatedButton(
@@ -524,6 +535,8 @@ void main() {
             ProviderScope(
               child: MaterialApp(
                 theme: AppTheme.lightTheme,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
                 home: Builder(
                   builder: (context) {
                     return ElevatedButton(
