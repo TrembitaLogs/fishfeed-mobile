@@ -285,6 +285,12 @@ class HiveBoxes {
     if (!Hive.isAdapterRegistered(SpeciesModelAdapter().typeId)) {
       Hive.registerAdapter(SpeciesModelAdapter());
     }
+    if (!Hive.isAdapterRegistered(FoodTypeModelAdapter().typeId)) {
+      Hive.registerAdapter(FoodTypeModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(PortionHintModelAdapter().typeId)) {
+      Hive.registerAdapter(PortionHintModelAdapter());
+    }
 
     // Register sync queue adapters (typeId: 8, 20-21)
     if (!Hive.isAdapterRegistered(SyncOperationTypeAdapter().typeId)) {

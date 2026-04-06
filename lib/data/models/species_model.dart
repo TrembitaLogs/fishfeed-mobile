@@ -5,7 +5,7 @@ import 'package:fishfeed/domain/entities/species.dart';
 part 'species_model.g.dart';
 
 /// Hive adapter for [FoodType] enum.
-@HiveType(typeId: 8)
+@HiveType(typeId: 26)
 enum FoodTypeModel {
   @HiveField(0)
   flakes,
@@ -20,7 +20,7 @@ enum FoodTypeModel {
 }
 
 /// Hive adapter for [PortionHint] enum.
-@HiveType(typeId: 9)
+@HiveType(typeId: 27)
 enum PortionHintModel {
   @HiveField(0)
   small,

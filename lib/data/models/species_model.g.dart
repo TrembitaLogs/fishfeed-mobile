@@ -66,7 +66,7 @@ class SpeciesModelAdapter extends TypeAdapter<SpeciesModel> {
 
 class FoodTypeModelAdapter extends TypeAdapter<FoodTypeModel> {
   @override
-  final int typeId = 8;
+  final int typeId = 26;
 
   @override
   FoodTypeModel read(BinaryReader reader) {
@@ -120,7 +120,7 @@ class FoodTypeModelAdapter extends TypeAdapter<FoodTypeModel> {
 
 class PortionHintModelAdapter extends TypeAdapter<PortionHintModel> {
   @override
-  final int typeId = 9;
+  final int typeId = 27;
 
   @override
   PortionHintModel read(BinaryReader reader) {
