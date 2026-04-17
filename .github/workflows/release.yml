@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -164,11 +164,3 @@ jobs:
           name: release-apk-${{ steps.tag_info.outputs.TAG_NAME }}
           path: release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
           retention-days: 90
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release/FishFeed-${{ steps.tag_info.outputs.TAG_NAME }}.apk
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
