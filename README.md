@@ -1,16 +1,15 @@
-# mobile
+# FishFeed Mobile
 
-A new Flutter project.
+Mobile client for FishFeed — an aquarium fish feeding management app with gamification. Offline-first architecture with local reads, background sync, push notifications for feeding reminders, and in-app purchases for premium features.
 
-## Getting Started
+## Stack
 
-This project is a starting point for a Flutter application.
+Flutter · Dart · Riverpod · Hive · Dio · Freezed · GoRouter · Workmanager · Firebase Cloud Messaging · RevenueCat · Sentry · GitHub Actions
 
-A few resources to get you started if this is your first Flutter project:
+## Status
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Source published for transparency. Closed to external contributions.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## License
+
+Proprietary. All rights reserved. See [LICENSE](LICENSE).
