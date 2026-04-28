@@ -98,8 +98,8 @@ class ConsentService {
   /// settings menu item that calls [showPrivacyOptionsForm] when this is
   /// `true`, otherwise Google may flag the app during review.
   Future<bool> isPrivacyOptionsRequired() async {
-    final status =
-        await ConsentInformation.instance.getPrivacyOptionsRequirementStatus();
+    final status = await ConsentInformation.instance
+        .getPrivacyOptionsRequirementStatus();
     return status == PrivacyOptionsRequirementStatus.required;
   }
 
