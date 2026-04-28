@@ -16,6 +16,7 @@ import 'package:fishfeed/services/notifications/fcm_service.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/ads/ad_service.dart';
+import 'package:fishfeed/services/ads/consent_service.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/sentry/sentry_service.dart';
 import 'package:fishfeed/services/sync/background_sync_service.dart';
@@ -64,6 +65,11 @@ Future<void> main() async {
 
       // Initialize purchase service (RevenueCat)
       await PurchaseService.instance.initialize();
+
+      // Request UMP / Funding Choices consent before AdMob initializes so
+      // that EU/UK/California users see the GDPR/CCPA prompt and AdMob can
+      // honor their choice.
+      await ConsentService.instance.requestConsent();
 
       // Initialize AdMob for advertisements
       await AdService.instance.initialize();
