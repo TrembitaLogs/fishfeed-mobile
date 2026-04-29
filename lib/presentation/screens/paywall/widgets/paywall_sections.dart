@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/paywall/benefit_item.dart';
 import 'package:fishfeed/presentation/widgets/paywall/product_card.dart';
 import 'package:fishfeed/presentation/widgets/paywall/remove_ads_card.dart';
@@ -61,16 +63,17 @@ class PaywallHeroSection extends StatelessWidget {
 }
 
 /// Benefits list section.
-class PaywallBenefitsList extends StatelessWidget {
+class PaywallBenefitsList extends ConsumerWidget {
   const PaywallBenefitsList({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
+    final hasRemoveAds = ref.watch(hasRemoveAdsProvider);
 
     final premiumBenefits = [
-      (Icons.block, l.noAds),
+      if (!hasRemoveAds) (Icons.block, l.noAds),
       (Icons.camera_enhance, l.paywallUnlimitedAiScans),
       (Icons.analytics, l.paywallExtendedStatistics),
       (Icons.family_restroom, l.paywallFamilyMode),
