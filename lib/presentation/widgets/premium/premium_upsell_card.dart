@@ -30,10 +30,11 @@ class PremiumUpsellCard extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return _buildCard(context);
+    final hasRemoveAds = ref.watch(hasRemoveAdsProvider);
+    return _buildCard(context, hasRemoveAds: hasRemoveAds);
   }
 
-  Widget _buildCard(BuildContext context) {
+  Widget _buildCard(BuildContext context, {required bool hasRemoveAds}) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
 
@@ -107,7 +108,7 @@ class PremiumUpsellCard extends ConsumerWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _BenefitChip(label: l.noAds),
+                    if (!hasRemoveAds) _BenefitChip(label: l.noAds),
                     _BenefitChip(label: l.unlimitedAiScans),
                     _BenefitChip(label: l.sixMonthsHistory),
                   ],

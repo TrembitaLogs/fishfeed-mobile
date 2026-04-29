@@ -274,6 +274,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final hasRemoveAds = ref.watch(hasRemoveAdsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -323,7 +324,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     onPurchase: _purchaseSelectedPackage,
                   ),
                   const SizedBox(height: 24),
-                  if (_removeAdsPackage != null) ...[
+                  if (_removeAdsPackage != null && !hasRemoveAds) ...[
                     PaywallRemoveAdsSection(
                       price:
                           _removeAdsPackage?.storeProduct.priceString ??

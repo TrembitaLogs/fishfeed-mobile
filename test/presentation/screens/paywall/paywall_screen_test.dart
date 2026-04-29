@@ -511,6 +511,57 @@ void main() {
         },
       );
 
+      testWidgets(
+        'hides remove ads section when user already has remove_ads entitlement',
+        (tester) async {
+          when(
+            () => mockPurchaseService.getOfferings(),
+          ).thenAnswer((_) async => Right(mockOfferings));
+          when(
+            () => mockPurchaseService.getRemoveAdsPackage(),
+          ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+
+          await tester.pumpWidget(
+            buildTestWidget(
+              additionalOverrides: [
+                hasRemoveAdsProvider.overrideWith((ref) => true),
+              ],
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          // The 'or' divider belongs to PaywallRemoveAdsSection only
+          expect(find.text('or'), findsNothing);
+          // 'No Ads' benefit must also be hidden in the benefits list
+          expect(find.text('No Ads'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'hides remove ads section when user has premium subscription',
+        (tester) async {
+          when(
+            () => mockPurchaseService.getOfferings(),
+          ).thenAnswer((_) async => Right(mockOfferings));
+          when(
+            () => mockPurchaseService.getRemoveAdsPackage(),
+          ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+
+          await tester.pumpWidget(
+            buildTestWidget(
+              additionalOverrides: [
+                hasRemoveAdsProvider.overrideWith((ref) => true),
+                isPremiumProvider.overrideWith((ref) => true),
+              ],
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.text('or'), findsNothing);
+          expect(find.text('No Ads'), findsNothing);
+        },
+      );
+
       testWidgets('calls purchasePackage when remove ads card is tapped', (
         tester,
       ) async {
