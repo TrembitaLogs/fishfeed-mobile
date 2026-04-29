@@ -288,8 +288,8 @@ class PurchaseService with WidgetsBindingObserver {
         data: {
           'userId': userId,
           'created': result.created,
-          'activeEntitlements':
-              result.customerInfo.entitlements.active.keys.toList(),
+          'activeEntitlements': result.customerInfo.entitlements.active.keys
+              .toList(),
         },
       );
     } catch (e, st) {
@@ -402,8 +402,7 @@ class PurchaseService with WidgetsBindingObserver {
         'purchasePackage succeeded',
         data: {
           'productId': productId,
-          'activeEntitlements':
-              customerInfo.entitlements.active.keys.toList(),
+          'activeEntitlements': customerInfo.entitlements.active.keys.toList(),
         },
       );
 
@@ -500,8 +499,7 @@ class PurchaseService with WidgetsBindingObserver {
       _breadcrumb(
         'restorePurchases succeeded',
         data: {
-          'activeEntitlements':
-              customerInfo.entitlements.active.keys.toList(),
+          'activeEntitlements': customerInfo.entitlements.active.keys.toList(),
           'originalAppUserId': customerInfo.originalAppUserId,
         },
       );
@@ -762,7 +760,9 @@ class PurchaseService with WidgetsBindingObserver {
     _emitSubscriptionStatus(currentStatus);
 
     if (kDebugMode) {
-      print('PurchaseService: Sync completed (tier: ${currentStatus.tier.name})');
+      print(
+        'PurchaseService: Sync completed (tier: ${currentStatus.tier.name})',
+      );
     }
     _breadcrumb(
       'syncSubscriptionStatus succeeded',

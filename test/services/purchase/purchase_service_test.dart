@@ -290,5 +290,4 @@ REVENUECAT_API_KEY_ANDROID=
       expect(service.subscriptionStatusStream.isBroadcast, isTrue);
     });
   });
-
 }
