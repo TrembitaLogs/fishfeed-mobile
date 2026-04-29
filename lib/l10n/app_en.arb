@@ -2664,9 +2664,13 @@
   "@paywallStartFreeTrial": {
     "description": "CTA button text for free trial"
   },
-  "paywallTrialTerms": "Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.",
-  "@paywallTrialTerms": {
-    "description": "Trial terms disclaimer"
+  "paywallTrialTermsIos": "Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.",
+  "@paywallTrialTermsIos": {
+    "description": "Trial terms disclaimer for iOS (App Store cancellation)"
+  },
+  "paywallTrialTermsAndroid": "Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in Google Play settings.",
+  "@paywallTrialTermsAndroid": {
+    "description": "Trial terms disclaimer for Android (Google Play cancellation)"
   },
   "paywallFailedToLoadProducts": "Failed to load products",
   "@paywallFailedToLoadProducts": {
@@ -2683,6 +2687,15 @@
   "paywallPerMonth": "{price}/month",
   "@paywallPerMonth": {
     "description": "Price per month display",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallPerYear": "{price}/year",
+  "@paywallPerYear": {
+    "description": "Price per year display",
     "placeholders": {
       "price": {
         "type": "String"

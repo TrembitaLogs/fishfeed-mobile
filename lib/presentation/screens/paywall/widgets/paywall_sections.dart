@@ -218,7 +218,7 @@ class PaywallProductOptions extends StatelessWidget {
         const SizedBox(height: 12),
         ProductCard(
           title: l.paywallAnnual,
-          price: '\$29.99/year',
+          price: l.paywallPerYear('\$29.99'),
           subtitle: l.paywallPerMonth('2.50'),
           badge: l.paywallBestValue,
           savings: l.paywallSavePercent(37),
@@ -397,12 +397,19 @@ class PaywallTermsAndRestore extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
+    // Pick the cancellation hint that matches the actual store the user
+    // bought through. Theme.of(context).platform respects the host OS and
+    // is overridable in tests via debugDefaultTargetPlatform.
+    final isAndroid = theme.platform == TargetPlatform.android;
+    final trialTerms = isAndroid
+        ? l.paywallTrialTermsAndroid
+        : l.paywallTrialTermsIos;
 
     return Column(
       children: [
         // Trial terms
         Text(
-          l.paywallTrialTerms,
+          trialTerms,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

@@ -3464,11 +3464,17 @@ abstract class AppLocalizations {
   /// **'Start 7-Day Free Trial'**
   String get paywallStartFreeTrial;
 
-  /// Trial terms disclaimer
+  /// Trial terms disclaimer for iOS (App Store cancellation)
   ///
   /// In en, this message translates to:
   /// **'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.'**
-  String get paywallTrialTerms;
+  String get paywallTrialTermsIos;
+
+  /// Trial terms disclaimer for Android (Google Play cancellation)
+  ///
+  /// In en, this message translates to:
+  /// **'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in Google Play settings.'**
+  String get paywallTrialTermsAndroid;
 
   /// Error when products cannot be loaded
   ///
@@ -3493,6 +3499,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{price}/month'**
   String paywallPerMonth(String price);
+
+  /// Price per year display
+  ///
+  /// In en, this message translates to:
+  /// **'{price}/year'**
+  String paywallPerYear(String price);
 
   /// Premium benefit: extended statistics
   ///

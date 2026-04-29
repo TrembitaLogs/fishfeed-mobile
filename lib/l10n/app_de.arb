@@ -887,12 +887,21 @@
     }
   },
   "paywallStartFreeTrial": "7-Tage-Testversion starten",
-  "paywallTrialTerms": "Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den App-Store-Einstellungen kündbar.",
+  "paywallTrialTermsIos": "Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den App-Store-Einstellungen kündbar.",
+  "paywallTrialTermsAndroid": "Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den Google-Play-Einstellungen kündbar.",
   "paywallFailedToLoadProducts": "Produkte konnten nicht geladen werden",
   "paywallPurchaseFailed": "Kauf fehlgeschlagen",
   "paywallOr": "oder",
   "paywallPerMonth": "{price}/Monat",
   "@paywallPerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallPerYear": "{price}/Jahr",
+  "@paywallPerYear": {
     "placeholders": {
       "price": {
         "type": "String"

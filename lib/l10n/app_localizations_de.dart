@@ -2011,8 +2011,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get paywallStartFreeTrial => '7-Tage-Testversion starten';
 
   @override
-  String get paywallTrialTerms =>
+  String get paywallTrialTermsIos =>
       'Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den App-Store-Einstellungen kündbar.';
+
+  @override
+  String get paywallTrialTermsAndroid =>
+      'Kostenlose Testversion für 7 Tage, dann automatische Verlängerung zum gewählten Planpreis. Jederzeit in den Google-Play-Einstellungen kündbar.';
 
   @override
   String get paywallFailedToLoadProducts =>
@@ -2027,6 +2031,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String paywallPerMonth(String price) {
     return '$price/Monat';
+  }
+
+  @override
+  String paywallPerYear(String price) {
+    return '$price/Jahr';
   }
 
   @override

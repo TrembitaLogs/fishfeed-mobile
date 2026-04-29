@@ -1981,8 +1981,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paywallStartFreeTrial => 'Start 7-Day Free Trial';
 
   @override
-  String get paywallTrialTerms =>
+  String get paywallTrialTermsIos =>
       'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in App Store settings.';
+
+  @override
+  String get paywallTrialTermsAndroid =>
+      'Free trial for 7 days, then auto-renews at the selected plan price. Cancel anytime in Google Play settings.';
 
   @override
   String get paywallFailedToLoadProducts => 'Failed to load products';
@@ -1996,6 +2000,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String paywallPerMonth(String price) {
     return '$price/month';
+  }
+
+  @override
+  String paywallPerYear(String price) {
+    return '$price/year';
   }
 
   @override
