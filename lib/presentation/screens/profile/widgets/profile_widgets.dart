@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
+import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/widgets/common/app_button.dart';
 import 'package:fishfeed/presentation/widgets/common/app_cached_image.dart';
 import 'package:fishfeed/presentation/widgets/common/app_text_field.dart';
@@ -220,23 +222,27 @@ class ProfileErrorBanner extends StatelessWidget {
 }
 
 /// Quick actions section with share and premium buttons.
-class ProfileQuickActionsSection extends StatelessWidget {
+///
+/// Reads premium / remove-ads state from RevenueCat via Riverpod providers
+/// (the same source the [PremiumBadge] uses), not from `User.subscriptionStatus`
+/// returned by the backend. The backend value lags the RC → backend webhook by
+/// a few seconds after a purchase, so reading from there caused the upgrade CTA
+/// to keep showing right after a successful payment (sandbox issue #12).
+class ProfileQuickActionsSection extends ConsumerWidget {
   const ProfileQuickActionsSection({
     super.key,
     required this.onShareProfile,
     required this.onViewPremium,
-    required this.isPremium,
-    required this.hasRemoveAds,
   });
 
   final VoidCallback onShareProfile;
   final VoidCallback onViewPremium;
-  final bool isPremium;
-  final bool hasRemoveAds;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isPremium = ref.watch(isPremiumProvider);
+    final hasRemoveAds = ref.watch(hasRemoveAdsProvider);
 
     // Determine which upgrade button to show
     // - Premium users: no upgrade button
