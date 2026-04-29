@@ -197,30 +197,27 @@ void main() {
       }, (_) => fail('Should be Left'));
     });
 
-    test(
-      '401 maps to AuthenticationFailure with default message (so the UI '
-      'localizes it instead of showing raw English)',
-      () async {
-        when(
-          () => mockRemoteDataSource.login(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          ),
-        ).thenThrow(const UnauthorizedException());
+    test('401 maps to AuthenticationFailure with default message (so the UI '
+        'localizes it instead of showing raw English)', () async {
+      when(
+        () => mockRemoteDataSource.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const UnauthorizedException());
 
-        final result = await repository.login(
-          email: 'test@example.com',
-          password: 'wrong',
-        );
+      final result = await repository.login(
+        email: 'test@example.com',
+        password: 'wrong',
+      );
 
-        result.fold((failure) {
-          expect(failure, isA<AuthenticationFailure>());
-          // Default message — auth_error_handler treats it as "no custom
-          // override" and routes to the localized errorInvalidCredentials.
-          expect(failure.message, 'Authentication failed');
-        }, (_) => fail('Should be Left'));
-      },
-    );
+      result.fold((failure) {
+        expect(failure, isA<AuthenticationFailure>());
+        // Default message — auth_error_handler treats it as "no custom
+        // override" and routes to the localized errorInvalidCredentials.
+        expect(failure.message, 'Authentication failed');
+      }, (_) => fail('Should be Left'));
+    });
 
     test(
       '403 maps to AuthenticationFailure with default message (for l10n)',
@@ -244,57 +241,51 @@ void main() {
       },
     );
 
-    test(
-      'UnknownApiException maps to UnexpectedFailure with default message '
-      '(no Dio-style technical text leaks to UI)',
-      () async {
-        when(
-          () => mockRemoteDataSource.login(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          ),
-        ).thenThrow(
-          const UnknownApiException(
-            message: 'DioException [connection error]: ...',
-            statusCode: 0,
-          ),
-        );
+    test('UnknownApiException maps to UnexpectedFailure with default message '
+        '(no Dio-style technical text leaks to UI)', () async {
+      when(
+        () => mockRemoteDataSource.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(
+        const UnknownApiException(
+          message: 'DioException [connection error]: ...',
+          statusCode: 0,
+        ),
+      );
 
-        final result = await repository.login(
-          email: 'test@example.com',
-          password: 'password123',
-        );
+      final result = await repository.login(
+        email: 'test@example.com',
+        password: 'password123',
+      );
 
-        result.fold((failure) {
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, 'An unexpected error occurred');
-        }, (_) => fail('Should be Left'));
-      },
-    );
+      result.fold((failure) {
+        expect(failure, isA<UnexpectedFailure>());
+        expect(failure.message, 'An unexpected error occurred');
+      }, (_) => fail('Should be Left'));
+    });
 
-    test(
-      'non-ApiException is swallowed into UnexpectedFailure with default '
-      'message (closes the e.toString() leak)',
-      () async {
-        when(
-          () => mockRemoteDataSource.login(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          ),
-        ).thenThrow(const FormatException('Unexpected character'));
+    test('non-ApiException is swallowed into UnexpectedFailure with default '
+        'message (closes the e.toString() leak)', () async {
+      when(
+        () => mockRemoteDataSource.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const FormatException('Unexpected character'));
 
-        final result = await repository.login(
-          email: 'test@example.com',
-          password: 'password123',
-        );
+      final result = await repository.login(
+        email: 'test@example.com',
+        password: 'password123',
+      );
 
-        result.fold((failure) {
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, 'An unexpected error occurred');
-          expect(failure.message, isNot(contains('FormatException')));
-        }, (_) => fail('Should be Left'));
-      },
-    );
+      result.fold((failure) {
+        expect(failure, isA<UnexpectedFailure>());
+        expect(failure.message, 'An unexpected error occurred');
+        expect(failure.message, isNot(contains('FormatException')));
+      }, (_) => fail('Should be Left'));
+    });
   });
 
   group('register', () {
