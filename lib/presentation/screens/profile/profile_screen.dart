@@ -210,8 +210,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onShareProfile: () =>
                     _shareProfile(user.displayName ?? user.email),
                 onViewPremium: _navigateToSubscription,
-                isPremium: user.subscriptionStatus.isPremium,
-                hasRemoveAds: user.subscriptionStatus.hasRemoveAds,
               ),
             ],
           ),
