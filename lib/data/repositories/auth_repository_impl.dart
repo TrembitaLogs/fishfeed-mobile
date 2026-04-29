@@ -43,6 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
+      await _clearPreviousUserDataIfNeeded(response.user.id);
       await _saveAuthData(
         response.user,
         response.tokens.accessToken,
@@ -69,6 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
+      await _clearPreviousUserDataIfNeeded(response.user.id);
       await _saveAuthData(
         response.user,
         response.tokens.accessToken,
@@ -94,6 +96,7 @@ class AuthRepositoryImpl implements AuthRepository {
         idToken: idToken,
       );
 
+      await _clearPreviousUserDataIfNeeded(response.user.id);
       await _saveAuthData(
         response.user,
         response.tokens.accessToken,
@@ -202,6 +205,19 @@ class AuthRepositoryImpl implements AuthRepository {
       _localDataSource.clearAll(),
       HiveBoxes.clearUserData(),
     ]);
+  }
+
+  /// Wipes prior user's local data when account ownership changes.
+  ///
+  /// Prevents data leak between accounts on the same device: aquariums, fish,
+  /// feeding logs, subscription cache and other per-user Hive boxes from a
+  /// previously signed-in user must not be visible to a different user who
+  /// signs in or registers afterwards.
+  Future<void> _clearPreviousUserDataIfNeeded(String newUserId) async {
+    final existing = _localDataSource.getCurrentUser();
+    if (existing != null && existing.id != newUserId) {
+      await _clearAuthData();
+    }
   }
 
   /// Maps [UserDto] to [User] domain entity.

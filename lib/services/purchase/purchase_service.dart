@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import 'package:fishfeed/core/config/api_config.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
+import 'package:fishfeed/services/sentry/sentry_service.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Entitlement identifiers configured in RevenueCat dashboard.
 class PurchaseEntitlements {
@@ -70,9 +70,6 @@ class PurchaseService with WidgetsBindingObserver {
   Stream<SubscriptionStatus> get subscriptionStatusStream =>
       _subscriptionStatusController.stream;
 
-  /// Dio client for backend API calls.
-  Dio? _dio;
-
   /// Whether app lifecycle observer is active.
   bool _isObservingLifecycle = false;
 
@@ -85,15 +82,37 @@ class PurchaseService with WidgetsBindingObserver {
   /// Minimum interval between syncs (in seconds).
   static const int _minSyncIntervalSeconds = 30;
 
-  /// Configures the Dio client for backend API calls.
-  ///
-  /// Call this after API client is available to enable backend sync.
-  /// If not configured, sync operations will only use local cache.
-  void configureDio(Dio dio) {
-    _dio = dio;
-    if (kDebugMode) {
-      print('PurchaseService: Dio configured for backend sync');
-    }
+  /// Sentry breadcrumb category for purchase-related events.
+  static const String _sentryCategory = 'purchase';
+
+  /// Records a breadcrumb under the purchase category. No-op when Sentry is
+  /// not initialized so this is safe to call from any environment.
+  void _breadcrumb(String message, {Map<String, dynamic>? data}) {
+    unawaited(
+      SentryService.instance.addBreadcrumb(
+        message: message,
+        category: _sentryCategory,
+        data: data,
+      ),
+    );
+  }
+
+  /// Sends an exception to Sentry with purchase context.
+  void _captureError(
+    Object error,
+    StackTrace stackTrace, {
+    required String operation,
+    Map<String, dynamic>? extras,
+  }) {
+    unawaited(
+      SentryService.instance.captureException(
+        error,
+        stackTrace: stackTrace,
+        message: 'PurchaseService.$operation failed',
+        extras: {'operation': operation, ...?extras},
+        level: SentryLevel.error,
+      ),
+    );
   }
 
   /// Initializes the RevenueCat SDK.
@@ -147,13 +166,15 @@ class PurchaseService with WidgetsBindingObserver {
       try {
         _cachedCustomerInfo = await Purchases.getCustomerInfo();
         _customerInfoController.add(_cachedCustomerInfo!);
-      } catch (e) {
+      } catch (e, st) {
         if (kDebugMode) {
           print('PurchaseService: Failed to fetch initial customer info: $e');
         }
+        _captureError(e, st, operation: 'initialize.getCustomerInfo');
       }
 
       _isInitialized = true;
+      _breadcrumb('PurchaseService initialized');
 
       // Start lifecycle observer
       _startLifecycleObserver();
@@ -161,10 +182,11 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: Initialized successfully');
       }
-    } catch (e) {
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to initialize: $e');
       }
+      _captureError(e, st, operation: 'initialize');
     }
   }
 
@@ -218,6 +240,13 @@ class PurchaseService with WidgetsBindingObserver {
         'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
       );
     }
+    _breadcrumb(
+      'Customer info updated',
+      data: {
+        'activeEntitlements': customerInfo.entitlements.active.keys.toList(),
+        'originalAppUserId': customerInfo.originalAppUserId,
+      },
+    );
   }
 
   /// Returns the appropriate API key based on the current platform.
@@ -241,9 +270,11 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: Cannot log in - not initialized');
       }
+      _breadcrumb('logIn skipped — not initialized', data: {'userId': userId});
       return;
     }
 
+    _breadcrumb('logIn started', data: {'userId': userId});
     try {
       final result = await Purchases.logIn(userId);
       _cachedCustomerInfo = result.customerInfo;
@@ -252,10 +283,20 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: User logged in: $userId');
       }
-    } catch (e) {
+      _breadcrumb(
+        'logIn succeeded',
+        data: {
+          'userId': userId,
+          'created': result.created,
+          'activeEntitlements':
+              result.customerInfo.entitlements.active.keys.toList(),
+        },
+      );
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to log in user: $e');
       }
+      _captureError(e, st, operation: 'logIn', extras: {'userId': userId});
     }
   }
 
@@ -268,6 +309,7 @@ class PurchaseService with WidgetsBindingObserver {
       return;
     }
 
+    _breadcrumb('logOut started');
     try {
       final customerInfo = await Purchases.logOut();
       _cachedCustomerInfo = customerInfo;
@@ -276,10 +318,12 @@ class PurchaseService with WidgetsBindingObserver {
       if (kDebugMode) {
         print('PurchaseService: User logged out');
       }
-    } catch (e) {
+      _breadcrumb('logOut succeeded');
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to log out user: $e');
       }
+      _captureError(e, st, operation: 'logOut');
     }
   }
 
@@ -297,21 +341,32 @@ class PurchaseService with WidgetsBindingObserver {
 
     try {
       final offerings = await Purchases.getOfferings();
+      _breadcrumb(
+        'getOfferings succeeded',
+        data: {'currentOffering': offerings.current?.identifier},
+      );
       return Right(offerings);
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to fetch offerings: $e');
       }
+      _captureError(
+        e,
+        st,
+        operation: 'getOfferings',
+        extras: {'errorCode': e.code},
+      );
       return Left(
         PurchaseFailure(
           message: e.message ?? 'Failed to fetch offerings',
           errorCode: e.code,
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to fetch offerings: $e');
       }
+      _captureError(e, st, operation: 'getOfferings');
       return Left(PurchaseFailure(message: e.toString()));
     }
   }
@@ -327,6 +382,9 @@ class PurchaseService with WidgetsBindingObserver {
       return const Left(PurchaseNotInitializedFailure());
     }
 
+    final productId = package.storeProduct.identifier;
+    _breadcrumb('purchasePackage started', data: {'productId': productId});
+
     try {
       // purchasePackage returns CustomerInfo directly in purchases_flutter 8.x
       final customerInfo = await Purchases.purchasePackage(package);
@@ -340,18 +398,30 @@ class PurchaseService with WidgetsBindingObserver {
           'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
         );
       }
+      _breadcrumb(
+        'purchasePackage succeeded',
+        data: {
+          'productId': productId,
+          'activeEntitlements':
+              customerInfo.entitlements.active.keys.toList(),
+        },
+      );
 
       // Sync with backend after successful purchase
       unawaited(syncSubscriptionStatus(force: true));
 
       return Right(customerInfo);
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, st) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
 
       if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
         if (kDebugMode) {
           print('PurchaseService: Purchase cancelled by user');
         }
+        _breadcrumb(
+          'purchasePackage cancelled by user',
+          data: {'productId': productId},
+        );
         return const Left(PurchaseCancelledFailure());
       }
 
@@ -359,16 +429,28 @@ class PurchaseService with WidgetsBindingObserver {
         if (kDebugMode) {
           print('PurchaseService: Product not available');
         }
-        return Left(
-          ProductNotAvailableFailure(
-            productId: package.storeProduct.identifier,
-          ),
+        _captureError(
+          e,
+          st,
+          operation: 'purchasePackage',
+          extras: {
+            'productId': productId,
+            'errorCode': errorCode.name,
+            'reason': 'productNotAvailable',
+          },
         );
+        return Left(ProductNotAvailableFailure(productId: productId));
       }
 
       if (kDebugMode) {
         print('PurchaseService: Purchase failed: $e');
       }
+      _captureError(
+        e,
+        st,
+        operation: 'purchasePackage',
+        extras: {'productId': productId, 'errorCode': errorCode.name},
+      );
 
       return Left(
         PurchaseFailure(
@@ -376,10 +458,16 @@ class PurchaseService with WidgetsBindingObserver {
           errorCode: errorCode.name,
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Purchase failed: $e');
       }
+      _captureError(
+        e,
+        st,
+        operation: 'purchasePackage',
+        extras: {'productId': productId},
+      );
       return Left(PurchaseFailure(message: e.toString()));
     }
   }
@@ -396,6 +484,7 @@ class PurchaseService with WidgetsBindingObserver {
       return const Left(PurchaseNotInitializedFailure());
     }
 
+    _breadcrumb('restorePurchases started');
     try {
       final customerInfo = await Purchases.restorePurchases();
 
@@ -408,27 +497,42 @@ class PurchaseService with WidgetsBindingObserver {
           'PurchaseService: Active entitlements: ${customerInfo.entitlements.active.keys}',
         );
       }
+      _breadcrumb(
+        'restorePurchases succeeded',
+        data: {
+          'activeEntitlements':
+              customerInfo.entitlements.active.keys.toList(),
+          'originalAppUserId': customerInfo.originalAppUserId,
+        },
+      );
 
       // Sync with backend after successful restore
       unawaited(syncSubscriptionStatus(force: true));
 
       return Right(customerInfo);
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Restore failed: $e');
       }
 
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      _captureError(
+        e,
+        st,
+        operation: 'restorePurchases',
+        extras: {'errorCode': errorCode.name},
+      );
       return Left(
         PurchaseFailure(
           message: e.message ?? 'Failed to restore purchases',
           errorCode: errorCode.name,
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Restore failed: $e');
       }
+      _captureError(e, st, operation: 'restorePurchases');
       return Left(PurchaseFailure(message: e.toString()));
     }
   }
@@ -649,127 +753,23 @@ class PurchaseService with WidgetsBindingObserver {
       print('PurchaseService: Syncing subscription status...');
     }
 
-    // Get current status from RevenueCat
+    // RC SDK is the source of truth on the device. Backend learns about
+    // entitlement changes via the RevenueCat → backend webhook (handled in
+    // backend/app/api/purchase.py), so we don't push state from the client.
     final currentStatus = getSubscriptionStatus();
+    _lastSyncTime = DateTime.now();
+    await _cacheSubscriptionStatus(currentStatus);
+    _emitSubscriptionStatus(currentStatus);
 
-    // If no Dio client configured, just cache locally
-    if (_dio == null) {
-      if (kDebugMode) {
-        print('PurchaseService: No Dio client, caching locally only');
-      }
-      await _cacheSubscriptionStatus(currentStatus);
-      _emitSubscriptionStatus(currentStatus);
-      return currentStatus;
+    if (kDebugMode) {
+      print('PurchaseService: Sync completed (tier: ${currentStatus.tier.name})');
     }
-
-    // Try to sync with backend
-    try {
-      final syncedStatus = await _syncWithBackend(currentStatus);
-      _lastSyncTime = DateTime.now();
-      await _cacheSubscriptionStatus(syncedStatus);
-      _emitSubscriptionStatus(syncedStatus);
-
-      if (kDebugMode) {
-        print('PurchaseService: Sync completed successfully');
-      }
-
-      return syncedStatus;
-    } catch (e) {
-      if (kDebugMode) {
-        print('PurchaseService: Sync failed, using cached/current status: $e');
-      }
-
-      // On failure, use cached or current status
-      final fallbackStatus = _getCachedOrCurrentStatus();
-      _emitSubscriptionStatus(fallbackStatus);
-      return fallbackStatus;
-    }
-  }
-
-  /// Syncs subscription status with the backend API.
-  Future<SubscriptionStatus> _syncWithBackend(
-    SubscriptionStatus localStatus,
-  ) async {
-    if (_dio == null) {
-      throw StateError('Dio client not configured');
-    }
-
-    final customerInfo = _cachedCustomerInfo;
-    if (customerInfo == null) {
-      throw StateError('No customer info available');
-    }
-
-    final platform = Platform.isIOS ? 'ios' : 'android';
-    final appUserId = customerInfo.originalAppUserId;
-
-    // Prepare entitlements data for backend
-    final entitlementsData = <String, dynamic>{};
-    for (final entry in customerInfo.entitlements.active.entries) {
-      final entitlement = entry.value;
-      entitlementsData[entry.key] = {
-        'identifier': entitlement.identifier,
-        'productIdentifier': entitlement.productIdentifier,
-        'expirationDate': entitlement.expirationDate,
-        'willRenew': entitlement.willRenew,
-        'periodType': entitlement.periodType.name,
-        'isActive': entitlement.isActive,
-      };
-    }
-
-    final response = await _dio!.post<Map<String, dynamic>>(
-      ApiEndpoints.subscriptionSync,
-      data: {
-        'platform': platform,
-        'appUserId': appUserId,
-        'entitlements': entitlementsData,
-        'localStatus': {
-          'tier': localStatus.tier.name,
-          'isPremium': localStatus.isPremium,
-          'hasRemoveAds': localStatus.hasRemoveAds,
-          'isTrialActive': localStatus.isTrialActive,
-          'willRenew': localStatus.willRenew,
-          'expirationDate': localStatus.expirationDate?.toIso8601String(),
-          'productIdentifier': localStatus.productIdentifier,
-        },
-      },
+    _breadcrumb(
+      'syncSubscriptionStatus succeeded',
+      data: {'tier': currentStatus.tier.name},
     );
 
-    // Parse backend response
-    if (response.statusCode == 200) {
-      final data = response.data as Map<String, dynamic>;
-      return _parseBackendStatus(data);
-    }
-
-    // If backend returns non-200, use local status
-    return localStatus;
-  }
-
-  /// Parses subscription status from backend response.
-  SubscriptionStatus _parseBackendStatus(Map<String, dynamic> data) {
-    final status = data['status'] as Map<String, dynamic>?;
-    if (status == null) {
-      return const SubscriptionStatus.free();
-    }
-
-    final tierStr = status['tier'] as String? ?? 'free';
-    final tier = tierStr == 'premium'
-        ? SubscriptionTier.premium
-        : SubscriptionTier.free;
-
-    DateTime? expirationDate;
-    final expStr = status['expirationDate'] as String?;
-    if (expStr != null) {
-      expirationDate = DateTime.tryParse(expStr);
-    }
-
-    return SubscriptionStatus(
-      tier: tier,
-      expirationDate: expirationDate,
-      isTrialActive: status['isTrialActive'] as bool? ?? false,
-      willRenew: status['willRenew'] as bool? ?? false,
-      hasRemoveAds: status['hasRemoveAds'] as bool? ?? false,
-      productIdentifier: status['productIdentifier'] as String?,
-    );
+    return currentStatus;
   }
 
   /// Gets cached status or falls back to current RevenueCat status.

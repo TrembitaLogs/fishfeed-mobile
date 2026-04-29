@@ -27,7 +27,8 @@ import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
-import '../../../helpers/test_helpers.dart' show createMockSyncService;
+import '../../../helpers/test_helpers.dart'
+    show createMockPurchaseService, createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -49,6 +50,7 @@ class _TestableAuthNotifier extends AuthNotifier {
     required super.appleAuthService,
     required super.aquariumRepository,
     required super.syncService,
+    required super.purchaseService,
     User? initialUser,
   }) {
     if (initialUser != null) {
@@ -169,6 +171,7 @@ void main() {
             appleAuthService: mockAppleAuthService,
             aquariumRepository: mockAquariumRepo,
             syncService: mockSyncService,
+            purchaseService: createMockPurchaseService(),
             initialUser: effectiveUser,
           );
           return notifier;

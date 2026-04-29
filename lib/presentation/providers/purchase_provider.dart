@@ -1,14 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import 'package:fishfeed/core/di/datasource_providers.dart';
 import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 
 /// Provider for the [PurchaseService] singleton instance.
 ///
-/// Automatically configures the Dio client for backend sync when available.
+/// Subscription state lives in the RevenueCat SDK on the device.
+/// Backend learns about entitlement changes via the RC → backend webhook,
+/// so the client never pushes state to the API.
 ///
 /// Usage:
 /// ```dart
@@ -16,17 +16,7 @@ import 'package:fishfeed/services/purchase/purchase_service.dart';
 /// await purchaseService.purchasePackage(package);
 /// ```
 final purchaseServiceProvider = Provider<PurchaseService>((ref) {
-  final purchaseService = PurchaseService.instance;
-
-  // Configure Dio for backend sync if available
-  try {
-    final apiClient = ref.watch(apiClientProvider);
-    purchaseService.configureDio(apiClient.dio);
-  } catch (e) {
-    debugPrint('PurchaseProvider: ApiClient not available yet: $e');
-  }
-
-  return purchaseService;
+  return PurchaseService.instance;
 });
 
 /// Provider for real-time customer info updates.

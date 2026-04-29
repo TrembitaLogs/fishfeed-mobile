@@ -31,6 +31,7 @@ import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/connectivity/connectivity_service.dart';
 import 'package:fishfeed/services/lifecycle/app_lifecycle_service.dart';
+import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -51,6 +52,8 @@ class _MockAppLifecycleService extends Mock implements AppLifecycleService {}
 class _MockSyncTriggerService extends Mock implements SyncTriggerService {}
 
 class _MockPushTokenManager extends Mock implements PushTokenManager {}
+
+class _MockPurchaseService extends Mock implements PurchaseService {}
 
 class _MockImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus>
     implements ImageUploadNotifier {
@@ -236,6 +239,10 @@ Future<void> initTestApp(
     ),
   ).thenAnswer((_) async {});
 
+  final purchaseService = _MockPurchaseService();
+  when(() => purchaseService.logIn(any())).thenAnswer((_) async {});
+  when(() => purchaseService.logOut()).thenAnswer((_) async {});
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -247,6 +254,7 @@ Future<void> initTestApp(
             appleAuthService: appleAuth,
             aquariumRepository: ref.read(aquariumRepositoryProvider),
             syncService: syncService,
+            purchaseService: purchaseService,
           ),
         ),
         authListenableProvider.overrideWithValue(_TestAuthStateListenable()),

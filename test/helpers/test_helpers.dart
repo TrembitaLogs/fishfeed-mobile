@@ -26,6 +26,7 @@ import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/connectivity/connectivity_service.dart';
 import 'package:fishfeed/services/lifecycle/app_lifecycle_service.dart';
+import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/push/push_token_manager.dart';
 import 'package:fishfeed/services/sentry/sentry_user_sync.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -57,6 +58,8 @@ class MockConnectivityService extends Mock implements ConnectivityService {}
 class MockAppLifecycleService extends Mock implements AppLifecycleService {}
 
 class MockSyncTriggerService extends Mock implements SyncTriggerService {}
+
+class MockPurchaseService extends Mock implements PurchaseService {}
 
 /// Mock ImageUploadNotifier that does nothing.
 class MockImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus>
@@ -245,6 +248,14 @@ MockSyncService createMockSyncService() {
   when(
     () => service.feedingConflictStream,
   ).thenAnswer((_) => const Stream.empty());
+  return service;
+}
+
+/// Creates a mock PurchaseService with default no-op behavior for auth flows.
+MockPurchaseService createMockPurchaseService() {
+  final service = MockPurchaseService();
+  when(() => service.logIn(any())).thenAnswer((_) async {});
+  when(() => service.logOut()).thenAnswer((_) async {});
   return service;
 }
 
