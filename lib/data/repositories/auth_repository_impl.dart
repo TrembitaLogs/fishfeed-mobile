@@ -54,8 +54,12 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ApiException catch (e) {
       return Left(_mapApiExceptionToFailure(e));
     } catch (e, st) {
+      // Log technical detail for debugging but never surface raw exception
+      // text to the UI — `auth_error_handler` only localizes failures with
+      // default messages, and a custom `e.toString()` slipped past it as
+      // "FormatException: ...", "DioException: ..." etc.
       debugPrint('AuthRepository.login failed: $e\n$st');
-      return Left(UnexpectedFailure(message: e.toString()));
+      return const Left(UnexpectedFailure());
     }
   }
 
@@ -242,24 +246,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Maps [ApiException] to domain [Failure].
+  ///
+  /// Avoid setting custom English messages on the resulting failure unless
+  /// the value is genuinely user-facing data (like server-side validation
+  /// errors). [auth_error_handler] localizes failures with default messages,
+  /// so a hard-coded "Invalid credentials" / "Access denied" / a raw Dio
+  /// exception string would bypass localization and leak to the UI verbatim.
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() => const AuthenticationFailure(
-        message: 'Invalid credentials',
-      ),
+      UnauthorizedException() => const AuthenticationFailure(),
       ValidationException(:final message, :final errors) => ValidationFailure(
         message: message,
         errors: errors,
       ),
-      ForbiddenException() => const AuthenticationFailure(
-        message: 'Access denied',
-      ),
+      ForbiddenException() => const AuthenticationFailure(),
       NotFoundException() => const ServerFailure(message: 'Resource not found'),
       ServerException() => const ServerFailure(),
-      UnknownApiException(:final message) => UnexpectedFailure(
-        message: message,
-      ),
+      UnknownApiException() => const UnexpectedFailure(),
     };
   }
 }
