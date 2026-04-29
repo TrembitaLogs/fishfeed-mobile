@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/paywall/widgets/paywall_sections.dart';
@@ -122,8 +123,11 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       (failure) {
         setState(() {
           _isPurchasing = false;
-          // Don't show error for user cancellation
-          if (failure.message != 'Purchase cancelled') {
+          // User dismissed the Google Play / App Store sheet — silently
+          // return them to the paywall without a red snackbar. Match by
+          // type, not message string (the default text "Purchase cancelled
+          // by user" used to slip past the previous string check).
+          if (failure is! PurchaseCancelledFailure) {
             _errorMessage = failure.message ?? 'Purchase failed';
           }
         });
@@ -198,8 +202,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       (failure) {
         setState(() {
           _isPurchasingRemoveAds = false;
-          // Don't show error for user cancellation
-          if (failure.message != 'Purchase cancelled') {
+          // Same silent-cancel rule as _purchaseSelectedPackage — see comment
+          // there for why we match on the failure type.
+          if (failure is! PurchaseCancelledFailure) {
             _errorMessage = failure.message ?? 'Purchase failed';
           }
         });

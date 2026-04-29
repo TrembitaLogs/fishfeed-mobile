@@ -15,6 +15,7 @@ import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/paywall/paywall_screen.dart';
+import 'package:fishfeed/presentation/screens/paywall/widgets/paywall_sections.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
 
 class MockPurchaseService extends Mock implements PurchaseService {}
@@ -352,6 +353,35 @@ void main() {
 
         verify(() => mockPurchaseService.purchasePackage(any())).called(1);
       });
+
+      testWidgets('subscription cancel does not surface an error banner '
+          '(closes sandbox issue #8)', (tester) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.purchasePackage(any()),
+        ).thenAnswer((_) async => const Left(PurchaseCancelledFailure()));
+
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        final scrollableFinder = find.byType(SingleChildScrollView);
+        await tester.dragUntilVisible(
+          find.text('Start 7-Day Free Trial'),
+          scrollableFinder,
+          const Offset(0, -200),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start 7-Day Free Trial'));
+        await tester.pumpAndSettle();
+
+        // No PaywallErrorBanner rendered, no default-message text leaked.
+        expect(find.byType(PaywallErrorBanner), findsNothing);
+        expect(find.text('Purchase cancelled by user'), findsNothing);
+        expect(find.text('Purchase failed'), findsNothing);
+      });
     });
 
     group('restore purchases', () {
@@ -626,6 +656,37 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Ads removed successfully!'), findsOneWidget);
+      });
+
+      testWidgets('remove ads cancel does not surface an error banner '
+          '(closes sandbox issue #8)', (tester) async {
+        when(
+          () => mockPurchaseService.getOfferings(),
+        ).thenAnswer((_) async => Right(mockOfferings));
+        when(
+          () => mockPurchaseService.getRemoveAdsPackage(),
+        ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+        when(
+          () => mockPurchaseService.purchasePackage(mockRemoveAdsPackage),
+        ).thenAnswer((_) async => const Left(PurchaseCancelledFailure()));
+
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        final scrollableFinder = find.byType(SingleChildScrollView);
+        await tester.dragUntilVisible(
+          find.text('One-time purchase'),
+          scrollableFinder,
+          const Offset(0, -200),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('\$3.99').last);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PaywallErrorBanner), findsNothing);
+        expect(find.text('Purchase cancelled by user'), findsNothing);
+        expect(find.text('Purchase failed'), findsNothing);
       });
     });
 
