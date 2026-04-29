@@ -76,6 +76,10 @@ void main() {
     mockLocalDataSource = MockAuthLocalDataSource();
     mockSecureStorageService = MockSecureStorageService();
 
+    // Default: no previously cached user, so login/register/oauthLogin do not
+    // trigger the ownership-change wipe in _clearPreviousUserDataIfNeeded.
+    when(() => mockLocalDataSource.getCurrentUser()).thenReturn(null);
+
     repository = AuthRepositoryImpl(
       remoteDataSource: mockRemoteDataSource,
       localDataSource: mockLocalDataSource,

@@ -18,9 +18,6 @@ abstract final class ApiEndpoints {
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
 
-  // Subscription endpoints
-  static const String subscriptionSync = '/subscription/sync';
-
   // Species endpoints
   static const String speciesList = '/species';
   static const String speciesSearch = '/species/search';

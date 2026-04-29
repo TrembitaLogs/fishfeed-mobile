@@ -34,7 +34,8 @@ import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 
-import '../../../helpers/test_helpers.dart' show createMockSyncService;
+import '../../../helpers/test_helpers.dart'
+    show createMockPurchaseService, createMockSyncService;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -271,6 +272,7 @@ void main() {
               appleAuthService: mockAppleAuthService,
               aquariumRepository: mockAquariumRepo,
               syncService: createMockSyncService(),
+              purchaseService: createMockPurchaseService(),
             );
             // Manually set authenticated state with user
             return notifier;
@@ -470,6 +472,7 @@ void main() {
                   appleAuthService: mockAppleAuthService,
                   aquariumRepository: mockAquariumRepo,
                   syncService: createMockSyncService(),
+                  purchaseService: createMockPurchaseService(),
                 );
                 return notifier;
               }),

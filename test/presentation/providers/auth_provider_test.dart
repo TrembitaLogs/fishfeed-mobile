@@ -36,6 +36,7 @@ void main() {
   late MockAppleAuthService mockAppleAuthService;
   late MockAquariumRepository mockAquariumRepository;
   late MockSyncService mockSyncService;
+  late MockPurchaseService mockPurchaseService;
   late AuthNotifier authNotifier;
   late Directory tempDir;
 
@@ -75,6 +76,7 @@ void main() {
     mockAppleAuthService = MockAppleAuthService();
     mockAquariumRepository = MockAquariumRepository();
     mockSyncService = createMockSyncService();
+    mockPurchaseService = createMockPurchaseService();
 
     when(
       () => mockAquariumRepository.getCachedAquariums(),
@@ -92,6 +94,7 @@ void main() {
       appleAuthService: mockAppleAuthService,
       aquariumRepository: mockAquariumRepository,
       syncService: mockSyncService,
+      purchaseService: mockPurchaseService,
     );
   });
 

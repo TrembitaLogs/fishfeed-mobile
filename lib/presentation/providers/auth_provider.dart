@@ -13,8 +13,10 @@ import 'package:fishfeed/domain/usecases/login_usecase.dart';
 import 'package:fishfeed/domain/usecases/logout_usecase.dart';
 import 'package:fishfeed/domain/usecases/oauth_login_usecase.dart';
 import 'package:fishfeed/domain/usecases/register_usecase.dart';
+import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
+import 'package:fishfeed/services/purchase/purchase_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Authentication state for the application.
@@ -155,11 +157,13 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     required AppleAuthService appleAuthService,
     required AquariumRepository aquariumRepository,
     required SyncService syncService,
+    required PurchaseService purchaseService,
   }) : _repository = repository,
        _googleAuthService = googleAuthService,
        _appleAuthService = appleAuthService,
        _aquariumRepository = aquariumRepository,
        _syncService = syncService,
+       _purchaseService = purchaseService,
        _loginUseCase = LoginUseCase(repository),
        _registerUseCase = RegisterUseCase(repository),
        _oauthLoginUseCase = OAuthLoginUseCase(repository),
@@ -176,6 +180,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   final AppleAuthService _appleAuthService;
   final AquariumRepository _aquariumRepository;
   final SyncService _syncService;
+  final PurchaseService _purchaseService;
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
   final OAuthLoginUseCase _oauthLoginUseCase;
@@ -249,6 +254,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
+          // Identify user in RevenueCat so purchases are tied to FishFeed user
+          // instead of an anonymous RC ID.
+          unawaited(_purchaseService.logIn(user.id));
+
           // If onboarding was already completed, still trigger background sync
           if (hasCompletedOnboarding) {
             debugPrint(
@@ -314,6 +323,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           hasCompletedOnboarding: hasCompletedOnboarding,
         );
 
+        // Identify user in RevenueCat so purchases are tied to FishFeed user.
+        unawaited(_purchaseService.logIn(syncedUser.id));
+
         // If onboarding was already completed, still trigger background sync
         if (hasCompletedOnboarding) {
           debugPrint('[AuthNotifier] Triggering background sync after login');
@@ -345,6 +357,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       },
       (user) {
         state = AuthenticationState.authenticated(user);
+        // Identify user in RevenueCat for the new account.
+        unawaited(_purchaseService.logIn(user.id));
       },
     );
   }
@@ -383,6 +397,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             syncedUser,
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
+
+          // Identify user in RevenueCat for the OAuth-authenticated account.
+          unawaited(_purchaseService.logIn(syncedUser.id));
 
           if (hasCompletedOnboarding) {
             debugPrint(
@@ -442,6 +459,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             hasCompletedOnboarding: hasCompletedOnboarding,
           );
 
+          // Identify user in RevenueCat for the OAuth-authenticated account.
+          unawaited(_purchaseService.logIn(syncedUser.id));
+
           if (hasCompletedOnboarding) {
             debugPrint(
               '[AuthNotifier] Triggering background sync after Apple login',
@@ -485,6 +505,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       isInitializing: false,
       isAuthenticated: false,
     );
+    // Reset RevenueCat to anonymous so the next user does not inherit
+    // entitlements from the expired session.
+    unawaited(_purchaseService.logOut());
   }
 
   /// Logout the current user.
@@ -496,6 +519,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     _appleAuthService.signOut();
 
     await _logoutUseCase();
+
+    // Reset RevenueCat to anonymous so subsequent sign-ins do not inherit
+    // the prior account's entitlements on this device.
+    await _purchaseService.logOut();
 
     state = const AuthenticationState(
       isInitializing: false,
@@ -584,6 +611,7 @@ final authNotifierProvider =
       final appleAuthService = ref.watch(appleAuthServiceProvider);
       final aquariumRepository = ref.watch(aquariumRepositoryProvider);
       final syncService = ref.watch(syncServiceProvider);
+      final purchaseService = ref.watch(purchaseServiceProvider);
 
       return AuthNotifier(
         repository: repository,
@@ -591,6 +619,7 @@ final authNotifierProvider =
         appleAuthService: appleAuthService,
         aquariumRepository: aquariumRepository,
         syncService: syncService,
+        purchaseService: purchaseService,
       );
     });
 
