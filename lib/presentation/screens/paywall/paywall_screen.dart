@@ -121,6 +121,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
     result.fold(
       (failure) {
+        if (failure is ProductAlreadyOwnedFailure) {
+          // Store account already owns the entitlement but RC hasn't
+          // reconciled yet — recover silently via restore instead of a
+          // red error banner.
+          _restorePurchases();
+          return;
+        }
         setState(() {
           _isPurchasing = false;
           // User dismissed the Google Play / App Store sheet — silently
@@ -200,6 +207,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
     result.fold(
       (failure) {
+        if (failure is ProductAlreadyOwnedFailure) {
+          // Same silent recovery as _purchaseSelectedPackage — restore to
+          // pull the existing entitlement onto the current RC alias.
+          setState(() => _isPurchasingRemoveAds = false);
+          _restorePurchases();
+          return;
+        }
         setState(() {
           _isPurchasingRemoveAds = false;
           // Same silent-cancel rule as _purchaseSelectedPackage — see comment

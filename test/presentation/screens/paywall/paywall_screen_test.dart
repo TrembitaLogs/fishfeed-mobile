@@ -688,6 +688,55 @@ void main() {
         expect(find.text('Purchase cancelled by user'), findsNothing);
         expect(find.text('Purchase failed'), findsNothing);
       });
+
+      testWidgets(
+        'remove ads ProductAlreadyOwned triggers restore instead of error '
+        '(Sentry MOBILE-5)',
+        (tester) async {
+          final mockRemoveAdsEntitlement = MockEntitlementInfo();
+          when(
+            () => mockEntitlementInfos.active,
+          ).thenReturn({'remove_ads': mockRemoveAdsEntitlement});
+
+          when(
+            () => mockPurchaseService.getOfferings(),
+          ).thenAnswer((_) async => Right(mockOfferings));
+          when(
+            () => mockPurchaseService.getRemoveAdsPackage(),
+          ).thenAnswer((_) async => Right(mockRemoveAdsPackage));
+          when(
+            () => mockPurchaseService.purchasePackage(mockRemoveAdsPackage),
+          ).thenAnswer(
+            (_) async => const Left(
+              ProductAlreadyOwnedFailure(productId: 'fishfeed_remove_ads'),
+            ),
+          );
+          when(
+            () => mockPurchaseService.restorePurchases(),
+          ).thenAnswer((_) async => Right(mockCustomerInfo));
+
+          await tester.pumpWidget(buildTestWidget());
+          await tester.pumpAndSettle();
+
+          final scrollableFinder = find.byType(SingleChildScrollView);
+          await tester.dragUntilVisible(
+            find.text('One-time purchase'),
+            scrollableFinder,
+            const Offset(0, -200),
+          );
+          await tester.pumpAndSettle();
+
+          await tester.tap(find.text('\$3.99').last);
+          await tester.pumpAndSettle();
+
+          // No red error banner — restore took over silently.
+          expect(find.byType(PaywallErrorBanner), findsNothing);
+          expect(find.text('Product already owned'), findsNothing);
+          // Restore was called and produced the success snackbar.
+          verify(() => mockPurchaseService.restorePurchases()).called(1);
+          expect(find.text('Ads removed successfully!'), findsOneWidget);
+        },
+      );
     });
 
     group('restore purchases with remove_ads', () {

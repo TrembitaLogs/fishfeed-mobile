@@ -138,6 +138,25 @@ class ProductNotAvailableFailure extends Failure {
   List<Object?> get props => [message, productId];
 }
 
+/// Failure when the store reports the product is already owned by this account.
+///
+/// Indicates a race / sync gap between the store account and the local
+/// RevenueCat alias — the user actually owns the entitlement, the local cache
+/// just hasn't reconciled yet. Callers should trigger a restore instead of
+/// surfacing a generic error.
+class ProductAlreadyOwnedFailure extends Failure {
+  const ProductAlreadyOwnedFailure({
+    super.message = 'Product already owned',
+    this.productId,
+  });
+
+  /// The product identifier that is already owned.
+  final String? productId;
+
+  @override
+  List<Object?> get props => [message, productId];
+}
+
 /// Failure when purchase service is not initialized.
 class PurchaseNotInitializedFailure extends Failure {
   const PurchaseNotInitializedFailure({

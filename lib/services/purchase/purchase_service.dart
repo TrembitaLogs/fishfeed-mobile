@@ -492,6 +492,22 @@ class PurchaseService with WidgetsBindingObserver {
         return Left(ProductNotAvailableFailure(productId: productId));
       }
 
+      if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
+        // Race / sync gap: the store account already owns this product but
+        // the local RC alias hasn't reconciled yet. Caller should restore.
+        // Not captured to Sentry — it's an expected, recoverable state.
+        if (kDebugMode) {
+          print(
+            'PurchaseService: Product already purchased — caller should restore',
+          );
+        }
+        _breadcrumb(
+          'purchasePackage productAlreadyPurchased',
+          data: {'productId': productId},
+        );
+        return Left(ProductAlreadyOwnedFailure(productId: productId));
+      }
+
       if (kDebugMode) {
         print('PurchaseService: Purchase failed: $e');
       }
