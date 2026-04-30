@@ -32,8 +32,12 @@ class PremiumBadge extends ConsumerWidget {
     final isPremium = status.isPremium;
     final isTrialActive = status.isTrialActive;
 
+    // Premium / trial users already have the entitlement — tapping the badge
+    // should not reopen the paywall. Free users keep the conversion CTA.
+    final effectiveOnTap = isPremium ? null : onTap;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: effectiveOnTap,
       child: _buildBadge(context, isPremium, isTrialActive),
     );
   }

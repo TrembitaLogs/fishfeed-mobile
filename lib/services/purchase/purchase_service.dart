@@ -292,6 +292,35 @@ class PurchaseService with WidgetsBindingObserver {
               .toList(),
         },
       );
+
+      // Reconcile any purchases that exist on this device's store account
+      // (Google Play / App Store) but are not yet attributed to the current
+      // RC alias — happens on fresh installs, device migration, or when the
+      // user previously purchased under an anonymous RC alias. Non-blocking:
+      // failure must not invalidate the login itself.
+      try {
+        await Purchases.syncPurchases();
+        final syncedInfo = await Purchases.getCustomerInfo();
+        _cachedCustomerInfo = syncedInfo;
+        _customerInfoController.add(syncedInfo);
+        _breadcrumb(
+          'syncPurchases after login succeeded',
+          data: {
+            'userId': userId,
+            'activeEntitlements': syncedInfo.entitlements.active.keys.toList(),
+          },
+        );
+      } catch (e, st) {
+        if (kDebugMode) {
+          print('PurchaseService: syncPurchases after login failed: $e');
+        }
+        _captureError(
+          e,
+          st,
+          operation: 'syncPurchasesAfterLogin',
+          extras: {'userId': userId},
+        );
+      }
     } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to log in user: $e');
@@ -461,6 +490,22 @@ class PurchaseService with WidgetsBindingObserver {
           },
         );
         return Left(ProductNotAvailableFailure(productId: productId));
+      }
+
+      if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
+        // Race / sync gap: the store account already owns this product but
+        // the local RC alias hasn't reconciled yet. Caller should restore.
+        // Not captured to Sentry — it's an expected, recoverable state.
+        if (kDebugMode) {
+          print(
+            'PurchaseService: Product already purchased — caller should restore',
+          );
+        }
+        _breadcrumb(
+          'purchasePackage productAlreadyPurchased',
+          data: {'productId': productId},
+        );
+        return Left(ProductAlreadyOwnedFailure(productId: productId));
       }
 
       if (kDebugMode) {
