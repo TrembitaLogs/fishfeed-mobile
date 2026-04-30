@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/services/ads/ad_service.dart';
@@ -104,72 +103,3 @@ final isInterstitialAdReadyProvider = Provider<bool>((ref) {
   return adService.isInterstitialAdReady;
 });
 
-/// Notifier for managing banner ad loading.
-///
-/// Handles loading banner ads with the correct width.
-class BannerAdNotifier extends StateNotifier<AsyncValue<BannerAd?>> {
-  BannerAdNotifier(this._adService, this._shouldShowAds)
-    : super(const AsyncValue.loading());
-
-  final AdService _adService;
-  final bool _shouldShowAds;
-
-  /// Loads a banner ad with the given width.
-  ///
-  /// [width] - The width of the banner in logical pixels.
-  Future<void> loadAd(int width) async {
-    if (!_shouldShowAds) {
-      state = const AsyncValue.data(null);
-      return;
-    }
-
-    state = const AsyncValue.loading();
-
-    try {
-      final ad = await _adService.loadBannerAd(width);
-      state = AsyncValue.data(ad);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  /// Disposes the current banner ad.
-  void disposeAd() {
-    state.whenData((ad) => ad?.dispose());
-    state = const AsyncValue.data(null);
-  }
-}
-
-/// Provider for managing banner ads with automatic loading.
-///
-/// Usage:
-/// ```dart
-/// final bannerAdState = ref.watch(bannerAdProvider);
-/// bannerAdState.when(
-///   data: (ad) => ad != null
-///     ? SizedBox(
-///         width: ad.size.width.toDouble(),
-///         height: ad.size.height.toDouble(),
-///         child: AdWidget(ad: ad),
-///       )
-///     : SizedBox.shrink(),
-///   loading: () => SizedBox(height: 50),
-///   error: (e, s) => SizedBox.shrink(),
-/// );
-///
-/// // To load the ad:
-/// ref.read(bannerAdProvider.notifier).loadAd(screenWidth);
-/// ```
-final bannerAdProvider =
-    StateNotifierProvider<BannerAdNotifier, AsyncValue<BannerAd?>>((ref) {
-      final adService = ref.watch(adServiceProvider);
-      final shouldShowAds = ref.watch(shouldShowAdsProvider);
-
-      final notifier = BannerAdNotifier(adService, shouldShowAds);
-
-      ref.onDispose(() {
-        notifier.disposeAd();
-      });
-
-      return notifier;
-    });
