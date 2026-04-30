@@ -102,4 +102,3 @@ final isInterstitialAdReadyProvider = Provider<bool>((ref) {
   ref.watch(adStateStreamProvider);
   return adService.isInterstitialAdReady;
 });
-

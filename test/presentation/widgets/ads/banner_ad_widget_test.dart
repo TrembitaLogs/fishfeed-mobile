@@ -70,10 +70,7 @@ void main() {
       (tester) async {
         final completer = Completer<BannerAd?>();
         await tester.pumpWidget(
-          buildTestWidget(
-            shouldShowAds: true,
-            onLoad: (_) => completer.future,
-          ),
+          buildTestWidget(shouldShowAds: true, onLoad: (_) => completer.future),
         );
 
         // Allow the post-frame callback to schedule the load.
@@ -137,10 +134,7 @@ void main() {
       (tester) async {
         final completer = Completer<BannerAd?>();
         await tester.pumpWidget(
-          buildTestWidget(
-            shouldShowAds: true,
-            onLoad: (_) => completer.future,
-          ),
+          buildTestWidget(shouldShowAds: true, onLoad: (_) => completer.future),
         );
         await tester.pump();
 
