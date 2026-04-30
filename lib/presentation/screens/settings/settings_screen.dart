@@ -47,12 +47,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _requestReview() async {
+    // `requestReview()` shows the native Play Store / App Store overlay, but
+    // only once every few months per account (store-imposed quota). After
+    // that it silently no-ops without any signal — the user taps "Rate App"
+    // and nothing happens. Always open the store listing instead so the
+    // tap is guaranteed to land somewhere actionable.
     try {
-      if (await _inAppReview.isAvailable()) {
-        await _inAppReview.requestReview();
-      } else {
-        await _inAppReview.openStoreListing(appStoreId: '6742628065');
-      }
+      await _inAppReview.openStoreListing(appStoreId: '6742628065');
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -76,7 +77,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsSectionHeader(title: l10n.settingsSubscriptionSection),
           SettingsSubscriptionTile(
             status: status,
-            onTap: () => context.push('/paywall'),
+            // Premium / trial users already own the subscription — tapping the
+            // tile must not reopen the paywall. Free users keep the upgrade CTA.
+            onTap: status.isPremium ? null : () => context.push('/paywall'),
           ),
           SettingsRestorePurchasesTile(
             isLoading: _isRestoringPurchases,
