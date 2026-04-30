@@ -76,7 +76,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsSectionHeader(title: l10n.settingsSubscriptionSection),
           SettingsSubscriptionTile(
             status: status,
-            onTap: () => context.push('/paywall'),
+            // Premium / trial users already own the subscription — tapping the
+            // tile must not reopen the paywall. Free users keep the upgrade CTA.
+            onTap: status.isPremium ? null : () => context.push('/paywall'),
           ),
           SettingsRestorePurchasesTile(
             isLoading: _isRestoringPurchases,

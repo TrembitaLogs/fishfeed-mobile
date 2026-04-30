@@ -37,7 +37,11 @@ class SettingsSubscriptionTile extends StatelessWidget {
   });
 
   final SubscriptionStatus status;
-  final VoidCallback onTap;
+
+  /// Tap handler. Pass `null` to render the tile as non-interactive — the
+  /// caller decides this (e.g. premium users, where the tile is informational
+  /// only).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

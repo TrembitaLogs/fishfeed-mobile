@@ -153,6 +153,66 @@ void main() {
         expect(find.text('Restore Purchases'), findsOneWidget);
         expect(find.text('Recover previous purchases'), findsOneWidget);
       });
+
+      testWidgets('subscription tile has onTap for free user', (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(subscriptionStatus: const SubscriptionStatus.free()),
+        );
+        await tester.pumpAndSettle();
+
+        final subTile = tester.widget<ListTile>(
+          find.ancestor(
+            of: find.text('Subscription'),
+            matching: find.byType(ListTile),
+          ),
+        );
+        expect(subTile.onTap, isNotNull);
+      });
+
+      testWidgets('subscription tile is non-interactive for premium user', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            subscriptionStatus: const SubscriptionStatus(
+              tier: SubscriptionTier.premium,
+              isTrialActive: false,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final subTile = tester.widget<ListTile>(
+          find.ancestor(
+            of: find.text('Subscription'),
+            matching: find.byType(ListTile),
+          ),
+        );
+        expect(subTile.onTap, isNull);
+      });
+
+      testWidgets('subscription tile is non-interactive for trial user', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            subscriptionStatus: SubscriptionStatus(
+              tier: SubscriptionTier.premium,
+              isTrialActive: true,
+              expirationDate: DateTime.now().add(const Duration(days: 5)),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final subTile = tester.widget<ListTile>(
+          find.ancestor(
+            of: find.text('Subscription'),
+            matching: find.byType(ListTile),
+          ),
+        );
+        expect(subTile.onTap, isNull);
+      });
     });
 
     group('app section', () {
