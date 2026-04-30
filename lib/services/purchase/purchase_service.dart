@@ -311,6 +311,18 @@ class PurchaseService with WidgetsBindingObserver {
 
     _breadcrumb('logOut started');
     try {
+      // RevenueCat throws LogOutWithAnonymousUserError (code 22) if the
+      // current customer is already anonymous. On x86_64 Android emulators
+      // the unhandled PlatformException can propagate as a native SIGABRT,
+      // crashing the Dart isolate. Skip the call when no real user is bound.
+      final current = await Purchases.getCustomerInfo();
+      if (current.originalAppUserId.startsWith(r'$RCAnonymousID')) {
+        _cachedCustomerInfo = current;
+        _customerInfoController.add(current);
+        _breadcrumb('logOut skipped (already anonymous)');
+        return;
+      }
+
       final customerInfo = await Purchases.logOut();
       _cachedCustomerInfo = customerInfo;
       _customerInfoController.add(customerInfo);
@@ -319,6 +331,16 @@ class PurchaseService with WidgetsBindingObserver {
         print('PurchaseService: User logged out');
       }
       _breadcrumb('logOut succeeded');
+    } on PlatformException catch (e, st) {
+      // Defense in depth: race between getCustomerInfo and logOut.
+      if (e.code == '22') {
+        _breadcrumb('logOut swallowed LogOutWithAnonymousUserError');
+        return;
+      }
+      if (kDebugMode) {
+        print('PurchaseService: Failed to log out user: $e');
+      }
+      _captureError(e, st, operation: 'logOut');
     } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to log out user: $e');
