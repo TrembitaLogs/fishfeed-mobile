@@ -5,13 +5,19 @@ import 'package:equatable/equatable.dart';
 /// Used as the Left side of Either types in use cases and repositories.
 /// Failures represent expected error conditions that the app can handle gracefully.
 sealed class Failure extends Equatable {
-  const Failure({this.message});
+  const Failure({this.message, this.apiErrorCode});
 
-  /// Human-readable error message.
+  /// Human-readable error message (English fallback for logs / debugging).
   final String? message;
 
+  /// Stable backend error_code (e.g. `auth.invalid_credentials`).
+  ///
+  /// Use this for localization mapping; falls back to per-type defaults
+  /// when `null` (older backend or non-API failure).
+  final String? apiErrorCode;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, apiErrorCode];
 }
 
 /// Failure due to network connectivity issues.
@@ -21,18 +27,25 @@ class NetworkFailure extends Failure {
 
 /// Failure due to server-side errors.
 class ServerFailure extends Failure {
-  const ServerFailure({super.message = 'Server error occurred'});
+  const ServerFailure({
+    super.message = 'Server error occurred',
+    super.apiErrorCode,
+  });
 }
 
 /// Failure due to invalid credentials or expired session.
 class AuthenticationFailure extends Failure {
-  const AuthenticationFailure({super.message = 'Authentication failed'});
+  const AuthenticationFailure({
+    super.message = 'Authentication failed',
+    super.apiErrorCode,
+  });
 }
 
 /// Failure due to invalid input or validation errors.
 class ValidationFailure extends Failure {
   const ValidationFailure({
     super.message = 'Validation failed',
+    super.apiErrorCode,
     this.errors = const {},
   });
 
@@ -40,7 +53,28 @@ class ValidationFailure extends Failure {
   final Map<String, List<String>> errors;
 
   @override
-  List<Object?> get props => [message, errors];
+  List<Object?> get props => [message, apiErrorCode, errors];
+}
+
+/// Failure due to a state conflict on the server (HTTP 409).
+class ConflictFailure extends Failure {
+  const ConflictFailure({super.message = 'Conflict', super.apiErrorCode});
+}
+
+/// Failure due to a missing resource (HTTP 404).
+class NotFoundFailure extends Failure {
+  const NotFoundFailure({
+    super.message = 'Resource not found',
+    super.apiErrorCode,
+  });
+}
+
+/// Failure due to too many requests (HTTP 429).
+class RateLimitFailure extends Failure {
+  const RateLimitFailure({
+    super.message = 'Too many requests',
+    super.apiErrorCode,
+  });
 }
 
 /// Failure due to OAuth provider issues.

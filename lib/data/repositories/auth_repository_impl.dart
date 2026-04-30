@@ -247,23 +247,38 @@ class AuthRepositoryImpl implements AuthRepository {
 
   /// Maps [ApiException] to domain [Failure].
   ///
-  /// Avoid setting custom English messages on the resulting failure unless
-  /// the value is genuinely user-facing data (like server-side validation
-  /// errors). [auth_error_handler] localizes failures with default messages,
-  /// so a hard-coded "Invalid credentials" / "Access denied" / a raw Dio
-  /// exception string would bypass localization and leak to the UI verbatim.
+  /// Carries the backend `error_code` through into the failure so
+  /// [auth_error_handler] can render a localized message tied to the exact
+  /// failure mode. Avoid setting custom English messages — they bypass
+  /// localization and leak to the UI verbatim.
   Failure _mapApiExceptionToFailure(ApiException exception) {
     return switch (exception) {
       NetworkException() => const NetworkFailure(),
-      UnauthorizedException() => const AuthenticationFailure(),
-      ValidationException(:final message, :final errors) => ValidationFailure(
-        message: message,
-        errors: errors,
+      UnauthorizedException(:final errorCode) => AuthenticationFailure(
+        apiErrorCode: errorCode,
       ),
-      ForbiddenException() => const AuthenticationFailure(),
-      NotFoundException() => const ServerFailure(message: 'Resource not found'),
-      ServerException() => const ServerFailure(),
-      UnknownApiException() => const UnexpectedFailure(),
+      ValidationException(:final message, :final errors, :final errorCode) =>
+        ValidationFailure(
+          message: message,
+          errors: errors,
+          apiErrorCode: errorCode,
+        ),
+      ForbiddenException(:final errorCode) => AuthenticationFailure(
+        apiErrorCode: errorCode,
+      ),
+      ConflictException(:final errorCode) => ConflictFailure(
+        apiErrorCode: errorCode,
+      ),
+      NotFoundException(:final errorCode) => NotFoundFailure(
+        apiErrorCode: errorCode,
+      ),
+      ServerException(:final errorCode) => ServerFailure(
+        apiErrorCode: errorCode,
+      ),
+      UnknownApiException(:final statusCode, :final errorCode) =>
+        statusCode == 429
+            ? RateLimitFailure(apiErrorCode: errorCode)
+            : const UnexpectedFailure(),
     };
   }
 }

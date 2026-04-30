@@ -181,6 +181,9 @@ class UserRepositoryImpl implements UserRepository {
         message: 'Access denied',
       ),
       NotFoundException() => const ServerFailure(message: 'User not found'),
+      ConflictException(:final message) => ConflictFailure(
+        message: message ?? 'Conflict',
+      ),
       ServerException() => const ServerFailure(),
       UnknownApiException(:final message) => UnexpectedFailure(
         message: message,

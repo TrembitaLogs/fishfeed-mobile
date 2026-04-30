@@ -379,7 +379,7 @@ void main() {
 
         expect(
           exception.toString(),
-          'ServerException: Internal server error (status: 500)',
+          'ServerException: Internal server error (status: 500, code: null)',
         );
       });
     });

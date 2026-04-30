@@ -140,6 +140,33 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ungültige E-Mail oder Passwort. Bitte versuchen Sie es erneut.';
 
   @override
+  String get errorEmailAlreadyExists =>
+      'Ein Konto mit dieser E-Mail existiert bereits.';
+
+  @override
+  String get errorSessionExpired =>
+      'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.';
+
+  @override
+  String get errorInvalidResetLink =>
+      'Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.';
+
+  @override
+  String get errorInvalidOldPassword => 'Ihr aktuelles Passwort ist falsch.';
+
+  @override
+  String get errorOAuthAccountPasswordChange =>
+      'Die Passwortänderung ist für Konten, die mit Google oder Apple erstellt wurden, nicht verfügbar.';
+
+  @override
+  String get errorOAuthProviderUnavailable =>
+      'Diese Anmeldeoption ist derzeit nicht verfügbar. Bitte versuchen Sie eine andere Methode.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.';
+
+  @override
   String get errorValidation =>
       'Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.';
 

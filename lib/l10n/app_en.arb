@@ -168,6 +168,34 @@
   "@errorInvalidCredentials": {
     "description": "Error message for authentication failures"
   },
+  "errorEmailAlreadyExists": "An account with this email already exists.",
+  "@errorEmailAlreadyExists": {
+    "description": "Error message when registration email is already taken"
+  },
+  "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "@errorSessionExpired": {
+    "description": "Error message when refresh token is invalid or expired"
+  },
+  "errorInvalidResetLink": "This password reset link is invalid or has expired.",
+  "@errorInvalidResetLink": {
+    "description": "Error message for invalid password reset token"
+  },
+  "errorInvalidOldPassword": "Your current password is incorrect.",
+  "@errorInvalidOldPassword": {
+    "description": "Error message for wrong old password during change"
+  },
+  "errorOAuthAccountPasswordChange": "Password change isn't available for accounts created with Google or Apple.",
+  "@errorOAuthAccountPasswordChange": {
+    "description": "Error message when OAuth user tries to change password"
+  },
+  "errorOAuthProviderUnavailable": "This sign-in option is currently unavailable. Please try another method.",
+  "@errorOAuthProviderUnavailable": {
+    "description": "Error message when OAuth provider is not configured on backend"
+  },
+  "errorTooManyRequests": "Too many attempts. Please wait a moment and try again.",
+  "@errorTooManyRequests": {
+    "description": "Error message for rate limiting"
+  },
   "errorValidation": "Please check your input and try again.",
   "@errorValidation": {
     "description": "Error message for validation failures"
