@@ -10,6 +10,7 @@ import 'package:fishfeed/core/errors/api_exceptions.dart';
 /// - 401 → [UnauthorizedException]
 /// - 403 → [ForbiddenException]
 /// - 404 → [NotFoundException]
+/// - 409 → [ConflictException]
 /// - 400, 422 → [ValidationException]
 /// - 5xx → [ServerException]
 /// - Other → [UnknownApiException]
@@ -55,6 +56,7 @@ class ErrorInterceptor extends Interceptor {
       401 => UnauthorizedException.fromDioException(exception),
       403 => ForbiddenException.fromDioException(exception),
       404 => NotFoundException.fromDioException(exception),
+      409 => ConflictException.fromDioException(exception),
       >= 500 && < 600 => ServerException.fromDioException(exception),
       _ => UnknownApiException.fromDioException(exception),
     };

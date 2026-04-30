@@ -138,6 +138,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid email or password. Please try again.';
 
   @override
+  String get errorEmailAlreadyExists =>
+      'An account with this email already exists.';
+
+  @override
+  String get errorSessionExpired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get errorInvalidResetLink =>
+      'This password reset link is invalid or has expired.';
+
+  @override
+  String get errorInvalidOldPassword => 'Your current password is incorrect.';
+
+  @override
+  String get errorOAuthAccountPasswordChange =>
+      'Password change isn\'t available for accounts created with Google or Apple.';
+
+  @override
+  String get errorOAuthProviderUnavailable =>
+      'This sign-in option is currently unavailable. Please try another method.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Too many attempts. Please wait a moment and try again.';
+
+  @override
   String get errorValidation => 'Please check your input and try again.';
 
   @override

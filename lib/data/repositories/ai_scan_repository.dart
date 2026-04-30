@@ -55,6 +55,9 @@ class AiScanRepositoryImpl implements AiScanRepository {
       NotFoundException() => const ServerFailure(
         message: 'AI scan service unavailable',
       ),
+      ConflictException(:final message) => ConflictFailure(
+        message: message ?? 'Conflict',
+      ),
       UnknownApiException(:final message) => UnexpectedFailure(
         message: message ?? 'An unexpected error occurred',
       ),

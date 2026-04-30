@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/core/errors/error_code_localizer.dart';
 import 'package:fishfeed/core/errors/failures.dart';
 import 'package:fishfeed/core/utils/snackbar_utils.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
@@ -24,14 +25,22 @@ extension AuthErrorHandler on BuildContext {
 
   /// Maps a [Failure] to a user-friendly localized message.
   ///
-  /// If the failure has a custom message that differs from the default,
-  /// the custom message is used. Otherwise, falls back to localized messages.
+  /// Resolution order:
+  /// 1. Backend `error_code` (preferred — stable, mapped to localized strings)
+  /// 2. Custom message on the failure (validation details, OAuth provider)
+  /// 3. Default localized message per failure type
   String _mapFailureToMessage(Failure failure) {
     final l10n = AppLocalizations.of(this);
 
     // If l10n is not available, return the failure message or default
     if (l10n == null) {
       return failure.message ?? 'An error occurred';
+    }
+
+    // Prefer the localized message tied to the backend error_code.
+    final localizedFromCode = localizeApiErrorCode(failure.apiErrorCode, l10n);
+    if (localizedFromCode != null) {
+      return localizedFromCode;
     }
 
     // Check if failure has a custom message (not the default)
@@ -45,6 +54,9 @@ extension AuthErrorHandler on BuildContext {
       ServerFailure() => l10n.errorServer,
       AuthenticationFailure() => l10n.errorInvalidCredentials,
       ValidationFailure(:final errors) => _formatValidationErrors(errors, l10n),
+      ConflictFailure() => l10n.errorUnexpected,
+      NotFoundFailure() => l10n.errorUnexpected,
+      RateLimitFailure() => l10n.errorTooManyRequests,
       OAuthFailure(:final provider) => _formatOAuthError(provider, l10n),
       CancellationFailure() => l10n.errorOperationCancelled,
       CacheFailure() => l10n.errorLocalStorage,
@@ -117,6 +129,10 @@ class FailureMessageMapper {
       ServerFailure() => 'Server error. Please try again later.',
       AuthenticationFailure() => 'Invalid credentials. Please try again.',
       ValidationFailure(:final message) => message ?? 'Validation failed.',
+      ConflictFailure(:final message) =>
+        message ?? 'Conflict with current state.',
+      NotFoundFailure(:final message) => message ?? 'Resource not found.',
+      RateLimitFailure() => 'Too many requests. Please wait and try again.',
       OAuthFailure(:final provider, :final message) =>
         message ?? 'Failed to sign in with ${provider ?? 'OAuth'}.',
       CancellationFailure() => 'Operation was cancelled.',

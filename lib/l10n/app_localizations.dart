@@ -350,6 +350,48 @@ abstract class AppLocalizations {
   /// **'Invalid email or password. Please try again.'**
   String get errorInvalidCredentials;
 
+  /// Error message when registration email is already taken
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists.'**
+  String get errorEmailAlreadyExists;
+
+  /// Error message when refresh token is invalid or expired
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get errorSessionExpired;
+
+  /// Error message for invalid password reset token
+  ///
+  /// In en, this message translates to:
+  /// **'This password reset link is invalid or has expired.'**
+  String get errorInvalidResetLink;
+
+  /// Error message for wrong old password during change
+  ///
+  /// In en, this message translates to:
+  /// **'Your current password is incorrect.'**
+  String get errorInvalidOldPassword;
+
+  /// Error message when OAuth user tries to change password
+  ///
+  /// In en, this message translates to:
+  /// **'Password change isn\'t available for accounts created with Google or Apple.'**
+  String get errorOAuthAccountPasswordChange;
+
+  /// Error message when OAuth provider is not configured on backend
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in option is currently unavailable. Please try another method.'**
+  String get errorOAuthProviderUnavailable;
+
+  /// Error message for rate limiting
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a moment and try again.'**
+  String get errorTooManyRequests;
+
   /// Error message for validation failures
   ///
   /// In en, this message translates to:
