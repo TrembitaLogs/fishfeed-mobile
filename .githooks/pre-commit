@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# pre-commit: enforce dart format on staged Dart files under lib/ and test/.
+# Mirrors the CI Lint job (`dart format --set-exit-if-changed`) so formatting
+# issues fail locally before they hit GitHub Actions.
+#
+# Activate once per clone:
+#   make setup-hooks
+# (sets `git config core.hooksPath .githooks`)
+
+set -euo pipefail
+
+# Collect staged additions/modifications under lib/ or test/, only .dart files.
+# POSIX-compatible (works on macOS bash 3.2 — no `mapfile`).
+staged=$(
+  git diff --cached --name-only --diff-filter=ACM \
+    | grep -E '^(lib|test)/.*\.dart$' || true
+)
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+# --output=none → dry-run: exit 1 on changes, do not rewrite files.
+# shellcheck disable=SC2086
+if ! echo "$staged" | xargs dart format --output=none --set-exit-if-changed; then
+  echo
+  echo "✗ dart format would reformat the staged files listed above."
+  echo "  Fix:    dart format \$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(lib|test)/.*\\.dart\$')"
+  echo "  Or:     make format    (formats lib/ and test/ in place)"
+  echo "  Then re-stage and commit."
+  exit 1
+fi

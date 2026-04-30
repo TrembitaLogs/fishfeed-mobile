@@ -1,4 +1,4 @@
-.PHONY: get build_runner watch clean test lint format fix run_dev run_prod build_ios build_android
+.PHONY: get build_runner watch clean test lint format fix run_dev run_prod build_ios build_android setup-hooks
 
 # Dependencies
 get:
@@ -35,6 +35,12 @@ run_dev:
 
 run_prod:
 	flutter run --dart-define=ENV=prod
+
+# Git hooks (run once per clone)
+setup-hooks:
+	git config core.hooksPath .githooks
+	@echo "✓ git hooksPath set to .githooks"
+	@echo "  pre-commit will run 'dart format --set-exit-if-changed' on staged .dart files"
 
 # Building
 build_ios:
