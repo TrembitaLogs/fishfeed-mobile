@@ -191,6 +191,37 @@ void main() {
         await tester.tap(find.byType(PremiumBadge));
         // Should not throw
       });
+
+      testWidgets('does not call onTap when premium', (tester) async {
+        var tapped = false;
+
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: SubscriptionStatus.premium(),
+            onTap: () => tapped = true,
+          ),
+        );
+
+        await tester.tap(find.byType(PremiumBadge));
+        expect(tapped, isFalse);
+      });
+
+      testWidgets('does not call onTap when trial active', (tester) async {
+        var tapped = false;
+
+        await tester.pumpWidget(
+          buildTestWidget(
+            status: SubscriptionStatus.premium(
+              isTrialActive: true,
+              expirationDate: DateTime.now().add(const Duration(days: 7)),
+            ),
+            onTap: () => tapped = true,
+          ),
+        );
+
+        await tester.tap(find.byType(PremiumBadge));
+        expect(tapped, isFalse);
+      });
     });
   });
 
