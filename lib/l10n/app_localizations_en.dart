@@ -165,6 +165,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'Too many attempts. Please wait a moment and try again.';
 
   @override
+  String get errorUserNotFound => 'User account not found.';
+
+  @override
+  String get errorGdprExportFailed =>
+      'Failed to export your data. Please try again later.';
+
+  @override
+  String get errorGdprDeleteFailed =>
+      'Failed to delete your data. Please try again later.';
+
+  @override
+  String get errorFamilyMemberLimitExceeded =>
+      'Family member limit reached. Upgrade to Premium for more spaces.';
+
+  @override
+  String get errorFamilyInviteNotFound =>
+      'This invite link is invalid. Please request a new one.';
+
+  @override
+  String get errorFamilyInviteExpired =>
+      'This invite link has expired. Please request a new one.';
+
+  @override
+  String get errorFamilyAlreadyMember =>
+      'You are already a member of this aquarium.';
+
+  @override
+  String get errorFamilyMemberNotFound =>
+      'This member is not part of the aquarium.';
+
+  @override
+  String get errorFamilyCannotRemoveOwner =>
+      'The aquarium owner cannot be removed.';
+
+  @override
   String get errorValidation => 'Please check your input and try again.';
 
   @override

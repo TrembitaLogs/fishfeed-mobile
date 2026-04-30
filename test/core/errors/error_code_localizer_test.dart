@@ -83,5 +83,85 @@ void main() {
         'Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.',
       );
     });
+
+    test('maps user/GDPR/family codes to localized EN strings', () async {
+      final l10n = await _loadL10n(const Locale('en'));
+
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.userNotFound, l10n),
+        'User account not found.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.gdprExportFailed, l10n),
+        'Failed to export your data. Please try again later.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.gdprDeleteFailed, l10n),
+        'Failed to delete your data. Please try again later.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyMemberLimitExceeded, l10n),
+        'Family member limit reached. Upgrade to Premium for more spaces.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyInviteNotFound, l10n),
+        'This invite link is invalid. Please request a new one.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyInviteExpired, l10n),
+        'This invite link has expired. Please request a new one.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyAlreadyMember, l10n),
+        'You are already a member of this aquarium.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyMemberNotFound, l10n),
+        'This member is not part of the aquarium.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyCannotRemoveOwner, l10n),
+        'The aquarium owner cannot be removed.',
+      );
+    });
+
+    test('maps user/GDPR/family codes to localized DE strings', () async {
+      final l10n = await _loadL10n(const Locale('de'));
+
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.userNotFound, l10n),
+        'Benutzerkonto nicht gefunden.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.gdprExportFailed, l10n),
+        'Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyMemberLimitExceeded, l10n),
+        'Familienmitglieder-Limit erreicht. Upgrade auf Premium für mehr Plätze.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyInviteExpired, l10n),
+        'Dieser Einladungslink ist abgelaufen. Bitte fordern Sie einen neuen an.',
+      );
+      expect(
+        localizeApiErrorCode(ApiErrorCodes.familyCannotRemoveOwner, l10n),
+        'Der Aquariumsbesitzer kann nicht entfernt werden.',
+      );
+    });
+
+    test(
+      'returns null for storage_not_configured to avoid leaking server detail',
+      () async {
+        final l10n = await _loadL10n(const Locale('en'));
+        expect(
+          localizeApiErrorCode(ApiErrorCodes.storageNotConfigured, l10n),
+          isNull,
+          reason:
+              'Server-misconfig codes intentionally fall back to generic '
+              'localized message instead of leaking implementation details.',
+        );
+      },
+    );
   });
 }

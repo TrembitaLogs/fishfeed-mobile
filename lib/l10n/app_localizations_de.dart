@@ -167,6 +167,41 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.';
 
   @override
+  String get errorUserNotFound => 'Benutzerkonto nicht gefunden.';
+
+  @override
+  String get errorGdprExportFailed =>
+      'Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.';
+
+  @override
+  String get errorGdprDeleteFailed =>
+      'Datenlöschung fehlgeschlagen. Bitte versuchen Sie es später erneut.';
+
+  @override
+  String get errorFamilyMemberLimitExceeded =>
+      'Familienmitglieder-Limit erreicht. Upgrade auf Premium für mehr Plätze.';
+
+  @override
+  String get errorFamilyInviteNotFound =>
+      'Dieser Einladungslink ist ungültig. Bitte fordern Sie einen neuen an.';
+
+  @override
+  String get errorFamilyInviteExpired =>
+      'Dieser Einladungslink ist abgelaufen. Bitte fordern Sie einen neuen an.';
+
+  @override
+  String get errorFamilyAlreadyMember =>
+      'Sie sind bereits Mitglied dieses Aquariums.';
+
+  @override
+  String get errorFamilyMemberNotFound =>
+      'Dieses Mitglied gehört nicht zu diesem Aquarium.';
+
+  @override
+  String get errorFamilyCannotRemoveOwner =>
+      'Der Aquariumsbesitzer kann nicht entfernt werden.';
+
+  @override
   String get errorValidation =>
       'Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.';
 
