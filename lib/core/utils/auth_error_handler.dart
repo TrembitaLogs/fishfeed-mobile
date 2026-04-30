@@ -64,6 +64,7 @@ extension AuthErrorHandler on BuildContext {
       PurchaseFailure(:final message) => message ?? l10n.errorUnexpected,
       PurchaseCancelledFailure() => l10n.errorOperationCancelled,
       ProductNotAvailableFailure() => l10n.errorUnexpected,
+      ProductAlreadyOwnedFailure() => l10n.errorUnexpected,
       PurchaseNotInitializedFailure() => l10n.errorUnexpected,
     };
   }
@@ -143,6 +144,8 @@ class FailureMessageMapper {
       PurchaseCancelledFailure() => 'Purchase was cancelled.',
       ProductNotAvailableFailure(:final productId) =>
         'Product ${productId ?? ''} is not available.',
+      ProductAlreadyOwnedFailure(:final productId) =>
+        'Product ${productId ?? ''} is already owned by this account.',
       PurchaseNotInitializedFailure() =>
         'Purchase service not initialized. Please restart the app.',
     };
