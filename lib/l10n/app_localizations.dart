@@ -392,6 +392,60 @@ abstract class AppLocalizations {
   /// **'Too many attempts. Please wait a moment and try again.'**
   String get errorTooManyRequests;
 
+  /// Error message when the user account does not exist
+  ///
+  /// In en, this message translates to:
+  /// **'User account not found.'**
+  String get errorUserNotFound;
+
+  /// Error message when GDPR data export fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export your data. Please try again later.'**
+  String get errorGdprExportFailed;
+
+  /// Error message when GDPR data deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete your data. Please try again later.'**
+  String get errorGdprDeleteFailed;
+
+  /// Error message when an aquarium has reached its family member capacity
+  ///
+  /// In en, this message translates to:
+  /// **'Family member limit reached. Upgrade to Premium for more spaces.'**
+  String get errorFamilyMemberLimitExceeded;
+
+  /// Error message when a family invite code is not recognised
+  ///
+  /// In en, this message translates to:
+  /// **'This invite link is invalid. Please request a new one.'**
+  String get errorFamilyInviteNotFound;
+
+  /// Error message when a family invite has expired
+  ///
+  /// In en, this message translates to:
+  /// **'This invite link has expired. Please request a new one.'**
+  String get errorFamilyInviteExpired;
+
+  /// Error message when a user tries to accept an invite for an aquarium they already belong to
+  ///
+  /// In en, this message translates to:
+  /// **'You are already a member of this aquarium.'**
+  String get errorFamilyAlreadyMember;
+
+  /// Error message when removing a family member that does not belong to the aquarium
+  ///
+  /// In en, this message translates to:
+  /// **'This member is not part of the aquarium.'**
+  String get errorFamilyMemberNotFound;
+
+  /// Error message when attempting to remove the owner of an aquarium
+  ///
+  /// In en, this message translates to:
+  /// **'The aquarium owner cannot be removed.'**
+  String get errorFamilyCannotRemoveOwner;
+
   /// Error message for validation failures
   ///
   /// In en, this message translates to:

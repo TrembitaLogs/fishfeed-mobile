@@ -47,4 +47,23 @@ abstract final class ApiErrorCodes {
   static const String feedingScheduleNotFound = 'feeding.schedule_not_found';
   static const String feedingLogConflict = 'feeding.log_conflict';
   static const String feedingDateRangeTooLarge = 'feeding.date_range_too_large';
+
+  // User namespace
+  static const String userNotFound = 'user.not_found';
+
+  // GDPR namespace
+  static const String gdprExportFailed = 'gdpr.export_failed';
+  static const String gdprDeleteFailed = 'gdpr.delete_failed';
+
+  // Server-level
+  static const String storageNotConfigured = 'server.storage_not_configured';
+
+  // Family namespace
+  static const String familyMemberLimitExceeded =
+      'family.member_limit_exceeded';
+  static const String familyInviteNotFound = 'family.invite_not_found';
+  static const String familyInviteExpired = 'family.invite_expired';
+  static const String familyAlreadyMember = 'family.already_member';
+  static const String familyMemberNotFound = 'family.member_not_found';
+  static const String familyCannotRemoveOwner = 'family.cannot_remove_owner';
 }

@@ -24,6 +24,19 @@ String? localizeApiErrorCode(String? code, AppLocalizations l10n) {
       l10n.errorOAuthAccountPasswordChange,
     ApiErrorCodes.authInvalidOldPassword => l10n.errorInvalidOldPassword,
     ApiErrorCodes.rateLimited => l10n.errorTooManyRequests,
+    // User namespace
+    ApiErrorCodes.userNotFound => l10n.errorUserNotFound,
+    // GDPR namespace
+    ApiErrorCodes.gdprExportFailed => l10n.errorGdprExportFailed,
+    ApiErrorCodes.gdprDeleteFailed => l10n.errorGdprDeleteFailed,
+    // Family namespace
+    ApiErrorCodes.familyMemberLimitExceeded =>
+      l10n.errorFamilyMemberLimitExceeded,
+    ApiErrorCodes.familyInviteNotFound => l10n.errorFamilyInviteNotFound,
+    ApiErrorCodes.familyInviteExpired => l10n.errorFamilyInviteExpired,
+    ApiErrorCodes.familyAlreadyMember => l10n.errorFamilyAlreadyMember,
+    ApiErrorCodes.familyMemberNotFound => l10n.errorFamilyMemberNotFound,
+    ApiErrorCodes.familyCannotRemoveOwner => l10n.errorFamilyCannotRemoveOwner,
     _ => null,
   };
 }

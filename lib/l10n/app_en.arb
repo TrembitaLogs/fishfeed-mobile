@@ -196,6 +196,42 @@
   "@errorTooManyRequests": {
     "description": "Error message for rate limiting"
   },
+  "errorUserNotFound": "User account not found.",
+  "@errorUserNotFound": {
+    "description": "Error message when the user account does not exist"
+  },
+  "errorGdprExportFailed": "Failed to export your data. Please try again later.",
+  "@errorGdprExportFailed": {
+    "description": "Error message when GDPR data export fails"
+  },
+  "errorGdprDeleteFailed": "Failed to delete your data. Please try again later.",
+  "@errorGdprDeleteFailed": {
+    "description": "Error message when GDPR data deletion fails"
+  },
+  "errorFamilyMemberLimitExceeded": "Family member limit reached. Upgrade to Premium for more spaces.",
+  "@errorFamilyMemberLimitExceeded": {
+    "description": "Error message when an aquarium has reached its family member capacity"
+  },
+  "errorFamilyInviteNotFound": "This invite link is invalid. Please request a new one.",
+  "@errorFamilyInviteNotFound": {
+    "description": "Error message when a family invite code is not recognised"
+  },
+  "errorFamilyInviteExpired": "This invite link has expired. Please request a new one.",
+  "@errorFamilyInviteExpired": {
+    "description": "Error message when a family invite has expired"
+  },
+  "errorFamilyAlreadyMember": "You are already a member of this aquarium.",
+  "@errorFamilyAlreadyMember": {
+    "description": "Error message when a user tries to accept an invite for an aquarium they already belong to"
+  },
+  "errorFamilyMemberNotFound": "This member is not part of the aquarium.",
+  "@errorFamilyMemberNotFound": {
+    "description": "Error message when removing a family member that does not belong to the aquarium"
+  },
+  "errorFamilyCannotRemoveOwner": "The aquarium owner cannot be removed.",
+  "@errorFamilyCannotRemoveOwner": {
+    "description": "Error message when attempting to remove the owner of an aquarium"
+  },
   "errorValidation": "Please check your input and try again.",
   "@errorValidation": {
     "description": "Error message for validation failures"
