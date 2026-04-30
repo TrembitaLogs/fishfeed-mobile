@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "293378189651-aodjokmepm8v33f7oma57tmdkcfp1b3h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fishfeed.fishfeed",
+            "certificate_hash": "acbf8a994137e8f917d3eb6de6d18f79de0edd85"
+          }
+        },
+        {
           "client_id": "293378189651-gst0mn9drktjiqqc22gdq2llm1mm7nrs.apps.googleusercontent.com",
           "client_type": 3
         }
