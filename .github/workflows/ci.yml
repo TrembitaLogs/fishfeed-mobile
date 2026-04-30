@@ -51,7 +51,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: lint
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -89,7 +88,6 @@ jobs:
   build_android:
     name: Build Android
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -140,7 +138,6 @@ jobs:
   build_ios:
     name: Build iOS
     runs-on: macos-latest
-    needs: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
