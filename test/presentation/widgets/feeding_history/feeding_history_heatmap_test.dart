@@ -33,4 +33,27 @@ void main() {
     await tester.pump();
     expect(tappedDate, days.first.date.toIso8601String());
   });
+
+  testWidgets('left-pads the first column when range starts mid-week', (
+    tester,
+  ) async {
+    // 2026-04-17 is a Friday (weekday=5), so 4 placeholder cells precede.
+    final days = List<FeedingHistoryDay>.generate(
+      7,
+      (i) => FeedingHistoryDay(
+        date: DateTime(2026, 4, 17 + i),
+        fedCount: 0,
+        aquariumIds: const [],
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FeedingHistoryHeatmap(days: days, onDayTap: (_) {}),
+        ),
+      ),
+    );
+    // 7 real days + 4 placeholder days = 11 cells total.
+    expect(find.byType(FeedingHistoryDayCell), findsNWidgets(11));
+  });
 }

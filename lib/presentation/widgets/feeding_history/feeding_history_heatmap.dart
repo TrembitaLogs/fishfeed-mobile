@@ -104,17 +104,26 @@ class FeedingHistoryDayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colour = Color.lerp(baseColor, filledColor, intensity.clamp(0, 1))!;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(2),
+    );
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: colour,
-            borderRadius: BorderRadius.circular(2),
+        customBorder: shape,
+        child: SizedBox(
+          width: size < 40 ? 40 : size,
+          height: size < 40 ? 40 : size,
+          child: Center(
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: colour,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
           ),
         ),
       ),
