@@ -35,12 +35,9 @@ final calculateFeedingHistoryUseCaseProvider =
 
 /// Provider family that returns a [FeedingHistory] for the active user and
 /// query. Throws on Failure so callers see it via `AsyncValue.error`.
-final feedingHistoryProvider =
-    FutureProvider.family<FeedingHistory, FeedingHistoryQuery>((
-      ref,
-      query,
-    ) async {
-      final useCase = ref.watch(calculateFeedingHistoryUseCaseProvider);
+final feedingHistoryProvider = FutureProvider.autoDispose
+    .family<FeedingHistory, FeedingHistoryQuery>((ref, query) async {
+      final useCase = ref.read(calculateFeedingHistoryUseCaseProvider);
       final user = ref.watch(currentUserProvider);
       if (user == null) {
         throw StateError('feedingHistoryProvider read with no current user');
