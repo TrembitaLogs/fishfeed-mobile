@@ -125,4 +125,242 @@ void main() {
       },
     );
   });
+
+  group('skipped logs are excluded from heatmap and totals', () {
+    test('a day with only skipped events shows fedCount=0', () async {
+      final today = DateTime(2026, 5, 1, 12, 0);
+      when(
+        () => mockAquariums.getAllAquariums(),
+      ).thenReturn([buildAquarium('aq_1', name: 'A')]);
+      when(() => mockLogs.getAll()).thenReturn([
+        buildLog(
+          aquariumId: 'aq_1',
+          actedAtLocal: today.subtract(const Duration(days: 2)),
+          action: 'skipped',
+        ),
+      ]);
+      when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+      final r = await useCase(
+        CalculateFeedingHistoryParams(
+          userId: 'user_1',
+          range: FeedingHistoryRange.sevenDays,
+          referenceNow: today,
+        ),
+      );
+
+      final history = r.getOrElse(() => throw 'unreachable');
+      expect(history.totalFedCount, 0);
+      expect(history.days.every((d) => d.fedCount == 0), isTrue);
+    });
+  });
+
+  group('aquariumId filter narrows to one tank', () {
+    test('logs from other accessible aquariums are excluded', () async {
+      final today = DateTime(2026, 5, 1, 9, 0);
+      when(() => mockAquariums.getAllAquariums()).thenReturn([
+        buildAquarium('aq_1', name: 'Office'),
+        buildAquarium('aq_2', name: 'Home'),
+      ]);
+      when(() => mockLogs.getAll()).thenReturn([
+        buildLog(aquariumId: 'aq_1', actedAtLocal: today),
+        buildLog(aquariumId: 'aq_2', actedAtLocal: today),
+        buildLog(aquariumId: 'aq_2', actedAtLocal: today),
+      ]);
+      when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+      final r = await useCase(
+        CalculateFeedingHistoryParams(
+          userId: 'user_1',
+          range: FeedingHistoryRange.sevenDays,
+          aquariumId: 'aq_2',
+          referenceNow: today,
+        ),
+      );
+
+      final history = r.getOrElse(() => throw 'unreachable');
+      expect(history.totalFedCount, 2);
+      expect(history.aquariumBreakdown, isEmpty);
+    });
+  });
+
+  group('onlyMyActions filter respects acted_by_user_id', () {
+    test(
+      'logs by other family members are excluded when toggle is on',
+      () async {
+        final today = DateTime(2026, 5, 1, 9, 0);
+        when(
+          () => mockAquariums.getAllAquariums(),
+        ).thenReturn([buildAquarium('aq_1', name: 'Family')]);
+        when(() => mockLogs.getAll()).thenReturn([
+          buildLog(
+            aquariumId: 'aq_1',
+            actedAtLocal: today,
+            actedByUserId: 'user_1',
+          ),
+          buildLog(
+            aquariumId: 'aq_1',
+            actedAtLocal: today,
+            actedByUserId: 'user_2',
+          ),
+          buildLog(
+            aquariumId: 'aq_1',
+            actedAtLocal: today,
+            actedByUserId: 'user_3',
+          ),
+        ]);
+        when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+        final r = await useCase(
+          CalculateFeedingHistoryParams(
+            userId: 'user_1',
+            range: FeedingHistoryRange.sevenDays,
+            onlyMyActions: true,
+            referenceNow: today,
+          ),
+        );
+
+        final history = r.getOrElse(() => throw 'unreachable');
+        expect(history.totalFedCount, 1);
+      },
+    );
+  });
+
+  group(
+    'aquariumBreakdown only when 2+ accessible aquariums and no filter',
+    () {
+      test('breakdown is non-empty for two aquariums', () async {
+        final today = DateTime(2026, 5, 1, 9, 0);
+        when(() => mockAquariums.getAllAquariums()).thenReturn([
+          buildAquarium('aq_1', name: 'Office'),
+          buildAquarium('aq_2', name: 'Home'),
+        ]);
+        when(() => mockLogs.getAll()).thenReturn([
+          buildLog(aquariumId: 'aq_1', actedAtLocal: today),
+          buildLog(aquariumId: 'aq_2', actedAtLocal: today),
+        ]);
+        when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+        final r = await useCase(
+          CalculateFeedingHistoryParams(
+            userId: 'user_1',
+            range: FeedingHistoryRange.sevenDays,
+            referenceNow: today,
+          ),
+        );
+
+        final history = r.getOrElse(() => throw 'unreachable');
+        expect(history.aquariumBreakdown, hasLength(2));
+        expect(history.aquariumBreakdown.first.last7DaysCounts, hasLength(7));
+        expect(
+          history.aquariumBreakdown
+              .firstWhere((b) => b.aquariumId == 'aq_1')
+              .totalCountInRange,
+          1,
+        );
+      });
+    },
+  );
+
+  group('soft-deleted aquariums are excluded from accessible set', () {
+    test('logs from a deleted aquarium are dropped', () async {
+      final today = DateTime(2026, 5, 1, 9, 0);
+      final deleted = AquariumModel(
+        id: 'aq_dead',
+        userId: 'user_1',
+        name: 'Old',
+        createdAt: DateTime(2025, 1, 1),
+        deletedAt: DateTime(2026, 4, 1),
+      );
+      when(
+        () => mockAquariums.getAllAquariums(),
+      ).thenReturn([buildAquarium('aq_1', name: 'Live'), deleted]);
+      when(() => mockLogs.getAll()).thenReturn([
+        buildLog(aquariumId: 'aq_1', actedAtLocal: today),
+        buildLog(aquariumId: 'aq_dead', actedAtLocal: today),
+      ]);
+      when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+      final r = await useCase(
+        CalculateFeedingHistoryParams(
+          userId: 'user_1',
+          range: FeedingHistoryRange.sevenDays,
+          referenceNow: today,
+        ),
+      );
+
+      final history = r.getOrElse(() => throw 'unreachable');
+      expect(history.totalFedCount, 1);
+    });
+  });
+
+  group('bestDayOfWeek', () {
+    test('returns the weekday with highest sum across the range', () async {
+      // Place 3 feedings on a Tuesday and 1 on a Sunday in a 30-day window.
+      final reference = DateTime(2026, 5, 1, 12); // Friday
+      // Pick a Tuesday two weeks back: 2026-04-21.
+      final tuesday = DateTime(2026, 4, 21, 8);
+      // Pick a Sunday: 2026-04-26.
+      final sunday = DateTime(2026, 4, 26, 8);
+      when(
+        () => mockAquariums.getAllAquariums(),
+      ).thenReturn([buildAquarium('aq_1', name: 'A')]);
+      when(() => mockLogs.getAll()).thenReturn([
+        buildLog(aquariumId: 'aq_1', actedAtLocal: tuesday),
+        buildLog(
+          aquariumId: 'aq_1',
+          actedAtLocal: tuesday.add(const Duration(hours: 4)),
+        ),
+        buildLog(
+          aquariumId: 'aq_1',
+          actedAtLocal: tuesday.add(const Duration(hours: 6)),
+        ),
+        buildLog(aquariumId: 'aq_1', actedAtLocal: sunday),
+      ]);
+      when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+      final r = await useCase(
+        CalculateFeedingHistoryParams(
+          userId: 'user_1',
+          range: FeedingHistoryRange.thirtyDays,
+          referenceNow: reference,
+        ),
+      );
+
+      final history = r.getOrElse(() => throw 'unreachable');
+      expect(history.bestDayOfWeek, DateTime.tuesday); // 2
+    });
+
+    test('returns null when range has no fed events', () async {
+      final today = DateTime(2026, 5, 1, 9, 0);
+      when(
+        () => mockAquariums.getAllAquariums(),
+      ).thenReturn([buildAquarium('aq_1', name: 'A')]);
+      when(() => mockLogs.getAll()).thenReturn([]);
+      when(() => mockStreaks.getStreakByUserId(any())).thenReturn(null);
+
+      final r = await useCase(
+        CalculateFeedingHistoryParams(
+          userId: 'user_1',
+          range: FeedingHistoryRange.sevenDays,
+          referenceNow: today,
+        ),
+      );
+
+      final history = r.getOrElse(() => throw 'unreachable');
+      expect(history.bestDayOfWeek, isNull);
+    });
+  });
+
+  group('validation', () {
+    test('returns ValidationFailure when userId is empty', () async {
+      final r = await useCase(
+        const CalculateFeedingHistoryParams(
+          userId: '',
+          range: FeedingHistoryRange.sevenDays,
+        ),
+      );
+      expect(r.isLeft(), isTrue);
+    });
+  });
 }
