@@ -35,6 +35,10 @@ class AquariumLocalDataSource {
     return aquariums;
   }
 
+  /// Alias for [getAllAquariums]. Preferred in use-case layer for consistency
+  /// with other local data sources.
+  List<AquariumModel> getAll() => getAllAquariums();
+
   /// Retrieves a single aquarium by its ID.
   ///
   /// [id] - The unique identifier of the aquarium.
