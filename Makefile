@@ -1,4 +1,4 @@
-.PHONY: get build_runner watch clean test lint format fix run_dev run_prod build_ios build_android setup-hooks
+.PHONY: get build_runner watch clean test lint format fix run_dev run_prod build_ios build_android setup-hooks sentry-upload-symbols release_ios release_android
 
 # Dependencies
 get:
@@ -44,7 +44,24 @@ setup-hooks:
 
 # Building
 build_ios:
-	flutter build ios --release --obfuscate --split-debug-info=build/debug-info
+	flutter build ios --release --obfuscate --split-debug-info=build/debug-info \
+		--extra-gen-snapshot-options=--save-obfuscation-map=build/debug-info/obfuscation.map.json
 
 build_android:
-	flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info
+	flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info \
+		--extra-gen-snapshot-options=--save-obfuscation-map=build/debug-info/obfuscation.map.json
+
+# Upload Dart .symbols + Android mapping.txt to Sentry for de-obfuscation.
+# Requires SENTRY_AUTH_TOKEN — typically: `set -a && . .env.sentry && set +a`.
+sentry-upload-symbols:
+	@if [ -z "$$SENTRY_AUTH_TOKEN" ]; then \
+		echo "ERROR: SENTRY_AUTH_TOKEN is not set."; \
+		echo "       Source .env.sentry first: 'set -a && . .env.sentry && set +a'"; \
+		exit 1; \
+	fi
+	dart run sentry_dart_plugin
+
+# One-shot release: build + upload symbols.
+release_ios: build_ios sentry-upload-symbols
+
+release_android: build_android sentry-upload-symbols
