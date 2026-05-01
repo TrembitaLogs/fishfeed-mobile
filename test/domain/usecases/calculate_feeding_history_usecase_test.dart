@@ -92,7 +92,7 @@ void main() {
             actedAtLocal: today.add(const Duration(hours: 2)),
           ),
         ];
-        when(() => mockAquariums.getAll()).thenReturn(aquariums);
+        when(() => mockAquariums.getAllAquariums()).thenReturn(aquariums);
         when(() => mockLogs.getAll()).thenReturn(logs);
         when(() => mockStreaks.getStreakByUserId('user_1')).thenReturn(
           StreakModel(

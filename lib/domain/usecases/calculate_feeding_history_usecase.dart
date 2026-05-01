@@ -66,7 +66,7 @@ class CalculateFeedingHistoryUseCase {
       );
 
       final accessibleAquariums = _aquariums
-          .getAll()
+          .getAllAquariums()
           .where((a) => !a.isDeleted)
           .toList(growable: false);
       final accessibleIds = accessibleAquariums.map((a) => a.id).toSet();
@@ -114,6 +114,7 @@ class CalculateFeedingHistoryUseCase {
       final aquariumBreakdown = _computeBreakdown(
         accessibleAquariums: accessibleAquariums,
         filteredLogs: filtered,
+        startDay: startDay,
         endDay: endDay,
         params: params,
       );
@@ -156,18 +157,29 @@ class CalculateFeedingHistoryUseCase {
   List<AquariumSparkline> _computeBreakdown({
     required List<AquariumModel> accessibleAquariums,
     required List<FeedingLogModel> filteredLogs,
+    required DateTime startDay,
     required DateTime endDay,
     required CalculateFeedingHistoryParams params,
   }) {
     if (params.aquariumId != null) return const [];
     if (accessibleAquariums.length < 2) return const [];
 
+    // Sparkline window is always last-7-days regardless of `range`; the strip
+    // remains a fixed-shape recent-activity glance. `totalCountInRange` follows
+    // `params.range`.
     final last7Start = endDay.subtract(const Duration(days: 6));
     final result = <AquariumSparkline>[];
     for (final aq in accessibleAquariums) {
       final logsForAq = filteredLogs
           .where((l) => l.aquariumId == aq.id)
           .toList();
+      // Only count logs whose local-day falls inside [startDay, endDay].
+      final logsForAqInRange = logsForAq
+          .where((l) {
+            final dayKey = DateTimeUtils.startOfDay(l.actedAt.toLocal());
+            return !dayKey.isBefore(startDay) && !dayKey.isAfter(endDay);
+          })
+          .toList(growable: false);
       final last7Counts = List<int>.filled(7, 0);
       for (final log in logsForAq) {
         final dayKey = DateTimeUtils.startOfDay(log.actedAt.toLocal());
@@ -180,7 +192,7 @@ class CalculateFeedingHistoryUseCase {
           aquariumId: aq.id,
           aquariumName: aq.name,
           last7DaysCounts: last7Counts,
-          totalCountInRange: logsForAq.length,
+          totalCountInRange: logsForAqInRange.length,
         ),
       );
     }
