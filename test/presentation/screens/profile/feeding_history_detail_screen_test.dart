@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/core/di/datasource_providers.dart';
+import 'package:fishfeed/core/utils/premium_gate.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/feeding_log_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
@@ -44,6 +45,9 @@ Widget _buildSubject({
           createdAt: DateTime(2025, 1, 1),
         ),
       ),
+      featureAccessProvider(
+        PremiumFeature.extendedStatistics,
+      ).overrideWith((ref) => true),
     ],
     // ignore: prefer_const_constructors
     child: MaterialApp(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/core/di/datasource_providers.dart';
+import 'package:fishfeed/core/utils/premium_gate.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/domain/entities/feeding_history.dart';
@@ -18,7 +20,14 @@ import 'package:fishfeed/presentation/widgets/feeding_history/feeding_history_ti
 /// Full-page feeding history screen with range selector, aquarium filter,
 /// "only mine" toggle, heatmap, insights, and detailed timeline.
 class FeedingHistoryDetailScreen extends ConsumerStatefulWidget {
-  const FeedingHistoryDetailScreen({super.key});
+  const FeedingHistoryDetailScreen({
+    super.key,
+    this.initialAquariumId,
+    this.initialDate,
+  });
+
+  final String? initialAquariumId;
+  final DateTime? initialDate;
 
   @override
   ConsumerState<FeedingHistoryDetailScreen> createState() =>
@@ -27,12 +36,32 @@ class FeedingHistoryDetailScreen extends ConsumerStatefulWidget {
 
 class _FeedingHistoryDetailScreenState
     extends ConsumerState<FeedingHistoryDetailScreen> {
-  FeedingHistoryRange _range = FeedingHistoryRange.sixMonths;
-  String? _aquariumId;
+  late FeedingHistoryRange _range;
+  late String? _aquariumId;
   bool _onlyMine = false;
 
   @override
+  void initState() {
+    super.initState();
+    _range = FeedingHistoryRange.sixMonths;
+    _aquariumId = widget.initialAquariumId;
+    // initialDate is currently informational; future enhancement can scroll
+    // the timeline to it. We keep the param so deep links remain stable.
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final hasAccess = ref.watch(
+      featureAccessProvider(PremiumFeature.extendedStatistics),
+    );
+    if (!hasAccess) {
+      // Subscription revoked mid-session. Bounce to paywall on next frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        GoRouter.of(context).go('/paywall');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
     final l10n = AppLocalizations.of(context)!;
     final asyncHistory = ref.watch(
       feedingHistoryProvider(

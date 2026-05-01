@@ -217,11 +217,22 @@ class AppRouter {
     GoRoute(
       path: feedingHistory,
       name: 'feedingHistory',
-      pageBuilder: (context, state) => _buildPage(
-        state: state,
-        child: const FeedingHistoryDetailScreen(),
-        transitionType: _PageTransitionType.slideRight,
-      ),
+      pageBuilder: (context, state) {
+        final aquariumId = state.uri.queryParameters['aquarium_id'];
+        final dateParam = state.uri.queryParameters['date'];
+        DateTime? initialDate;
+        if (dateParam != null) {
+          initialDate = DateTime.tryParse(dateParam);
+        }
+        return _buildPage(
+          state: state,
+          child: FeedingHistoryDetailScreen(
+            initialAquariumId: aquariumId,
+            initialDate: initialDate,
+          ),
+          transitionType: _PageTransitionType.slideRight,
+        );
+      },
     ),
     GoRoute(
       path: settings,
