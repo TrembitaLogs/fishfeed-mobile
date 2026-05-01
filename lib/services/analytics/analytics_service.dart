@@ -64,6 +64,13 @@ abstract final class AnalyticsEvents {
   static const String aiScanFailed = 'ai_scan_failed';
   static const String freeScansRemainingShown = 'free_scans_remaining_shown';
 
+  // Feeding History events
+  static const String feedingHistoryAquariumFiltered =
+      'feeding_history_aquarium_filtered';
+  static const String feedingHistoryOnlyMineToggled =
+      'feeding_history_only_mine_toggled';
+  static const String feedingHistoryOpened = 'feeding_history_opened';
+
   // Family events
   static const String familyInviteSent = 'family_invite_sent';
   static const String familyInviteAccepted = 'family_invite_accepted';
@@ -403,6 +410,39 @@ class AnalyticsService {
       AnalyticsParams.eventId: eventId,
       AnalyticsParams.status: status.name,
       AnalyticsParams.isFirstTime: isFirstTime,
+    });
+  }
+
+  /// Tracks feeding history screen opened.
+  void trackFeedingHistoryOpened({
+    required String range,
+    required String entryPoint,
+  }) {
+    _capture(AnalyticsEvents.feedingHistoryOpened, {
+      'range': range,
+      'entry_point': entryPoint,
+    });
+  }
+
+  /// Tracks aquarium filter applied in feeding history.
+  void trackFeedingHistoryAquariumFiltered({
+    required String aquariumId,
+    required String range,
+  }) {
+    _capture(AnalyticsEvents.feedingHistoryAquariumFiltered, {
+      'aquarium_id': aquariumId,
+      'range': range,
+    });
+  }
+
+  /// Tracks "only mine" toggle in feeding history.
+  void trackFeedingHistoryOnlyMineToggled({
+    required bool enabled,
+    required String range,
+  }) {
+    _capture(AnalyticsEvents.feedingHistoryOnlyMineToggled, {
+      'enabled': enabled,
+      'range': range,
     });
   }
 

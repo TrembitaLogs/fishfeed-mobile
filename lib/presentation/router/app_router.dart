@@ -11,6 +11,7 @@ import 'package:fishfeed/presentation/screens/home/home.dart';
 import 'package:fishfeed/presentation/screens/onboarding/onboarding.dart';
 import 'package:fishfeed/presentation/screens/paywall/paywall.dart';
 import 'package:fishfeed/presentation/screens/profile/profile.dart';
+import 'package:fishfeed/presentation/screens/profile/feeding_history_detail_screen.dart';
 import 'package:fishfeed/presentation/screens/family/join_family_screen.dart';
 import 'package:fishfeed/presentation/screens/settings/family_screen.dart';
 import 'package:fishfeed/presentation/screens/settings/appearance_screen.dart';
@@ -42,6 +43,7 @@ class AppRouter {
   static const String home = '/';
   static const String calendar = '/calendar';
   static const String profile = '/profile';
+  static const String feedingHistory = '/profile/feeding-history';
   static const String settings = '/settings';
   static const String notificationSettings = '/settings/notifications';
   static const String appearanceSettings = '/settings/appearance';
@@ -211,6 +213,26 @@ class AppRouter {
       name: 'profile',
       pageBuilder: (context, state) =>
           _buildPage(state: state, child: const ProfileScreen()),
+    ),
+    GoRoute(
+      path: feedingHistory,
+      name: 'feedingHistory',
+      pageBuilder: (context, state) {
+        final aquariumId = state.uri.queryParameters['aquarium_id'];
+        final dateParam = state.uri.queryParameters['date'];
+        DateTime? initialDate;
+        if (dateParam != null) {
+          initialDate = DateTime.tryParse(dateParam);
+        }
+        return _buildPage(
+          state: state,
+          child: FeedingHistoryDetailScreen(
+            initialAquariumId: aquariumId,
+            initialDate: initialDate,
+          ),
+          transitionType: _PageTransitionType.slideRight,
+        );
+      },
     ),
     GoRoute(
       path: settings,

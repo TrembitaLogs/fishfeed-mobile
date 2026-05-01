@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
+import 'package:fishfeed/presentation/providers/feeding_history_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
 import 'package:fishfeed/presentation/providers/statistics_provider.dart';
 
@@ -33,6 +34,7 @@ extension SyncRefreshExtension on Ref {
   /// - [currentStreakProvider] - Current feeding streak
   /// - [calendarDataProvider] - Calendar month data
   /// - [statisticsProvider] - User statistics
+  /// - [feedingHistoryProvider] - Feeding history detail data
   ///
   /// Also increments [syncRefreshProvider] to notify any listeners.
   void refreshAfterSync() {
@@ -40,6 +42,7 @@ extension SyncRefreshExtension on Ref {
     invalidate(currentStreakProvider);
     invalidate(calendarDataProvider);
     invalidate(statisticsProvider);
+    invalidate(feedingHistoryProvider);
     read(syncRefreshProvider.notifier).state++;
   }
 }
