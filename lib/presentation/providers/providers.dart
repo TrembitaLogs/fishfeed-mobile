@@ -13,6 +13,7 @@ export 'camera_provider.dart';
 export 'day_detail_provider.dart';
 export 'family_provider.dart';
 export 'family_sync_provider.dart';
+export 'feeding_history_provider.dart';
 export 'feeding_providers.dart';
 export 'fish_management_provider.dart';
 export 'home_providers.dart';
