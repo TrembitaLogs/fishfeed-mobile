@@ -4099,6 +4099,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recommendations'**
   String get recommendations;
+
+  /// Profile-screen section title and detail-screen app bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding History'**
+  String get feedingHistoryTitle;
+
+  /// Feeding history range option
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get feedingHistoryRange7d;
+
+  /// Feeding history range option
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get feedingHistoryRange30d;
+
+  /// Feeding history range option
+  ///
+  /// In en, this message translates to:
+  /// **'6 months'**
+  String get feedingHistoryRange6m;
+
+  /// Feeding history statistic label
+  ///
+  /// In en, this message translates to:
+  /// **'Total feedings'**
+  String get feedingHistoryTotalFeedings;
+
+  /// Feeding history statistic label
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get feedingHistoryCurrentStreak;
+
+  /// Feeding history statistic label
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get feedingHistoryLongestStreak;
+
+  /// Feeding history statistic label
+  ///
+  /// In en, this message translates to:
+  /// **'Best day'**
+  String get feedingHistoryBestDayOfWeek;
+
+  /// Filter toggle for feeding history
+  ///
+  /// In en, this message translates to:
+  /// **'Show only my actions'**
+  String get feedingHistoryShowOnlyMine;
+
+  /// Filter option for feeding history
+  ///
+  /// In en, this message translates to:
+  /// **'All aquariums'**
+  String get feedingHistoryAllAquariums;
+
+  /// Empty state title for feeding history
+  ///
+  /// In en, this message translates to:
+  /// **'No feedings yet'**
+  String get feedingHistoryEmptyTitle;
+
+  /// Empty state subtitle for feeding history
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first feeding to start your history.'**
+  String get feedingHistoryEmptySubtitle;
+
+  /// Empty state call-to-action button
+  ///
+  /// In en, this message translates to:
+  /// **'Log first feeding'**
+  String get feedingHistoryEmptyCta;
+
+  /// Tooltip for calendar day cell
+  ///
+  /// In en, this message translates to:
+  /// **'{date}: {count} feedings'**
+  String feedingHistoryDayCellTooltip(String date, int count);
+
+  /// Action type label
+  ///
+  /// In en, this message translates to:
+  /// **'Fed'**
+  String get feedingHistoryActionFed;
+
+  /// Action type label
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get feedingHistoryActionMissed;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get feedingHistoryWeekdayMon;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get feedingHistoryWeekdayTue;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get feedingHistoryWeekdayWed;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get feedingHistoryWeekdayThu;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get feedingHistoryWeekdayFri;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get feedingHistoryWeekdaySat;
+
+  /// Weekday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get feedingHistoryWeekdaySun;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get feedingHistoryWeekdayMonFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get feedingHistoryWeekdayTueFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get feedingHistoryWeekdayWedFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get feedingHistoryWeekdayThuFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get feedingHistoryWeekdayFriFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get feedingHistoryWeekdaySatFull;
+
+  /// Full weekday name
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get feedingHistoryWeekdaySunFull;
 }
 
 class _AppLocalizationsDelegate

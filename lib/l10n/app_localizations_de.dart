@@ -2365,4 +2365,97 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get recommendations => 'Empfehlungen';
+
+  @override
+  String get feedingHistoryTitle => 'Fütterungshistorie';
+
+  @override
+  String get feedingHistoryRange7d => '7 Tage';
+
+  @override
+  String get feedingHistoryRange30d => '30 Tage';
+
+  @override
+  String get feedingHistoryRange6m => '6 Monate';
+
+  @override
+  String get feedingHistoryTotalFeedings => 'Fütterungen gesamt';
+
+  @override
+  String get feedingHistoryCurrentStreak => 'Aktuelle Serie';
+
+  @override
+  String get feedingHistoryLongestStreak => 'Längste Serie';
+
+  @override
+  String get feedingHistoryBestDayOfWeek => 'Bester Tag';
+
+  @override
+  String get feedingHistoryShowOnlyMine => 'Nur meine Aktionen';
+
+  @override
+  String get feedingHistoryAllAquariums => 'Alle Aquarien';
+
+  @override
+  String get feedingHistoryEmptyTitle => 'Noch keine Fütterungen';
+
+  @override
+  String get feedingHistoryEmptySubtitle =>
+      'Protokolliere deine erste Fütterung, um deine Historie zu starten.';
+
+  @override
+  String get feedingHistoryEmptyCta => 'Erste Fütterung protokollieren';
+
+  @override
+  String feedingHistoryDayCellTooltip(String date, int count) {
+    return '$date: $count Fütterungen';
+  }
+
+  @override
+  String get feedingHistoryActionFed => 'Gefüttert';
+
+  @override
+  String get feedingHistoryActionMissed => 'Verpasst';
+
+  @override
+  String get feedingHistoryWeekdayMon => 'Mo';
+
+  @override
+  String get feedingHistoryWeekdayTue => 'Di';
+
+  @override
+  String get feedingHistoryWeekdayWed => 'Mi';
+
+  @override
+  String get feedingHistoryWeekdayThu => 'Do';
+
+  @override
+  String get feedingHistoryWeekdayFri => 'Fr';
+
+  @override
+  String get feedingHistoryWeekdaySat => 'Sa';
+
+  @override
+  String get feedingHistoryWeekdaySun => 'So';
+
+  @override
+  String get feedingHistoryWeekdayMonFull => 'Montag';
+
+  @override
+  String get feedingHistoryWeekdayTueFull => 'Dienstag';
+
+  @override
+  String get feedingHistoryWeekdayWedFull => 'Mittwoch';
+
+  @override
+  String get feedingHistoryWeekdayThuFull => 'Donnerstag';
+
+  @override
+  String get feedingHistoryWeekdayFriFull => 'Freitag';
+
+  @override
+  String get feedingHistoryWeekdaySatFull => 'Samstag';
+
+  @override
+  String get feedingHistoryWeekdaySunFull => 'Sonntag';
 }

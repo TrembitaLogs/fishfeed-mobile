@@ -3129,5 +3129,129 @@
   "recommendations": "Recommendations",
   "@recommendations": {
     "description": "Section header for AI recommendations"
+  },
+  "feedingHistoryTitle": "Feeding History",
+  "@feedingHistoryTitle": {
+    "description": "Profile-screen section title and detail-screen app bar."
+  },
+  "feedingHistoryRange7d": "7 days",
+  "@feedingHistoryRange7d": {
+    "description": "Feeding history range option"
+  },
+  "feedingHistoryRange30d": "30 days",
+  "@feedingHistoryRange30d": {
+    "description": "Feeding history range option"
+  },
+  "feedingHistoryRange6m": "6 months",
+  "@feedingHistoryRange6m": {
+    "description": "Feeding history range option"
+  },
+  "feedingHistoryTotalFeedings": "Total feedings",
+  "@feedingHistoryTotalFeedings": {
+    "description": "Feeding history statistic label"
+  },
+  "feedingHistoryCurrentStreak": "Current streak",
+  "@feedingHistoryCurrentStreak": {
+    "description": "Feeding history statistic label"
+  },
+  "feedingHistoryLongestStreak": "Longest streak",
+  "@feedingHistoryLongestStreak": {
+    "description": "Feeding history statistic label"
+  },
+  "feedingHistoryBestDayOfWeek": "Best day",
+  "@feedingHistoryBestDayOfWeek": {
+    "description": "Feeding history statistic label"
+  },
+  "feedingHistoryShowOnlyMine": "Show only my actions",
+  "@feedingHistoryShowOnlyMine": {
+    "description": "Filter toggle for feeding history"
+  },
+  "feedingHistoryAllAquariums": "All aquariums",
+  "@feedingHistoryAllAquariums": {
+    "description": "Filter option for feeding history"
+  },
+  "feedingHistoryEmptyTitle": "No feedings yet",
+  "@feedingHistoryEmptyTitle": {
+    "description": "Empty state title for feeding history"
+  },
+  "feedingHistoryEmptySubtitle": "Log your first feeding to start your history.",
+  "@feedingHistoryEmptySubtitle": {
+    "description": "Empty state subtitle for feeding history"
+  },
+  "feedingHistoryEmptyCta": "Log first feeding",
+  "@feedingHistoryEmptyCta": {
+    "description": "Empty state call-to-action button"
+  },
+  "feedingHistoryDayCellTooltip": "{date}: {count} feedings",
+  "@feedingHistoryDayCellTooltip": {
+    "description": "Tooltip for calendar day cell",
+    "placeholders": {
+      "date": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "feedingHistoryActionFed": "Fed",
+  "@feedingHistoryActionFed": {
+    "description": "Action type label"
+  },
+  "feedingHistoryActionMissed": "Missed",
+  "@feedingHistoryActionMissed": {
+    "description": "Action type label"
+  },
+  "feedingHistoryWeekdayMon": "Mon",
+  "@feedingHistoryWeekdayMon": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdayTue": "Tue",
+  "@feedingHistoryWeekdayTue": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdayWed": "Wed",
+  "@feedingHistoryWeekdayWed": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdayThu": "Thu",
+  "@feedingHistoryWeekdayThu": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdayFri": "Fri",
+  "@feedingHistoryWeekdayFri": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdaySat": "Sat",
+  "@feedingHistoryWeekdaySat": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdaySun": "Sun",
+  "@feedingHistoryWeekdaySun": {
+    "description": "Weekday abbreviation"
+  },
+  "feedingHistoryWeekdayMonFull": "Monday",
+  "@feedingHistoryWeekdayMonFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdayTueFull": "Tuesday",
+  "@feedingHistoryWeekdayTueFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdayWedFull": "Wednesday",
+  "@feedingHistoryWeekdayWedFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdayThuFull": "Thursday",
+  "@feedingHistoryWeekdayThuFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdayFriFull": "Friday",
+  "@feedingHistoryWeekdayFriFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdaySatFull": "Saturday",
+  "@feedingHistoryWeekdaySatFull": {
+    "description": "Full weekday name"
+  },
+  "feedingHistoryWeekdaySunFull": "Sunday",
+  "@feedingHistoryWeekdaySunFull": {
+    "description": "Full weekday name"
   }
 }
