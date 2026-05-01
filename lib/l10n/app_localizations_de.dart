@@ -2458,4 +2458,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedingHistoryWeekdaySunFull => 'Sonntag';
+
+  @override
+  String get feedingHistoryLockedTitle => '6 Monate Historie ansehen';
+
+  @override
+  String get feedingHistoryLockedCta => 'Auf Premium upgraden';
 }

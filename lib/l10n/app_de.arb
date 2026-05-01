@@ -1055,5 +1055,7 @@
   "feedingHistoryWeekdayThuFull": "Donnerstag",
   "feedingHistoryWeekdayFriFull": "Freitag",
   "feedingHistoryWeekdaySatFull": "Samstag",
-  "feedingHistoryWeekdaySunFull": "Sonntag"
+  "feedingHistoryWeekdaySunFull": "Sonntag",
+  "feedingHistoryLockedTitle": "6 Monate Historie ansehen",
+  "feedingHistoryLockedCta": "Auf Premium upgraden"
 }

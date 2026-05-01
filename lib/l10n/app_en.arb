@@ -3253,5 +3253,13 @@
   "feedingHistoryWeekdaySunFull": "Sunday",
   "@feedingHistoryWeekdaySunFull": {
     "description": "Full weekday name"
+  },
+  "feedingHistoryLockedTitle": "View 6 Months of History",
+  "@feedingHistoryLockedTitle": {
+    "description": "Locked stats preview heading"
+  },
+  "feedingHistoryLockedCta": "Upgrade to Premium",
+  "@feedingHistoryLockedCta": {
+    "description": "Locked stats CTA button label"
   }
 }

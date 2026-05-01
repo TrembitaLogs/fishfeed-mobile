@@ -4279,6 +4279,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sunday'**
   String get feedingHistoryWeekdaySunFull;
+
+  /// Locked stats preview heading
+  ///
+  /// In en, this message translates to:
+  /// **'View 6 Months of History'**
+  String get feedingHistoryLockedTitle;
+
+  /// Locked stats CTA button label
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Premium'**
+  String get feedingHistoryLockedCta;
 }
 
 class _AppLocalizationsDelegate
