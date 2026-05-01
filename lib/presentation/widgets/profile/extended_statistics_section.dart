@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:fishfeed/core/utils/premium_gate.dart';
+import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/domain/entities/feeding_history.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/feeding_history_provider.dart';
@@ -287,13 +288,23 @@ class _PremiumStatsContent extends ConsumerWidget {
           }
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => GoRouter.of(context).push('/profile/feeding-history'),
+            onTap: () {
+              AnalyticsService.instance.trackFeedingHistoryOpened(
+                range: 'sixMonths',
+                entryPoint: 'profile_section_tap',
+              );
+              GoRouter.of(context).push('/profile/feeding-history');
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 FeedingHistoryHeatmap(
                   days: history.days,
                   onDayTap: (day) {
+                    AnalyticsService.instance.trackFeedingHistoryOpened(
+                      range: 'sixMonths',
+                      entryPoint: 'heatmap_cell_tap',
+                    );
                     GoRouter.of(context).push(
                       '/profile/feeding-history?date='
                       '${day.date.toIso8601String()}',
@@ -305,6 +316,10 @@ class _PremiumStatsContent extends ConsumerWidget {
                   FeedingHistoryAquariumStrip(
                     breakdown: history.aquariumBreakdown,
                     onChipTap: (id) {
+                      AnalyticsService.instance.trackFeedingHistoryOpened(
+                        range: 'sixMonths',
+                        entryPoint: 'sparkline_chip',
+                      );
                       GoRouter.of(
                         context,
                       ).push('/profile/feeding-history?aquarium_id=$id');

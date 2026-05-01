@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/di/datasource_providers.dart';
+import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/domain/entities/feeding_history.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
@@ -76,11 +77,23 @@ class _FeedingHistoryDetailScreenState
                 );
                 if (!mounted) return;
                 setState(() => _aquariumId = picked);
+                if (picked != null) {
+                  AnalyticsService.instance.trackFeedingHistoryAquariumFiltered(
+                    aquariumId: picked,
+                    range: _range.name,
+                  );
+                }
               },
             ),
           SwitchListTile(
             value: _onlyMine,
-            onChanged: (v) => setState(() => _onlyMine = v),
+            onChanged: (v) {
+              setState(() => _onlyMine = v);
+              AnalyticsService.instance.trackFeedingHistoryOnlyMineToggled(
+                enabled: v,
+                range: _range.name,
+              );
+            },
             title: Text(l10n.feedingHistoryShowOnlyMine),
           ),
           Expanded(
