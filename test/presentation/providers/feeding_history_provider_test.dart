@@ -59,4 +59,55 @@ void main() {
 
     expect(result, equals(fakeHistory));
   });
+
+  test('invalidating provider re-runs the use case', () async {
+    final mock = MockUseCase();
+    var count = 0;
+    when(() => mock.call(any())).thenAnswer((_) async {
+      count++;
+      return Right(
+        FeedingHistory(
+          range: FeedingHistoryRange.sevenDays,
+          rangeStart: DateTime(2026, 4, 25),
+          rangeEnd: DateTime(2026, 5, 1),
+          days: const [],
+          totalFedCount: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          bestDayOfWeek: null,
+          aquariumBreakdown: const [],
+        ),
+      );
+    });
+
+    final container = ProviderContainer(
+      overrides: [
+        calculateFeedingHistoryUseCaseProvider.overrideWithValue(mock),
+        currentUserProvider.overrideWith(
+          (ref) => User(
+            id: 'user_1',
+            email: 'a@b',
+            displayName: 'A',
+            createdAt: DateTime(2025, 1, 1),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(
+      feedingHistoryProvider(
+        const FeedingHistoryQuery(range: FeedingHistoryRange.sevenDays),
+      ).future,
+    );
+    expect(count, 1);
+
+    container.invalidate(feedingHistoryProvider);
+    await container.read(
+      feedingHistoryProvider(
+        const FeedingHistoryQuery(range: FeedingHistoryRange.sevenDays),
+      ).future,
+    );
+    expect(count, 2);
+  });
 }

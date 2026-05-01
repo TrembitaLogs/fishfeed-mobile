@@ -14,6 +14,7 @@ import 'package:fishfeed/domain/usecases/calculate_streak_usecase.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/presentation/providers/ad_provider.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
+import 'package:fishfeed/presentation/providers/feeding_history_provider.dart';
 import 'package:fishfeed/services/ads/ad_service.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/feeding/feeding_service.dart';
@@ -239,6 +240,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
           status: FeedStatus.fed,
         );
 
+        // Invalidate feeding history so heatmap/stats refresh
+        _ref.invalidate(feedingHistoryProvider);
+
         // Refresh to get updated state from generator
         await refresh();
 
@@ -296,6 +300,9 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
           eventId: scheduleId,
           status: FeedStatus.missed,
         );
+
+        // Invalidate feeding history so heatmap/stats refresh
+        _ref.invalidate(feedingHistoryProvider);
 
         // Refresh to get updated state from generator
         await refresh();
