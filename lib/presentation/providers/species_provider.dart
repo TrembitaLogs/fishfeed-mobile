@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
@@ -158,21 +160,30 @@ final speciesByIdProvider = FutureProvider.family<Species?, String>((
   final repository = ref.read(speciesRepositoryProvider);
   final cached = repository.getCachedSpeciesById(speciesId);
   if (cached != null) {
-    // Store in memory cache for faster future access
-    ref.read(_speciesCacheProvider.notifier).state = {
-      ...memoryCache,
-      speciesId: cached,
-    };
+    // Defer cache mutation past the current build phase: Riverpod forbids a
+    // provider from modifying another provider during its initialization.
+    unawaited(
+      Future.microtask(() {
+        ref.read(_speciesCacheProvider.notifier).state = {
+          ...ref.read(_speciesCacheProvider),
+          speciesId: cached,
+        };
+      }),
+    );
     return cached;
   }
 
   // 3. Check hardcoded SpeciesData as fallback
   final hardcoded = SpeciesData.findById(speciesId);
   if (hardcoded.id == speciesId) {
-    ref.read(_speciesCacheProvider.notifier).state = {
-      ...memoryCache,
-      speciesId: hardcoded,
-    };
+    unawaited(
+      Future.microtask(() {
+        ref.read(_speciesCacheProvider.notifier).state = {
+          ...ref.read(_speciesCacheProvider),
+          speciesId: hardcoded,
+        };
+      }),
+    );
     return hardcoded;
   }
 

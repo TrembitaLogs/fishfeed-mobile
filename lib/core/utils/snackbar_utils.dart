@@ -28,9 +28,10 @@ class SnackbarUtils {
         action: SnackBarAction(
           label: actionLabel,
           textColor: colorScheme.onError,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
+          // Flutter dismisses the snackbar automatically when an action is
+          // tapped — no manual hideCurrentSnackBar needed (and calling it via
+          // ScaffoldMessenger.of(context) crashes if context is unmounted).
+          onPressed: () {},
         ),
       ),
     );
@@ -58,9 +59,7 @@ class SnackbarUtils {
         action: SnackBarAction(
           label: actionLabel,
           textColor: onSuccessColor,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
+          onPressed: () {},
         ),
       ),
     );
@@ -88,9 +87,7 @@ class SnackbarUtils {
         action: SnackBarAction(
           label: actionLabel,
           textColor: colorScheme.onPrimary,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
+          onPressed: () {},
         ),
       ),
     );
