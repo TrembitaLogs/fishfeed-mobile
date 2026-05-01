@@ -52,4 +52,41 @@ void main() {
       expect(d.aquariumIds, isEmpty);
     });
   });
+
+  group('AquariumSparkline', () {
+    test('equality holds for same fields', () {
+      final a = AquariumSparkline(
+        aquariumId: 'aq_1',
+        aquariumName: 'Office',
+        last7DaysCounts: const [0, 1, 2, 3, 0, 2, 1],
+        totalCountInRange: 32,
+      );
+      final b = AquariumSparkline(
+        aquariumId: 'aq_1',
+        aquariumName: 'Office',
+        last7DaysCounts: const [0, 1, 2, 3, 0, 2, 1],
+        totalCountInRange: 32,
+      );
+      expect(a, equals(b));
+    });
+  });
+
+  group('FeedingHistory', () {
+    test('exposes all fields', () {
+      final history = FeedingHistory(
+        range: FeedingHistoryRange.sixMonths,
+        rangeStart: DateTime(2025, 11, 1),
+        rangeEnd: DateTime(2026, 5, 1),
+        days: const [],
+        totalFedCount: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        bestDayOfWeek: null,
+        aquariumBreakdown: const [],
+      );
+      expect(history.range, FeedingHistoryRange.sixMonths);
+      expect(history.totalFedCount, 0);
+      expect(history.bestDayOfWeek, isNull);
+    });
+  });
 }
