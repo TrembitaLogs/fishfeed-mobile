@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 
+/// Controls which streak label is displayed in [FeedingHistoryInsightsRow].
+enum StreakLabel { current, longest }
+
 class FeedingHistoryInsightsRow extends StatelessWidget {
   const FeedingHistoryInsightsRow({
     super.key,
     required this.totalFedCount,
-    required this.longestStreak,
+    required this.streakDays,
+    required this.streakLabel,
     required this.bestDayOfWeek,
   });
 
   final int totalFedCount;
-  final int longestStreak;
+  final int streakDays;
+  final StreakLabel streakLabel;
 
   /// 1=Mon..7=Sun. Null when no data.
   final int? bestDayOfWeek;
@@ -19,11 +24,15 @@ class FeedingHistoryInsightsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final streakLabelText = switch (streakLabel) {
+      StreakLabel.current => l10n.feedingHistoryCurrentStreak,
+      StreakLabel.longest => l10n.feedingHistoryLongestStreak,
+    };
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _Card(label: l10n.feedingHistoryTotalFeedings, value: '$totalFedCount'),
-        _Card(label: l10n.feedingHistoryLongestStreak, value: '$longestStreak'),
+        _Card(label: streakLabelText, value: '$streakDays'),
         _Card(
           label: l10n.feedingHistoryBestDayOfWeek,
           value: _weekdayLabel(l10n, bestDayOfWeek),

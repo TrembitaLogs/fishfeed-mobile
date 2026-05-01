@@ -151,7 +151,8 @@ class _FeedingHistoryDetailScreenState
                     const SizedBox(height: 16),
                     FeedingHistoryInsightsRow(
                       totalFedCount: history.totalFedCount,
-                      longestStreak: history.longestStreak,
+                      streakDays: history.longestStreak,
+                      streakLabel: StreakLabel.longest,
                       bestDayOfWeek: history.bestDayOfWeek,
                     ),
                     const SizedBox(height: 16),

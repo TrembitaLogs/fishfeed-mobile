@@ -16,7 +16,8 @@ void main() {
       _wrap(
         const FeedingHistoryInsightsRow(
           totalFedCount: 42,
-          longestStreak: 7,
+          streakDays: 7,
+          streakLabel: StreakLabel.longest,
           bestDayOfWeek: DateTime.tuesday,
         ),
       ),
@@ -31,11 +32,44 @@ void main() {
       _wrap(
         const FeedingHistoryInsightsRow(
           totalFedCount: 0,
-          longestStreak: 0,
+          streakDays: 0,
+          streakLabel: StreakLabel.current,
           bestDayOfWeek: null,
         ),
       ),
     );
     expect(find.text('—'), findsAtLeastNWidgets(1));
   });
+
+  testWidgets(
+    'StreakLabel.current renders "Current streak" and StreakLabel.longest renders "Longest streak"',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const FeedingHistoryInsightsRow(
+            totalFedCount: 10,
+            streakDays: 3,
+            streakLabel: StreakLabel.current,
+            bestDayOfWeek: null,
+          ),
+        ),
+      );
+      expect(find.text('Current streak'), findsOneWidget);
+      expect(find.text('Longest streak'), findsNothing);
+
+      await tester.pumpWidget(
+        _wrap(
+          const FeedingHistoryInsightsRow(
+            totalFedCount: 10,
+            streakDays: 3,
+            streakLabel: StreakLabel.longest,
+            bestDayOfWeek: null,
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Longest streak'), findsOneWidget);
+      expect(find.text('Current streak'), findsNothing);
+    },
+  );
 }

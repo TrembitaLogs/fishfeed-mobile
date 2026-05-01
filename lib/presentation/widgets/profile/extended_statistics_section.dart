@@ -330,7 +330,8 @@ class _PremiumStatsContent extends ConsumerWidget {
                 const SizedBox(height: 12),
                 FeedingHistoryInsightsRow(
                   totalFedCount: history.totalFedCount,
-                  longestStreak: history.longestStreak,
+                  streakDays: history.currentStreak,
+                  streakLabel: StreakLabel.current,
                   bestDayOfWeek: history.bestDayOfWeek,
                 ),
               ],
