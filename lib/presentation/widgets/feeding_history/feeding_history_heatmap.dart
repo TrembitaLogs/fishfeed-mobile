@@ -4,23 +4,34 @@ import 'package:fishfeed/domain/entities/feeding_history.dart';
 
 /// GitHub-contribution-style heatmap. Each cell is one day.
 ///
-/// Cells are arranged into weekly columns (top = Monday, bottom = Sunday).
-/// Colour intensity is `lerp(theme.surfaceContainerHighest, theme.primary,
-/// fedCount / maxFedCount)`. Tap target is enlarged by transparent padding
-/// to ≥40dp via the surrounding [InkWell] hit slop.
+/// Layout: rows represent weeks (oldest at top), columns represent the seven
+/// days of the week (Monday at the left, Sunday at the right). Cell size
+/// scales with the available width so the seven columns fill the parent
+/// horizontally. Colour intensity is `lerp(theme.surfaceContainerHighest,
+/// theme.primary, fedCount / maxFedCount)`. The tap target is enlarged to
+/// ≥40dp by [FeedingHistoryDayCell] when the cell would otherwise render
+/// smaller than the Material minimum hit size.
 class FeedingHistoryHeatmap extends StatelessWidget {
   const FeedingHistoryHeatmap({
     super.key,
     required this.days,
     required this.onDayTap,
-    this.cellSize = 12,
     this.cellSpacing = 2,
+    this.minCellSize = 16,
+    this.maxCellSize = 48,
   });
 
   final List<FeedingHistoryDay> days;
   final ValueChanged<FeedingHistoryDay> onDayTap;
-  final double cellSize;
   final double cellSpacing;
+
+  /// Lower bound for the per-cell visual size. Used when the parent is so
+  /// narrow that a width-derived cell would be unreadable.
+  final double minCellSize;
+
+  /// Upper bound for the per-cell visual size. Prevents giant cells when
+  /// the parent is much wider than the seven-column grid needs.
+  final double maxCellSize;
 
   @override
   Widget build(BuildContext context) {
@@ -30,33 +41,49 @@ class FeedingHistoryHeatmap extends StatelessWidget {
         .fold<int>(0, (a, b) => a > b ? a : b);
     final theme = Theme.of(context);
 
-    final columns = _bucketIntoWeeks(days);
-    return Wrap(
-      spacing: cellSpacing,
-      children: [
-        for (final column in columns)
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final day in column) ...[
-                FeedingHistoryDayCell(
-                  day: day,
-                  size: cellSize,
-                  intensity: maxCount == 0 ? 0 : day.fedCount / maxCount,
-                  baseColor: theme.colorScheme.surfaceContainerHighest,
-                  filledColor: theme.colorScheme.primary,
-                  onTap: () => onDayTap(day),
-                ),
-                SizedBox(height: cellSpacing),
-              ],
+    final rows = _bucketIntoWeeks(days);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : maxCellSize * 7 + cellSpacing * 6;
+        final byWidth = (available - cellSpacing * 6) / 7;
+        final cellSize = byWidth.clamp(minCellSize, maxCellSize);
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var ri = 0; ri < rows.length; ri++) ...[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var di = 0; di < rows[ri].length; di++) ...[
+                    FeedingHistoryDayCell(
+                      day: rows[ri][di],
+                      size: cellSize,
+                      intensity: maxCount == 0
+                          ? 0
+                          : rows[ri][di].fedCount / maxCount,
+                      baseColor: theme.colorScheme.surfaceContainerHighest,
+                      filledColor: theme.colorScheme.primary,
+                      onTap: () => onDayTap(rows[ri][di]),
+                    ),
+                    if (di < rows[ri].length - 1) SizedBox(width: cellSpacing),
+                  ],
+                ],
+              ),
+              if (ri < rows.length - 1) SizedBox(height: cellSpacing),
             ],
-          ),
-      ],
+          ],
+        );
+      },
     );
   }
 
-  /// Buckets a chronological list of days into Monday-anchored weekly columns.
-  /// The first column is left-padded with empty placeholders if the range
+  /// Buckets a chronological list of days into Monday-anchored weekly groups.
+  /// The first group is left-padded with empty placeholders if the range
   /// does not start on a Monday.
   List<List<FeedingHistoryDay>> _bucketIntoWeeks(List<FeedingHistoryDay> days) {
     final out = <List<FeedingHistoryDay>>[];

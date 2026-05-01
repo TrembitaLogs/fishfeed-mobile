@@ -17,8 +17,9 @@ import 'package:fishfeed/presentation/widgets/premium/premium_chip.dart';
 
 /// Extended statistics section for premium users.
 ///
-/// Shows 6 months of feeding history for premium users,
-/// or a blurred preview with upgrade CTA for free users.
+/// Shows the last 30 days of feeding history for premium users,
+/// or a blurred preview with upgrade CTA for free users. The detail
+/// screen exposes longer ranges (7d / 30d / 6m) via its range chips.
 class ExtendedStatisticsSection extends ConsumerWidget {
   const ExtendedStatisticsSection({super.key});
 
@@ -69,7 +70,7 @@ class _SectionHeader extends StatelessWidget {
         if (!hasAccess) const PremiumChip(size: PremiumChipSize.tiny),
         const Spacer(),
         Text(
-          hasAccess ? l10n.feedingHistoryRange6m : l10n.feedingHistoryRange7d,
+          hasAccess ? l10n.feedingHistoryRange30d : l10n.feedingHistoryRange7d,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -261,7 +262,7 @@ class _PremiumStatsContent extends ConsumerWidget {
     final theme = Theme.of(context);
     final asyncHistory = ref.watch(
       feedingHistoryProvider(
-        const FeedingHistoryQuery(range: FeedingHistoryRange.sixMonths),
+        const FeedingHistoryQuery(range: FeedingHistoryRange.thirtyDays),
       ),
     );
     return Container(
@@ -290,7 +291,7 @@ class _PremiumStatsContent extends ConsumerWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () {
               AnalyticsService.instance.trackFeedingHistoryOpened(
-                range: 'sixMonths',
+                range: 'thirtyDays',
                 entryPoint: 'profile_section_tap',
               );
               GoRouter.of(context).push('/profile/feeding-history');
@@ -302,7 +303,7 @@ class _PremiumStatsContent extends ConsumerWidget {
                   days: history.days,
                   onDayTap: (day) {
                     AnalyticsService.instance.trackFeedingHistoryOpened(
-                      range: 'sixMonths',
+                      range: 'thirtyDays',
                       entryPoint: 'heatmap_cell_tap',
                     );
                     GoRouter.of(context).push(
@@ -317,7 +318,7 @@ class _PremiumStatsContent extends ConsumerWidget {
                     breakdown: history.aquariumBreakdown,
                     onChipTap: (id) {
                       AnalyticsService.instance.trackFeedingHistoryOpened(
-                        range: 'sixMonths',
+                        range: 'thirtyDays',
                         entryPoint: 'sparkline_chip',
                       );
                       GoRouter.of(
