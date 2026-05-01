@@ -81,4 +81,49 @@ void main() {
     expect(find.text('21'), findsOneWidget);
     expect(find.text('Tuesday'), findsOneWidget);
   });
+
+  testWidgets('free user sees locked preview, not the heatmap', (tester) async {
+    final mock = MockUseCase();
+    when(() => mock.call(any())).thenAnswer(
+      (_) async => Right(
+        FeedingHistory(
+          range: FeedingHistoryRange.thirtyDays,
+          rangeStart: DateTime(2026, 4, 1),
+          rangeEnd: DateTime(2026, 5, 1),
+          days: const [],
+          totalFedCount: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          bestDayOfWeek: null,
+          aquariumBreakdown: const [],
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          calculateFeedingHistoryUseCaseProvider.overrideWithValue(mock),
+          currentUserProvider.overrideWith(
+            (ref) => User(
+              id: 'user_1',
+              email: 'a@b',
+              displayName: 'A',
+              createdAt: DateTime(2025, 1, 1),
+            ),
+          ),
+          featureAccessProvider(
+            PremiumFeature.extendedStatistics,
+          ).overrideWith((ref) => false),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: ExtendedStatisticsSection()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(FeedingHistoryHeatmap), findsNothing);
+    expect(find.text('View 6 Months of History'), findsOneWidget);
+  });
 }

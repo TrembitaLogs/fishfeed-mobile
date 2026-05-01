@@ -56,4 +56,41 @@ void main() {
     // 7 real days + 4 placeholder days = 11 cells total.
     expect(find.byType(FeedingHistoryDayCell), findsNWidgets(11));
   });
+
+  testWidgets('cell colour intensity scales monotonically with fedCount', (
+    tester,
+  ) async {
+    // 7 days, ascending count.
+    final days = List<FeedingHistoryDay>.generate(
+      7,
+      (i) => FeedingHistoryDay(
+        date: DateTime(2026, 4, 13 + i), // 2026-04-13 is a Monday
+        fedCount: i,
+        aquariumIds: const [],
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        home: Scaffold(
+          body: FeedingHistoryHeatmap(days: days, onDayTap: (_) {}),
+        ),
+      ),
+    );
+    final cells = tester
+        .widgetList<FeedingHistoryDayCell>(find.byType(FeedingHistoryDayCell))
+        .toList();
+    expect(cells, hasLength(7));
+    for (var i = 1; i < cells.length; i++) {
+      expect(
+        cells[i].intensity,
+        greaterThanOrEqualTo(cells[i - 1].intensity),
+        reason:
+            'cell $i (count=${days[i].fedCount}) should be at least as '
+            'intense as cell ${i - 1} (count=${days[i - 1].fedCount})',
+      );
+    }
+  });
 }
