@@ -55,16 +55,16 @@ void main() {
 
   group('AquariumSparkline', () {
     test('equality holds for same fields', () {
-      final a = AquariumSparkline(
+      const a = AquariumSparkline(
         aquariumId: 'aq_1',
         aquariumName: 'Office',
-        last7DaysCounts: const [0, 1, 2, 3, 0, 2, 1],
+        last7DaysCounts: [0, 1, 2, 3, 0, 2, 1],
         totalCountInRange: 32,
       );
-      final b = AquariumSparkline(
+      const b = AquariumSparkline(
         aquariumId: 'aq_1',
         aquariumName: 'Office',
-        last7DaysCounts: const [0, 1, 2, 3, 0, 2, 1],
+        last7DaysCounts: [0, 1, 2, 3, 0, 2, 1],
         totalCountInRange: 32,
       );
       expect(a, equals(b));
