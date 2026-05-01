@@ -2429,4 +2429,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedingHistoryLockedCta => 'Upgrade to Premium';
+
+  @override
+  String get errorGeneric => 'Something went wrong. Please try again.';
 }

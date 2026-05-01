@@ -3261,5 +3261,9 @@
   "feedingHistoryLockedCta": "Upgrade to Premium",
   "@feedingHistoryLockedCta": {
     "description": "Locked stats CTA button label"
+  },
+  "errorGeneric": "Something went wrong. Please try again.",
+  "@errorGeneric": {
+    "description": "Generic error message shown when an unexpected error occurs"
   }
 }

@@ -1057,5 +1057,6 @@
   "feedingHistoryWeekdaySatFull": "Samstag",
   "feedingHistoryWeekdaySunFull": "Sonntag",
   "feedingHistoryLockedTitle": "6 Monate Historie ansehen",
-  "feedingHistoryLockedCta": "Auf Premium upgraden"
+  "feedingHistoryLockedCta": "Auf Premium upgraden",
+  "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
 }

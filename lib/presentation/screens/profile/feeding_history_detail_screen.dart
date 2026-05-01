@@ -128,7 +128,9 @@ class _FeedingHistoryDetailScreenState
           Expanded(
             child: asyncHistory.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('$e')),
+              error: (e, _) => Center(
+                child: Text(AppLocalizations.of(context)!.errorGeneric),
+              ),
               data: (history) {
                 if (history.totalFedCount == 0) {
                   return FeedingHistoryEmptyState(
@@ -140,7 +142,42 @@ class _FeedingHistoryDetailScreenState
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
                     const SizedBox(height: 8),
-                    FeedingHistoryHeatmap(days: history.days, onDayTap: (_) {}),
+                    // Item 3: weekday axis labels above the heatmap.
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          for (final w in <String>[
+                            l10n.feedingHistoryWeekdayMon,
+                            l10n.feedingHistoryWeekdayTue,
+                            l10n.feedingHistoryWeekdayWed,
+                            l10n.feedingHistoryWeekdayThu,
+                            l10n.feedingHistoryWeekdayFri,
+                            l10n.feedingHistoryWeekdaySat,
+                            l10n.feedingHistoryWeekdaySun,
+                          ])
+                            Expanded(
+                              child: Text(
+                                w,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Item 2: wrap in IgnorePointer so cells don't respond to taps.
+                    IgnorePointer(
+                      child: FeedingHistoryHeatmap(
+                        days: history.days,
+                        onDayTap: (_) {},
+                      ),
+                    ),
                     if (history.aquariumBreakdown.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       FeedingHistoryAquariumStrip(
@@ -156,10 +193,8 @@ class _FeedingHistoryDetailScreenState
                       bestDayOfWeek: history.bestDayOfWeek,
                     ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      height: 400,
-                      child: FeedingHistoryTimeline(rows: timelineRows),
-                    ),
+                    // Item 5: no SizedBox wrapper — timeline expands in outer ListView.
+                    FeedingHistoryTimeline(rows: timelineRows),
                   ],
                 );
               },
@@ -181,7 +216,11 @@ class _FeedingHistoryDetailScreenState
     final toLocal = history.rangeEnd.add(
       const Duration(hours: 23, minutes: 59, seconds: 59),
     );
-    Iterable<FeedingLogModel> raw = logsDs.getByDateRange(fromLocal, toLocal);
+    // Item 4: filter by actedAt (not scheduledFor) to match heatmap aggregation.
+    Iterable<FeedingLogModel> raw = logsDs.getAll().where((l) {
+      final actedLocal = l.actedAt.toLocal();
+      return !actedLocal.isBefore(fromLocal) && !actedLocal.isAfter(toLocal);
+    });
     if (_aquariumId != null) {
       raw = raw.where((l) => l.aquariumId == _aquariumId);
     }

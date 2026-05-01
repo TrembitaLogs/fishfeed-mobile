@@ -88,6 +88,10 @@ class FeedingHistoryTimeline extends StatelessWidget {
       }
     }
 
-    return ListView(children: children);
+    return ListView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: children,
+    );
   }
 }

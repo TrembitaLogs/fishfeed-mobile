@@ -2464,4 +2464,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedingHistoryLockedCta => 'Auf Premium upgraden';
+
+  @override
+  String get errorGeneric =>
+      'Etwas ist schiefgelaufen. Bitte versuche es erneut.';
 }

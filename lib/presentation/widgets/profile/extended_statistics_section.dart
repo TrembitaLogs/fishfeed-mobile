@@ -279,8 +279,12 @@ class _PremiumStatsContent extends ConsumerWidget {
           height: 120,
           child: Center(child: CircularProgressIndicator()),
         ),
-        error: (e, _) =>
-            SizedBox(height: 120, child: Center(child: Text('$e'))),
+        error: (e, _) => SizedBox(
+          height: 120,
+          child: Center(
+            child: Text(AppLocalizations.of(context)!.errorGeneric),
+          ),
+        ),
         data: (history) {
           if (history.totalFedCount == 0) {
             return FeedingHistoryEmptyState(

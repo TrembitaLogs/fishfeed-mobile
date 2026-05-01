@@ -4291,6 +4291,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Upgrade to Premium'**
   String get feedingHistoryLockedCta;
+
+  /// Generic error message shown when an unexpected error occurs
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errorGeneric;
 }
 
 class _AppLocalizationsDelegate
