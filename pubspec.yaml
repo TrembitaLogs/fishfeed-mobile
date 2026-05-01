@@ -148,11 +148,27 @@ dev_dependencies:
   # Testing
   mocktail: ^1.0.4
 
+  # Symbol upload to Sentry after release builds (mapping.txt + Dart symbols)
+  sentry_dart_plugin: ^2.4.1
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
   path_provider_platform_interface: any
+
+# Sentry symbol upload — picks up SENTRY_AUTH_TOKEN from env.
+# Run `dart run sentry_dart_plugin` after `flutter build` to upload.
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: false
+  upload_sources: false
+  project: fishfeed-mobile
+  org: trembita-eu
+  url: https://sentry.io
+  wait_for_processing: false
+  log_level: info
+  ignore_missing: true
 flutter:
   generate: true
 
