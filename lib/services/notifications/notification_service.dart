@@ -382,14 +382,28 @@ class NotificationService {
 
     final granted = await androidPlugin.requestNotificationsPermission();
 
-    // Request exact alarm permission for Android 14+ (API 34+)
-    final canScheduleExact = await androidPlugin
-        .canScheduleExactNotifications();
-    if (canScheduleExact != null && !canScheduleExact) {
-      await androidPlugin.requestExactAlarmsPermission();
-    }
-
+    // NOTE: SCHEDULE_EXACT_ALARM permission is NOT requested here. On Android
+    // 12+ requestExactAlarmsPermission() opens the system Settings activity,
+    // which would re-prompt every onboarding completion. NotificationOrchestrator
+    // detects revoked exact-alarm permission and falls back to
+    // inexactAllowWhileIdle automatically. If exact precision becomes required,
+    // expose it as a one-time settings toggle instead.
     return granted ?? false;
+  }
+
+  /// Opens the system Settings page where the user can grant SCHEDULE_EXACT_ALARM.
+  ///
+  /// Android 12+ only. Returns immediately on iOS / older Android.
+  /// Use this from a settings-screen action button rather than from onboarding,
+  /// to avoid re-prompting users who already configured the permission.
+  Future<void> openExactAlarmsSettings() async {
+    if (!Platform.isAndroid) return;
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin == null) return;
+    await androidPlugin.requestExactAlarmsPermission();
   }
 
   Future<bool> _requestIOSPermissions() async {

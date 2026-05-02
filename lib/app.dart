@@ -442,11 +442,21 @@ class _NotificationActionListenerState
   void _navigateToFeedingScreen(String payload) {
     String? scheduleId;
 
-    // Try schedule-based payload: "schedule_{scheduleId}_{timestampMs}"
-    final schedulePayload = parseSchedulePayload(payload);
-    if (schedulePayload != null) {
-      scheduleId = schedulePayload.scheduleId;
-    } else {
+    // Try orchestrator payload: "feeding|{scheduleId}|{YYYY-MM-DD}|{HHmm}"
+    final orchestratorPayload = parseOrchestratorPayload(payload);
+    if (orchestratorPayload != null) {
+      scheduleId = orchestratorPayload.scheduleId;
+    }
+
+    // Fallback to schedule-based payload: "schedule_{scheduleId}_{timestampMs}"
+    if (scheduleId == null) {
+      final schedulePayload = parseSchedulePayload(payload);
+      if (schedulePayload != null) {
+        scheduleId = schedulePayload.scheduleId;
+      }
+    }
+
+    if (scheduleId == null) {
       // Try daily payload: "feeding_daily_{HH}_{mm}"
       final dailyPayload = parseDailyPayload(payload);
       if (dailyPayload != null) {

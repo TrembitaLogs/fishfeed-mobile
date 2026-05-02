@@ -153,6 +153,43 @@ typedef SchedulePayload = ({String scheduleId, DateTime scheduledFor});
 /// Contains the hour and minute of the scheduled feeding.
 typedef DailyPayload = ({int hour, int minute});
 
+/// Parsed result from a NotificationOrchestrator payload.
+///
+/// Contains the schedule ID, the calendar date, and the HH:mm time.
+typedef OrchestratorPayload = ({String scheduleId, DateTime date, String time});
+
+/// Parses an orchestrator payload.
+///
+/// Payload format: "feeding|{scheduleId}|{YYYY-MM-DD}|{HHmm}"
+/// scheduleId may itself be a UUID; we split on `|` so internal `_` characters
+/// in the scheduleId are preserved.
+/// Returns null if the payload doesn't match the expected format.
+OrchestratorPayload? parseOrchestratorPayload(String? payload) {
+  if (payload == null || !payload.startsWith('feeding|')) {
+    return null;
+  }
+  final parts = payload.split('|');
+  if (parts.length != 4) return null;
+  final scheduleId = parts[1];
+  final dateStr = parts[2]; // YYYY-MM-DD
+  final hhmm = parts[3]; // HHmm (e.g. "0900")
+  if (scheduleId.isEmpty || hhmm.length != 4) return null;
+
+  final date = DateTime.tryParse(dateStr);
+  if (date == null) return null;
+
+  final hour = int.tryParse(hhmm.substring(0, 2));
+  final minute = int.tryParse(hhmm.substring(2, 4));
+  if (hour == null || minute == null) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+
+  final time =
+      '${hour.toString().padLeft(2, '0')}:'
+      '${minute.toString().padLeft(2, '0')}';
+
+  return (scheduleId: scheduleId, date: date, time: time);
+}
+
 /// Parses a schedule-based payload.
 ///
 /// Payload format: "schedule_{scheduleId}_{timestampMs}"
