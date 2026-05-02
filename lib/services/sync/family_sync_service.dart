@@ -366,8 +366,9 @@ class FamilySyncService with WidgetsBindingObserver {
     // After cancelling the just-fed event's notification, reconcile so that
     // future scheduled alarms reflect the latest aquarium state.
     final aquariumId = event.aquariumId;
-    if (_notificationOrchestrator != null && aquariumId != null) {
-      unawaited(_notificationOrchestrator!.reconcileForAquarium(aquariumId));
+    final orchestrator = _notificationOrchestrator;
+    if (orchestrator != null && aquariumId != null) {
+      unawaited(orchestrator.reconcileForAquarium(aquariumId));
     }
 
     // 2. Show in-app toast
