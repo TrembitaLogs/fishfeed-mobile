@@ -27,6 +27,7 @@ import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
 import 'package:fishfeed/presentation/providers/statistics_provider.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
+import 'package:fishfeed/services/notifications/notification_migration.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 import 'package:fishfeed/services/notifications/notification_permission_service.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
@@ -70,8 +71,14 @@ class _FishFeedAppState extends ConsumerState<FishFeedApp> {
       ref.read(authNotifierProvider.notifier).initialize();
     });
 
-    // T27: Trigger initial notification reconcile after Hive + auth init.
-    Future.microtask(() {
+    // T32: One-shot legacy alarm cleanup, then T27 app-launch reconcile.
+    // Migration must run FIRST: cancelAll wipes old daily-repeat alarms before
+    // the orchestrator rebuilds from current Hive state.
+    Future.microtask(() async {
+      await runNotificationMigrationV2(
+        orchestrator: ref.read(notificationOrchestratorProvider),
+        notificationService: NotificationService.instance,
+      );
       unawaited(
         ref
             .read(notificationOrchestratorProvider)
