@@ -435,6 +435,117 @@ void main() {
       expect(result.added, 7);
       expect(result.cancelled, 0); // cancelAll bypasses individual diff cancels
     });
+
+    test('changing schedule time cancels old alarms and adds new', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule(time: '09:00'));
+
+      await orchestrator.reconcile(reason: ReconcileReason.appLaunch);
+      final firstSnapshot = (await fakeNotif.getPendingNotifications())
+          .map((p) => p.id)
+          .toSet();
+      expect(firstSnapshot, hasLength(7));
+
+      // Simulate edit: same scheduleId, new time.
+      final updated = makeSchedule(time: '10:00');
+      await scheduleDs.update(updated);
+      final result = await orchestrator.reconcile(
+        reason: ReconcileReason.userMutation,
+      );
+
+      expect(result.added, 7);
+      expect(result.cancelled, 7);
+
+      final secondSnapshot = (await fakeNotif.getPendingNotifications())
+          .map((p) => p.id)
+          .toSet();
+      expect(secondSnapshot, hasLength(7));
+      expect(
+        secondSnapshot.intersection(firstSnapshot),
+        isEmpty,
+        reason: 'all 7 ids must differ — eventId encodes time',
+      );
+    });
+  });
+
+  group('NotificationOrchestrator.reconcile budget by platform', () {
+    late Directory tempDir;
+    late ScheduleLocalDataSource scheduleDs;
+    late FishLocalDataSource fishDs;
+    late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('hive_notif_platform_');
+      Hive.init(tempDir.path);
+      await HiveBoxes.initForTesting();
+      scheduleDs = ScheduleLocalDataSource();
+      fishDs = FishLocalDataSource();
+      aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
+    });
+
+    tearDown(() async {
+      await HiveBoxes.close();
+      await Hive.deleteFromDisk();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('iOS budget caps reconcile output at 60 alarms', () async {
+      final iosOrch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        now: () => DateTime(2026, 5, 6),
+        isIos: true,
+      );
+
+      // 3 fish × 4 schedules each × 7 days = 84 — exceeds iOS 60.
+      await aquariumDs.saveAquarium(makeAquarium());
+      for (var f = 0; f < 3; f++) {
+        await fishDs.saveFish(makeFish(id: 'f$f', aquariumId: 'a1'));
+        for (var s = 0; s < 4; s++) {
+          await scheduleDs.save(
+            makeSchedule(
+              id: 'f${f}_s$s',
+              fishId: 'f$f',
+              time: '${(7 + s).toString().padLeft(2, '0')}:00',
+            ),
+          );
+        }
+      }
+
+      final result = await iosOrch.reconcile(reason: ReconcileReason.appLaunch);
+      expect(result.added, 60);
+      expect(fakeNotif.scheduleCallCount, 60);
+    });
+
+    test('Android budget caps reconcile output at 200 alarms', () async {
+      final androidOrch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        now: () => DateTime(2026, 5, 6),
+        isIos: false,
+      );
+
+      // 50 fish × 1 schedule × 7 days = 350 — exceeds Android 200.
+      await aquariumDs.saveAquarium(makeAquarium());
+      for (var f = 0; f < 50; f++) {
+        await fishDs.saveFish(makeFish(id: 'f$f', aquariumId: 'a1'));
+        await scheduleDs.save(makeSchedule(id: 'f${f}_s0', fishId: 'f$f'));
+      }
+
+      final result = await androidOrch.reconcile(
+        reason: ReconcileReason.appLaunch,
+      );
+      expect(result.added, 200);
+    });
   });
 
   group('NotificationOrchestrator.diffAgainstSystem', () {

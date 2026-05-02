@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
@@ -36,13 +38,19 @@ class NotificationOrchestrator {
     required this.aquariumDs,
     required this.notificationService,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+    bool? isIos,
+  }) : _now = now ?? DateTime.now,
+       _isIos = isIos ?? Platform.isIOS;
 
   final ScheduleLocalDataSource scheduleDs;
   final FishLocalDataSource fishDs;
   final AquariumLocalDataSource aquariumDs;
   final NotificationService notificationService;
   final DateTime Function() _now;
+  final bool _isIos;
+
+  /// Platform-specific max alarms: iOS 60, Android 200.
+  int _platformMaxAlarms() => _isIos ? 60 : 200;
 
   /// Deterministic 32-bit positive int derived from `(scheduleId, date, time)`.
   /// Same input → same id. Used for diff-based reconcile (no double-schedule).
@@ -149,7 +157,10 @@ class NotificationOrchestrator {
   Future<ReconcileResult> reconcile({required ReconcileReason reason}) async {
     final stopwatch = Stopwatch()..start();
     try {
-      final planned = planForWindow(now: _now());
+      final planned = planForWindow(
+        now: _now(),
+        maxAlarms: _platformMaxAlarms(),
+      );
 
       // Locale change & migration force full reset.
       if (reason == ReconcileReason.localeChanged ||
