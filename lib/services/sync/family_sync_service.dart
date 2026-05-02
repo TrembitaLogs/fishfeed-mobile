@@ -1,10 +1,12 @@
-import 'dart:async';
+import 'dart:async' show StreamController, StreamSubscription, Timer, unawaited;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 
 /// Callback type for fetching remote feeding events from the server.
@@ -82,6 +84,8 @@ class FamilySyncService with WidgetsBindingObserver {
     FamilySyncConfig config = const FamilySyncConfig(),
     Connectivity? connectivity,
     NotificationService? notificationService,
+    NotificationOrchestrator? notificationOrchestrator,
+    ScheduleLocalDataSource? scheduleLocalDs,
   }) : _currentUserId = currentUserId,
        _fetchRemoteFeedings = fetchRemoteFeedings,
        _onFamilyFeeding = onFamilyFeeding,
@@ -89,7 +93,9 @@ class FamilySyncService with WidgetsBindingObserver {
        _config = config,
        _connectivity = connectivity ?? Connectivity(),
        _notificationService =
-           notificationService ?? NotificationService.instance;
+           notificationService ?? NotificationService.instance,
+       _notificationOrchestrator = notificationOrchestrator,
+       _scheduleLocalDs = scheduleLocalDs;
 
   final String _currentUserId;
   final FetchRemoteFeedingsCallback _fetchRemoteFeedings;
@@ -98,6 +104,8 @@ class FamilySyncService with WidgetsBindingObserver {
   final FamilySyncConfig _config;
   final Connectivity _connectivity;
   final NotificationService _notificationService;
+  final NotificationOrchestrator? _notificationOrchestrator;
+  final ScheduleLocalDataSource? _scheduleLocalDs;
 
   // Polling state
   Timer? _pollingTimer;
@@ -359,6 +367,14 @@ class FamilySyncService with WidgetsBindingObserver {
     // 1. Cancel any pending local notification for this feeding
     await _cancelNotificationForFeeding(event);
 
+    // After cancelling the just-fed event's notification, reconcile so that
+    // future scheduled alarms reflect the latest aquarium state.
+    final aquariumId = event.aquariumId;
+    final orchestrator = _notificationOrchestrator;
+    if (orchestrator != null && aquariumId != null) {
+      unawaited(orchestrator.reconcileForAquarium(aquariumId));
+    }
+
     // 2. Show in-app toast
     final userName = event.completedByName ?? 'Family member';
     _showToast('Feeding completed: $userName');
@@ -373,18 +389,46 @@ class FamilySyncService with WidgetsBindingObserver {
   }
 
   Future<void> _cancelNotificationForFeeding(FeedingEvent event) async {
-    // Generate notification ID from feeding event
-    // This matches the logic in NotificationService
-    final eventIdHash = event.localId?.hashCode ?? event.id.hashCode;
-    final notificationEventId = eventIdHash.abs() % 100000;
+    // Cancel the alarm scheduled by NotificationOrchestrator for this slot.
+    // eventIdFor hashes (scheduleId, date, time) — we can only target the
+    // exact alarm if we know the schedule's time-of-day, so we look it up
+    // in Hive via the injected ScheduleLocalDataSource.
+    final scheduleId = event.scheduleId;
+    final scheduleDs = _scheduleLocalDs;
+    if (scheduleId == null || scheduleDs == null) {
+      if (kDebugMode) {
+        debugPrint(
+          'FamilySyncService: Skipping cancel — no scheduleId or '
+          'ScheduleLocalDataSource not injected',
+        );
+      }
+      return;
+    }
+    final schedule = scheduleDs.getById(scheduleId);
+    if (schedule == null) {
+      if (kDebugMode) {
+        debugPrint(
+          'FamilySyncService: Schedule $scheduleId not found locally; '
+          'skipping notification cancel',
+        );
+      }
+      return;
+    }
+
+    final eventId = NotificationOrchestrator.eventIdFor(
+      scheduleId,
+      event.feedingTime,
+      schedule.time,
+    );
 
     if (kDebugMode) {
       debugPrint(
-        'FamilySyncService: Cancelling notification for event $notificationEventId',
+        'FamilySyncService: Cancelling orchestrator alarm '
+        '(scheduleId=$scheduleId, eventId=$eventId)',
       );
     }
 
-    await _notificationService.cancelScheduledNotification(notificationEventId);
+    await _notificationService.cancelNotification(eventId);
   }
 
   // ============ Manual Sync ============

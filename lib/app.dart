@@ -27,7 +27,11 @@ import 'package:fishfeed/presentation/providers/calendar_data_provider.dart';
 import 'package:fishfeed/presentation/providers/statistics_provider.dart';
 import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
+import 'package:fishfeed/services/notifications/notification_migration.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
+import 'package:fishfeed/services/notifications/notification_permission_service.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart';
 
 /// Provider for toggling performance overlay in debug builds.
 ///
@@ -66,6 +70,21 @@ class _FishFeedAppState extends ConsumerState<FishFeedApp> {
     Future.microtask(() {
       ref.read(authNotifierProvider.notifier).initialize();
     });
+
+    // T32: One-shot legacy alarm cleanup, then T27 app-launch reconcile.
+    // Migration must run FIRST: cancelAll wipes old daily-repeat alarms before
+    // the orchestrator rebuilds from current Hive state.
+    Future.microtask(() async {
+      await runNotificationMigrationV2(
+        orchestrator: ref.read(notificationOrchestratorProvider),
+        notificationService: NotificationService.instance,
+      );
+      unawaited(
+        ref
+            .read(notificationOrchestratorProvider)
+            .reconcile(reason: ReconcileReason.appLaunch),
+      );
+    });
   }
 
   void _initDeepLinks() {
@@ -101,6 +120,17 @@ class _FishFeedAppState extends ConsumerState<FishFeedApp> {
   Widget build(BuildContext context) {
     final showPerformanceOverlay = ref.watch(showPerformanceOverlayProvider);
     final themeMode = ref.watch(themeModeProvider);
+    // T29: Trigger reconcile when locale changes so notification bodies refresh.
+    ref.listen<String>(languageProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        unawaited(
+          ref
+              .read(notificationOrchestratorProvider)
+              .reconcile(reason: ReconcileReason.localeChanged),
+        );
+      }
+    });
+
     final language = ref.watch(languageProvider);
 
     return MaterialApp.router(
@@ -381,7 +411,23 @@ class _NotificationActionListenerState
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _processPendingActions();
+      _onResumed();
     }
+  }
+
+  // T28: Refresh permission state and trigger reconcile on app resume.
+  Future<void> _onResumed() async {
+    final permissionChanged = await NotificationPermissionService.instance
+        .refreshFromOs();
+    unawaited(
+      ref
+          .read(notificationOrchestratorProvider)
+          .reconcile(
+            reason: permissionChanged
+                ? ReconcileReason.permissionChanged
+                : ReconcileReason.appResume,
+          ),
+    );
   }
 
   void _handleAction(String actionId, String? payload) {
@@ -396,11 +442,21 @@ class _NotificationActionListenerState
   void _navigateToFeedingScreen(String payload) {
     String? scheduleId;
 
-    // Try schedule-based payload: "schedule_{scheduleId}_{timestampMs}"
-    final schedulePayload = parseSchedulePayload(payload);
-    if (schedulePayload != null) {
-      scheduleId = schedulePayload.scheduleId;
-    } else {
+    // Try orchestrator payload: "feeding|{scheduleId}|{YYYY-MM-DD}|{HHmm}"
+    final orchestratorPayload = parseOrchestratorPayload(payload);
+    if (orchestratorPayload != null) {
+      scheduleId = orchestratorPayload.scheduleId;
+    }
+
+    // Fallback to schedule-based payload: "schedule_{scheduleId}_{timestampMs}"
+    if (scheduleId == null) {
+      final schedulePayload = parseSchedulePayload(payload);
+      if (schedulePayload != null) {
+        scheduleId = schedulePayload.scheduleId;
+      }
+    }
+
+    if (scheduleId == null) {
       // Try daily payload: "feeding_daily_{HH}_{mm}"
       final dailyPayload = parseDailyPayload(payload);
       if (dailyPayload != null) {

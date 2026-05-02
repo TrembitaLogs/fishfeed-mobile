@@ -4,19 +4,31 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show ReconcileReason, ReconcileResult;
 import 'package:fishfeed/services/sync/family_sync_service.dart';
 
 class MockConnectivity extends Mock implements Connectivity {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
+class MockNotificationOrchestrator extends Mock
+    implements NotificationOrchestrator {}
+
+class MockScheduleLocalDataSource extends Mock
+    implements ScheduleLocalDataSource {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockConnectivity mockConnectivity;
   late MockNotificationService mockNotificationService;
+  late MockNotificationOrchestrator mockOrchestrator;
   late StreamController<List<ConnectivityResult>> connectivityController;
   late List<FeedingEvent> fetchedEvents;
   late List<FeedingEvent> receivedFeedingEvents;
@@ -40,9 +52,14 @@ void main() {
     );
   }
 
+  setUpAll(() {
+    registerFallbackValue(ReconcileReason.userMutation);
+  });
+
   setUp(() {
     mockConnectivity = MockConnectivity();
     mockNotificationService = MockNotificationService();
+    mockOrchestrator = MockNotificationOrchestrator();
     connectivityController = StreamController<List<ConnectivityResult>>();
     fetchedEvents = [];
     receivedFeedingEvents = [];
@@ -57,6 +74,10 @@ void main() {
     when(
       () => mockNotificationService.cancelScheduledNotification(any()),
     ).thenAnswer((_) async {});
+    when(() => mockOrchestrator.reconcileForAquarium(any())).thenAnswer(
+      (_) async =>
+          const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+    );
   });
 
   tearDown(() {
@@ -70,6 +91,7 @@ void main() {
       maxRetries: 3,
       retryDelay: Duration(milliseconds: 50),
     ),
+    ScheduleLocalDataSource? scheduleLocalDs,
   }) {
     return FamilySyncService(
       currentUserId: currentUserId,
@@ -85,6 +107,8 @@ void main() {
       config: config,
       connectivity: mockConnectivity,
       notificationService: mockNotificationService,
+      notificationOrchestrator: mockOrchestrator,
+      scheduleLocalDs: scheduleLocalDs,
     );
   }
 
@@ -219,21 +243,47 @@ void main() {
     });
 
     test('should cancel notification when family member feeds', () async {
-      final event = createTestEvent(
+      final mockScheduleDs = MockScheduleLocalDataSource();
+      when(() => mockScheduleDs.getById('schedule_42')).thenReturn(
+        ScheduleModel(
+          id: 'schedule_42',
+          fishId: 'fish_1',
+          aquariumId: 'aq1',
+          time: '09:00',
+          intervalDays: 1,
+          anchorDate: DateTime(2026, 5, 1),
+          foodType: 'flakes',
+          active: true,
+          createdAt: DateTime(2026, 5, 1),
+          updatedAt: DateTime(2026, 5, 1),
+          createdByUserId: 'user_1',
+        ),
+      );
+      when(
+        () => mockNotificationService.cancelNotification(any()),
+      ).thenAnswer((_) async {});
+
+      final event = FeedingEvent(
         id: 'event_1',
+        aquariumId: 'aq1',
+        feedingTime: DateTime(2026, 5, 6, 9, 0),
         completedBy: 'user_2',
         completedByName: 'John',
+        scheduleId: 'schedule_42',
       );
       fetchedEvents = [event];
 
-      final service = createService(currentUserId: 'user_1');
+      final service = createService(
+        currentUserId: 'user_1',
+        scheduleLocalDs: mockScheduleDs,
+      );
       service.initialize();
       service.startPolling(aquariumId: 'aq1');
 
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       verify(
-        () => mockNotificationService.cancelScheduledNotification(any()),
+        () => mockNotificationService.cancelNotification(any()),
       ).called(greaterThan(0));
 
       service.dispose();
@@ -258,6 +308,30 @@ void main() {
 
       service.dispose();
     });
+
+    test(
+      '_handleFamilyFeeding triggers reconcileForAquarium after cancel',
+      () async {
+        final event = createTestEvent(
+          id: 'event_orch',
+          completedBy: 'user_2',
+          aquariumId: 'aq1',
+        );
+        fetchedEvents = [event];
+
+        final service = createService(currentUserId: 'user_1');
+        service.initialize();
+        service.startPolling(aquariumId: 'aq1');
+
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+
+        verify(
+          () => mockOrchestrator.reconcileForAquarium('aq1'),
+        ).called(greaterThan(0));
+
+        service.dispose();
+      },
+    );
   });
 
   group('Connectivity handling', () {
@@ -324,6 +398,7 @@ void main() {
         ),
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();
@@ -356,6 +431,7 @@ void main() {
         ),
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();
@@ -467,6 +543,7 @@ void main() {
         showToast: (message) {},
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();

@@ -23,7 +23,9 @@ import 'package:fishfeed/presentation/screens/onboarding/steps/quantity_step.dar
 import 'package:fishfeed/presentation/screens/onboarding/steps/schedule_preview_step.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/presentation/screens/onboarding/widgets/onboarding_navigation.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 /// Main onboarding screen with PageView navigation.
@@ -129,16 +131,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       analytics.trackScheduleGenerated(timesPerDay: totalFeedingsPerDay);
 
-      // 1. Request notification permissions (only for first-time onboarding)
-      if (!widget.isAddMode && !widget.isAddAquariumMode) {
-        analytics.trackNotificationsPermissionPromptShown();
-        await NotificationService.instance.initialize();
-        final permissionGranted = await NotificationService.instance
-            .requestPermissions();
-        analytics.trackNotificationsPermissionResult(
-          granted: permissionGranted,
-        );
-      }
+      // Request notification permissions on every onboarding completion path
+      // (first-time, add-fish, add-aquarium). System API is idempotent — if
+      // already granted, returns immediately without UI.
+      analytics.trackNotificationsPermissionPromptShown();
+      await NotificationService.instance.initialize();
+      final permissionGranted = await NotificationService.instance
+          .requestPermissions();
+      analytics.trackNotificationsPermissionResult(granted: permissionGranted);
 
       // 2. Get aquarium ID
       String? aquariumId;
@@ -321,36 +321,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _scheduleNotifications(
     List<GeneratedScheduleEntry> schedule,
   ) async {
-    // Merge schedule entries into unified time slots for notifications
-    final mergedSlots = _mergeToTimeSlots(schedule);
-
-    for (var i = 0; i < mergedSlots.length; i++) {
-      final slot = mergedSlots[i];
-      final parts = slot.time.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-
-      final speciesText = slot.speciesNames.length == 1
-          ? slot.speciesNames.first
-          : '${slot.speciesNames.length} species';
-
-      final paddedHour = hour.toString().padLeft(2, '0');
-      final paddedMinute = minute.toString().padLeft(2, '0');
-
-      final l10n = AppLocalizations.of(context)!;
-
-      await NotificationService.instance.scheduleDailyFeeding(
-        id: 1000 + i,
-        title: l10n.feedingTimeNotificationTitle,
-        body: l10n.feedingTimeNotificationBody(speciesText),
-        hour: hour,
-        minute: minute,
-        payload: 'feeding_daily_${paddedHour}_$paddedMinute',
-      );
-    }
+    // Schedules are already persisted in Hive in `_persistSchedules`.
+    // Orchestrator reads Hive directly and produces correct alarms — including
+    // intervalDays > 1 — via rolling-window planning. Replaces the legacy
+    // daily-repeat path that ignored intervalDays.
+    await ref
+        .read(notificationOrchestratorProvider)
+        .reconcile(reason: ReconcileReason.onboardingComplete);
   }
 
   /// Merges schedule entries into unified time slots for notifications.
+  /// TODO(T34): dead code — remove when _MergedTimeSlot cleanup task runs.
+  // ignore: unused_element
   List<_MergedTimeSlot> _mergeToTimeSlots(
     List<GeneratedScheduleEntry> schedule,
   ) {

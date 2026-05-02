@@ -336,6 +336,25 @@ class NotificationService {
     );
   }
 
+  /// Returns whether the app can schedule exact alarms on this device.
+  ///
+  /// On Android 12+ (API 31+), users can revoke SCHEDULE_EXACT_ALARM via
+  /// system settings — when that happens this returns false and the
+  /// orchestrator falls back to inexact mode.
+  ///
+  /// On iOS this always returns true (no equivalent permission).
+  Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) return true;
+    if (!_isInitialized) {
+      await initialize();
+    }
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    return await androidPlugin?.canScheduleExactNotifications() ?? false;
+  }
+
   /// Requests notification permissions from the user.
   ///
   /// Returns `true` if permissions were granted, `false` otherwise.
@@ -363,14 +382,28 @@ class NotificationService {
 
     final granted = await androidPlugin.requestNotificationsPermission();
 
-    // Request exact alarm permission for Android 14+ (API 34+)
-    final canScheduleExact = await androidPlugin
-        .canScheduleExactNotifications();
-    if (canScheduleExact != null && !canScheduleExact) {
-      await androidPlugin.requestExactAlarmsPermission();
-    }
-
+    // NOTE: SCHEDULE_EXACT_ALARM permission is NOT requested here. On Android
+    // 12+ requestExactAlarmsPermission() opens the system Settings activity,
+    // which would re-prompt every onboarding completion. NotificationOrchestrator
+    // detects revoked exact-alarm permission and falls back to
+    // inexactAllowWhileIdle automatically. If exact precision becomes required,
+    // expose it as a one-time settings toggle instead.
     return granted ?? false;
+  }
+
+  /// Opens the system Settings page where the user can grant SCHEDULE_EXACT_ALARM.
+  ///
+  /// Android 12+ only. Returns immediately on iOS / older Android.
+  /// Use this from a settings-screen action button rather than from onboarding,
+  /// to avoid re-prompting users who already configured the permission.
+  Future<void> openExactAlarmsSettings() async {
+    if (!Platform.isAndroid) return;
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin == null) return;
+    await androidPlugin.requestExactAlarmsPermission();
   }
 
   Future<bool> _requestIOSPermissions() async {
@@ -484,6 +517,9 @@ class NotificationService {
   /// [hour] - Hour of the day (0-23).
   /// [minute] - Minute of the hour (0-59).
   /// [payload] - Optional payload data for handling taps.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleDailyFeeding({
     required int id,
     required String title,
@@ -508,6 +544,37 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
+      payload: payload,
+    );
+  }
+
+  /// One-shot scheduled notification — no daily-repeat behavior.
+  ///
+  /// Used by [NotificationOrchestrator] for rolling-window planning. Unlike
+  /// [scheduleDailyFeeding] this does NOT pass `matchDateTimeComponents`, so
+  /// the alarm fires once at the exact `scheduledAt` and is never repeated by
+  /// the OS.
+  Future<void> scheduleOneShot({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledAt,
+    required String payload,
+    AndroidScheduleMode androidScheduleMode =
+        AndroidScheduleMode.exactAllowWhileIdle,
+  }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduledAt,
+      _getNotificationDetails(NotificationType.feedingReminder),
+      androidScheduleMode: androidScheduleMode,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
@@ -538,6 +605,9 @@ class NotificationService {
   /// [times] - List of times in "HH:mm" format.
   /// [speciesNames] - List of species names being fed.
   /// [baseId] - Starting notification ID (subsequent IDs will be baseId + index).
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleFeedingReminders({
     required List<String> times,
     required List<String> speciesNames,
@@ -586,6 +656,9 @@ class NotificationService {
   /// [eventId] - Unique identifier for this feeding event.
   /// [title] - Localized notification title (optional, defaults to English).
   /// [body] - Localized notification body (optional, defaults to English with fishName).
+  @Deprecated(
+    'Internal use only — kept for snooze handler. Do not call from new code.',
+  )
   Future<void> scheduleFeeding({
     required DateTime time,
     required String fishName,
@@ -628,6 +701,9 @@ class NotificationService {
   ///
   /// This notification is throttled to maximum 1 per day per event.
   /// Returns `true` if the notification was scheduled, `false` if throttled.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<bool> scheduleMissedReminder({
     required DateTime time,
     required String fishName,
@@ -677,6 +753,9 @@ class NotificationService {
   /// [body] - Localized notification body (optional, defaults to English).
   ///
   /// The notification will prompt the user to confirm the feeding status.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleConfirmationReminder({
     required DateTime time,
     required int eventId,
@@ -718,6 +797,9 @@ class NotificationService {
   /// This notification warns the user that their streak is at risk
   /// and they have freeze days available to protect it.
   /// Should be scheduled 2 hours before the end of the day.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleFreezeWarning({
     required DateTime time,
     required int streakCount,
@@ -1001,6 +1083,9 @@ class NotificationService {
   ///
   /// Each notification is scheduled at the schedule's time on days where
   /// [ScheduleModel.shouldFeedOn] returns true.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<int> scheduleFromSchedules({
     required List<ScheduleModel> schedules,
     Map<String, String>? fishNames,

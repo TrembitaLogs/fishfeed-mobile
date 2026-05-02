@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
@@ -16,6 +17,7 @@ import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/screens/aquarium/widgets/edit_fish_form_fields.dart';
 import 'package:fishfeed/presentation/screens/aquarium/widgets/edit_fish_schedule_section.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 
 /// Screen for editing an existing fish.
 ///
@@ -243,7 +245,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
         // Add new schedule for this time
         final now = DateTime.now();
         final newSchedule = ScheduleModel(
-          id: '${_fish!.id}_${time.replaceAll(':', '')}',
+          id: const Uuid().v4(),
           fishId: _fish!.id,
           aquariumId: _selectedAquariumId,
           time: time,
@@ -273,6 +275,13 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
     // Invalidate feeding providers to refresh UI
     ref.invalidate(activeSchedulesForFishProvider(_fish!.id));
+
+    // Re-plan local notifications for this aquarium after schedule changes.
+    if (_fish != null && mounted) {
+      await ref
+          .read(notificationOrchestratorProvider)
+          .reconcileForAquarium(_fish!.aquariumId);
+    }
   }
 
   Future<void> _addFeedingTime() async {

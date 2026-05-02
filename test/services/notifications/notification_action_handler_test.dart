@@ -320,4 +320,61 @@ void main() {
       expect(parseDailyPayload(''), isNull);
     });
   });
+
+  group('parseOrchestratorPayload', () {
+    test('parses orchestrator payload with UUID scheduleId', () {
+      final result = parseOrchestratorPayload(
+        'feeding|72349148-551a-4c6b-acfe-d322048198d6|2026-05-02|1808',
+      );
+      expect(result, isNotNull);
+      expect(result!.scheduleId, '72349148-551a-4c6b-acfe-d322048198d6');
+      expect(result.date, DateTime(2026, 5, 2));
+      expect(result.time, '18:08');
+    });
+
+    test('parses orchestrator payload with midnight time', () {
+      final result = parseOrchestratorPayload(
+        'feeding|abc-123|2026-01-15|0000',
+      );
+      expect(result, isNotNull);
+      expect(result!.time, '00:00');
+    });
+
+    test('returns null for null payload', () {
+      expect(parseOrchestratorPayload(null), isNull);
+    });
+
+    test('returns null for empty string', () {
+      expect(parseOrchestratorPayload(''), isNull);
+    });
+
+    test('returns null for non-orchestrator payload', () {
+      expect(parseOrchestratorPayload('schedule_abc_123'), isNull);
+      expect(parseOrchestratorPayload('feeding_daily_09_00'), isNull);
+    });
+
+    test('returns null for malformed HHmm length', () {
+      expect(parseOrchestratorPayload('feeding|abc|2026-05-02|9:00'), isNull);
+    });
+
+    test('returns null for out-of-range hour or minute', () {
+      expect(parseOrchestratorPayload('feeding|abc|2026-05-02|2599'), isNull);
+    });
+
+    test('returns null for malformed date', () {
+      expect(parseOrchestratorPayload('feeding|abc|not-a-date|0900'), isNull);
+    });
+
+    test('returns null when missing parts', () {
+      expect(parseOrchestratorPayload('feeding|abc|2026-05-02'), isNull);
+      expect(
+        parseOrchestratorPayload('feeding|abc|2026-05-02|0900|extra'),
+        isNull,
+      );
+    });
+
+    test('returns null for empty scheduleId', () {
+      expect(parseOrchestratorPayload('feeding||2026-05-02|0900'), isNull);
+    });
+  });
 }

@@ -79,6 +79,7 @@ Future<void> main() async {
         isInDebugMode: kDebugMode,
       );
       await BackgroundSyncService.instance.registerPeriodicSync();
+      await BackgroundSyncService.instance.registerPeriodicNotificationRefill();
 
       runApp(const ProviderScope(child: FishFeedApp()));
     },

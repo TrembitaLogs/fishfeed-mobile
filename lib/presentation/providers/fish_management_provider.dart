@@ -10,6 +10,7 @@ import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/sync_refresh_provider.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 // ============================================================================
@@ -253,6 +254,11 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       // Soft delete via repository
       await _fishRepository.softDelete(id);
+
+      // Re-plan local notifications — removes alarms for this fish's schedules.
+      await _ref
+          .read(notificationOrchestratorProvider)
+          .reconcileForAquarium(fishToDelete.aquariumId);
 
       // Update state immediately for responsive UI
       final updatedList = state.userFish.where((f) => f.id != id).toList();

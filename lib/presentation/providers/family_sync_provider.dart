@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/core/utils/snackbar_utils.dart';
+import 'package:fishfeed/data/datasources/local/local_datasources_providers.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/feeding_providers.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 import 'package:fishfeed/services/sync/family_sync_service.dart';
 
 /// State for family sync service.
@@ -76,6 +78,8 @@ class FamilySyncNotifier extends StateNotifier<FamilySyncState> {
       fetchRemoteFeedings: _fetchRemoteFeedings,
       onFamilyFeeding: _handleFamilyFeeding,
       showToast: _showToast,
+      notificationOrchestrator: _ref.read(notificationOrchestratorProvider),
+      scheduleLocalDs: _ref.read(scheduleLocalDataSourceProvider),
     );
 
     _syncService!.initialize();
