@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
@@ -244,7 +245,7 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
         // Add new schedule for this time
         final now = DateTime.now();
         final newSchedule = ScheduleModel(
-          id: '${_fish!.id}_${time.replaceAll(':', '')}',
+          id: const Uuid().v4(),
           fishId: _fish!.id,
           aquariumId: _selectedAquariumId,
           time: time,
