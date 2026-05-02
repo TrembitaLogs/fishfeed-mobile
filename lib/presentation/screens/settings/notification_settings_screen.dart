@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/settings_provider.dart';
+import 'package:fishfeed/services/notifications/notification_permission_service.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
 
 /// Screen for managing notification settings.
 ///
@@ -83,6 +87,54 @@ class NotificationSettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+
+          // Debug snapshot tile (debug builds only)
+          if (kDebugMode)
+            ListTile(
+              leading: const Icon(Icons.bug_report),
+              title: const Text('Notifications snapshot (debug)'),
+              subtitle: const Text('Pending count + permission state'),
+              onTap: () async {
+                final pending = await NotificationService.instance
+                    .getPendingNotifications();
+                final permission = await NotificationPermissionService.instance
+                    .checkPermission();
+                final summary = StringBuffer()
+                  ..writeln('Pending count: ${pending.length}')
+                  ..writeln('Permission: $permission')
+                  ..writeln('---');
+                for (final p in pending.take(20)) {
+                  summary.writeln(
+                    'id=${p.id} title="${p.title}" payload=${p.payload}',
+                  );
+                }
+                if (!context.mounted) return;
+                await showDialog<void>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Notification snapshot'),
+                    content: SingleChildScrollView(
+                      child: SelectableText(summary.toString()),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Clipboard.setData(
+                            ClipboardData(text: summary.toString()),
+                          );
+                          Navigator.of(dialogContext).pop();
+                        },
+                        child: const Text('Copy'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

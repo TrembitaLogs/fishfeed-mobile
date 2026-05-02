@@ -503,6 +503,9 @@ class NotificationService {
   /// [hour] - Hour of the day (0-23).
   /// [minute] - Minute of the hour (0-59).
   /// [payload] - Optional payload data for handling taps.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleDailyFeeding({
     required int id,
     required String title,
@@ -588,6 +591,9 @@ class NotificationService {
   /// [times] - List of times in "HH:mm" format.
   /// [speciesNames] - List of species names being fed.
   /// [baseId] - Starting notification ID (subsequent IDs will be baseId + index).
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleFeedingReminders({
     required List<String> times,
     required List<String> speciesNames,
@@ -636,6 +642,9 @@ class NotificationService {
   /// [eventId] - Unique identifier for this feeding event.
   /// [title] - Localized notification title (optional, defaults to English).
   /// [body] - Localized notification body (optional, defaults to English with fishName).
+  @Deprecated(
+    'Internal use only — kept for snooze handler. Do not call from new code.',
+  )
   Future<void> scheduleFeeding({
     required DateTime time,
     required String fishName,
@@ -678,6 +687,9 @@ class NotificationService {
   ///
   /// This notification is throttled to maximum 1 per day per event.
   /// Returns `true` if the notification was scheduled, `false` if throttled.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<bool> scheduleMissedReminder({
     required DateTime time,
     required String fishName,
@@ -727,6 +739,9 @@ class NotificationService {
   /// [body] - Localized notification body (optional, defaults to English).
   ///
   /// The notification will prompt the user to confirm the feeding status.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleConfirmationReminder({
     required DateTime time,
     required int eventId,
@@ -768,6 +783,9 @@ class NotificationService {
   /// This notification warns the user that their streak is at risk
   /// and they have freeze days available to protect it.
   /// Should be scheduled 2 hours before the end of the day.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<void> scheduleFreezeWarning({
     required DateTime time,
     required int streakCount,
@@ -1051,6 +1069,9 @@ class NotificationService {
   ///
   /// Each notification is scheduled at the schedule's time on days where
   /// [ScheduleModel.shouldFeedOn] returns true.
+  @Deprecated(
+    'Use NotificationOrchestrator instead. Will be removed in a future release.',
+  )
   Future<int> scheduleFromSchedules({
     required List<ScheduleModel> schedules,
     Map<String, String>? fishNames,
