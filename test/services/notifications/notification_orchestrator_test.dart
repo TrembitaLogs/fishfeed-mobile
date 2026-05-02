@@ -779,6 +779,61 @@ void main() {
     });
   });
 
+  group('NotificationOrchestrator Sentry breadcrumbs smoke test', () {
+    late Directory tempDir;
+    late ScheduleLocalDataSource scheduleDs;
+    late FishLocalDataSource fishDs;
+    late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
+    late NotificationOrchestrator orchestrator;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'hive_notif_sentry_test_',
+      );
+      Hive.init(tempDir.path);
+      await HiveBoxes.initForTesting();
+      scheduleDs = ScheduleLocalDataSource();
+      fishDs = FishLocalDataSource();
+      aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
+      orchestrator = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
+        now: () => DateTime(2026, 5, 6, 12, 0),
+      );
+    });
+
+    tearDown(() async {
+      await HiveBoxes.close();
+      await Hive.deleteFromDisk();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+      'reconcile completes successfully with Sentry breadcrumbs enabled',
+      () async {
+        // Sentry is not initialized in tests — addBreadcrumb is a no-op, won't throw.
+        // This test verifies breadcrumb-add calls do not break reconcile behavior.
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule());
+
+        final result = await orchestrator.reconcile(
+          reason: ReconcileReason.appLaunch,
+        );
+
+        expect(result.isSuccess, isTrue);
+        expect(result.added, 7);
+      },
+    );
+  });
+
   group('NotificationOrchestrator.diffAgainstSystem', () {
     PlannedAlarm makeAlarm(int eventId, {String scheduleId = 's1'}) {
       final at = tz.TZDateTime(tz.local, 2026, 5, 6, 9, 0);

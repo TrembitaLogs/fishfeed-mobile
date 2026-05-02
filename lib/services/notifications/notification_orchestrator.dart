@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     show AndroidScheduleMode;
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
@@ -156,6 +157,20 @@ class NotificationOrchestrator {
     }
 
     if (maxAlarms != null && planned.length > maxAlarms) {
+      final dropped = planned.length - maxAlarms;
+      unawaited(
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            category: 'notif',
+            message: 'alarm-budget-trim',
+            data: {
+              'kept': maxAlarms,
+              'dropped': dropped,
+              'window_days': windowDays,
+            },
+          ),
+        ),
+      );
       planned.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
       return planned.sublist(0, maxAlarms);
     }
@@ -200,6 +215,15 @@ class NotificationOrchestrator {
   /// Extracted for testing and clarity; called by [reconcile] after mutex gate.
   Future<ReconcileResult> _doReconcile(ReconcileReason reason) async {
     final stopwatch = Stopwatch()..start();
+    unawaited(
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          category: 'notif',
+          message: 'reconcile.start',
+          data: {'reason': reason.name},
+        ),
+      ),
+    );
     try {
       // Early-return when OS permission is not granted — no alarms scheduled.
       final permission = await permissionService.checkPermission();
@@ -207,6 +231,15 @@ class NotificationOrchestrator {
           permission == NotificationPermissionStatus.permanentlyDenied ||
           permission == NotificationPermissionStatus.restricted) {
         stopwatch.stop();
+        unawaited(
+          Sentry.addBreadcrumb(
+            Breadcrumb(
+              category: 'notif',
+              message: 'reconcile.skipped',
+              data: {'reason': reason.name, 'cause': 'permission_denied'},
+            ),
+          ),
+        );
         return ReconcileResult.success(
           added: 0,
           cancelled: 0,
@@ -244,6 +277,21 @@ class NotificationOrchestrator {
           }
         }
         stopwatch.stop();
+        unawaited(
+          Sentry.addBreadcrumb(
+            Breadcrumb(
+              category: 'notif',
+              message: 'reconcile.done',
+              data: {
+                'reason': reason.name,
+                'added': planned.length,
+                'cancelled': 0,
+                'kept': 0,
+                'duration_ms': stopwatch.elapsedMilliseconds,
+              },
+            ),
+          ),
+        );
         return ReconcileResult.success(
           added: added,
           cancelled: 0,
@@ -291,6 +339,21 @@ class NotificationOrchestrator {
       }
 
       stopwatch.stop();
+      unawaited(
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            category: 'notif',
+            message: 'reconcile.done',
+            data: {
+              'reason': reason.name,
+              'added': diff.toAdd.length,
+              'cancelled': diff.toCancel.length,
+              'kept': diff.toKeep.length,
+              'duration_ms': stopwatch.elapsedMilliseconds,
+            },
+          ),
+        ),
+      );
       return ReconcileResult.success(
         added: added,
         cancelled: cancelled,
@@ -298,8 +361,18 @@ class NotificationOrchestrator {
         errors: errors,
         duration: stopwatch.elapsed,
       );
-    } catch (e) {
+    } catch (e, st) {
       stopwatch.stop();
+      unawaited(
+        Sentry.captureException(
+          e,
+          stackTrace: st,
+          withScope: (scope) {
+            scope.setTag('component', 'notification_orchestrator');
+            scope.setTag('reason', reason.name);
+          },
+        ),
+      );
       return ReconcileResult.failed(e);
     }
   }
@@ -313,9 +386,18 @@ class NotificationOrchestrator {
   Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
     if (_isIos) return AndroidScheduleMode.exactAllowWhileIdle;
     final canExact = await notificationService.canScheduleExactAlarms();
-    return canExact
-        ? AndroidScheduleMode.exactAllowWhileIdle
-        : AndroidScheduleMode.inexactAllowWhileIdle;
+    if (!canExact) {
+      unawaited(
+        Sentry.addBreadcrumb(
+          Breadcrumb(
+            category: 'notif',
+            message: 'exact-alarm-revoked-fallback',
+          ),
+        ),
+      );
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+    return AndroidScheduleMode.exactAllowWhileIdle;
   }
 
   /// Reconcile alarms scoped to a specific aquarium.
