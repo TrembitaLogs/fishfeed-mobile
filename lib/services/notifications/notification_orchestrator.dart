@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/services/notifications/notification_permission_service.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart'
     show
@@ -46,6 +47,7 @@ class NotificationOrchestrator {
     required this.fishDs,
     required this.aquariumDs,
     required this.notificationService,
+    required this.permissionService,
     DateTime Function()? now,
     bool? isIos,
   }) : _now = now ?? DateTime.now,
@@ -55,6 +57,7 @@ class NotificationOrchestrator {
   final FishLocalDataSource fishDs;
   final AquariumLocalDataSource aquariumDs;
   final NotificationService notificationService;
+  final NotificationPermissionService permissionService;
   final DateTime Function() _now;
   final bool _isIos;
 
@@ -198,6 +201,20 @@ class NotificationOrchestrator {
   Future<ReconcileResult> _doReconcile(ReconcileReason reason) async {
     final stopwatch = Stopwatch()..start();
     try {
+      // Early-return when OS permission is not granted — no alarms scheduled.
+      final permission = await permissionService.checkPermission();
+      if (permission == NotificationPermissionStatus.denied ||
+          permission == NotificationPermissionStatus.permanentlyDenied ||
+          permission == NotificationPermissionStatus.restricted) {
+        stopwatch.stop();
+        return ReconcileResult.success(
+          added: 0,
+          cancelled: 0,
+          kept: 0,
+          duration: stopwatch.elapsed,
+        );
+      }
+
       final planned = planForWindow(
         now: _now(),
         maxAlarms: _platformMaxAlarms(),

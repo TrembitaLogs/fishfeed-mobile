@@ -49,6 +49,9 @@ class NotificationPermissionService {
 
   SharedPreferences? _prefs;
 
+  /// Cached permission status from the last [refreshFromOs] call.
+  NotificationPermissionStatus? _lastKnownStatus;
+
   /// Initializes the service with SharedPreferences.
   Future<void> initialize() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -82,6 +85,31 @@ class NotificationPermissionService {
       PermissionStatus.restricted => NotificationPermissionStatus.restricted,
       PermissionStatus.limited => NotificationPermissionStatus.granted,
     };
+  }
+
+  /// Checks whether the OS permission status diverged from the cached
+  /// [_lastKnownStatus]. Updates the cache. Returns true if status changed.
+  ///
+  /// On the very first call (when [_lastKnownStatus] is null), returns false
+  /// and primes the cache. Subsequent calls compare and report change.
+  /// Used by the app-resume listener to trigger reconcile when the user
+  /// toggled notification permissions in OS Settings.
+  Future<bool> refreshFromOs() async {
+    final current = await checkPermission();
+    if (_lastKnownStatus == null) {
+      _lastKnownStatus = current;
+      return false;
+    }
+    final changed = _lastKnownStatus != current;
+    _lastKnownStatus = current;
+    return changed;
+  }
+
+  /// Test-only: prime the cache to a known value so tests can assert
+  /// change-detection behavior without relying on real OS permission state.
+  @visibleForTesting
+  void primeLastKnownStatusForTesting(NotificationPermissionStatus status) {
+    _lastKnownStatus = status;
   }
 
   /// Checks if notification permission is currently granted.

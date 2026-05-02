@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     show AndroidScheduleMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -15,8 +16,21 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/notification_permission_service.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart';
 import 'fake_notification_service.dart';
+
+class MockNotificationPermissionService extends Mock
+    implements NotificationPermissionService {}
+
+MockNotificationPermissionService createPermissionMock({
+  NotificationPermissionStatus status = NotificationPermissionStatus.granted,
+}) {
+  final mock = MockNotificationPermissionService();
+  when(() => mock.checkPermission()).thenAnswer((_) async => status);
+  when(() => mock.refreshFromOs()).thenAnswer((_) async => false);
+  return mock;
+}
 
 void main() {
   setUpAll(() {
@@ -157,6 +171,7 @@ void main() {
         fishDs: fishDs,
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
       );
     });
 
@@ -282,6 +297,7 @@ void main() {
         fishDs: fishDs,
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
       );
     });
 
@@ -376,6 +392,7 @@ void main() {
         fishDs: fishDs,
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
         now: () => DateTime(2026, 5, 6, 12, 0),
       );
     });
@@ -533,6 +550,7 @@ void main() {
           fishDs: fishDs,
           aquariumDs: aquariumDs,
           notificationService: fakeNotif,
+          permissionService: createPermissionMock(),
           now: () => DateTime(2026, 5, 6),
           isIos: false,
         );
@@ -560,6 +578,7 @@ void main() {
           fishDs: fishDs,
           aquariumDs: aquariumDs,
           notificationService: fakeNotif,
+          permissionService: createPermissionMock(),
           now: () => DateTime(2026, 5, 6),
           isIos: false,
         );
@@ -602,6 +621,7 @@ void main() {
         fishDs: fishDs,
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
         now: () => DateTime(2026, 5, 6),
         isIos: true,
       );
@@ -632,6 +652,7 @@ void main() {
         fishDs: fishDs,
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
+        permissionService: createPermissionMock(),
         now: () => DateTime(2026, 5, 6),
         isIos: false,
       );
@@ -647,6 +668,114 @@ void main() {
         reason: ReconcileReason.appLaunch,
       );
       expect(result.added, 200);
+    });
+  });
+
+  group('NotificationOrchestrator.reconcile permission gating', () {
+    late Directory tempDir;
+    late ScheduleLocalDataSource scheduleDs;
+    late FishLocalDataSource fishDs;
+    late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('hive_notif_perm_');
+      Hive.init(tempDir.path);
+      await HiveBoxes.initForTesting();
+      scheduleDs = ScheduleLocalDataSource();
+      fishDs = FishLocalDataSource();
+      aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
+    });
+
+    tearDown(() async {
+      await HiveBoxes.close();
+      await Hive.deleteFromDisk();
+      if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+    });
+
+    test('skips all scheduling when permission is denied', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final orch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        permissionService: createPermissionMock(
+          status: NotificationPermissionStatus.denied,
+        ),
+        now: () => DateTime(2026, 5, 6),
+      );
+
+      final result = await orch.reconcile(reason: ReconcileReason.appLaunch);
+
+      expect(result.isSuccess, isTrue);
+      expect(result.added, 0);
+      expect(fakeNotif.scheduleCallCount, 0);
+    });
+
+    test('schedules normally when permission is granted', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final orch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        permissionService: createPermissionMock(
+          status: NotificationPermissionStatus.granted,
+        ),
+        now: () => DateTime(2026, 5, 6),
+      );
+
+      final result = await orch.reconcile(reason: ReconcileReason.appLaunch);
+
+      expect(result.added, 7);
+    });
+
+    test('skips when permanentlyDenied', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final orch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        permissionService: createPermissionMock(
+          status: NotificationPermissionStatus.permanentlyDenied,
+        ),
+        now: () => DateTime(2026, 5, 6),
+      );
+
+      final result = await orch.reconcile(reason: ReconcileReason.appLaunch);
+      expect(result.added, 0);
+    });
+
+    test('skips when restricted', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final orch = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        permissionService: createPermissionMock(
+          status: NotificationPermissionStatus.restricted,
+        ),
+        now: () => DateTime(2026, 5, 6),
+      );
+
+      final result = await orch.reconcile(reason: ReconcileReason.appLaunch);
+      expect(result.added, 0);
     });
   });
 
