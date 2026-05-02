@@ -184,5 +184,70 @@ void main() {
         reason: '7 distinct alarms must have 7 distinct eventIds',
       );
     });
+
+    test('plans every-other-day for intervalDays=2 anchor today', () async {
+      final today = DateTime(2026, 5, 6);
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule(intervalDays: 2, anchorDate: today));
+
+      final planned = orchestrator.planForWindow(now: today, windowDays: 7);
+
+      // Expect alarms for: 2026-05-06, 05-08, 05-10, 05-12 → 4 alarms
+      expect(planned, hasLength(4));
+      expect(planned[0].scheduledAt.day, 6);
+      expect(planned[1].scheduledAt.day, 8);
+      expect(planned[2].scheduledAt.day, 10);
+      expect(planned[3].scheduledAt.day, 12);
+    });
+
+    test('skips schedules whose fish has been deleted from Hive', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      // intentionally NOT saving the fish — orphan from missing fish
+      await scheduleDs.save(makeSchedule());
+
+      final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
+      expect(planned, isEmpty);
+    });
+
+    test('skips schedules whose fish is soft-deleted', () async {
+      final today = DateTime(2026, 5, 6);
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish(deletedAt: today));
+      await scheduleDs.save(makeSchedule());
+
+      final planned = orchestrator.planForWindow(now: today);
+      expect(planned, isEmpty);
+    });
+
+    test('skips schedules whose aquarium is gone', () async {
+      await fishDs.saveFish(makeFish());
+      // no aquarium saved
+      await scheduleDs.save(makeSchedule());
+
+      final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
+      expect(planned, isEmpty);
+    });
+
+    test(
+      'skips schedules whose fish belongs to a different aquarium',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium(id: 'a1'));
+        await fishDs.saveFish(makeFish(aquariumId: 'a-other'));
+        await scheduleDs.save(makeSchedule(aquariumId: 'a1'));
+
+        final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
+        expect(planned, isEmpty);
+      },
+    );
+
+    test('skips inactive schedules', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule(active: false));
+
+      final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
+      expect(planned, isEmpty);
+    });
   });
 }
