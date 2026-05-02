@@ -81,6 +81,13 @@ void backgroundSyncCallbackDispatcher() {
         await _updateLastBackgroundSyncTime();
         await _resetErrorCount();
         debugPrint('BackgroundSync: Sync completed successfully');
+        // NOTE(T25): NotificationOrchestrator.reconcile(syncComplete) is intentionally
+        // NOT called here. This callback runs in a Workmanager isolate that has no
+        // Riverpod context and no access to Hive boxes opened by the main isolate.
+        // Peer-driven schedule changes are picked up within 24 h by the daily
+        // Workmanager refill job (T31). The in-app SyncService foreground path
+        // (lib/services/sync/sync_service.dart) IS the right place for this hook;
+        // see T25 scope note in the task description.
       } else {
         await _incrementErrorCount();
         debugPrint('BackgroundSync: Sync completed with failures');

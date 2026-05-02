@@ -7,6 +7,9 @@ import 'package:fishfeed/domain/entities/fish.dart';
 import 'package:fishfeed/domain/repositories/fish_repository.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
 import 'package:fishfeed/presentation/providers/fish_management_provider.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 // ============================================================================
@@ -16,6 +19,9 @@ import 'package:fishfeed/services/sync/sync_service.dart';
 class MockFishRepository extends Mock implements FishRepository {}
 
 class MockSyncService extends Mock implements SyncService {}
+
+class MockNotificationOrchestrator extends Mock
+    implements NotificationOrchestrator {}
 
 const _testAquariumId = 'test-aquarium-id';
 
@@ -108,13 +114,20 @@ void main() {
   group('FishManagementNotifier', () {
     late MockFishRepository mockFishRepo;
     late MockSyncService mockSyncService;
+    late MockNotificationOrchestrator mockOrchestrator;
     late ProviderContainer container;
 
     setUp(() {
       mockFishRepo = MockFishRepository();
       mockSyncService = MockSyncService();
+      mockOrchestrator = MockNotificationOrchestrator();
       // Default sync service setup
       when(() => mockSyncService.syncNow()).thenAnswer((_) async => 0);
+      // Default orchestrator stub — no-op for tests that don't verify it
+      when(() => mockOrchestrator.reconcileForAquarium(any())).thenAnswer(
+        (_) async =>
+            const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+      );
     });
 
     tearDown(() {
@@ -126,6 +139,7 @@ void main() {
         overrides: [
           fishRepositoryProvider.overrideWithValue(mockFishRepo),
           selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
+          notificationOrchestratorProvider.overrideWithValue(mockOrchestrator),
           if (syncService != null)
             syncServiceProvider.overrideWithValue(syncService),
         ],
@@ -436,6 +450,37 @@ void main() {
       expect(state.userFish, isEmpty);
       // No error should be set because sync errors are swallowed
       expect(state.hasError, isFalse);
+    });
+
+    test('deleteFish triggers orchestrator.reconcileForAquarium', () async {
+      final existingFish = _createFish('fish_1', 'guppy', 5);
+      final mockOrch = MockNotificationOrchestrator();
+
+      when(
+        () => mockFishRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn([existingFish]);
+      when(() => mockFishRepo.softDelete('fish_1')).thenAnswer((_) async {});
+      when(() => mockOrch.reconcileForAquarium(any())).thenAnswer(
+        (_) async =>
+            const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          fishRepositoryProvider.overrideWithValue(mockFishRepo),
+          selectedAquariumIdProvider.overrideWith((ref) => _testAquariumId),
+          syncServiceProvider.overrideWithValue(mockSyncService),
+          notificationOrchestratorProvider.overrideWithValue(mockOrch),
+        ],
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      await container
+          .read(fishManagementProvider.notifier)
+          .deleteFish('fish_1');
+
+      verify(() => mockOrch.reconcileForAquarium(_testAquariumId)).called(1);
     });
 
     test('getFishById returns fish when found', () async {

@@ -16,6 +16,7 @@ import 'package:fishfeed/presentation/providers/species_provider.dart';
 import 'package:fishfeed/presentation/screens/aquarium/widgets/edit_fish_form_fields.dart';
 import 'package:fishfeed/presentation/screens/aquarium/widgets/edit_fish_schedule_section.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
 
 /// Screen for editing an existing fish.
 ///
@@ -273,6 +274,13 @@ class _EditFishScreenState extends ConsumerState<EditFishScreen> {
 
     // Invalidate feeding providers to refresh UI
     ref.invalidate(activeSchedulesForFishProvider(_fish!.id));
+
+    // Re-plan local notifications for this aquarium after schedule changes.
+    if (_fish != null && mounted) {
+      await ref
+          .read(notificationOrchestratorProvider)
+          .reconcileForAquarium(_fish!.aquariumId);
+    }
   }
 
   Future<void> _addFeedingTime() async {
