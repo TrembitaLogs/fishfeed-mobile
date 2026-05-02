@@ -5,18 +5,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show ReconcileReason, ReconcileResult;
 import 'package:fishfeed/services/sync/family_sync_service.dart';
 
 class MockConnectivity extends Mock implements Connectivity {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
+class MockNotificationOrchestrator extends Mock
+    implements NotificationOrchestrator {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockConnectivity mockConnectivity;
   late MockNotificationService mockNotificationService;
+  late MockNotificationOrchestrator mockOrchestrator;
   late StreamController<List<ConnectivityResult>> connectivityController;
   late List<FeedingEvent> fetchedEvents;
   late List<FeedingEvent> receivedFeedingEvents;
@@ -40,9 +47,14 @@ void main() {
     );
   }
 
+  setUpAll(() {
+    registerFallbackValue(ReconcileReason.userMutation);
+  });
+
   setUp(() {
     mockConnectivity = MockConnectivity();
     mockNotificationService = MockNotificationService();
+    mockOrchestrator = MockNotificationOrchestrator();
     connectivityController = StreamController<List<ConnectivityResult>>();
     fetchedEvents = [];
     receivedFeedingEvents = [];
@@ -57,6 +69,10 @@ void main() {
     when(
       () => mockNotificationService.cancelScheduledNotification(any()),
     ).thenAnswer((_) async {});
+    when(() => mockOrchestrator.reconcileForAquarium(any())).thenAnswer(
+      (_) async =>
+          const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+    );
   });
 
   tearDown(() {
@@ -85,6 +101,7 @@ void main() {
       config: config,
       connectivity: mockConnectivity,
       notificationService: mockNotificationService,
+      notificationOrchestrator: mockOrchestrator,
     );
   }
 
@@ -258,6 +275,30 @@ void main() {
 
       service.dispose();
     });
+
+    test(
+      '_handleFamilyFeeding triggers reconcileForAquarium after cancel',
+      () async {
+        final event = createTestEvent(
+          id: 'event_orch',
+          completedBy: 'user_2',
+          aquariumId: 'aq1',
+        );
+        fetchedEvents = [event];
+
+        final service = createService(currentUserId: 'user_1');
+        service.initialize();
+        service.startPolling(aquariumId: 'aq1');
+
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+
+        verify(
+          () => mockOrchestrator.reconcileForAquarium('aq1'),
+        ).called(greaterThan(0));
+
+        service.dispose();
+      },
+    );
   });
 
   group('Connectivity handling', () {
@@ -324,6 +365,7 @@ void main() {
         ),
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();
@@ -356,6 +398,7 @@ void main() {
         ),
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();
@@ -467,6 +510,7 @@ void main() {
         showToast: (message) {},
         connectivity: mockConnectivity,
         notificationService: mockNotificationService,
+        notificationOrchestrator: mockOrchestrator,
       );
 
       service.initialize();

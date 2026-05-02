@@ -1,10 +1,11 @@
-import 'dart:async';
+import 'dart:async' show StreamController, StreamSubscription, Timer, unawaited;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:fishfeed/domain/entities/feeding_event.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 
 /// Callback type for fetching remote feeding events from the server.
@@ -82,6 +83,7 @@ class FamilySyncService with WidgetsBindingObserver {
     FamilySyncConfig config = const FamilySyncConfig(),
     Connectivity? connectivity,
     NotificationService? notificationService,
+    NotificationOrchestrator? notificationOrchestrator,
   }) : _currentUserId = currentUserId,
        _fetchRemoteFeedings = fetchRemoteFeedings,
        _onFamilyFeeding = onFamilyFeeding,
@@ -89,7 +91,8 @@ class FamilySyncService with WidgetsBindingObserver {
        _config = config,
        _connectivity = connectivity ?? Connectivity(),
        _notificationService =
-           notificationService ?? NotificationService.instance;
+           notificationService ?? NotificationService.instance,
+       _notificationOrchestrator = notificationOrchestrator;
 
   final String _currentUserId;
   final FetchRemoteFeedingsCallback _fetchRemoteFeedings;
@@ -98,6 +101,7 @@ class FamilySyncService with WidgetsBindingObserver {
   final FamilySyncConfig _config;
   final Connectivity _connectivity;
   final NotificationService _notificationService;
+  final NotificationOrchestrator? _notificationOrchestrator;
 
   // Polling state
   Timer? _pollingTimer;
@@ -358,6 +362,13 @@ class FamilySyncService with WidgetsBindingObserver {
 
     // 1. Cancel any pending local notification for this feeding
     await _cancelNotificationForFeeding(event);
+
+    // After cancelling the just-fed event's notification, reconcile so that
+    // future scheduled alarms reflect the latest aquarium state.
+    final aquariumId = event.aquariumId;
+    if (_notificationOrchestrator != null && aquariumId != null) {
+      unawaited(_notificationOrchestrator!.reconcileForAquarium(aquariumId));
+    }
 
     // 2. Show in-app toast
     final userName = event.completedByName ?? 'Family member';

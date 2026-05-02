@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,10 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/domain/entities/aquarium.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
 import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator_provider.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show ReconcileReason;
 
 /// Implementation of [AquariumRepository].
 ///
@@ -20,11 +26,14 @@ class AquariumRepositoryImpl implements AquariumRepository {
   AquariumRepositoryImpl({
     required AquariumLocalDataSource localDataSource,
     required AuthLocalDataSource authLocalDataSource,
+    required NotificationOrchestrator notificationOrchestrator,
   }) : _localDataSource = localDataSource,
-       _authLocalDataSource = authLocalDataSource;
+       _authLocalDataSource = authLocalDataSource,
+       _notificationOrchestrator = notificationOrchestrator;
 
   final AquariumLocalDataSource _localDataSource;
   final AuthLocalDataSource _authLocalDataSource;
+  final NotificationOrchestrator _notificationOrchestrator;
 
   @override
   Future<Either<Failure, Aquarium>> createAquarium({
@@ -137,6 +146,14 @@ class AquariumRepositoryImpl implements AquariumRepository {
     try {
       // Soft delete locally; sync mechanism will push deletion to server
       await _localDataSource.softDelete(aquariumId);
+
+      // Full reconcile — reconcileForAquarium would no longer find this aquarium.
+      unawaited(
+        _notificationOrchestrator.reconcile(
+          reason: ReconcileReason.userMutation,
+        ),
+      );
+
       return const Right(unit);
     } catch (e, st) {
       debugPrint('AquariumRepository.deleteAquarium failed: $e\n$st');
@@ -183,5 +200,6 @@ final aquariumRepositoryProvider = Provider<AquariumRepository>((ref) {
   return AquariumRepositoryImpl(
     localDataSource: localDataSource,
     authLocalDataSource: authLocalDataSource,
+    notificationOrchestrator: ref.read(notificationOrchestratorProvider),
   );
 });

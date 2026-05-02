@@ -8,17 +8,24 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/repositories/aquarium_repository_impl.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show ReconcileReason, ReconcileResult;
 
 class MockAquariumLocalDataSource extends Mock
     implements AquariumLocalDataSource {}
 
 class MockAuthLocalDataSource extends Mock implements AuthLocalDataSource {}
 
+class MockNotificationOrchestrator extends Mock
+    implements NotificationOrchestrator {}
+
 class FakeAquariumModel extends Fake implements AquariumModel {}
 
 void main() {
   late MockAquariumLocalDataSource mockLocalDataSource;
   late MockAuthLocalDataSource mockAuthLocalDataSource;
+  late MockNotificationOrchestrator mockOrchestrator;
   late AquariumRepositoryImpl repository;
 
   final testUserModel = UserModel(
@@ -41,15 +48,25 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FakeAquariumModel());
     registerFallbackValue(WaterType.freshwater);
+    registerFallbackValue(ReconcileReason.userMutation);
   });
 
   setUp(() {
     mockLocalDataSource = MockAquariumLocalDataSource();
     mockAuthLocalDataSource = MockAuthLocalDataSource();
+    mockOrchestrator = MockNotificationOrchestrator();
+
+    when(
+      () => mockOrchestrator.reconcile(reason: any(named: 'reason')),
+    ).thenAnswer(
+      (_) async =>
+          const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+    );
 
     repository = AquariumRepositoryImpl(
       localDataSource: mockLocalDataSource,
       authLocalDataSource: mockAuthLocalDataSource,
+      notificationOrchestrator: mockOrchestrator,
     );
   });
 
@@ -283,6 +300,25 @@ void main() {
       expect(result.isRight(), true);
       verify(() => mockLocalDataSource.softDelete('aquarium-123')).called(1);
     });
+
+    test(
+      'deleteAquarium triggers orchestrator reconcile (userMutation)',
+      () async {
+        when(
+          () => mockLocalDataSource.softDelete(any()),
+        ).thenAnswer((_) async {});
+
+        await repository.deleteAquarium('aquarium-123');
+
+        // Allow unawaited future to complete
+        await Future<void>.delayed(Duration.zero);
+
+        verify(
+          () =>
+              mockOrchestrator.reconcile(reason: ReconcileReason.userMutation),
+        ).called(1);
+      },
+    );
   });
 
   group('getCachedAquariums', () {
