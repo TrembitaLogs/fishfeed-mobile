@@ -14,6 +14,7 @@ import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart';
+import 'fake_notification_service.dart';
 
 void main() {
   setUpAll(() {
@@ -138,6 +139,7 @@ void main() {
     late ScheduleLocalDataSource scheduleDs;
     late FishLocalDataSource fishDs;
     late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
     late NotificationOrchestrator orchestrator;
 
     setUp(() async {
@@ -147,10 +149,12 @@ void main() {
       scheduleDs = ScheduleLocalDataSource();
       fishDs = FishLocalDataSource();
       aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
       orchestrator = NotificationOrchestrator(
         scheduleDs: scheduleDs,
         fishDs: fishDs,
         aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
       );
     });
 
@@ -258,6 +262,7 @@ void main() {
     late ScheduleLocalDataSource scheduleDs;
     late FishLocalDataSource fishDs;
     late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
     late NotificationOrchestrator orchestrator;
 
     setUp(() async {
@@ -269,10 +274,12 @@ void main() {
       scheduleDs = ScheduleLocalDataSource();
       fishDs = FishLocalDataSource();
       aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
       orchestrator = NotificationOrchestrator(
         scheduleDs: scheduleDs,
         fishDs: fishDs,
         aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
       );
     });
 
@@ -343,6 +350,90 @@ void main() {
 
       final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
       expect(planned, hasLength(35)); // 5 fish × 7 days
+    });
+  });
+
+  group('NotificationOrchestrator.reconcile', () {
+    late Directory tempDir;
+    late ScheduleLocalDataSource scheduleDs;
+    late FishLocalDataSource fishDs;
+    late AquariumLocalDataSource aquariumDs;
+    late FakeNotificationService fakeNotif;
+    late NotificationOrchestrator orchestrator;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('hive_notif_reconcile_');
+      Hive.init(tempDir.path);
+      await HiveBoxes.initForTesting();
+      scheduleDs = ScheduleLocalDataSource();
+      fishDs = FishLocalDataSource();
+      aquariumDs = AquariumLocalDataSource();
+      fakeNotif = FakeNotificationService();
+      orchestrator = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+        notificationService: fakeNotif,
+        now: () => DateTime(2026, 5, 6, 12, 0),
+      );
+    });
+
+    tearDown(() async {
+      await HiveBoxes.close();
+      await Hive.deleteFromDisk();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+      'first reconcile schedules planned alarms; result reflects counts',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule());
+
+        final result = await orchestrator.reconcile(
+          reason: ReconcileReason.appLaunch,
+        );
+
+        expect(result.isSuccess, isTrue);
+        expect(result.added, 7);
+        expect(result.cancelled, 0);
+        expect(fakeNotif.scheduleCallCount, 7);
+      },
+    );
+
+    test('second reconcile with unchanged state is idempotent', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      await orchestrator.reconcile(reason: ReconcileReason.appLaunch);
+      final secondResult = await orchestrator.reconcile(
+        reason: ReconcileReason.appResume,
+      );
+
+      expect(secondResult.added, 0);
+      expect(secondResult.cancelled, 0);
+      expect(secondResult.kept, 7);
+    });
+
+    test('localeChanged forces full cancel + replan', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      await orchestrator.reconcile(reason: ReconcileReason.appLaunch);
+      expect(fakeNotif.cancelAllCallCount, 0);
+
+      final result = await orchestrator.reconcile(
+        reason: ReconcileReason.localeChanged,
+      );
+
+      expect(fakeNotif.cancelAllCallCount, 1);
+      expect(result.added, 7);
+      expect(result.cancelled, 0); // cancelAll bypasses individual diff cancels
     });
   });
 

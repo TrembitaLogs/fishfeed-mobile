@@ -6,10 +6,7 @@ import 'package:fishfeed/services/notifications/notification_service.dart';
 
 /// In-memory fake of [NotificationService] for orchestrator tests.
 ///
-/// Tracks scheduled/cancelled alarms via internal maps + counters. Exposes
-/// `scheduleOneShot` and `canScheduleExactAlarms` ahead of their introduction
-/// in T9 / T16; once those methods land on NotificationService, mark them
-/// `@override`.
+/// Tracks scheduled/cancelled alarms via internal maps + counters.
 class FakeNotificationService extends Mock implements NotificationService {
   final Map<int, _ScheduledRecord> _pending = <int, _ScheduledRecord>{};
 
@@ -51,8 +48,7 @@ class FakeNotificationService extends Mock implements NotificationService {
     _pending.remove(id);
   }
 
-  /// Pre-T9: not yet `@override`. Will become `@override` once
-  /// NotificationService.scheduleOneShot is added in T9.
+  @override
   Future<void> scheduleOneShot({
     required int id,
     required String title,

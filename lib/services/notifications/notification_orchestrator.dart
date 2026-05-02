@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart';
 
 /// Result of comparing a planned set of alarms against system pending state.
@@ -33,11 +34,15 @@ class NotificationOrchestrator {
     required this.scheduleDs,
     required this.fishDs,
     required this.aquariumDs,
-  });
+    required this.notificationService,
+    DateTime Function()? now,
+  }) : _now = now ?? DateTime.now;
 
   final ScheduleLocalDataSource scheduleDs;
   final FishLocalDataSource fishDs;
   final AquariumLocalDataSource aquariumDs;
+  final NotificationService notificationService;
+  final DateTime Function() _now;
 
   /// Deterministic 32-bit positive int derived from `(scheduleId, date, time)`.
   /// Same input → same id. Used for diff-based reconcile (no double-schedule).
@@ -131,5 +136,68 @@ class NotificationOrchestrator {
       return planned.sublist(0, maxAlarms);
     }
     return planned;
+  }
+
+  /// Public entry point: reconciles system pending notifications with the
+  /// current Hive state.
+  ///
+  /// For most reasons does diff-based reconcile (add/cancel only what changed).
+  /// For [ReconcileReason.localeChanged] and [ReconcileReason.migration] does
+  /// a full cancelAll + replan to refresh body strings / wipe legacy IDs.
+  ///
+  /// Errors are caught and returned via [ReconcileResult.failed].
+  Future<ReconcileResult> reconcile({required ReconcileReason reason}) async {
+    final stopwatch = Stopwatch()..start();
+    try {
+      final planned = planForWindow(now: _now());
+
+      // Locale change & migration force full reset.
+      if (reason == ReconcileReason.localeChanged ||
+          reason == ReconcileReason.migration) {
+        await notificationService.cancelAllNotifications();
+        for (final p in planned) {
+          await _scheduleOne(p);
+        }
+        stopwatch.stop();
+        return ReconcileResult.success(
+          added: planned.length,
+          cancelled: 0,
+          kept: 0,
+          duration: stopwatch.elapsed,
+        );
+      }
+
+      final pending = await notificationService.getPendingNotifications();
+      final pendingIds = pending.map((p) => p.id).toSet();
+      final diff = diffAgainstSystem(planned: planned, pendingIds: pendingIds);
+
+      for (final id in diff.toCancel) {
+        await notificationService.cancelNotification(id);
+      }
+      for (final p in diff.toAdd) {
+        await _scheduleOne(p);
+      }
+
+      stopwatch.stop();
+      return ReconcileResult.success(
+        added: diff.toAdd.length,
+        cancelled: diff.toCancel.length,
+        kept: diff.toKeep.length,
+        duration: stopwatch.elapsed,
+      );
+    } catch (e) {
+      stopwatch.stop();
+      return ReconcileResult.failed(e);
+    }
+  }
+
+  Future<void> _scheduleOne(PlannedAlarm alarm) async {
+    await notificationService.scheduleOneShot(
+      id: alarm.eventId,
+      title: alarm.title,
+      body: alarm.body,
+      scheduledAt: alarm.scheduledAt,
+      payload: alarm.payload,
+    );
   }
 }

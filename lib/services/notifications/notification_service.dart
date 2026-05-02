@@ -512,6 +512,37 @@ class NotificationService {
     );
   }
 
+  /// One-shot scheduled notification — no daily-repeat behavior.
+  ///
+  /// Used by [NotificationOrchestrator] for rolling-window planning. Unlike
+  /// [scheduleDailyFeeding] this does NOT pass `matchDateTimeComponents`, so
+  /// the alarm fires once at the exact `scheduledAt` and is never repeated by
+  /// the OS.
+  Future<void> scheduleOneShot({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledAt,
+    required String payload,
+    AndroidScheduleMode androidScheduleMode =
+        AndroidScheduleMode.exactAllowWhileIdle,
+  }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduledAt,
+      _getNotificationDetails(NotificationType.feedingReminder),
+      androidScheduleMode: androidScheduleMode,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: payload,
+    );
+  }
+
   /// Calculates the next instance of a specific time.
   ///
   /// If the time has already passed today, returns tomorrow's time.
