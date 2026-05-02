@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:timezone/timezone.dart' as tz;
@@ -54,6 +55,10 @@ class NotificationOrchestrator {
   final NotificationService notificationService;
   final DateTime Function() _now;
   final bool _isIos;
+
+  /// In-flight reconcile future; used to serialize concurrent calls.
+  /// If a reconcile is running, other calls wait for it to complete.
+  Future<ReconcileResult>? _inFlight;
 
   /// Platform-specific max alarms: iOS 60, Android 200.
   int _platformMaxAlarms() => _isIos ? 60 : 200;
@@ -155,6 +160,9 @@ class NotificationOrchestrator {
   /// Public entry point: reconciles system pending notifications with the
   /// current Hive state.
   ///
+  /// Concurrent calls are serialized via an in-flight mutex. If a reconcile is
+  /// running, subsequent calls wait for it to complete before starting.
+  ///
   /// For most reasons does diff-based reconcile (add/cancel only what changed).
   /// For [ReconcileReason.localeChanged] and [ReconcileReason.migration] does
   /// a full cancelAll + replan to refresh body strings / wipe legacy IDs.
@@ -164,6 +172,28 @@ class NotificationOrchestrator {
   /// Catastrophic non-loop errors (e.g., Hive failures) are caught by the
   /// outer try/catch and returned via [ReconcileResult.failed].
   Future<ReconcileResult> reconcile({required ReconcileReason reason}) async {
+    // If a reconcile is already running, wait for it to finish before starting.
+    while (_inFlight != null) {
+      await _inFlight;
+    }
+    final completer = Completer<ReconcileResult>();
+    _inFlight = completer.future;
+    try {
+      final result = await _doReconcile(reason);
+      completer.complete(result);
+      return result;
+    } catch (e) {
+      final result = ReconcileResult.failed(e);
+      completer.complete(result);
+      return result;
+    } finally {
+      _inFlight = null;
+    }
+  }
+
+  /// Internal implementation of reconcile logic.
+  /// Extracted for testing and clarity; called by [reconcile] after mutex gate.
+  Future<ReconcileResult> _doReconcile(ReconcileReason reason) async {
     final stopwatch = Stopwatch()..start();
     try {
       final planned = planForWindow(
@@ -250,6 +280,15 @@ class NotificationOrchestrator {
       stopwatch.stop();
       return ReconcileResult.failed(e);
     }
+  }
+
+  /// Reconcile alarms scoped to a specific aquarium.
+  ///
+  /// v1: simply delegates to full [reconcile] with [ReconcileReason.userMutation].
+  /// The `aquariumId` parameter is preserved on the API surface for future
+  /// optimization (per-aquarium scoped reconcile).
+  Future<ReconcileResult> reconcileForAquarium(String aquariumId) {
+    return reconcile(reason: ReconcileReason.userMutation);
   }
 
   Future<void> _scheduleOne(PlannedAlarm alarm) async {

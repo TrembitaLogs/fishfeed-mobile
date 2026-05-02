@@ -489,6 +489,32 @@ void main() {
         expect(fakeNotif.scheduleCallCount, 6); // succeed-counter only
       },
     );
+
+    test('concurrent reconcile calls serialize via mutex', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      // Fire two reconciles in parallel.
+      final f1 = orchestrator.reconcile(reason: ReconcileReason.appLaunch);
+      final f2 = orchestrator.reconcile(reason: ReconcileReason.appResume);
+      await Future.wait([f1, f2]);
+
+      // Total schedule attempts should be 7 — not 14. The second reconcile sees
+      // the first's outputs in pending and produces no adds.
+      expect(fakeNotif.scheduleCallCount, equals(7));
+    });
+
+    test('reconcileForAquarium delegates to full reconcile', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final result = await orchestrator.reconcileForAquarium('a1');
+
+      expect(result.isSuccess, isTrue);
+      expect(result.added, 7);
+    });
   });
 
   group('NotificationOrchestrator.reconcile budget by platform', () {
