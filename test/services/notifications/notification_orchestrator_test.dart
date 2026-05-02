@@ -467,6 +467,28 @@ void main() {
         reason: 'all 7 ids must differ — eventId encodes time',
       );
     });
+
+    test(
+      'single zonedSchedule failure does not abort whole reconcile',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule());
+
+        // Fake throws on the first schedule call only; remaining 6 succeed.
+        fakeNotif.failNthSchedule = 1;
+
+        final result = await orchestrator.reconcile(
+          reason: ReconcileReason.appLaunch,
+        );
+
+        expect(result.isSuccess, isTrue);
+        expect(result.errors, hasLength(1));
+        expect(result.errors.first.eventId, isPositive);
+        expect(result.added, 6); // 7 attempted, 1 failed
+        expect(fakeNotif.scheduleCallCount, 6); // succeed-counter only
+      },
+    );
   });
 
   group('NotificationOrchestrator.reconcile budget by platform', () {

@@ -6,7 +6,13 @@ import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
-import 'package:fishfeed/services/notifications/planned_alarm.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show
+        NotifError,
+        PlannedAlarm,
+        ReconcileReason,
+        ReconcileResult,
+        NotificationChannel;
 
 /// Result of comparing a planned set of alarms against system pending state.
 /// `toAdd`: planned alarms not yet in the system.
@@ -153,7 +159,10 @@ class NotificationOrchestrator {
   /// For [ReconcileReason.localeChanged] and [ReconcileReason.migration] does
   /// a full cancelAll + replan to refresh body strings / wipe legacy IDs.
   ///
-  /// Errors are caught and returned via [ReconcileResult.failed].
+  /// Per-alarm failures (schedule/cancel) are caught and collected into
+  /// [ReconcileResult.errors], allowing the reconcile to process all alarms.
+  /// Catastrophic non-loop errors (e.g., Hive failures) are caught by the
+  /// outer try/catch and returned via [ReconcileResult.failed].
   Future<ReconcileResult> reconcile({required ReconcileReason reason}) async {
     final stopwatch = Stopwatch()..start();
     try {
@@ -166,14 +175,28 @@ class NotificationOrchestrator {
       if (reason == ReconcileReason.localeChanged ||
           reason == ReconcileReason.migration) {
         await notificationService.cancelAllNotifications();
+        final errors = <NotifError>[];
+        var added = 0;
         for (final p in planned) {
-          await _scheduleOne(p);
+          try {
+            await _scheduleOne(p);
+            added++;
+          } catch (e) {
+            errors.add(
+              NotifError(
+                eventId: p.eventId,
+                kind: e.runtimeType.toString(),
+                message: e.toString(),
+              ),
+            );
+          }
         }
         stopwatch.stop();
         return ReconcileResult.success(
-          added: planned.length,
+          added: added,
           cancelled: 0,
           kept: 0,
+          errors: errors,
           duration: stopwatch.elapsed,
         );
       }
@@ -182,18 +205,45 @@ class NotificationOrchestrator {
       final pendingIds = pending.map((p) => p.id).toSet();
       final diff = diffAgainstSystem(planned: planned, pendingIds: pendingIds);
 
+      final errors = <NotifError>[];
+      var cancelled = 0;
       for (final id in diff.toCancel) {
-        await notificationService.cancelNotification(id);
+        try {
+          await notificationService.cancelNotification(id);
+          cancelled++;
+        } catch (e) {
+          errors.add(
+            NotifError(
+              eventId: id,
+              kind: e.runtimeType.toString(),
+              message: e.toString(),
+            ),
+          );
+        }
       }
+
+      var added = 0;
       for (final p in diff.toAdd) {
-        await _scheduleOne(p);
+        try {
+          await _scheduleOne(p);
+          added++;
+        } catch (e) {
+          errors.add(
+            NotifError(
+              eventId: p.eventId,
+              kind: e.runtimeType.toString(),
+              message: e.toString(),
+            ),
+          );
+        }
       }
 
       stopwatch.stop();
       return ReconcileResult.success(
-        added: diff.toAdd.length,
-        cancelled: diff.toCancel.length,
+        added: added,
+        cancelled: cancelled,
         kept: diff.toKeep.length,
+        errors: errors,
         duration: stopwatch.elapsed,
       );
     } catch (e) {
