@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
@@ -12,6 +13,7 @@ import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart';
 
 void main() {
   setUpAll(() {
@@ -341,6 +343,75 @@ void main() {
 
       final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
       expect(planned, hasLength(35)); // 5 fish × 7 days
+    });
+  });
+
+  group('NotificationOrchestrator.diffAgainstSystem', () {
+    PlannedAlarm makeAlarm(int eventId, {String scheduleId = 's1'}) {
+      final at = tz.TZDateTime(tz.local, 2026, 5, 6, 9, 0);
+      return PlannedAlarm(
+        eventId: eventId,
+        scheduleId: scheduleId,
+        fishId: 'f1',
+        aquariumId: 'a1',
+        scheduledAt: at,
+        title: 'T',
+        body: 'B',
+        channel: NotificationChannel.feedingReminders,
+        payload: 'feeding|$scheduleId|2026-05-06|0900',
+      );
+    }
+
+    test('toAdd is empty, toCancel has stale ids, toKeep has overlap', () {
+      final planned = [makeAlarm(1)];
+      final pending = <int>{1, 99};
+
+      final diff = NotificationOrchestrator.diffAgainstSystem(
+        planned: planned,
+        pendingIds: pending,
+      );
+
+      expect(diff.toAdd, isEmpty);
+      expect(diff.toCancel, equals({99}));
+      expect(diff.toKeep, equals({1}));
+    });
+
+    test('plans entirely missing from system go to toAdd', () {
+      final planned = [makeAlarm(1), makeAlarm(2)];
+
+      final diff = NotificationOrchestrator.diffAgainstSystem(
+        planned: planned,
+        pendingIds: <int>{},
+      );
+
+      expect(diff.toAdd.map((p) => p.eventId).toSet(), equals({1, 2}));
+      expect(diff.toCancel, isEmpty);
+      expect(diff.toKeep, isEmpty);
+    });
+
+    test('empty plan with stale pending → all go to toCancel', () {
+      final diff = NotificationOrchestrator.diffAgainstSystem(
+        planned: <PlannedAlarm>[],
+        pendingIds: <int>{1, 2, 3},
+      );
+
+      expect(diff.toAdd, isEmpty);
+      expect(diff.toCancel, equals({1, 2, 3}));
+      expect(diff.toKeep, isEmpty);
+    });
+
+    test('mixed scenario — some keep, some add, some cancel', () {
+      final planned = [makeAlarm(1), makeAlarm(2), makeAlarm(3)];
+      final pending = <int>{2, 3, 99};
+
+      final diff = NotificationOrchestrator.diffAgainstSystem(
+        planned: planned,
+        pendingIds: pending,
+      );
+
+      expect(diff.toAdd.map((p) => p.eventId).toSet(), equals({1}));
+      expect(diff.toCancel, equals({99}));
+      expect(diff.toKeep, equals({2, 3}));
     });
   });
 }

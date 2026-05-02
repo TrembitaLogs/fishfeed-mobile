@@ -5,6 +5,22 @@ import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart';
 
+/// Result of comparing a planned set of alarms against system pending state.
+/// `toAdd`: planned alarms not yet in the system.
+/// `toCancel`: pending IDs that are no longer planned (stale).
+/// `toKeep`: planned IDs that already match a pending alarm — no action needed.
+class DiffResult {
+  const DiffResult({
+    required this.toAdd,
+    required this.toCancel,
+    required this.toKeep,
+  });
+
+  final List<PlannedAlarm> toAdd;
+  final Set<int> toCancel;
+  final Set<int> toKeep;
+}
+
 /// Orchestrates local notification scheduling — single source of truth
 /// for which alarms are pending in the OS vs. what current Hive state implies.
 ///
@@ -32,6 +48,20 @@ class NotificationOrchestrator {
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     final input = '$scheduleId|$dateStr|$hhmm';
     return input.hashCode.abs() & 0x7FFFFFFF;
+  }
+
+  /// Computes add/cancel/keep sets by comparing planned alarms with pending IDs.
+  /// Pure function — no I/O, no Hive access. Suitable for unit testing.
+  static DiffResult diffAgainstSystem({
+    required List<PlannedAlarm> planned,
+    required Set<int> pendingIds,
+  }) {
+    final plannedIds = planned.map((p) => p.eventId).toSet();
+    return DiffResult(
+      toAdd: planned.where((p) => !pendingIds.contains(p.eventId)).toList(),
+      toCancel: pendingIds.difference(plannedIds),
+      toKeep: plannedIds.intersection(pendingIds),
+    );
   }
 
   /// Builds the rolling-window plan from current Hive state.
