@@ -10,14 +10,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'package:fishfeed/core/services/secure_storage_service.dart';
+import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
+import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/notification_permission_service.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
+import 'package:fishfeed/services/notifications/planned_alarm.dart'
+    show ReconcileReason;
 
 /// Unique name for the periodic background sync task.
 const String kBackgroundSyncTaskName = 'fishfeed_background_sync';
 
 /// Task identifier for iOS BGTaskScheduler.
 const String kBackgroundSyncTaskIdentifier = 'com.fishfeed.app.backgroundSync';
+
+/// Workmanager unique name for the daily notification refill task.
+const String kNotificationRefillTaskName = 'notificationRefill';
+
+/// Workmanager task identifier (matches Info.plist BGTaskSchedulerPermittedIdentifiers
+/// on iOS).
+const String kNotificationRefillTaskIdentifier =
+    'com.fishfeed.app.notificationRefill';
 
 /// Key for storing the last background sync timestamp.
 const String _lastBackgroundSyncKey = 'last_background_sync';
@@ -59,6 +75,11 @@ const Duration kBackgroundSyncFrequency = Duration(minutes: 15);
 void backgroundSyncCallbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     debugPrint('BackgroundSync: Task started - $taskName');
+
+    // Route to notification refill if this is the refill task.
+    if (taskName == kNotificationRefillTaskName) {
+      return await _performNotificationRefill();
+    }
 
     try {
       // Check connectivity first
@@ -236,6 +257,44 @@ Future<void> _initializeHiveForBackground() async {
   }
 }
 
+/// Top-level helper for the notification refill background task.
+///
+/// Runs in a separate isolate. Bootstraps Hive + minimal services and
+/// triggers an orchestrator reconcile to refresh the rolling 7-day window.
+Future<bool> _performNotificationRefill() async {
+  try {
+    // Initialize Hive in this isolate.
+    await Hive.initFlutter();
+    await HiveBoxes.initForBackgroundIsolate();
+
+    // Initialize the notification plugin.
+    await NotificationService.instance.initialize();
+
+    // Construct orchestrator directly — no Riverpod in this isolate.
+    final orchestrator = NotificationOrchestrator(
+      scheduleDs: ScheduleLocalDataSource(),
+      fishDs: FishLocalDataSource(),
+      aquariumDs: AquariumLocalDataSource(),
+      notificationService: NotificationService.instance,
+      permissionService: NotificationPermissionService.instance,
+    );
+
+    final result = await orchestrator.reconcile(
+      reason: ReconcileReason.dailyRefill,
+    );
+
+    debugPrint(
+      'NotificationRefill: success=${result.isSuccess} added=${result.added} '
+      'cancelled=${result.cancelled} kept=${result.kept}',
+    );
+
+    return result.isSuccess;
+  } catch (e, st) {
+    debugPrint('NotificationRefill: error: $e\n$st');
+    return false;
+  }
+}
+
 /// Converts a FeedingLogModel to JSON for API sync.
 Map<String, dynamic> _feedingLogToJson(FeedingLogModel log) {
   return {
@@ -365,6 +424,33 @@ class BackgroundSyncService {
     debugPrint(
       'BackgroundSyncService: Periodic sync registered '
       '(frequency: ${kBackgroundSyncFrequency.inMinutes} minutes)',
+    );
+  }
+
+  /// Registers the daily notification refill periodic task.
+  ///
+  /// Runs every 24 hours regardless of network connectivity to refresh the
+  /// rolling 7-day notification window for users who don't open the app.
+  /// On iOS the identifier must match Info.plist BGTaskSchedulerPermittedIdentifiers.
+  Future<void> registerPeriodicNotificationRefill() async {
+    if (!_isInitialized) {
+      debugPrint(
+        'BackgroundSyncService: Not initialized, call initialize() first',
+      );
+      return;
+    }
+
+    await Workmanager().registerPeriodicTask(
+      kNotificationRefillTaskName,
+      kNotificationRefillTaskName,
+      frequency: const Duration(hours: 24),
+      constraints: Constraints(networkType: NetworkType.notRequired),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+    );
+
+    debugPrint(
+      'BackgroundSyncService: Periodic notification refill registered '
+      '(frequency: 24 hours)',
     );
   }
 

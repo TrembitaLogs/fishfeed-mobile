@@ -59,6 +59,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.fishfeed.app.backgroundSync</string>
+		<string>com.fishfeed.app.notificationRefill</string>
 	</array>
 	<!-- Google Sign-In URL Scheme -->
 	<!-- Replace REVERSED_CLIENT_ID with value from GoogleService-Info.plist -->

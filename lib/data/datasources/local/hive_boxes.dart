@@ -233,6 +233,39 @@ class HiveBoxes {
     _isInitialized = true;
   }
 
+  /// Initializes HiveBoxes for a background isolate (e.g., Workmanager task).
+  ///
+  /// Registers only the adapters needed for notification orchestration
+  /// (AquariumModel, FishModel, ScheduleModel) and opens the corresponding
+  /// boxes. Called after [Hive.initFlutter] in the background isolate.
+  ///
+  /// No-op if already initialized (safe to call multiple times in same isolate).
+  static Future<void> initForBackgroundIsolate() async {
+    if (_isInitialized) return;
+
+    // Register adapters required by the notification orchestrator.
+    // Each check guards against duplicate registration across hot restarts.
+    if (!Hive.isAdapterRegistered(WaterTypeAdapter().typeId)) {
+      Hive.registerAdapter(WaterTypeAdapter());
+    }
+    if (!Hive.isAdapterRegistered(AquariumModelAdapter().typeId)) {
+      Hive.registerAdapter(AquariumModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(FishModelAdapter().typeId)) {
+      Hive.registerAdapter(FishModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(ScheduleModelAdapter().typeId)) {
+      Hive.registerAdapter(ScheduleModelAdapter());
+    }
+
+    // Open only the boxes used by the orchestrator datasources.
+    _aquariumsBox = await Hive.openBox<AquariumModel>(HiveBoxNames.aquariums);
+    _fishBox = await Hive.openBox<FishModel>(HiveBoxNames.fish);
+    _schedulesBox = await Hive.openBox<ScheduleModel>(HiveBoxNames.schedules);
+
+    _isInitialized = true;
+  }
+
   /// Registers all Hive TypeAdapters.
   ///
   /// TypeAdapters are registered in a specific order to ensure
