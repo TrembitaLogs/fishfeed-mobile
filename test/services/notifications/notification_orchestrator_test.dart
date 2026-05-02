@@ -250,4 +250,97 @@ void main() {
       expect(planned, isEmpty);
     });
   });
+
+  group('NotificationOrchestrator.planForWindow budget trim', () {
+    late Directory tempDir;
+    late ScheduleLocalDataSource scheduleDs;
+    late FishLocalDataSource fishDs;
+    late AquariumLocalDataSource aquariumDs;
+    late NotificationOrchestrator orchestrator;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'hive_notif_budget_test_',
+      );
+      Hive.init(tempDir.path);
+      await HiveBoxes.initForTesting();
+      scheduleDs = ScheduleLocalDataSource();
+      fishDs = FishLocalDataSource();
+      aquariumDs = AquariumLocalDataSource();
+      orchestrator = NotificationOrchestrator(
+        scheduleDs: scheduleDs,
+        fishDs: fishDs,
+        aquariumDs: aquariumDs,
+      );
+    });
+
+    tearDown(() async {
+      await HiveBoxes.close();
+      await Hive.deleteFromDisk();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+      'trims to maxAlarms when planned exceeds budget, keeping nearest dates',
+      () async {
+        // 3 fish × 4 schedules each × 7 days = 84 alarms — exceeds maxAlarms=60
+        await aquariumDs.saveAquarium(makeAquarium());
+        for (var f = 0; f < 3; f++) {
+          await fishDs.saveFish(makeFish(id: 'f$f', aquariumId: 'a1'));
+          for (var s = 0; s < 4; s++) {
+            await scheduleDs.save(
+              makeSchedule(
+                id: 'f${f}_s$s',
+                fishId: 'f$f',
+                time: '${(7 + s).toString().padLeft(2, '0')}:00',
+              ),
+            );
+          }
+        }
+
+        final planned = orchestrator.planForWindow(
+          now: DateTime(2026, 5, 6),
+          maxAlarms: 60,
+        );
+
+        expect(planned, hasLength(60));
+        // Verify chronological order — nearest dates kept first.
+        for (var i = 1; i < planned.length; i++) {
+          final prev = planned[i - 1].scheduledAt;
+          final curr = planned[i].scheduledAt;
+          expect(
+            curr.isAtSameMomentAs(prev) || curr.isAfter(prev),
+            isTrue,
+            reason: 'plan must be sorted ascending by scheduledAt',
+          );
+        }
+      },
+    );
+
+    test('does not trim when planned fits in maxAlarms', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final planned = orchestrator.planForWindow(
+        now: DateTime(2026, 5, 6),
+        maxAlarms: 200,
+      );
+
+      expect(planned, hasLength(7));
+    });
+
+    test('does not trim when maxAlarms is null (default)', () async {
+      await aquariumDs.saveAquarium(makeAquarium());
+      for (var f = 0; f < 5; f++) {
+        await fishDs.saveFish(makeFish(id: 'f$f', aquariumId: 'a1'));
+        await scheduleDs.save(makeSchedule(id: 'f${f}_s0', fishId: 'f$f'));
+      }
+
+      final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
+      expect(planned, hasLength(35)); // 5 fish × 7 days
+    });
+  });
 }

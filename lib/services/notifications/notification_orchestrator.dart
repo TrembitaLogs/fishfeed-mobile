@@ -39,9 +39,13 @@ class NotificationOrchestrator {
   ///
   /// Skips schedules whose fish or aquarium is missing or soft-deleted, or
   /// whose fish is on a different aquarium (orphan filter).
+  ///
+  /// When [maxAlarms] is provided and planned alarms exceed this count,
+  /// trims to keep only the nearest dates (sorted by scheduledAt ascending).
   List<PlannedAlarm> planForWindow({
     required DateTime now,
     int windowDays = 7,
+    int? maxAlarms,
     String? title,
     String Function(String fishName)? bodyBuilder,
   }) {
@@ -90,6 +94,11 @@ class NotificationOrchestrator {
           ),
         );
       }
+    }
+
+    if (maxAlarms != null && planned.length > maxAlarms) {
+      planned.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+      return planned.sublist(0, maxAlarms);
     }
     return planned;
   }
