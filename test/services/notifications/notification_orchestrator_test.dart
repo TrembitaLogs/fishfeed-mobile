@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    show AndroidScheduleMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -515,6 +517,58 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(result.added, 7);
     });
+
+    test(
+      'falls back to inexactAllowWhileIdle when canScheduleExactAlarms returns false',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule());
+
+        // Simulate revoked SCHEDULE_EXACT_ALARM on Android 12+.
+        fakeNotif.canScheduleExactAlarmsValue = false;
+
+        final androidOrch = NotificationOrchestrator(
+          scheduleDs: scheduleDs,
+          fishDs: fishDs,
+          aquariumDs: aquariumDs,
+          notificationService: fakeNotif,
+          now: () => DateTime(2026, 5, 6),
+          isIos: false,
+        );
+
+        await androidOrch.reconcile(reason: ReconcileReason.appLaunch);
+
+        expect(
+          fakeNotif.lastUsedMode,
+          AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      },
+    );
+
+    test(
+      'keeps exactAllowWhileIdle when canScheduleExactAlarms returns true',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule());
+
+        fakeNotif.canScheduleExactAlarmsValue = true;
+
+        final androidOrch = NotificationOrchestrator(
+          scheduleDs: scheduleDs,
+          fishDs: fishDs,
+          aquariumDs: aquariumDs,
+          notificationService: fakeNotif,
+          now: () => DateTime(2026, 5, 6),
+          isIos: false,
+        );
+
+        await androidOrch.reconcile(reason: ReconcileReason.appLaunch);
+
+        expect(fakeNotif.lastUsedMode, AndroidScheduleMode.exactAllowWhileIdle);
+      },
+    );
   });
 
   group('NotificationOrchestrator.reconcile budget by platform', () {

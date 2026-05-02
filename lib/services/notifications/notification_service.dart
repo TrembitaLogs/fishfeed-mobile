@@ -336,6 +336,25 @@ class NotificationService {
     );
   }
 
+  /// Returns whether the app can schedule exact alarms on this device.
+  ///
+  /// On Android 12+ (API 31+), users can revoke SCHEDULE_EXACT_ALARM via
+  /// system settings — when that happens this returns false and the
+  /// orchestrator falls back to inexact mode.
+  ///
+  /// On iOS this always returns true (no equivalent permission).
+  Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) return true;
+    if (!_isInitialized) {
+      await initialize();
+    }
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    return await androidPlugin?.canScheduleExactNotifications() ?? false;
+  }
+
   /// Requests notification permissions from the user.
   ///
   /// Returns `true` if permissions were granted, `false` otherwise.

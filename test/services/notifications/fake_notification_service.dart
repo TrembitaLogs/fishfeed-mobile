@@ -13,8 +13,13 @@ class FakeNotificationService extends Mock implements NotificationService {
   /// When true, [scheduleOneShot] throws to exercise per-alarm error isolation.
   bool throwOnSchedule = false;
 
-  /// When false, simulates revoked SCHEDULE_EXACT_ALARM permission on Android 12+.
-  bool canScheduleExactAlarms = true;
+  /// Backing field for [canScheduleExactAlarms] override.
+  bool _canScheduleExactAlarms = true;
+
+  /// Test-only setter — controls what canScheduleExactAlarms() returns.
+  // ignore: avoid_setters_without_getters
+  set canScheduleExactAlarmsValue(bool value) =>
+      _canScheduleExactAlarms = value;
 
   /// Optional: fail the Nth scheduleOneShot call to test partial failures.
   int? failNthSchedule;
@@ -26,6 +31,9 @@ class FakeNotificationService extends Mock implements NotificationService {
 
   /// Last AndroidScheduleMode passed in — used by T16 fallback assertions.
   AndroidScheduleMode? lastUsedMode;
+
+  @override
+  Future<bool> canScheduleExactAlarms() async => _canScheduleExactAlarms;
 
   @override
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {

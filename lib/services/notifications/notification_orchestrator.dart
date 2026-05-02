@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    show AndroidScheduleMode;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
@@ -201,6 +203,9 @@ class NotificationOrchestrator {
         maxAlarms: _platformMaxAlarms(),
       );
 
+      // Resolve AndroidScheduleMode once per reconcile pass.
+      final scheduleMode = await _resolveAndroidScheduleMode();
+
       // Locale change & migration force full reset.
       if (reason == ReconcileReason.localeChanged ||
           reason == ReconcileReason.migration) {
@@ -209,7 +214,7 @@ class NotificationOrchestrator {
         var added = 0;
         for (final p in planned) {
           try {
-            await _scheduleOne(p);
+            await _scheduleOne(p, scheduleMode);
             added++;
           } catch (e) {
             errors.add(
@@ -255,7 +260,7 @@ class NotificationOrchestrator {
       var added = 0;
       for (final p in diff.toAdd) {
         try {
-          await _scheduleOne(p);
+          await _scheduleOne(p, scheduleMode);
           added++;
         } catch (e) {
           errors.add(
@@ -282,6 +287,20 @@ class NotificationOrchestrator {
     }
   }
 
+  /// Resolves the AndroidScheduleMode for the current reconcile pass.
+  ///
+  /// On iOS always returns [AndroidScheduleMode.exactAllowWhileIdle] (the value
+  /// is passed to [scheduleOneShot] but has no effect on the platform plugin).
+  /// On Android 12+ checks whether SCHEDULE_EXACT_ALARM is still granted; if
+  /// revoked, falls back silently to [AndroidScheduleMode.inexactAllowWhileIdle].
+  Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
+    if (_isIos) return AndroidScheduleMode.exactAllowWhileIdle;
+    final canExact = await notificationService.canScheduleExactAlarms();
+    return canExact
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+  }
+
   /// Reconcile alarms scoped to a specific aquarium.
   ///
   /// v1: simply delegates to full [reconcile] with [ReconcileReason.userMutation].
@@ -291,13 +310,17 @@ class NotificationOrchestrator {
     return reconcile(reason: ReconcileReason.userMutation);
   }
 
-  Future<void> _scheduleOne(PlannedAlarm alarm) async {
+  Future<void> _scheduleOne(
+    PlannedAlarm alarm,
+    AndroidScheduleMode mode,
+  ) async {
     await notificationService.scheduleOneShot(
       id: alarm.eventId,
       title: alarm.title,
       body: alarm.body,
       scheduledAt: alarm.scheduledAt,
       payload: alarm.payload,
+      androidScheduleMode: mode,
     );
   }
 }
