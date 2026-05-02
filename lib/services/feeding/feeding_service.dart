@@ -10,6 +10,8 @@ import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/domain/entities/streak.dart';
+import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
+import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
 // ============================================================================
@@ -93,15 +95,18 @@ class FeedingService {
     required ScheduleLocalDataSource scheduleLocalDs,
     required StreakLocalDataSource streakLocalDs,
     required SyncService syncService,
+    NotificationService? notificationService,
   }) : _feedingLogLocalDs = feedingLogLocalDs,
        _scheduleLocalDs = scheduleLocalDs,
        _streakLocalDs = streakLocalDs,
-       _syncService = syncService;
+       _syncService = syncService,
+       _notificationService = notificationService;
 
   final FeedingLogLocalDataSource _feedingLogLocalDs;
   final ScheduleLocalDataSource _scheduleLocalDs;
   final StreakLocalDataSource _streakLocalDs;
   final SyncService _syncService;
+  final NotificationService? _notificationService;
 
   static const _uuid = Uuid();
 
@@ -211,6 +216,20 @@ class FeedingService {
     // 5. Save to Hive (synced: false -> ChangeTracker will pick it up)
     await _feedingLogLocalDs.save(log);
 
+    // 5b. Cancel the local notification for this slot — the user is already
+    // fulfilling this scheduled feeding, no reminder needed. Only the alarm
+    // for this exact (scheduleId, date, time) is cancelled; future days'
+    // alarms (different eventId via the date component) remain intact.
+    final notificationService = _notificationService;
+    if (notificationService != null) {
+      final eventId = NotificationOrchestrator.eventIdFor(
+        scheduleId,
+        scheduledFor,
+        schedule.time,
+      );
+      unawaited(notificationService.cancelNotification(eventId));
+    }
+
     // 6. Trigger sync
     if (_syncService.isOnline && !_syncService.isProcessing) {
       // Online: await sync for immediate conflict feedback
@@ -290,5 +309,6 @@ final feedingServiceProvider = Provider<FeedingService>((ref) {
     scheduleLocalDs: ref.watch(scheduleLocalDataSourceProvider),
     streakLocalDs: ref.watch(streakLocalDataSourceProvider),
     syncService: ref.watch(syncServiceProvider),
+    notificationService: NotificationService.instance,
   );
 });

@@ -4,6 +4,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
+import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
@@ -17,6 +19,9 @@ class MockNotificationService extends Mock implements NotificationService {}
 
 class MockNotificationOrchestrator extends Mock
     implements NotificationOrchestrator {}
+
+class MockScheduleLocalDataSource extends Mock
+    implements ScheduleLocalDataSource {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -86,6 +91,7 @@ void main() {
       maxRetries: 3,
       retryDelay: Duration(milliseconds: 50),
     ),
+    ScheduleLocalDataSource? scheduleLocalDs,
   }) {
     return FamilySyncService(
       currentUserId: currentUserId,
@@ -102,6 +108,7 @@ void main() {
       connectivity: mockConnectivity,
       notificationService: mockNotificationService,
       notificationOrchestrator: mockOrchestrator,
+      scheduleLocalDs: scheduleLocalDs,
     );
   }
 
@@ -236,21 +243,47 @@ void main() {
     });
 
     test('should cancel notification when family member feeds', () async {
-      final event = createTestEvent(
+      final mockScheduleDs = MockScheduleLocalDataSource();
+      when(() => mockScheduleDs.getById('schedule_42')).thenReturn(
+        ScheduleModel(
+          id: 'schedule_42',
+          fishId: 'fish_1',
+          aquariumId: 'aq1',
+          time: '09:00',
+          intervalDays: 1,
+          anchorDate: DateTime(2026, 5, 1),
+          foodType: 'flakes',
+          active: true,
+          createdAt: DateTime(2026, 5, 1),
+          updatedAt: DateTime(2026, 5, 1),
+          createdByUserId: 'user_1',
+        ),
+      );
+      when(
+        () => mockNotificationService.cancelNotification(any()),
+      ).thenAnswer((_) async {});
+
+      final event = FeedingEvent(
         id: 'event_1',
+        aquariumId: 'aq1',
+        feedingTime: DateTime(2026, 5, 6, 9, 0),
         completedBy: 'user_2',
         completedByName: 'John',
+        scheduleId: 'schedule_42',
       );
       fetchedEvents = [event];
 
-      final service = createService(currentUserId: 'user_1');
+      final service = createService(
+        currentUserId: 'user_1',
+        scheduleLocalDs: mockScheduleDs,
+      );
       service.initialize();
       service.startPolling(aquariumId: 'aq1');
 
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
       verify(
-        () => mockNotificationService.cancelScheduledNotification(any()),
+        () => mockNotificationService.cancelNotification(any()),
       ).called(greaterThan(0));
 
       service.dispose();
