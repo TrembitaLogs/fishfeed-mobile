@@ -1,5 +1,6 @@
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -45,13 +46,16 @@ class ScheduleIdMigration {
     required ScheduleLocalDataSource scheduleDs,
     required SharedPreferences prefs,
     Uuid uuid = const Uuid(),
+    Hub? sentry,
   }) : _scheduleDs = scheduleDs,
        _prefs = prefs,
-       _uuid = uuid;
+       _uuid = uuid,
+       _sentry = sentry ?? HubAdapter();
 
   final ScheduleLocalDataSource _scheduleDs;
   final SharedPreferences _prefs;
   final Uuid _uuid;
+  final Hub _sentry;
 
   Future<MigrationResult> run() async {
     if (_prefs.getBool(_kMigrationFlagKey) ?? false) {
@@ -98,11 +102,21 @@ class ScheduleIdMigration {
 
       await _prefs.setBool(_kMigrationFlagKey, true);
 
+      await _sentry.addBreadcrumb(
+        Breadcrumb(
+          category: 'migration.schedule_id',
+          message: 'Schedule ID cleanup migration completed',
+          level: SentryLevel.info,
+          data: {'repaired': repaired, 'skipped_already_synced': skippedSynced},
+        ),
+      );
+
       return MigrationSuccess(
         repairedCount: repaired,
         skippedAlreadySyncedCount: skippedSynced,
       );
-    } catch (e) {
+    } catch (e, st) {
+      await _sentry.captureException(e, stackTrace: st);
       return MigrationError(
         message: 'ScheduleIdMigration failed: $e',
         error: e,

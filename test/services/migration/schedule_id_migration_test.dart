@@ -3,12 +3,19 @@ import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/migration/schedule_id_migration.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+
+class _MockHub extends Mock implements Hub {}
+
+class _FakeBreadcrumb extends Fake implements Breadcrumb {}
 
 void main() {
   setUpAll(() {
     Hive.init('./.hive_test_tmp');
+    registerFallbackValue(_FakeBreadcrumb());
   });
 
   test('returns NoMigrationNeeded when flag is already set', () async {
@@ -144,6 +151,29 @@ void main() {
       final second = await m.run();
 
       expect(second, isA<NoMigrationNeeded>());
+    });
+
+    test('emits Sentry breadcrumb summarising the run', () async {
+      final hub = _MockHub();
+      when(() => hub.addBreadcrumb(any())).thenAnswer((_) async {});
+
+      final fishId = const Uuid().v4();
+      await ds.save(_makeSchedule(id: '${fishId}_1530', fishId: fishId));
+
+      final result = await ScheduleIdMigration(
+        scheduleDs: ds,
+        prefs: prefs,
+        sentry: hub,
+      ).run();
+
+      expect(result, isA<MigrationSuccess>());
+
+      final captured = verify(() => hub.addBreadcrumb(captureAny())).captured;
+      expect(captured, hasLength(1));
+      final crumb = captured.single as Breadcrumb;
+      expect(crumb.category, 'migration.schedule_id');
+      expect(crumb.data, containsPair('repaired', 1));
+      expect(crumb.data, containsPair('skipped_already_synced', 0));
     });
   });
 }
