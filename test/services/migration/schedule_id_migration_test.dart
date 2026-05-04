@@ -24,6 +24,24 @@ void main() {
 
     expect(result, isA<NoMigrationNeeded>());
   });
+
+  group('isValidUuidV4', () {
+    test('accepts canonical lowercase UUID v4', () {
+      expect(isValidUuidV4('a74663b3-e1c1-4cb7-ad05-8e6a92af4f82'), isTrue);
+    });
+
+    test('rejects fishId_HHmm composite', () {
+      expect(
+        isValidUuidV4('a74663b3-e1c1-4cb7-ad05-8e6a92af4f82_1530'),
+        isFalse,
+      );
+    });
+
+    test('rejects empty and garbage strings', () {
+      expect(isValidUuidV4(''), isFalse);
+      expect(isValidUuidV4('not-a-uuid'), isFalse);
+    });
+  });
 }
 
 class _UnusedDs implements ScheduleLocalDataSource {
