@@ -264,13 +264,22 @@ void main() {
     testWidgets('displays pendingFeeding status when overdue feedings exist', (
       tester,
     ) async {
+      // Use a time guaranteed to be in the past to avoid flakiness when CI
+      // runs before 06:00 UTC (`today + 6h` would resolve to a future time).
+      final overdueScheduledFor = DateTime.now().subtract(
+        const Duration(hours: 1),
+      );
+      final overdueTimeStr =
+          '${overdueScheduledFor.hour.toString().padLeft(2, '0')}:'
+          '${overdueScheduledFor.minute.toString().padLeft(2, '0')}';
+
       final overdueFeedings = [
         ComputedFeedingEvent(
           scheduleId: 's1',
           fishId: 'fish1',
           aquariumId: 'aq1',
-          scheduledFor: today.add(const Duration(hours: 6)), // Past time
-          time: '06:00',
+          scheduledFor: overdueScheduledFor,
+          time: overdueTimeStr,
           foodType: 'Flakes',
           status: EventStatus.overdue,
           fishName: 'Guppy',
