@@ -73,6 +73,9 @@ class SentryService {
 
       // Before send callback for filtering or modifying events
       options.beforeSend = _beforeSend;
+
+      // Strip credentials from breadcrumbs at capture time as defense in depth.
+      options.beforeBreadcrumb = _beforeBreadcrumb;
     }, appRunner: appRunner);
 
     _isInitialized = true;
@@ -82,13 +85,128 @@ class SentryService {
     }
   }
 
+  /// HTTP paths whose request/response bodies must never reach Sentry.
+  ///
+  /// Matched as case-insensitive substring against the request URL.
+  static const List<String> _sensitivePathFragments = ['/auth/', '/password'];
+
+  /// Header names whose values are stripped from every captured event.
+  ///
+  /// Matched case-insensitively.
+  static const List<String> _sensitiveHeaderNames = [
+    'authorization',
+    'cookie',
+    'set-cookie',
+    'x-api-key',
+  ];
+
+  /// Breadcrumb data keys that hold request/response bodies and must be
+  /// redacted whenever the breadcrumb URL points at a sensitive path.
+  static const List<String> _sensitiveBreadcrumbBodyKeys = [
+    'request_body',
+    'response_body',
+    'data',
+  ];
+
+  static const String _redactedPlaceholder = '<redacted>';
+
   /// Callback executed before sending events to Sentry.
   ///
-  /// Can be used to filter out certain events or add additional context.
+  /// Strips credentials and bodies of auth-related requests so that failed
+  /// login/refresh/password-change calls do not exfiltrate plaintext
+  /// passwords or tokens.
   SentryEvent? _beforeSend(SentryEvent event, Hint hint) {
-    // Filter out events in debug mode if needed
-    // For now, send all events
+    return redactSensitiveData(event);
+  }
+
+  /// Callback executed before recording each breadcrumb.
+  Breadcrumb? _beforeBreadcrumb(Breadcrumb? crumb, Hint hint) {
+    if (crumb == null) return null;
+    return _redactBreadcrumb(crumb);
+  }
+
+  /// Removes credentials and sensitive bodies from a Sentry event in place.
+  ///
+  /// Public to allow direct unit testing without initializing the SDK.
+  /// Returns the same event for fluent use.
+  static SentryEvent redactSensitiveData(SentryEvent event) {
+    final request = event.request;
+    if (request != null) {
+      event.request = _redactRequest(request);
+    }
+
+    final breadcrumbs = event.breadcrumbs;
+    if (breadcrumbs != null) {
+      for (var i = 0; i < breadcrumbs.length; i++) {
+        breadcrumbs[i] = _redactBreadcrumb(breadcrumbs[i]);
+      }
+    }
+
     return event;
+  }
+
+  static SentryRequest _redactRequest(SentryRequest request) {
+    final headers = _redactHeaderMap(request.headers);
+    final shouldRedactBody = _isSensitiveUrl(request.url);
+    final data = shouldRedactBody ? _redactedPlaceholder : request.data;
+
+    return SentryRequest(
+      url: request.url,
+      method: request.method,
+      queryString: request.queryString,
+      cookies: request.cookies,
+      fragment: request.fragment,
+      apiTarget: request.apiTarget,
+      data: data,
+      headers: headers,
+      env: request.env,
+    );
+  }
+
+  static Map<String, String> _redactHeaderMap(Map<String, String> source) {
+    if (source.isEmpty) return source;
+    final out = Map<String, String>.from(source);
+    for (final key in out.keys.toList()) {
+      if (_sensitiveHeaderNames.contains(key.toLowerCase())) {
+        out[key] = _redactedPlaceholder;
+      }
+    }
+    return out;
+  }
+
+  static Breadcrumb _redactBreadcrumb(Breadcrumb crumb) {
+    final data = crumb.data;
+    if (data == null || data.isEmpty) return crumb;
+
+    final sanitized = Map<String, dynamic>.from(data);
+    var changed = false;
+
+    for (final key in sanitized.keys.toList()) {
+      if (_sensitiveHeaderNames.contains(key.toLowerCase())) {
+        sanitized[key] = _redactedPlaceholder;
+        changed = true;
+      }
+    }
+
+    final url = sanitized['url'];
+    if (url is String && _isSensitiveUrl(url)) {
+      for (final bodyKey in _sensitiveBreadcrumbBodyKeys) {
+        if (sanitized.containsKey(bodyKey)) {
+          sanitized[bodyKey] = _redactedPlaceholder;
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) return crumb;
+    crumb.data = sanitized;
+    return crumb;
+  }
+
+  static bool _isSensitiveUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    final lower = url.toLowerCase();
+    return _sensitivePathFragments.any(lower.contains);
   }
 
   /// Sets user information for Sentry events.
