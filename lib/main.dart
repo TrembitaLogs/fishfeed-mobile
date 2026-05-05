@@ -5,13 +5,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:fishfeed/app.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
+import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/migration/migration_service.dart';
+import 'package:fishfeed/services/migration/schedule_id_migration.dart'
+    as schedule_migration;
 import 'package:fishfeed/services/notifications/fcm_service.dart';
 import 'package:fishfeed/services/notifications/notification_action_handler.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
@@ -36,6 +41,9 @@ Future<void> main() async {
 
       // Run data migration if needed (from 'default' aquariumId to UUID)
       await _runMigrationIfNeeded();
+
+      // Repair schedule IDs created with the legacy <fishId>_<HHmm> format
+      await _runScheduleIdMigrationIfNeeded();
 
       // Get app version from package info
       final packageInfo = await PackageInfo.fromPlatform();
@@ -150,5 +158,28 @@ Future<void> _runMigrationIfNeeded() async {
     } else if (result is MigrationError) {
       debugPrint('Migration failed: ${result.message}');
     }
+  }
+}
+
+/// Repairs schedule IDs created with the legacy `<fishId>_<HHmm>` format
+/// (introduced 2026-03-07 by `a1c2887`, fixed 2026-05-02 by PR #29).
+/// Without this, contaminated records keep failing server validation (422)
+/// and block sync indefinitely.
+Future<void> _runScheduleIdMigrationIfNeeded() async {
+  final prefs = await SharedPreferences.getInstance();
+  final migration = schedule_migration.ScheduleIdMigration(
+    scheduleDs: ScheduleLocalDataSource(),
+    prefs: prefs,
+  );
+
+  final result = await migration.run();
+  if (result is schedule_migration.MigrationSuccess &&
+      result.repairedCount > 0) {
+    debugPrint(
+      'ScheduleIdMigration: repaired ${result.repairedCount} '
+      'contaminated schedule IDs',
+    );
+  } else if (result is schedule_migration.MigrationError) {
+    debugPrint('ScheduleIdMigration: failed - ${result.message}');
   }
 }
