@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:fishfeed/domain/entities/family_invite.dart';
@@ -9,6 +10,7 @@ import 'package:fishfeed/domain/entities/subscription_status.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/family_provider.dart';
+import 'package:fishfeed/presentation/router/app_router.dart';
 import 'package:fishfeed/presentation/screens/settings/widgets/family_widgets.dart';
 
 /// Maximum number of family members allowed on free tier.
@@ -182,11 +184,10 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
   }
 
   void _showPremiumUpgrade() {
-    final l10n = AppLocalizations.of(context)!;
-    // TODO: Navigate to premium upgrade screen when available
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.premiumComingSoon)));
+    // Route to the real paywall, consistent with every other upgrade entry
+    // point (profile, settings, premium cards), instead of a "coming soon"
+    // snackbar.
+    context.push(AppRouter.paywall);
   }
 
   void _shareInvite(FamilyInvite invite) {

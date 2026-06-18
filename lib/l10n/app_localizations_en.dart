@@ -2432,4 +2432,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get searchSpecies => 'Search species...';
+
+  @override
+  String get onboardingSaveFailed =>
+      'Something went wrong while finishing setup. Please try again.';
+
+  @override
+  String get accountDeletionFailed =>
+      'Could not delete your account. Please try again.';
 }

@@ -2468,4 +2468,24 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get errorGeneric =>
       'Etwas ist schiefgelaufen. Bitte versuche es erneut.';
+
+  @override
+  String get getStarted => 'Los geht\'s';
+
+  @override
+  String get next => 'Weiter';
+
+  @override
+  String get done => 'Fertig';
+
+  @override
+  String get searchSpecies => 'Arten suchen...';
+
+  @override
+  String get onboardingSaveFailed =>
+      'Beim Abschließen der Einrichtung ist ein Fehler aufgetreten. Bitte versuche es erneut.';
+
+  @override
+  String get accountDeletionFailed =>
+      'Dein Konto konnte nicht gelöscht werden. Bitte versuche es erneut.';
 }

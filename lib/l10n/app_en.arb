@@ -3265,5 +3265,29 @@
   "errorGeneric": "Something went wrong. Please try again.",
   "@errorGeneric": {
     "description": "Generic error message shown when an unexpected error occurs"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Onboarding next button label on the final step"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Onboarding next button label for intermediate steps"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Onboarding next button label for the completion step"
+  },
+  "searchSpecies": "Search species...",
+  "@searchSpecies": {
+    "description": "Hint text for the species search field"
+  },
+  "onboardingSaveFailed": "Something went wrong while finishing setup. Please try again.",
+  "@onboardingSaveFailed": {
+    "description": "Error message shown when finishing onboarding setup fails"
+  },
+  "accountDeletionFailed": "Could not delete your account. Please try again.",
+  "@accountDeletionFailed": {
+    "description": "Error message shown when account deletion fails"
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
+
 /// Progress dot indicator for onboarding steps.
 class OnboardingProgressIndicator extends StatelessWidget {
   const OnboardingProgressIndicator({
@@ -82,6 +84,7 @@ class OnboardingNavigationButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -95,7 +98,7 @@ class OnboardingNavigationButtons extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Back'),
+                child: Text(l10n.back),
               ),
             )
           else if (isAddFlow)
@@ -106,7 +109,7 @@ class OnboardingNavigationButtons extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
             )
           else

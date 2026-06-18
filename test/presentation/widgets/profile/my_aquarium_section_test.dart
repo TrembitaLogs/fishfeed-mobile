@@ -161,7 +161,7 @@ void main() {
         );
       });
 
-      testWidgets('"Add your first fish" navigates to AI Camera', (
+      testWidgets('"Add your first fish" shows AI Camera "Coming Soon"', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -177,7 +177,9 @@ void main() {
         await tester.tap(find.text('Scan with AI Camera'));
         await tester.pumpAndSettle();
 
-        expect(pushedRoutes, contains(AppRouter.aiCamera));
+        // AI scan flow is gated behind "Coming Soon" — no navigation occurs.
+        expect(find.text('Coming Soon'), findsOneWidget);
+        expect(pushedRoutes, isNot(contains(AppRouter.aiCamera)));
       });
     });
 
@@ -325,7 +327,9 @@ void main() {
         expect(pushedRoutes, contains('/aquarium'));
       });
 
-      testWidgets('Add Fish button navigates to AI Camera', (tester) async {
+      testWidgets('Add Fish button shows AI Camera "Coming Soon"', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestWidget(
             fishState: FishManagementState(userFish: [createFish()]),
@@ -341,7 +345,9 @@ void main() {
         await tester.tap(find.text('Scan with AI Camera'));
         await tester.pumpAndSettle();
 
-        expect(pushedRoutes, contains(AppRouter.aiCamera));
+        // AI scan flow is gated behind "Coming Soon" — no navigation occurs.
+        expect(find.text('Coming Soon'), findsOneWidget);
+        expect(pushedRoutes, isNot(contains(AppRouter.aiCamera)));
       });
 
       testWidgets('Manage button has edit icon', (tester) async {

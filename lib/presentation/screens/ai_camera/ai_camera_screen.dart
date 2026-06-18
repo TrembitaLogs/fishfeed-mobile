@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/domain/usecases/ai_scan_limit_usecase.dart';
 import 'package:fishfeed/presentation/providers/ai_scan_provider.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
@@ -201,23 +202,25 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
     // Show loading dialog
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     // Show loading dialog (not awaited - will be closed after scan completes)
     // ignore: unawaited_futures
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const PopScope(
+      builder: (context) => PopScope(
         canPop: false,
         child: Center(
           child: Card(
             child: Padding(
-              padding: EdgeInsets.all(32),
+              padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Analyzing...'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(l10n.analyzing),
                 ],
               ),
             ),
@@ -285,12 +288,14 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
   void _showScanError(String message, bool canRetry, Uint8List imageBytes) {
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         action: canRetry
             ? SnackBarAction(
-                label: 'Retry',
+                label: l10n.retry,
                 onPressed: () => _processAiScan(imageBytes),
               )
             : null,
@@ -303,10 +308,12 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
   void _showCaptureError(String message) {
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        action: SnackBarAction(label: 'Retry', onPressed: _onCapture),
+        action: SnackBarAction(label: l10n.retry, onPressed: _onCapture),
         backgroundColor: Colors.red.shade900,
       ),
     );
@@ -479,6 +486,8 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
   }
 
   Widget _buildErrorOverlay(String error) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       color: Colors.black87,
       child: Center(
@@ -510,7 +519,7 @@ class _AICameraScreenState extends ConsumerState<AICameraScreen>
                   _initializeCamera();
                 },
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(l10n.retry),
               ),
             ],
           ),

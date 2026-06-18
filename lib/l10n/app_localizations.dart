@@ -4297,6 +4297,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get errorGeneric;
+
+  /// Onboarding next button label on the final step
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Onboarding next button label for intermediate steps
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// Onboarding next button label for the completion step
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// Hint text for the species search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search species...'**
+  String get searchSpecies;
+
+  /// Error message shown when finishing onboarding setup fails
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while finishing setup. Please try again.'**
+  String get onboardingSaveFailed;
+
+  /// Error message shown when account deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete your account. Please try again.'**
+  String get accountDeletionFailed;
 }
 
 class _AppLocalizationsDelegate

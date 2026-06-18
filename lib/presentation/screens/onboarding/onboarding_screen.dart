@@ -120,6 +120,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _isCompletingOnboarding = true;
     });
 
+    // Capture context-bound objects before any await / try block so that error
+    // feedback survives async gaps and stays reachable from the catch block
+    // (avoids use_build_context_synchronously).
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       final state = ref.read(onboardingNotifierProvider);
       final analytics = AnalyticsService.instance;
@@ -152,6 +158,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       if (aquariumId == null) {
         debugPrint('Warning: No aquarium ID available for saving fish');
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.onboardingSaveFailed),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
         return;
       }
 
@@ -186,21 +198,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       // 6. Complete flow
       if (widget.isAddMode || widget.isAddAquariumMode) {
-        // In add mode or add aquarium mode, sync and go back
-        if (mounted) {
-          // Sync with backend first - this creates feeding events for new fish
-          // Wait for sync to complete so events appear immediately on home screen
-          await ref.read(syncServiceProvider).syncNow();
+        // In add mode or add aquarium mode, sync and go back.
+        // Sync with backend first - this creates feeding events for new fish.
+        // Wait for sync to complete so events appear immediately on home screen.
+        await ref.read(syncServiceProvider).syncNow();
+        if (!mounted) return;
 
-          // Refresh fish list and aquariums list before going back
-          ref.invalidate(fishManagementProvider);
-          ref.invalidate(fishByAquariumIdProvider(aquariumId));
-          ref.invalidate(userAquariumsProvider);
-          // Also refresh today's feedings to show new schedule
-          // Note: _SyncCompletionRefreshListener will also call refresh()
-          ref.invalidate(todayFeedingsProvider);
-          context.pop();
-        }
+        // Refresh fish list and aquariums list before going back
+        ref.invalidate(fishManagementProvider);
+        ref.invalidate(fishByAquariumIdProvider(aquariumId));
+        ref.invalidate(userAquariumsProvider);
+        // Also refresh today's feedings to show new schedule
+        // Note: _SyncCompletionRefreshListener will also call refresh()
+        ref.invalidate(todayFeedingsProvider);
+        if (context.mounted) context.pop();
       } else {
         // Mark onboarding as completed (also saves to Hive)
         await ref.read(authNotifierProvider.notifier).completeOnboarding();
@@ -208,6 +219,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // Trigger initial sync in background (don't block navigation)
         unawaited(ref.read(syncServiceProvider).syncAll());
       }
+    } catch (e) {
+      // Surface a localized error instead of silently resetting the spinner.
+      debugPrint('Onboarding completion failed: $e');
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.onboardingSaveFailed),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -330,33 +350,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         .reconcile(reason: ReconcileReason.onboardingComplete);
   }
 
-  /// Merges schedule entries into unified time slots for notifications.
-  /// TODO(T34): dead code — remove when _MergedTimeSlot cleanup task runs.
-  // ignore: unused_element
-  List<_MergedTimeSlot> _mergeToTimeSlots(
-    List<GeneratedScheduleEntry> schedule,
-  ) {
-    final timeSlotMap = <String, List<String>>{};
-
-    for (final entry in schedule) {
-      for (final time in entry.feedingTimes) {
-        timeSlotMap.putIfAbsent(time, () => []).add(entry.speciesName);
-      }
-    }
-
-    final slots = timeSlotMap.entries
-        .map((e) => _MergedTimeSlot(time: e.key, speciesNames: e.value))
-        .toList();
-
-    // Sort by time
-    slots.sort((a, b) => a.time.compareTo(b.time));
-
-    return slots;
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingNotifierProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     // Sync PageController with state when step changes externally
     ref.listen<int>(onboardingStepProvider, (previous, next) {
@@ -390,7 +387,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               isAddFlow: widget.isAddMode || widget.isAddAquariumMode,
               isLoading: _isCompletingOnboarding || state.isCreatingAquarium,
               canProceed: _canProceed(state),
-              nextButtonText: _getNextButtonText(state),
+              nextButtonText: _getNextButtonText(state, l10n),
               onBack: _onBackPressed,
               onCancel: _onCancelPressed,
               onNext: _onNextPressed,
@@ -467,17 +464,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     context.pop();
   }
 
-  String _getNextButtonText(OnboardingState state) {
+  String _getNextButtonText(OnboardingState state, AppLocalizations l10n) {
     // Calculate if we're on the last step based on mode
     final totalSteps = _getTotalSteps();
     final isLast = state.currentStep >= totalSteps - 1;
 
     if (isLast) {
       return (widget.isAddMode || widget.isAddAquariumMode)
-          ? 'Done'
-          : 'Get Started';
+          ? l10n.done
+          : l10n.getStarted;
     }
-    return 'Next';
+    return l10n.next;
   }
 
   void _onBackPressed() {
@@ -582,12 +579,4 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // Reset state for new aquarium (keeps createdAquariums list)
     notifier.resetForNewAquarium();
   }
-}
-
-/// Merged time slot for notification scheduling.
-class _MergedTimeSlot {
-  const _MergedTimeSlot({required this.time, required this.speciesNames});
-
-  final String time;
-  final List<String> speciesNames;
 }

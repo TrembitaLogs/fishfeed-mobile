@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/core/constants/species_data.dart';
 import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
@@ -177,12 +178,13 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return TextField(
       controller: controller,
       onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: 'Search species...',
+        hintText: l10n.searchSpecies,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(

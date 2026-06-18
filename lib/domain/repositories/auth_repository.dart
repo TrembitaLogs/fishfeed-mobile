@@ -59,6 +59,19 @@ abstract interface class AuthRepository {
   /// - [ServerFailure] for server errors (tokens still cleared locally)
   Future<Either<Failure, Unit>> logout();
 
+  /// Permanently deletes the current user's account.
+  ///
+  /// Calls the server account-deletion endpoint and, only on success, clears
+  /// all local data. Unlike [logout], local data is preserved if the server
+  /// call fails (the account still exists).
+  ///
+  /// Returns [Right(unit)] on success.
+  /// Returns [Left(Failure)] on error:
+  /// - [AuthenticationFailure] if the session is no longer valid
+  /// - [NetworkFailure] for connectivity issues (local data preserved)
+  /// - [ServerFailure] for server errors (local data preserved)
+  Future<Either<Failure, Unit>> deleteAccount();
+
   /// Gets the currently authenticated user from local storage.
   ///
   /// Returns [Right(User)] if a user is cached locally.

@@ -422,6 +422,44 @@ void main() {
     });
   });
 
+  group('deleteAccount', () {
+    test('clears local data and returns unit on success', () async {
+      when(() => mockRemoteDataSource.deleteAccount()).thenAnswer((_) async {});
+      when(
+        () => mockSecureStorageService.clearTokens(),
+      ).thenAnswer((_) async {});
+      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
+
+      final result = await repository.deleteAccount();
+
+      expect(result.isRight(), true);
+      verify(() => mockRemoteDataSource.deleteAccount()).called(1);
+      verify(() => mockSecureStorageService.clearTokens()).called(1);
+      verify(() => mockLocalDataSource.clearAll()).called(1);
+    });
+
+    test(
+      'preserves local data and returns failure when the server call fails',
+      () async {
+        when(
+          () => mockRemoteDataSource.deleteAccount(),
+        ).thenThrow(const NetworkException());
+
+        final result = await repository.deleteAccount();
+
+        expect(result.isLeft(), true);
+        result.fold(
+          (failure) => expect(failure, isA<NetworkFailure>()),
+          (_) => fail('Expected a failure'),
+        );
+        // Critical invariant: local data must NOT be wiped when the account
+        // was not actually deleted on the server.
+        verifyNever(() => mockSecureStorageService.clearTokens());
+        verifyNever(() => mockLocalDataSource.clearAll());
+      },
+    );
+  });
+
   group('getCurrentUser', () {
     test('should return User when cached user exists', () async {
       when(

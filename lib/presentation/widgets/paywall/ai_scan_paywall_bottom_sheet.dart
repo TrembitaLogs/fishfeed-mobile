@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
+
 /// Result of the paywall bottom sheet interaction.
 enum PaywallAction {
   /// User chose to upgrade to premium.
@@ -173,6 +175,8 @@ class AiScanPaywallBottomSheet extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context, ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -180,7 +184,7 @@ class AiScanPaywallBottomSheet extends StatelessWidget {
         FilledButton.icon(
           onPressed: () => Navigator.of(context).pop(PaywallAction.goPremium),
           icon: const Icon(Icons.workspace_premium),
-          label: const Text('Go Premium'),
+          label: Text(l10n.goPremium),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
@@ -191,7 +195,7 @@ class AiScanPaywallBottomSheet extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: () => Navigator.of(context).pop(PaywallAction.addManually),
           icon: const Icon(Icons.edit),
-          label: const Text('Add manually'),
+          label: Text(l10n.addManually),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),

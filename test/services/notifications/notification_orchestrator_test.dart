@@ -115,7 +115,11 @@ void main() {
       aquariumId: aquariumId,
       time: time,
       intervalDays: intervalDays,
-      anchorDate: anchorDate ?? DateTime(now.year, now.month, now.day),
+      // Fixed base date matching the orchestrator's injected clock in these
+      // tests (DateTime(2026, 5, 6)). Must NOT default to DateTime.now(): once
+      // wall-clock time drifts past the reconcile window, shouldFeedOn() yields
+      // zero occurrences and the budget/permission/sentry tests go red over time.
+      anchorDate: anchorDate ?? DateTime(2026, 5, 6),
       foodType: 'flakes',
       active: active,
       createdAt: now,

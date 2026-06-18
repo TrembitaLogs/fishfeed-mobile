@@ -400,10 +400,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (secondConfirm != true || !mounted) return;
 
-    // Execute account deletion
-    // TODO: Call actual delete account API when available
-    if (dialogContext.mounted) {
-      SnackbarUtils.showInfo(dialogContext, l10n.accountDeletionNotImplemented);
+    // Execute account deletion. On success the notifier clears local data and
+    // transitions to the unauthenticated state, which AuthStateListenable
+    // observes to redirect the router to the auth screen; on failure the
+    // account is preserved and we surface a localized error.
+    final failure = await ref
+        .read(authNotifierProvider.notifier)
+        .deleteAccount();
+
+    if (failure != null && dialogContext.mounted) {
+      SnackbarUtils.showError(dialogContext, l10n.accountDeletionFailed);
     }
   }
 }
