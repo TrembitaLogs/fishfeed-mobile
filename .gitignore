@@ -36,6 +36,9 @@ build/
 coverage/
 *.iml
 
+# Test artifacts (temporary Hive boxes created by tests)
+.hive_test_tmp/
+
 # Build artifacts
 *.apk
 *.aab
