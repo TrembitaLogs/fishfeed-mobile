@@ -1,0 +1,196 @@
+name: Play Internal Testing
+
+# Uploads a signed Android App Bundle (.aab) to the Google Play
+# "Internal testing" track. Two ways to trigger:
+#   * manual    — Actions tab → "Run workflow" (workflow_dispatch)
+#   * on a tag  — pushing a vX.Y.Z+N tag also ships to internal testing
+#
+# Prerequisites (one-time, configured outside this repo):
+#   * A Google Cloud service account linked to the Play developer account with
+#     the "Release to testing tracks" permission, Play Android Developer API
+#     enabled, JSON key stored as the PLAY_SERVICE_ACCOUNT_JSON secret.
+#   * Signing secrets already used by release.yml: KEYSTORE_BASE64,
+#     KEYSTORE_PASSWORD, KEY_PASSWORD, KEY_ALIAS.
+#   * App config secrets: API_BASE_URL, REVENUECAT_API_KEY_ANDROID, SENTRY_DSN,
+#     POSTHOG_API_KEY (missing ones simply build with that feature inert).
+# See docs/play-internal-ci-setup.md for the full setup checklist.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Version name (e.g. 1.0.20). Empty = derive from the latest v* tag."
+        required: false
+        default: ""
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: play-internal-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: "3.38.x"
+  # Play requires a strictly increasing versionCode per upload. The latest
+  # manually-uploaded build was code 11, so we offset the per-workflow run
+  # counter above it: first CI upload = 12, then 13, 14, ... Keep CI as the
+  # sole uploader to internal testing; if you ever upload manually with a
+  # higher code, bump this base accordingly.
+  #
+  # NOTE: the Play versionCode is ALWAYS run-number-based, even on a v* tag
+  # push. The tag's "+N" build number (e.g. v1.0.20+12) drives only the
+  # self-hosted APK channel in release.yml; here it is intentionally ignored
+  # for the versionCode so the counter stays collision-free and monotonic.
+  # Only the versionName (X.Y.Z) is taken from the tag.
+  VERSION_CODE_BASE: "11"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create .env from example
+        run: cp .env.example .env
+
+      - name: Check formatting
+        run: dart format lib test --set-exit-if-changed
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test --exclude-tags=golden
+
+  build_and_upload:
+    name: Build & Upload AAB
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need tags so a manual run can derive the version name from the
+          # latest v* tag when no input is given.
+          fetch-depth: 0
+
+      - name: Resolve version name and code
+        id: ver
+        env:
+          # Pass untrusted/manual inputs through env (never inline into the
+          # shell) to avoid command injection via the workflow_dispatch input.
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "push" ]; then
+            VER="${REF_NAME#v}"              # v1.0.20+12 -> 1.0.20+12
+            NAME="${VER%%+*}"                # 1.0.20
+          else
+            NAME="$INPUT_VERSION_NAME"
+            if [ -z "$NAME" ]; then
+              LATEST="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo 'v1.0.19')"
+              NAME="${LATEST#v}"
+              NAME="${NAME%%+*}"
+            fi
+          fi
+          # Allow only a plain semver name. This validates both the tag-derived
+          # and the manual-input paths, and hard-fails on anything unexpected.
+          if ! printf '%s' "$NAME" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid version name '$NAME' (expected X.Y.Z)"
+            exit 1
+          fi
+          CODE=$(( VERSION_CODE_BASE + GITHUB_RUN_NUMBER ))
+          echo "VERSION_NAME=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "VERSION_CODE=${CODE}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${NAME}+${CODE}"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create production .env
+        run: |
+          {
+            echo "API_BASE_URL=${{ secrets.API_BASE_URL }}"
+            echo "REVENUECAT_API_KEY_ANDROID=${{ secrets.REVENUECAT_API_KEY_ANDROID }}"
+            echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}"
+            echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}"
+            echo "POSTHOG_HOST=https://us.i.posthog.com"
+          } > .env
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          {
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "storeFile=upload-keystore.jks"
+          } > android/key.properties
+
+      - name: Set version (name + code)
+        run: |
+          sed -i "s/^version: .*/version: ${{ steps.ver.outputs.VERSION_NAME }}+${{ steps.ver.outputs.VERSION_CODE }}/" pubspec.yaml
+          grep "^version:" pubspec.yaml
+
+      - name: Configure Gradle for CI
+        run: |
+          sed -i 's/-Xmx8G/-Xmx4G/g' android/gradle.properties
+          sed -i 's/-XX:MaxMetaspaceSize=4G/-XX:MaxMetaspaceSize=1G/g' android/gradle.properties
+
+      - name: Build signed App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload to Play Internal Testing
+        # Pinned to an immutable release for reproducible store uploads.
+        # mappingFile is valid because the release build enables R8 minify +
+        # resource shrinking (android/app/build.gradle.kts) — if minify is ever
+        # disabled, mapping.txt won't exist and this input must be removed.
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.fishfeed.fishfeed
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          mappingFile: build/app/outputs/mapping/release/mapping.txt
+          tracks: internal
+          status: completed
+          releaseName: ${{ steps.ver.outputs.VERSION_NAME }} (${{ steps.ver.outputs.VERSION_CODE }})
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ steps.ver.outputs.VERSION_NAME }}-${{ steps.ver.outputs.VERSION_CODE }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
