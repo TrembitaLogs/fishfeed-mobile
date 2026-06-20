@@ -31,3 +31,19 @@
 
 # Suppress missing Play Core classes (used by Flutter for deferred components)
 -dontwarn com.google.android.play.core.**
+
+# Keep RevenueCat (purchases_flutter) native SDK — used reflectively for
+# subscriptions/IAP. Without this, release (minified) builds can break purchases.
+-keep class com.revenuecat.purchases.** { *; }
+-dontwarn com.revenuecat.purchases.**
+
+# Keep Play Billing classes used by RevenueCat.
+-keep class com.android.billingclient.** { *; }
+-dontwarn com.android.billingclient.**
+
+# Keep PostHog (posthog_flutter) native SDK so analytics keep working in release.
+-keep class com.posthog.** { *; }
+-dontwarn com.posthog.**
+
+# NOTE: Hive needs no ProGuard keep — it is pure Dart (runs in the Dart VM,
+# not the JVM), so R8/ProGuard cannot strip its generated TypeAdapters.

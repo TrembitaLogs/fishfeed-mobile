@@ -12,6 +12,7 @@ abstract final class AuthEndpoints {
   static const String oauth = '/auth/oauth';
   static const String refresh = '/auth/refresh';
   static const String logout = '/auth/logout';
+  static const String account = '/auth/account';
 }
 
 /// Remote data source for authentication API calls.
@@ -59,6 +60,13 @@ abstract interface class AuthRemoteDataSource {
   ///
   /// Throws [DioException] on network or server errors.
   Future<void> logout({required String refreshToken});
+
+  /// Permanently deletes the authenticated user's account.
+  ///
+  /// Calls `DELETE /auth/account` (Bearer-authenticated); the server soft
+  /// deletes the user and invalidates outstanding tokens. Returns on `204`.
+  /// Throws [DioException] on network or server errors.
+  Future<void> deleteAccount();
 }
 
 /// Implementation of [AuthRemoteDataSource] using Dio HTTP client.
@@ -123,6 +131,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       AuthEndpoints.logout,
       data: {'refresh_token': refreshToken},
     );
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    // Bearer token is attached by the auth interceptor. Server responds 204.
+    await _dio.delete<void>(AuthEndpoints.account);
   }
 }
 

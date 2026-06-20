@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/domain/entities/species.dart';
 import 'package:fishfeed/presentation/providers/onboarding_provider.dart';
 
@@ -326,6 +327,7 @@ class _ScheduleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 0,
@@ -365,13 +367,13 @@ class _ScheduleCard extends StatelessWidget {
             const SizedBox(height: 8),
             _InfoRow(
               icon: Icons.restaurant,
-              label: 'Food type',
+              label: l10n.foodType,
               value: _formatFoodType(entry.foodType),
             ),
             const SizedBox(height: 8),
             _InfoRow(
               icon: Icons.scale,
-              label: 'Portion',
+              label: l10n.portion,
               value: '${entry.portionGrams.toStringAsFixed(1)}g',
             ),
           ],

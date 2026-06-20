@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/services/migration/schedule_id_migration.dart';
@@ -16,6 +18,16 @@ void main() {
   setUpAll(() {
     Hive.init('./.hive_test_tmp');
     registerFallbackValue(_FakeBreadcrumb());
+  });
+
+  tearDownAll(() async {
+    // Clean up the temporary Hive directory this test inits, so the boxes it
+    // opens do not accumulate as untracked files in the working tree.
+    await Hive.close();
+    final tmpDir = Directory('./.hive_test_tmp');
+    if (tmpDir.existsSync()) {
+      tmpDir.deleteSync(recursive: true);
+    }
   });
 
   test('returns NoMigrationNeeded when flag is already set', () async {

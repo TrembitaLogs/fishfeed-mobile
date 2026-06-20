@@ -313,7 +313,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   void _openTermsOfService() {
-    // TODO: Replace with actual Terms of Service URL
     const tosUrl = 'https://fishfeed.club/terms';
     launchUrl(Uri.parse(tosUrl), mode: LaunchMode.externalApplication);
   }

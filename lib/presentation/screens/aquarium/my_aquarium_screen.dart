@@ -94,7 +94,22 @@ class _MyAquariumScreenState extends ConsumerState<MyAquariumScreen> {
 
     switch (choice) {
       case _AddFishChoice.aiCamera:
-        context.push(AppRouter.aiCamera);
+        // AI scan flow is not wired end-to-end yet (the scan result is
+        // discarded by callers), so gate it behind "Coming Soon" everywhere
+        // for consistent UX until the scan→add-fish path is implemented.
+        showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l.comingSoon),
+            content: Text(l.aiCameraComingSoonMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+              ),
+            ],
+          ),
+        );
         break;
       case _AddFishChoice.manual:
         context.push(AppRouter.addFish);

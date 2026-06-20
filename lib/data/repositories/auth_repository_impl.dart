@@ -141,6 +141,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> deleteAccount() async {
+    try {
+      // The server soft-deletes the account and bumps token_version, so the
+      // current tokens become invalid. Only clear local data AFTER the server
+      // confirms deletion — otherwise a failed call would wipe local state
+      // while the account still exists on the backend.
+      await _remoteDataSource.deleteAccount();
+      await _clearAuthData();
+      return const Right(unit);
+    } on ApiException catch (e) {
+      return Left(_mapApiExceptionToFailure(e));
+    } catch (e, st) {
+      debugPrint('AuthRepository.deleteAccount failed: $e\n$st');
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> getCurrentUser() async {
     try {
       final userModel = _localDataSource.getCurrentUser();

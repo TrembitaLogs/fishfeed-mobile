@@ -533,6 +533,40 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     onLogout?.call();
   }
 
+  /// Permanently deletes the current user's account.
+  ///
+  /// On success the repository clears all local data; this then signs out of
+  /// OAuth providers, resets RevenueCat to anonymous and transitions to the
+  /// unauthenticated state — which [AuthStateListenable] observes to redirect
+  /// the router to the auth screen (the optional [onLogout] hook also fires).
+  /// Returns the [Failure] on error (account preserved, user stays signed in)
+  /// or `null` on success.
+  Future<Failure?> deleteAccount() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    final result = await _repository.deleteAccount();
+    final failure = result.fold<Failure?>((f) => f, (_) => null);
+
+    if (failure != null) {
+      state = state.copyWith(isLoading: false, error: failure);
+      return failure;
+    }
+
+    // Mirror logout: clear OAuth + RevenueCat session so the next user does
+    // not inherit anything from the deleted account on this device.
+    await _googleAuthService.signOut();
+    _appleAuthService.signOut();
+    await _purchaseService.logOut();
+
+    state = const AuthenticationState(
+      isInitializing: false,
+      isAuthenticated: false,
+    );
+
+    onLogout?.call();
+    return null;
+  }
+
   /// Mark onboarding as completed.
   Future<void> completeOnboarding() async {
     await _repository.setOnboardingCompleted(true);

@@ -382,6 +382,64 @@ void main() {
       });
     });
 
+    group('deleteAccount', () {
+      test(
+        'resets to unauthenticated state and returns null on success',
+        () async {
+          // First authenticate
+          when(
+            () => mockRepository.login(
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+            ),
+          ).thenAnswer((_) async => Right(testUser));
+          await authNotifier.login(
+            email: 'test@example.com',
+            password: 'password123',
+          );
+          expect(authNotifier.state.isAuthenticated, true);
+
+          when(
+            () => mockRepository.deleteAccount(),
+          ).thenAnswer((_) async => const Right(unit));
+          when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {});
+
+          final failure = await authNotifier.deleteAccount();
+
+          expect(failure, isNull);
+          expect(authNotifier.state.isAuthenticated, false);
+          expect(authNotifier.state.user, null);
+          expect(authNotifier.state.isLoading, false);
+        },
+      );
+
+      test(
+        'keeps the user signed in and returns the failure on error',
+        () async {
+          when(
+            () => mockRepository.login(
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+            ),
+          ).thenAnswer((_) async => Right(testUser));
+          await authNotifier.login(
+            email: 'test@example.com',
+            password: 'password123',
+          );
+
+          when(
+            () => mockRepository.deleteAccount(),
+          ).thenAnswer((_) async => const Left(NetworkFailure()));
+
+          final failure = await authNotifier.deleteAccount();
+
+          expect(failure, isA<NetworkFailure>());
+          expect(authNotifier.state.isAuthenticated, true);
+          expect(authNotifier.state.isLoading, false);
+        },
+      );
+    });
+
     group('initialize', () {
       test('should restore authenticated state from local storage', () async {
         when(

@@ -1058,5 +1058,11 @@
   "feedingHistoryWeekdaySunFull": "Sonntag",
   "feedingHistoryLockedTitle": "6 Monate Historie ansehen",
   "feedingHistoryLockedCta": "Auf Premium upgraden",
-  "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "getStarted": "Los geht's",
+  "next": "Weiter",
+  "done": "Fertig",
+  "searchSpecies": "Arten suchen...",
+  "onboardingSaveFailed": "Beim Abschließen der Einrichtung ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+  "accountDeletionFailed": "Dein Konto konnte nicht gelöscht werden. Bitte versuche es erneut."
 }

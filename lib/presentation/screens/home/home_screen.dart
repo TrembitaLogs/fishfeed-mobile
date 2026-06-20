@@ -136,10 +136,11 @@ class HomeScreen extends ConsumerWidget {
     );
 
     if (choice == null) return;
+    // Bottom sheet was awaited — guard both branches against a stale context.
+    if (!context.mounted) return;
 
     switch (choice) {
       case _AddFishChoice.aiCamera:
-        if (!context.mounted) return;
         showDialog<void>(
           context: context,
           builder: (ctx) => AlertDialog(

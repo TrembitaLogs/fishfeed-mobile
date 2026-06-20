@@ -220,7 +220,10 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       state = state.copyWith(userFish: updatedList);
 
-      // TODO(task-20.10): Add analytics tracking for fish_edited
+      AnalyticsService.instance.trackFishEdited(
+        speciesId: fish.speciesId,
+        newQuantity: fish.quantity,
+      );
 
       // Invalidate feeding providers to refresh schedule
       unawaited(_syncAndRefreshFeedings());
@@ -268,7 +271,9 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
       _ref.invalidate(fishByIdProvider(id));
       _ref.invalidate(fishByAquariumIdProvider(fishToDelete.aquariumId));
 
-      // TODO(task-20.10): Add analytics tracking for fish_deleted
+      AnalyticsService.instance.trackFishDeleted(
+        speciesId: fishToDelete.speciesId,
+      );
 
       // Sync with server - this sends the deletion and gets updated feeding events
       // _SyncCompletionRefreshListener will refresh UI providers automatically
