@@ -171,7 +171,18 @@ jobs:
           sed -i 's/-XX:MaxMetaspaceSize=4G/-XX:MaxMetaspaceSize=1G/g' android/gradle.properties
 
       - name: Build signed App Bundle
-        run: flutter build appbundle --release
+        # --split-debug-info emits the Dart symbol files that sentry_dart_plugin
+        # uploads, so release stack traces are symbolicated in Sentry.
+        run: flutter build appbundle --release --split-debug-info=build/debug-info
+
+      - name: Upload Sentry debug symbols
+        # Best-effort: a Sentry outage or a missing/invalid token must not block
+        # shipping the build to testers. sentry_dart_plugin reads org/project/url
+        # from pubspec.yaml (sentry:) and SENTRY_AUTH_TOKEN from the env.
+        continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: dart run sentry_dart_plugin
 
       - name: Upload to Play Internal Testing
         # Pinned to an immutable release for reproducible store uploads.
