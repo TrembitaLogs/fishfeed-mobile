@@ -239,6 +239,9 @@ MockSyncService createMockSyncService() {
   when(() => service.isProcessing).thenReturn(false);
   when(() => service.isOnline).thenReturn(true);
   when(() => service.syncAll()).thenAnswer((_) async => 0);
+  when(() => service.syncAllWithResult()).thenAnswer(
+    (_) async => const SyncResult(uploadedCount: 0, downloadedCount: 0),
+  );
   when(() => service.syncNow()).thenAnswer((_) async => 0);
   when(() => service.startListening()).thenAnswer((_) async {});
   when(() => service.stopListening()).thenReturn(null);

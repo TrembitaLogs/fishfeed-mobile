@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,9 +115,51 @@ class SentryService {
   ///
   /// Strips credentials and bodies of auth-related requests so that failed
   /// login/refresh/password-change calls do not exfiltrate plaintext
-  /// passwords or tokens.
+  /// passwords or tokens, then downgrades transient, app-handled /sync 5xx
+  /// errors so they do not drown real crashes in noise.
   SentryEvent? _beforeSend(SentryEvent event, Hint hint) {
-    return redactSensitiveData(event);
+    final redacted = redactSensitiveData(event);
+    return reclassifyTransientSyncErrors(redacted);
+  }
+
+  /// HTTP status codes for transient sync failures the app handles gracefully
+  /// (retry / offline queue) and that should not be high-severity Sentry
+  /// issues on their own.
+  static const Set<int> _transientSyncStatusCodes = {502, 503, 504};
+
+  /// Stable fingerprint that collapses transient /sync 5xx errors into a
+  /// single grouped Sentry issue, preserving outage signal (alert on rate)
+  /// without per-occurrence noise.
+  static const List<String> _transientSyncFingerprint = ['transient-sync-5xx'];
+
+  /// Downgrades transient, app-handled /sync 5xx errors.
+  ///
+  /// `captureFailedRequests` auto-captures every failed HTTP request as its
+  /// own issue, including 502/503/504 on POST /sync that the client retries
+  /// and recovers from. Such events are kept — a sustained spike of /sync 504s
+  /// is a real outage signal — but demoted to [SentryLevel.warning] and grouped
+  /// under one stable fingerprint so an alert can fire on rate rather than on
+  /// each transient occurrence. Every other event is returned unchanged.
+  ///
+  /// Public to allow direct unit testing without initializing the SDK.
+  static SentryEvent reclassifyTransientSyncErrors(SentryEvent event) {
+    final throwable = event.throwable;
+    if (throwable is! DioException) return event;
+
+    final path = throwable.requestOptions.path;
+    final statusCode = throwable.response?.statusCode;
+    final isTransientSyncError =
+        path.contains('/sync') &&
+        statusCode != null &&
+        _transientSyncStatusCodes.contains(statusCode);
+    if (!isTransientSyncError) return event;
+
+    // Mutate in place: SentryEvent.copyWith is deprecated in favour of direct
+    // field assignment (matches redactSensitiveData above).
+    event.level = SentryLevel.warning;
+    event.fingerprint = [..._transientSyncFingerprint];
+    event.tags = {...?event.tags, 'sync_transient': 'true'};
+    return event;
   }
 
   /// Callback executed before recording each breadcrumb.
