@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/services/sentry/sentry_service.dart';
 
 /// Data source for managing fish records in local Hive storage.
 ///
@@ -15,9 +16,14 @@ import 'package:fishfeed/data/models/fish_model.dart';
 /// final fish = fishDs.getFishByAquariumId('aquarium_123');
 /// ```
 class FishLocalDataSource {
-  FishLocalDataSource({Box<dynamic>? fishBox}) : _fishBox = fishBox;
+  FishLocalDataSource({Box<dynamic>? fishBox, SentryService? sentry})
+    : _fishBox = fishBox,
+      _sentry = sentry ?? SentryService.instance;
 
   final Box<dynamic>? _fishBox;
+
+  /// Telemetry sink used to attribute deletion events.
+  final SentryService _sentry;
 
   /// Gets the fish box, using the injected box or the default HiveBoxes.
   Box<dynamic> get _fish => _fishBox ?? HiveBoxes.fish;
@@ -164,13 +170,16 @@ class FishLocalDataSource {
         .toList();
   }
 
-  /// Retrieves all soft-deleted fish.
+  /// Retrieves soft-deleted fish that still need to be synced.
   ///
-  /// These fish need to be synced as deletions to the server.
+  /// Only returns tombstones that have NOT yet been acknowledged by the server
+  /// (`!synced`). A deletion already accepted by the server must not be
+  /// re-broadcast on every background sync, otherwise it could re-delete a
+  /// record that another device has since restored.
   List<FishModel> getDeletedFish() {
     return _fish.values
         .whereType<FishModel>()
-        .where((f) => f.isDeleted)
+        .where((f) => f.isDeleted && !f.synced)
         .toList();
   }
 
@@ -186,6 +195,15 @@ class FishLocalDataSource {
     fish.updatedAt = DateTime.now();
     fish.synced = false;
     await fish.save();
+
+    // Fish deletions are common, so record a low-noise breadcrumb (rather than
+    // a captured event) that lets a local soft-delete be told apart from a
+    // server-driven hard-delete when investigating data-loss reports.
+    await _sentry.addBreadcrumb(
+      message: 'Fish soft-deleted locally',
+      category: 'data.delete',
+      data: {'fish_id': id, 'origin': 'local_soft_delete'},
+    );
   }
 
   /// Marks a fish as synced with the server.
@@ -296,7 +314,13 @@ class FishLocalDataSource {
   ///
   /// Call this after confirming deletions have been synced to the server.
   Future<void> purgeSyncedDeletions() async {
-    final deleted = getDeletedFish().where((f) => f.synced).toList();
+    // Query the box directly for synced tombstones. getDeletedFish() now
+    // excludes synced records (to avoid re-broadcasting confirmed deletions),
+    // so filtering its result by `synced` would always be empty.
+    final deleted = _fish.values
+        .whereType<FishModel>()
+        .where((f) => f.isDeleted && f.synced)
+        .toList();
     for (final fish in deleted) {
       await _fish.delete(fish.id);
     }

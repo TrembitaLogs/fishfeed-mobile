@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:fishfeed/core/constants/achievements.dart';
 import 'package:fishfeed/data/datasources/local/achievement_local_ds.dart';
@@ -20,6 +21,7 @@ import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/presentation/providers/achievement_providers.dart';
 import 'package:fishfeed/data/models/sync_metadata_model.dart';
 import 'package:fishfeed/domain/entities/user.dart';
+import 'package:fishfeed/services/sentry/sentry_service.dart';
 import 'package:fishfeed/services/sync/change_tracker.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 
@@ -157,6 +159,7 @@ class SyncService {
     Connectivity? connectivity,
     Logger? logger,
     ConflictResolver? conflictResolver,
+    SentryService? sentry,
   }) : _apiClient = apiClient,
        _aquariumDs = aquariumDs,
        _fishDs = fishDs,
@@ -170,6 +173,7 @@ class SyncService {
        _connectivity = connectivity ?? Connectivity(),
        _logger = logger ?? Logger(printer: PrettyPrinter(methodCount: 0)),
        _conflictResolver = conflictResolver ?? ConflictResolver(),
+       _sentry = sentry ?? SentryService.instance,
        _changeTracker = ChangeTracker(
          aquariumDs: aquariumDs,
          fishDs: fishDs,
@@ -196,6 +200,7 @@ class SyncService {
   // ignore: unused_field - reserved for local conflict detection
   final ConflictResolver _conflictResolver;
   final ChangeTracker _changeTracker;
+  final SentryService _sentry;
 
   /// Callback invoked when user profile is updated from server sync.
   void Function(User)? onUserProfileUpdated;
@@ -708,26 +713,101 @@ class SyncService {
   ) async {
     final deletedIds = <String>[];
 
-    // Delete aquariums
+    // Delete aquariums (guarded against destroying unsynced local edits)
     final deletedAquariums = deleted['aquariums'] as List<dynamic>?;
     if (deletedAquariums != null) {
       for (final id in deletedAquariums) {
         final idStr = id.toString();
-        await _aquariumDs.deleteAquarium(idStr);
-        deletedIds.add(idStr);
+        final local = _aquariumDs.getAquariumById(idStr);
+
+        if (local == null) {
+          // Nothing to lose locally; record for reporting and continue.
+          deletedIds.add(idStr);
+          continue;
+        }
+
+        if (local.isDeleted) {
+          // We also deleted it locally: the server confirms our own deletion.
+          await _aquariumDs.markAsSynced(idStr, DateTime.now());
+          await _aquariumDs.deleteAquarium(idStr);
+          deletedIds.add(idStr);
+          continue;
+        }
+
+        if (local.synced) {
+          // No unsynced local edits: honor the genuine cross-device deletion.
+          await _aquariumDs.deleteAquarium(idStr);
+          deletedIds.add(idStr);
+          await _sentry.captureMessage(
+            'Aquarium deleted by server sync',
+            level: SentryLevel.warning,
+            extras: {'aquarium_id': idStr, 'origin': 'server_sync'},
+          );
+          continue;
+        }
+
+        // Unsynced local edits exist: preserve the local record to protect an
+        // actively-used device from silent catastrophic loss. The record stays
+        // !synced, so it is re-sent on the next sync cycle.
+        _emitDeletionConflict(
+          entityId: idStr,
+          entityType: 'aquarium',
+          localVersion: local.toSyncJson(),
+          localUpdatedAt: local.updatedAt ?? local.createdAt,
+        );
+        await _sentry.captureMessage(
+          'Server deletion skipped: local has unsynced edits',
+          level: SentryLevel.warning,
+          extras: {'aquarium_id': idStr, 'origin': 'server_sync'},
+        );
       }
     }
 
-    // Delete fish
+    // Delete fish (guarded against destroying unsynced local edits)
     final deletedFish = deleted['fish'] as List<dynamic>?;
     if (deletedFish != null) {
       for (final id in deletedFish) {
         final idStr = id.toString();
-        // Note: Associated feeding logs will remain as orphans but are
-        // linked by fishId which no longer exists. This is acceptable
-        // as the logs are historical records.
-        await _fishDs.deleteFish(idStr);
-        deletedIds.add(idStr);
+        final local = _fishDs.getFishById(idStr);
+
+        if (local == null) {
+          deletedIds.add(idStr);
+          continue;
+        }
+
+        if (local.isDeleted) {
+          await _fishDs.markAsSynced(idStr, DateTime.now());
+          // Note: Associated feeding logs will remain as orphans but are
+          // linked by fishId which no longer exists. This is acceptable
+          // as the logs are historical records.
+          await _fishDs.deleteFish(idStr);
+          deletedIds.add(idStr);
+          continue;
+        }
+
+        if (local.synced) {
+          await _fishDs.deleteFish(idStr);
+          deletedIds.add(idStr);
+          await _sentry.addBreadcrumb(
+            message: 'Fish deleted by server sync',
+            category: 'data.delete',
+            data: {'fish_id': idStr, 'origin': 'server_sync'},
+          );
+          continue;
+        }
+
+        // Unsynced local edits exist: preserve the local record.
+        _emitDeletionConflict(
+          entityId: idStr,
+          entityType: 'fish',
+          localVersion: local.toSyncJson(),
+          localUpdatedAt: local.updatedAt ?? local.addedAt,
+        );
+        await _sentry.captureMessage(
+          'Server deletion skipped: local has unsynced edits',
+          level: SentryLevel.warning,
+          extras: {'fish_id': idStr, 'origin': 'server_sync'},
+        );
       }
     }
 
@@ -755,6 +835,31 @@ class SyncService {
 
     _logger.d('SyncService: Deleted ${deletedIds.length} entities locally');
     return deletedIds;
+  }
+
+  /// Emits a [ConflictType.deletionConflict] for visibility when a server
+  /// deletion is skipped because the local record has unsynced edits.
+  ///
+  /// The conflict is published on [conflictStream] only (the local record is
+  /// intentionally preserved and re-sent on the next sync), so it is not added
+  /// to the manual-resolution queue.
+  void _emitDeletionConflict({
+    required String entityId,
+    required String entityType,
+    required Map<String, dynamic> localVersion,
+    required DateTime localUpdatedAt,
+  }) {
+    final conflict = SyncConflict<Map<String, dynamic>>(
+      entityId: entityId,
+      entityType: entityType,
+      localVersion: localVersion,
+      serverVersion: const <String, dynamic>{},
+      localUpdatedAt: localUpdatedAt,
+      serverUpdatedAt: DateTime.now(),
+      resolution: ConflictResolution.requireManual,
+      conflictType: ConflictType.deletionConflict,
+    );
+    _conflictController.add(conflict);
   }
 
   // ============ Mark Changes as Synced ============
