@@ -1,8 +1,10 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/domain/entities/water_type.dart';
+import 'package:fishfeed/services/sentry/sentry_service.dart';
 
 /// Data source for managing aquarium records in local Hive storage.
 ///
@@ -16,10 +18,14 @@ import 'package:fishfeed/domain/entities/water_type.dart';
 /// final aquariums = aquariumDs.getAllAquariums();
 /// ```
 class AquariumLocalDataSource {
-  AquariumLocalDataSource({Box<dynamic>? aquariumBox})
-    : _aquariumBox = aquariumBox;
+  AquariumLocalDataSource({Box<dynamic>? aquariumBox, SentryService? sentry})
+    : _aquariumBox = aquariumBox,
+      _sentry = sentry ?? SentryService.instance;
 
   final Box<dynamic>? _aquariumBox;
+
+  /// Telemetry sink used to attribute deletion events.
+  final SentryService _sentry;
 
   /// Gets the aquarium box, using the injected box or the default HiveBoxes.
   Box<dynamic> get _aquariums => _aquariumBox ?? HiveBoxes.aquariums;
@@ -204,13 +210,16 @@ class AquariumLocalDataSource {
         .toList();
   }
 
-  /// Retrieves all soft-deleted aquariums.
+  /// Retrieves soft-deleted aquariums that still need to be synced.
   ///
-  /// These aquariums need to be synced as deletions to the server.
+  /// Only returns tombstones that have NOT yet been acknowledged by the server
+  /// (`!synced`). A deletion already accepted by the server must not be
+  /// re-broadcast on every background sync, otherwise it could re-delete a
+  /// record that another device has since restored.
   List<AquariumModel> getDeletedAquariums() {
     return _aquariums.values
         .whereType<AquariumModel>()
-        .where((a) => a.isDeleted)
+        .where((a) => a.isDeleted && !a.synced)
         .toList();
   }
 
@@ -226,6 +235,15 @@ class AquariumLocalDataSource {
     existing.updatedAt = DateTime.now();
     existing.synced = false;
     await existing.save();
+
+    // Aquarium deletions are rare and high-impact, so emit a searchable Sentry
+    // event. This lets a local soft-delete be told apart from a server-driven
+    // hard-delete when investigating data-loss reports.
+    await _sentry.captureMessage(
+      'Aquarium soft-deleted locally',
+      level: SentryLevel.warning,
+      extras: {'aquarium_id': id, 'origin': 'local_soft_delete'},
+    );
   }
 
   /// Marks an aquarium as synced with the server.
@@ -335,7 +353,13 @@ class AquariumLocalDataSource {
   ///
   /// Call this after confirming deletions have been synced to the server.
   Future<void> purgeSyncedDeletions() async {
-    final deleted = getDeletedAquariums().where((a) => a.synced).toList();
+    // Query the box directly for synced tombstones. getDeletedAquariums() now
+    // excludes synced records (to avoid re-broadcasting confirmed deletions),
+    // so filtering its result by `synced` would always be empty.
+    final deleted = _aquariums.values
+        .whereType<AquariumModel>()
+        .where((a) => a.isDeleted && a.synced)
+        .toList();
     for (final aquarium in deleted) {
       await _aquariums.delete(aquarium.id);
     }
