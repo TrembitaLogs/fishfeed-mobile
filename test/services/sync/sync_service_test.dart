@@ -19,6 +19,7 @@ import 'package:fishfeed/data/datasources/local/streak_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/user_progress_local_ds.dart';
 import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
@@ -1136,5 +1137,242 @@ void main() {
 
       service.dispose();
     });
+  });
+
+  group('SyncService pagination', () {
+    setUp(() async {
+      // Pagination tests assert on lastSyncAt; start from a clean metadata box.
+      await HiveBoxes.syncMetadata.clear();
+    });
+
+    test('fetches all pages: page 2 carries the cursor and no changes, both '
+        'pages are applied, lastSyncAt advances once', () async {
+      setupDefaultMocks(isOnline: true);
+
+      // Seed one local change so we can prove changes are uploaded only on
+      // the first page (never re-sent on subsequent pages).
+      final localLog = FeedingLogModel(
+        id: 'local-log-1',
+        scheduleId: 'sch-local',
+        fishId: 'fish-1',
+        aquariumId: 'aq-1',
+        scheduledFor: DateTime.utc(2025, 1, 15, 9),
+        action: 'fed',
+        actedAt: DateTime.utc(2025, 1, 15, 9),
+        actedByUserId: 'user-1',
+        deviceId: 'device-1',
+        createdAt: DateTime.utc(2025, 1, 15, 9),
+      );
+      when(() => mockFeedingLogDs.getUnsynced()).thenReturn([localLog]);
+      when(() => mockFeedingLogDs.hasUnsyncedLogs()).thenReturn(true);
+      when(() => mockFeedingLogDs.getUnsyncedCount()).thenReturn(1);
+
+      final srvLog1 = <String, dynamic>{
+        'id': 'srv-log-1',
+        'schedule_id': 'sch-1',
+        'action': 'fed',
+        'acted_at': '2025-01-15T09:00:00Z',
+      };
+      final srvLog2 = <String, dynamic>{
+        'id': 'srv-log-2',
+        'schedule_id': 'sch-2',
+        'action': 'fed',
+        'acted_at': '2025-01-15T10:00:00Z',
+      };
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer((invocation) async {
+        final data = invocation.namedArguments[#data] as Map<String, dynamic>;
+        final cursor = data['cursor'] as String?;
+        if (cursor == null) {
+          // Page 1: more data available.
+          return Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'server_state': {
+                'feeding_logs': [srvLog1],
+              },
+              'has_more': true,
+              'next_cursor': '1',
+            },
+          );
+        }
+        // Page 2: final page.
+        return Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': {
+              'feeding_logs': [srvLog2],
+            },
+            'has_more': false,
+          },
+        );
+      });
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      // Two requests were made.
+      final captured = verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          any(),
+          data: captureAny(named: 'data'),
+        ),
+      ).captured;
+      expect(captured.length, 2);
+
+      final page1 = captured[0] as Map<String, dynamic>;
+      final page2 = captured[1] as Map<String, dynamic>;
+
+      // Page 1 uploads the local change and carries no cursor.
+      expect(page1['cursor'], isNull);
+      expect((page1['changes'] as List).length, 1);
+
+      // Page 2 carries the server cursor and resends NO changes.
+      expect(page2['cursor'], '1');
+      expect(page2['changes'], isEmpty);
+
+      // Both pages' server_state was applied (downloaded counts summed).
+      expect(result.downloadedCount, 2);
+      verify(() => mockFeedingLogDs.applyServerUpdate(srvLog1)).called(1);
+      verify(() => mockFeedingLogDs.applyServerUpdate(srvLog2)).called(1);
+
+      // lastSyncAt advanced after the full run completed.
+      expect(HiveBoxes.syncMetadata.get('default')?.lastSyncAt, isNotNull);
+    });
+
+    test(
+      'single page (has_more=false) makes one request and advances lastSyncAt',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        final srvLog = <String, dynamic>{
+          'id': 'srv-log-1',
+          'schedule_id': 'sch-1',
+          'action': 'fed',
+          'acted_at': '2025-01-15T09:00:00Z',
+        };
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'server_state': {
+                'feeding_logs': [srvLog],
+              },
+              'has_more': false,
+            },
+          ),
+        );
+
+        final service = createSyncService();
+        final result = await service.syncAllWithResult();
+
+        verify(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).called(1);
+        expect(result.downloadedCount, 1);
+        expect(HiveBoxes.syncMetadata.get('default')?.lastSyncAt, isNotNull);
+      },
+    );
+
+    test('partial failure on page 2 keeps page 1 data, reports the error and '
+        'does NOT advance lastSyncAt', () async {
+      setupDefaultMocks(isOnline: true);
+
+      final srvLog1 = <String, dynamic>{
+        'id': 'srv-log-1',
+        'schedule_id': 'sch-1',
+        'action': 'fed',
+        'acted_at': '2025-01-15T09:00:00Z',
+      };
+
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer((invocation) async {
+        final data = invocation.namedArguments[#data] as Map<String, dynamic>;
+        final cursor = data['cursor'] as String?;
+        if (cursor == null) {
+          return Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'server_state': {
+                'feeding_logs': [srvLog1],
+              },
+              'has_more': true,
+              'next_cursor': '1',
+            },
+          );
+        }
+        throw DioException(
+          requestOptions: RequestOptions(path: '/sync'),
+          message: 'Network error on page 2',
+        );
+      });
+
+      final service = createSyncService();
+      final result = await service.syncAllWithResult();
+
+      // Page 1 data was applied before the failure.
+      verify(() => mockFeedingLogDs.applyServerUpdate(srvLog1)).called(1);
+      expect(result.downloadedCount, 1);
+
+      // The failure is reported on the aggregated result.
+      expect(result.isSuccess, false);
+      expect(result.errors, isNotEmpty);
+
+      // lastSyncAt NOT advanced -> next sync re-fetches from the same point.
+      expect(HiveBoxes.syncMetadata.get('default')?.lastSyncAt, isNull);
+    });
+
+    test(
+      'stops at the maxPages cap when the server never stops paginating',
+      () async {
+        setupDefaultMocks(isOnline: true);
+
+        var calls = 0;
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer((_) async {
+          calls++;
+          return Response(
+            requestOptions: RequestOptions(path: '/sync'),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'server_state': <String, dynamic>{},
+              'has_more': true,
+              'next_cursor': '$calls',
+            },
+          );
+        });
+
+        final service = createSyncService(
+          config: const SyncConfig(maxPages: 5),
+        );
+        await service.syncAllWithResult();
+
+        // The loop stopped at the cap instead of running forever.
+        expect(calls, 5);
+        // Cap hit mid-pagination -> lastSyncAt is left untouched.
+        expect(HiveBoxes.syncMetadata.get('default')?.lastSyncAt, isNull);
+      },
+    );
   });
 }
