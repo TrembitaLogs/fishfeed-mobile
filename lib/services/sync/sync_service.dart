@@ -89,6 +89,7 @@ class SyncConfig {
     this.maxDelay = const Duration(seconds: 32),
     this.pageSize = 100,
     this.syncTimeout = const Duration(seconds: 30),
+    this.maxPages = 50,
   });
 
   /// Initial delay before first retry.
@@ -105,6 +106,13 @@ class SyncConfig {
 
   /// Timeout for sync requests.
   final Duration syncTimeout;
+
+  /// Maximum number of pages to fetch in a single sync run.
+  ///
+  /// Safety cap that guards against an infinite pagination loop if the server
+  /// keeps reporting `has_more`. When hit, the run stops without advancing the
+  /// delta point so the remaining pages are fetched on the next sync.
+  final int maxPages;
 
   /// Calculates delay for a given retry attempt using exponential backoff.
   Duration getDelayForRetry(int retryCount) {
@@ -449,50 +457,119 @@ class SyncService {
     final effectiveLastSyncAt = forceLastSyncAt
         ? lastSyncAt
         : (lastSyncAt ?? metadata?.lastSyncAt);
+    // Constant for the whole run: the backend returns user-scoped entities in
+    // full on every page, so applying isFullSync per page stays idempotent.
+    final isFullSync = effectiveLastSyncAt == null;
 
     _logger.i('SyncService: Sending ${changes.length} changes to server');
 
-    // Build request payload
-    final payload = {
-      'changes': changes.map((c) => c.toJson()).toList(),
-      'last_sync_at': effectiveLastSyncAt?.toIso8601String(),
-      'page_size': _config.pageSize,
-    };
+    // Aggregated results across every page of this sync run.
+    var uploadedCount = 0;
+    var downloadedCount = 0;
+    final conflicts = <SyncConflict<Map<String, dynamic>>>[];
+    final deletedLocally = <String>[];
+    final errors = <String>[];
 
-    try {
-      final response = await _apiClient.dio.post<Map<String, dynamic>>(
-        '/sync',
-        data: payload,
-      );
+    // Cursor-driven pagination: the server reports `has_more` + `next_cursor`
+    // until every delta page has been delivered. Local changes are uploaded
+    // only on the first page; later pages just advance the server cursor so we
+    // never re-upload the same changes.
+    String? cursor;
+    var pageIndex = 0;
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Sync failed with status ${response.statusCode}',
+    while (true) {
+      final payload = <String, dynamic>{
+        'changes': pageIndex == 0
+            ? changes.map((c) => c.toJson()).toList()
+            : const <dynamic>[],
+        'last_sync_at': effectiveLastSyncAt?.toIso8601String(),
+        'page_size': _config.pageSize,
+        if (cursor != null) 'cursor': cursor,
+      };
+
+      try {
+        final response = await _apiClient.dio.post<Map<String, dynamic>>(
+          '/sync',
+          data: payload,
+        );
+
+        if (response.statusCode != 200 && response.statusCode != 201) {
+          throw DioException(
+            requestOptions: response.requestOptions,
+            response: response,
+            message: 'Sync failed with status ${response.statusCode}',
+          );
+        }
+
+        final data = response.data;
+        if (data == null) {
+          // No data returned. On the first page keep the legacy behaviour of
+          // marking all sent changes as synced; there is nothing to paginate.
+          // lastSyncAt is intentionally NOT advanced here (matches the prior
+          // null-response behaviour).
+          if (pageIndex == 0) {
+            await _markChangesAsSynced(changes);
+            uploadedCount += changes.length;
+          }
+          break;
+        }
+
+        final pageResult = await _processSyncResponse(
+          data,
+          pageIndex == 0 ? changes : const <SyncChange>[],
+          isFullSync: isFullSync,
+        );
+
+        uploadedCount += pageResult.uploadedCount;
+        downloadedCount += pageResult.downloadedCount;
+        conflicts.addAll(pageResult.conflicts);
+        deletedLocally.addAll(pageResult.deletedLocally);
+        errors.addAll(pageResult.errors);
+
+        final nextCursor = data['next_cursor'] as String?;
+        if (!pageResult.hasMore || nextCursor == null) {
+          // Full pagination completed successfully: advance the delta point
+          // exactly once, so the next delta sync starts after this batch.
+          await _advanceLastSyncAt();
+          break;
+        }
+
+        cursor = nextCursor;
+        pageIndex++;
+
+        if (pageIndex >= _config.maxPages) {
+          // Safety cap: stop instead of looping forever. lastSyncAt is left
+          // untouched so the remaining pages are re-fetched on the next sync
+          // (server upserts are idempotent).
+          _logger.w(
+            'SyncService: Pagination cap (${_config.maxPages}) reached; '
+            'remaining pages will be fetched on the next sync',
+          );
+          break;
+        }
+      } on DioException catch (e) {
+        _logger.e('SyncService: Network error', error: e);
+        errors.add(e.message ?? 'Network error');
+        // Return the accumulated partial result WITHOUT advancing lastSyncAt:
+        // the next sync re-fetches from the same delta point and the idempotent
+        // upserts safely re-apply any already-seen pages.
+        return SyncResult(
+          uploadedCount: uploadedCount,
+          downloadedCount: downloadedCount,
+          conflicts: conflicts,
+          deletedLocally: deletedLocally,
+          errors: errors,
         );
       }
-
-      final data = response.data;
-      if (data == null) {
-        // No data returned, mark all changes as synced
-        await _markChangesAsSynced(changes);
-        return SyncResult(uploadedCount: changes.length, downloadedCount: 0);
-      }
-
-      return await _processSyncResponse(
-        data,
-        changes,
-        isFullSync: effectiveLastSyncAt == null,
-      );
-    } on DioException catch (e) {
-      _logger.e('SyncService: Network error', error: e);
-      return SyncResult(
-        uploadedCount: 0,
-        downloadedCount: 0,
-        errors: [e.message ?? 'Network error'],
-      );
     }
+
+    return SyncResult(
+      uploadedCount: uploadedCount,
+      downloadedCount: downloadedCount,
+      conflicts: conflicts,
+      deletedLocally: deletedLocally,
+      errors: errors,
+    );
   }
 
   Future<SyncResult> _processSyncResponse(
@@ -553,10 +630,12 @@ class SyncService {
       onSyncDownloadCompleted?.call();
     }
 
-    // Save sync token
+    // Save sync token only. lastSyncAt is advanced separately by
+    // _advanceLastSyncAt once the full pagination run completes, so an
+    // interrupted multi-page sync does not skip the un-fetched pages.
     final syncToken = data['sync_token'] as String?;
     if (syncToken != null) {
-      await _saveSyncMetadata(syncToken: syncToken);
+      await _saveSyncToken(syncToken);
     }
 
     final hasMore = data['has_more'] as bool? ?? false;
@@ -1098,20 +1177,34 @@ class SyncService {
     return box.get('default');
   }
 
-  Future<void> _saveSyncMetadata({String? syncToken}) async {
+  /// Persists the server-provided sync token without advancing [lastSyncAt].
+  ///
+  /// [lastSyncAt] is advanced separately by [_advanceLastSyncAt] only after a
+  /// full pagination run completes (see [_performSync]).
+  Future<void> _saveSyncToken(String syncToken) async {
+    final metadata = await _getOrCreateSyncMetadata();
+    metadata.syncToken = syncToken;
+    await metadata.save();
+  }
+
+  /// Advances [lastSyncAt] to now, marking the delta point for the next sync.
+  ///
+  /// Called exactly once after a full pagination run finishes successfully, so
+  /// an interrupted multi-page sync never skips the un-fetched pages.
+  Future<void> _advanceLastSyncAt() async {
+    final metadata = await _getOrCreateSyncMetadata();
+    metadata.lastSyncAt = DateTime.now().toUtc();
+    await metadata.save();
+  }
+
+  Future<SyncMetadataModel> _getOrCreateSyncMetadata() async {
     final box = HiveBoxes.syncMetadata;
     var metadata = box.get('default');
-
     if (metadata == null) {
       metadata = SyncMetadataModel();
       await box.put('default', metadata);
     }
-
-    metadata.lastSyncAt = DateTime.now().toUtc();
-    if (syncToken != null) {
-      metadata.syncToken = syncToken;
-    }
-    await metadata.save();
+    return metadata;
   }
 
   // ============ Migration V2 ============

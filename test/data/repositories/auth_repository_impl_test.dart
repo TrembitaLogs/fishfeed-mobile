@@ -10,7 +10,9 @@ import 'package:fishfeed/core/services/secure_storage_service.dart';
 import 'package:fishfeed/data/datasources/local/auth_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/remote/auth_remote_ds.dart';
+import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/auth_response_dto.dart';
+import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/user_dto.dart';
 import 'package:fishfeed/data/models/user_model.dart';
 import 'package:fishfeed/data/repositories/auth_repository_impl.dart';
@@ -373,17 +375,43 @@ void main() {
   });
 
   group('logout', () {
-    test('should clear local data and return unit', () async {
+    test('clears only the session tokens, preserving the local user record, '
+        'domain data and onboarding flag', () async {
+      // Seed per-user domain data and onboarding so we can prove that logout
+      // leaves them intact. The original bug wiped these on every logout,
+      // which made the feeding status look "not fed" after the next login.
+      await HiveBoxes.setOnboardingCompleted(true);
+      await HiveBoxes.aquariums.put(
+        'aq-1',
+        AquariumModel(
+          id: 'aq-1',
+          userId: 'user-123',
+          name: 'Living room tank',
+          createdAt: DateTime(2024, 1, 1),
+        ),
+      );
+      await HiveBoxes.feedingLogs.put(
+        'log-1',
+        FeedingLogModel(
+          id: 'log-1',
+          scheduleId: 'sch-1',
+          fishId: 'fish-1',
+          aquariumId: 'aq-1',
+          scheduledFor: DateTime(2024, 1, 1, 9),
+          action: 'fed',
+          actedAt: DateTime(2024, 1, 1, 9),
+          actedByUserId: 'user-123',
+          deviceId: 'device-1',
+          createdAt: DateTime(2024, 1, 1, 9),
+        ),
+      );
+
       when(
         () => mockSecureStorageService.getRefreshToken(),
       ).thenAnswer((_) async => 'refresh-token');
-
       when(
         () => mockSecureStorageService.clearTokens(),
       ).thenAnswer((_) async {});
-
-      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
-
       when(
         () => mockRemoteDataSource.logout(
           refreshToken: any(named: 'refreshToken'),
@@ -393,31 +421,110 @@ void main() {
       final result = await repository.logout();
 
       expect(result.isRight(), true);
+      // Session tokens are cleared...
       verify(() => mockSecureStorageService.clearTokens()).called(1);
-      verify(() => mockLocalDataSource.clearAll()).called(1);
+      // ...but the user's local record and domain data are NOT wiped.
+      verifyNever(() => mockLocalDataSource.clearAll());
+      expect(HiveBoxes.getOnboardingCompleted(), true);
+      expect(HiveBoxes.aquariums.isNotEmpty, true);
+      expect(HiveBoxes.feedingLogs.isNotEmpty, true);
+
+      // Cleanup seeded data so other tests start from a clean state.
+      await HiveBoxes.aquariums.clear();
+      await HiveBoxes.feedingLogs.clear();
+      await HiveBoxes.setOnboardingCompleted(false);
     });
 
-    test('should still clear local data when server logout fails', () async {
-      when(
-        () => mockSecureStorageService.getRefreshToken(),
-      ).thenAnswer((_) async => 'refresh-token');
+    test(
+      'still clears the session when the server logout call fails',
+      () async {
+        when(
+          () => mockSecureStorageService.getRefreshToken(),
+        ).thenAnswer((_) async => 'refresh-token');
+        when(
+          () => mockSecureStorageService.clearTokens(),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRemoteDataSource.logout(
+            refreshToken: any(named: 'refreshToken'),
+          ),
+        ).thenThrow(const ServerException());
 
+        final result = await repository.logout();
+
+        // Should still succeed because the local session is cleared regardless.
+        expect(result.isRight(), true);
+        verify(() => mockSecureStorageService.clearTokens()).called(1);
+        verifyNever(() => mockLocalDataSource.clearAll());
+      },
+    );
+  });
+
+  group('account-switch data isolation', () {
+    test(
+      'same-user re-login preserves local data (no ownership-change wipe)',
+      () async {
+        // A user record already exists locally for the SAME id signing in.
+        when(
+          () => mockLocalDataSource.getCurrentUser(),
+        ).thenReturn(testUserModel); // id == testUserDto.id == 'user-123'
+        when(
+          () => mockRemoteDataSource.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => testAuthResponseDto);
+        when(
+          () => mockSecureStorageService.setTokens(
+            accessToken: any(named: 'accessToken'),
+            refreshToken: any(named: 'refreshToken'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockLocalDataSource.saveUserLocally(any()),
+        ).thenAnswer((_) async {});
+
+        await repository.login(email: 'test@example.com', password: 'pw');
+
+        // No wipe because the same user is signing back in.
+        verifyNever(() => mockLocalDataSource.clearAll());
+        verifyNever(() => mockSecureStorageService.clearTokens());
+      },
+    );
+
+    test('different-user sign-in wipes the previous user data', () async {
+      // A DIFFERENT user is cached locally before sign-in.
+      final otherUser = UserModel(
+        id: 'other-user-999',
+        email: 'other@example.com',
+        displayName: 'Other',
+        createdAt: DateTime(2024, 1, 1),
+      );
+      when(() => mockLocalDataSource.getCurrentUser()).thenReturn(otherUser);
+      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
       when(
         () => mockSecureStorageService.clearTokens(),
       ).thenAnswer((_) async {});
-
-      when(() => mockLocalDataSource.clearAll()).thenAnswer((_) async {});
-
       when(
-        () => mockRemoteDataSource.logout(
+        () => mockRemoteDataSource.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => testAuthResponseDto);
+      when(
+        () => mockSecureStorageService.setTokens(
+          accessToken: any(named: 'accessToken'),
           refreshToken: any(named: 'refreshToken'),
         ),
-      ).thenThrow(const ServerException());
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.saveUserLocally(any()),
+      ).thenAnswer((_) async {});
 
-      final result = await repository.logout();
+      await repository.login(email: 'test@example.com', password: 'pw');
 
-      // Should still succeed because local data is cleared
-      expect(result.isRight(), true);
+      // Ownership changed -> the previous user's data is wiped.
+      verify(() => mockLocalDataSource.clearAll()).called(1);
       verify(() => mockSecureStorageService.clearTokens()).called(1);
     });
   });

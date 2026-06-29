@@ -120,22 +120,26 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final refreshToken = await _secureStorageService.getRefreshToken();
 
-      // Always clear local data, even if server logout fails
-      await _clearAuthData();
+      // Clear only the auth session (tokens). The user's local record and
+      // per-user domain data (aquariums, fish, feeding logs, schedules, etc.)
+      // are intentionally preserved so the feeding history survives a
+      // logout/login cycle on the same account. Cross-account privacy is
+      // handled separately by _clearPreviousUserDataIfNeeded on sign-in.
+      await _clearSessionOnly();
 
       if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
           await _remoteDataSource.logout(refreshToken: refreshToken);
         } catch (e, st) {
-          // Ignore server logout errors - local data is already cleared
+          // Ignore server logout errors - the local session is already cleared
           debugPrint('AuthRepository.logout server call failed: $e\n$st');
         }
       }
 
       return const Right(unit);
     } catch (e) {
-      // Even if something fails, try to clear local data
-      await _clearAuthData();
+      // Even if something fails, try to clear the session tokens
+      await _clearSessionOnly();
       return const Right(unit);
     }
   }
@@ -221,12 +225,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Clears all authentication data from local storage.
+  ///
+  /// Full wipe: tokens, the cached user record and every per-user Hive box.
+  /// Used on account deletion and when a *different* user signs in
+  /// ([_clearPreviousUserDataIfNeeded]) — never on a plain logout.
   Future<void> _clearAuthData() async {
     await Future.wait([
       _secureStorageService.clearTokens(),
       _localDataSource.clearAll(),
       HiveBoxes.clearUserData(),
     ]);
+  }
+
+  /// Clears only the authentication session (tokens).
+  ///
+  /// Used on logout: keeps the local user record and all per-user domain data
+  /// intact so the same user sees their feeding history again after signing
+  /// back in. [isAuthenticated] relies on token presence, so clearing tokens
+  /// is sufficient to end the session.
+  Future<void> _clearSessionOnly() async {
+    await _secureStorageService.clearTokens();
   }
 
   /// Wipes prior user's local data when account ownership changes.
