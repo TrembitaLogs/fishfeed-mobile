@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
@@ -687,13 +688,14 @@ void main() {
         ),
       ).thenAnswer((_) async => Right(testUser));
 
-      // Sync fails on first call, succeeds on subsequent (background sync)
-      var syncCallCount = 0;
-      when(() => mockSyncService.syncAll()).thenAnswer((_) async {
-        syncCallCount++;
-        if (syncCallCount == 1) throw Exception('Network error');
-        return 0;
-      });
+      // Sync fails (transient error) — returns an unsuccessful result.
+      when(() => mockSyncService.syncAllWithResult()).thenAnswer(
+        (_) async => const SyncResult(
+          uploadedCount: 0,
+          downloadedCount: 0,
+          errors: ['Network error'],
+        ),
+      );
 
       // But local data has aquariums
       when(
@@ -719,10 +721,15 @@ void main() {
           ),
         ).thenAnswer((_) async => Right(testUser));
 
-        // Sync fails — no background sync triggered (onboarding not completed)
-        when(
-          () => mockSyncService.syncAll(),
-        ).thenAnswer((_) async => throw Exception('Network error'));
+        // Sync fails — unsuccessful result with an empty cache leaves the
+        // onboarding status unknown, so onboarding is not completed.
+        when(() => mockSyncService.syncAllWithResult()).thenAnswer(
+          (_) async => const SyncResult(
+            uploadedCount: 0,
+            downloadedCount: 0,
+            errors: ['Network error'],
+          ),
+        );
 
         when(
           () => mockAquariumRepository.getCachedAquariums(),
@@ -799,6 +806,130 @@ void main() {
         expect(authNotifier.state.hasCompletedOnboarding, true);
         // Background sync should be triggered
         verify(() => mockSyncService.syncAll()).called(greaterThanOrEqualTo(1));
+      },
+    );
+  });
+
+  group('onboarding sync resilience', () {
+    final resilienceAquarium = Aquarium(
+      id: 'aq-resilience',
+      userId: 'user-123',
+      name: 'Resilience Aquarium',
+      waterType: WaterType.freshwater,
+      createdAt: DateTime(2024, 1, 15),
+    );
+
+    test(
+      'returning user with empty cache and failed sync self-heals onboarding '
+      'after a later successful sync downloads aquariums',
+      () async {
+        final stateController = StreamController<SyncState>.broadcast();
+        addTearDown(stateController.close);
+        when(
+          () => mockSyncService.stateStream,
+        ).thenAnswer((_) => stateController.stream);
+
+        // Transient 504: sync returns an unsuccessful result without throwing.
+        when(() => mockSyncService.syncAllWithResult()).thenAnswer(
+          (_) async => const SyncResult(
+            uploadedCount: 0,
+            downloadedCount: 0,
+            errors: ['DioException: 504 on /sync'],
+          ),
+        );
+
+        // Cache starts empty; a later sync downloads the server-side aquarium.
+        var aquariums = <Aquarium>[];
+        when(
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenAnswer((_) => Right(aquariums));
+
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        // Transient failure must not strand a returning user as a new user:
+        // the app is usable (authenticated) but onboarding stays pending.
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, false);
+
+        // A later successful sync downloads the aquarium into the local cache.
+        aquariums = [resilienceAquarium];
+        stateController.add(SyncState.success);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        // Self-heal completes onboarding and refreshes the auth state so the
+        // router leaves onboarding without an app restart.
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.user, testUser);
+        verify(
+          () => mockRepository.setOnboardingCompleted(true),
+        ).called(greaterThanOrEqualTo(1));
+      },
+    );
+
+    test('genuine new user with successful sync and no aquariums stays in '
+        'onboarding', () async {
+      when(() => mockSyncService.syncAllWithResult()).thenAnswer(
+        (_) async => const SyncResult(uploadedCount: 0, downloadedCount: 0),
+      );
+      when(
+        () => mockAquariumRepository.getCachedAquariums(),
+      ).thenReturn(const Right([]));
+      when(
+        () => mockRepository.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => Right(testUser));
+
+      await authNotifier.login(
+        email: 'test@example.com',
+        password: 'password123',
+      );
+
+      expect(authNotifier.state.isAuthenticated, true);
+      expect(authNotifier.state.hasCompletedOnboarding, false);
+      verifyNever(() => mockRepository.setOnboardingCompleted(true));
+    });
+
+    test(
+      'user with cached aquariums is marked complete even when sync fails',
+      () async {
+        when(() => mockSyncService.syncAllWithResult()).thenAnswer(
+          (_) async => const SyncResult(
+            uploadedCount: 0,
+            downloadedCount: 0,
+            errors: ['DioException: 504 on /sync'],
+          ),
+        );
+        when(
+          () => mockAquariumRepository.getCachedAquariums(),
+        ).thenReturn(Right([resilienceAquarium]));
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => Right(testUser));
+
+        await authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        expect(authNotifier.state.isAuthenticated, true);
+        expect(authNotifier.state.hasCompletedOnboarding, true);
+        verify(() => mockRepository.setOnboardingCompleted(true)).called(1);
       },
     );
   });

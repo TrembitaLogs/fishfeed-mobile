@@ -191,6 +191,12 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
   bool _isInitializing = false;
 
+  /// One-shot subscription that completes onboarding live once a later sync
+  /// succeeds, recovering from a transient sync failure during sign-in.
+  ///
+  /// See [_registerOnboardingSelfHeal]. Cancelled in [dispose] to avoid leaks.
+  StreamSubscription<SyncState>? _onboardingSelfHealSub;
+
   /// Initializes auth state from local storage.
   ///
   /// Call this on app startup to restore session.
@@ -603,28 +609,86 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   /// Syncs with server and checks if user has aquariums for onboarding.
   ///
   /// Returns true if onboarding should be marked as completed.
+  ///
+  /// On a fresh device a returning user's aquariums live only on the server,
+  /// so a successful sync is required to learn they are not a new user. A
+  /// transient sync failure (e.g. a 504 on POST /sync) must NOT be mistaken
+  /// for "new user" — that would push a returning user back through onboarding
+  /// and create a duplicate aquarium. When sync fails with an empty cache the
+  /// onboarding status is unknown: the app stays usable but a one-shot
+  /// [_registerOnboardingSelfHeal] completes onboarding live on the next
+  /// successful sync.
   Future<bool> _syncAndCheckOnboarding(String userId) async {
+    SyncResult? result;
     try {
       debugPrint('[AuthNotifier] Syncing to check onboarding status...');
-      await _syncService.syncAll();
-
-      final hasAquariums = _checkLocalAquariums();
-
-      if (hasAquariums) {
-        await _repository.setOnboardingCompleted(true);
-        return true;
-      }
+      // Use the detailed result so a failed sync is distinguishable from a
+      // successful sync that returned no aquariums (syncAll swallows that).
+      result = await _syncService.syncAllWithResult();
     } catch (e) {
       debugPrint('[AuthNotifier] Sync failed during onboarding check: $e');
-
-      // Fallback: check local data even without sync
-      final hasAquariums = _checkLocalAquariums();
-      if (hasAquariums) {
-        await _repository.setOnboardingCompleted(true);
-        return true;
-      }
     }
+
+    // Aquariums in the local cache (pre-existing or just downloaded by the
+    // sync) mean this is a returning user — complete onboarding regardless of
+    // the sync outcome.
+    if (_checkLocalAquariums()) {
+      await _repository.setOnboardingCompleted(true);
+      return true;
+    }
+
+    if (result?.isSuccess ?? false) {
+      // The server confirmed there are no aquariums: a genuine new user.
+      return false;
+    }
+
+    // Sync failed and the cache is empty: status is unknown, not "new user".
+    // Keep the app usable but self-heal onboarding on the next successful sync.
+    _registerOnboardingSelfHeal();
     return false;
+  }
+
+  /// Registers a one-shot listener that completes onboarding live once a later
+  /// sync succeeds and reveals server-side aquariums.
+  ///
+  /// Recovers a returning user who hit a transient sync failure right after
+  /// signing in on a fresh device, without requiring an app restart.
+  void _registerOnboardingSelfHeal() {
+    _onboardingSelfHealSub?.cancel();
+    _onboardingSelfHealSub = _syncService.stateStream.listen((syncState) async {
+      if (syncState != SyncState.success) return;
+
+      // Stop if onboarding was already completed through another path.
+      if (_repository.getOnboardingCompleted()) {
+        await _cancelOnboardingSelfHeal();
+        return;
+      }
+
+      if (!_checkLocalAquariums()) return;
+
+      // A later sync produced aquariums: this is a returning user. Complete
+      // onboarding and refresh the auth state so the router leaves onboarding.
+      await _repository.setOnboardingCompleted(true);
+      final currentUser = state.user;
+      if (mounted && currentUser != null) {
+        state = AuthenticationState.authenticated(
+          currentUser,
+          hasCompletedOnboarding: true,
+        );
+      }
+      await _cancelOnboardingSelfHeal();
+    });
+  }
+
+  Future<void> _cancelOnboardingSelfHeal() async {
+    await _onboardingSelfHealSub?.cancel();
+    _onboardingSelfHealSub = null;
+  }
+
+  @override
+  void dispose() {
+    _onboardingSelfHealSub?.cancel();
+    super.dispose();
   }
 
   /// Checks if user has any active aquariums in local cache.
