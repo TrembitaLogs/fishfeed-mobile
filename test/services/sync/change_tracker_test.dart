@@ -728,4 +728,35 @@ void main() {
       });
     });
   });
+
+  group('SyncChange UTC serialization', () {
+    test(
+      'toJson serializes client_updated_at as UTC even for a local timestamp',
+      () {
+        // A local wall-clock timestamp — the value stored in e.g.
+        // fish.deletedAt via DateTime.now(). Before the fix this was sent
+        // without a timezone, so a device east of UTC tripped the backend
+        // clock-skew guard and the delete/update was silently rejected.
+        final localTimestamp = DateTime(2026, 6, 30, 18, 5, 2);
+        final change = SyncChange(
+          entityType: EntityType.fish,
+          entityId: 'fish-1',
+          operation: SyncOperation.delete,
+          data: const {'deleted_at': 'irrelevant'},
+          clientUpdatedAt: localTimestamp,
+        );
+
+        final ts = change.toJson()['client_updated_at'] as String;
+
+        expect(
+          ts.endsWith('Z'),
+          isTrue,
+          reason: 'client_updated_at must be UTC (Z suffix), not local time',
+        );
+        final parsed = DateTime.parse(ts);
+        expect(parsed.isUtc, isTrue);
+        expect(parsed, localTimestamp.toUtc());
+      },
+    );
+  });
 }
