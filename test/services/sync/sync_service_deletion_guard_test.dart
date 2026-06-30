@@ -62,6 +62,7 @@ void main() {
   setUpAll(() async {
     registerFallbackValue(FakeRequestOptions());
     registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue(<String>{});
     registerFallbackValue(DateTime.now());
     registerFallbackValue(SentryLevel.warning);
 
@@ -248,7 +249,12 @@ void main() {
           () => mockSentry.captureMessage(
             'Aquarium deleted by server sync',
             level: SentryLevel.warning,
-            extras: {'aquarium_id': 'aq-1', 'origin': 'server_sync'},
+            extras: {
+              'aquarium_id': 'aq-1',
+              'origin': 'server_sync',
+              'batch_size': 1,
+            },
+            tags: {'delete_origin': 'server_sync', 'entity_type': 'aquarium'},
           ),
         ).called(1);
       },
@@ -285,7 +291,12 @@ void main() {
           () => mockSentry.captureMessage(
             'Server deletion skipped: local has unsynced edits',
             level: SentryLevel.warning,
-            extras: {'aquarium_id': 'aq-1', 'origin': 'server_sync'},
+            extras: {
+              'aquarium_id': 'aq-1',
+              'origin': 'server_sync',
+              'batch_size': 1,
+            },
+            tags: {'delete_origin': 'server_sync', 'entity_type': 'aquarium'},
           ),
         ).called(1);
 
@@ -364,7 +375,12 @@ void main() {
           () => mockSentry.captureMessage(
             'Server deletion skipped: local has unsynced edits',
             level: SentryLevel.warning,
-            extras: {'fish_id': 'fish-1', 'origin': 'server_sync'},
+            extras: {
+              'fish_id': 'fish-1',
+              'origin': 'server_sync',
+              'batch_size': 1,
+            },
+            tags: {'delete_origin': 'server_sync', 'entity_type': 'fish'},
           ),
         ).called(1);
 
@@ -402,7 +418,9 @@ void _setupDefaultMocks({
   when(
     () => mockAquariumDs.deleteAquarium(any()),
   ).thenAnswer((_) async => true);
-  when(() => mockAquariumDs.purgeSyncedDeletions()).thenAnswer((_) async {});
+  when(
+    () => mockAquariumDs.purgeSyncedDeletions(any()),
+  ).thenAnswer((_) async {});
 
   // Fish mocks
   when(() => mockFishDs.getUnsyncedFish()).thenReturn([]);
@@ -413,7 +431,7 @@ void _setupDefaultMocks({
   ).thenAnswer((_) async => true);
   when(() => mockFishDs.applyServerUpdate(any())).thenAnswer((_) async {});
   when(() => mockFishDs.deleteFish(any())).thenAnswer((_) async => true);
-  when(() => mockFishDs.purgeSyncedDeletions()).thenAnswer((_) async {});
+  when(() => mockFishDs.purgeSyncedDeletions(any())).thenAnswer((_) async {});
 
   // FeedingLog mocks
   when(() => mockFeedingLogDs.hasUnsyncedLogs()).thenReturn(false);
@@ -478,6 +496,7 @@ void _setupDefaultMocks({
       any(),
       level: any(named: 'level'),
       extras: any(named: 'extras'),
+      tags: any(named: 'tags'),
     ),
   ).thenAnswer((_) async {});
   when(

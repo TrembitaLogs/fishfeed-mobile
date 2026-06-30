@@ -21,6 +21,7 @@ import 'package:fishfeed/data/datasources/remote/api_client.dart';
 import 'package:fishfeed/data/models/aquarium_model.dart';
 import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
+import 'package:fishfeed/data/models/sync_metadata_model.dart';
 import 'package:fishfeed/services/sync/conflict_resolver.dart';
 import 'package:fishfeed/services/sync/sync_service.dart';
 
@@ -66,6 +67,7 @@ void main() {
     registerFallbackValue(FakeAquariumModel());
     registerFallbackValue(FakeFishModel());
     registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue(<String>{});
     registerFallbackValue(DateTime.now());
 
     // Initialize HiveBoxes for tests
@@ -155,7 +157,9 @@ void main() {
     when(
       () => mockAquariumDs.deleteAquarium(any()),
     ).thenAnswer((_) async => true);
-    when(() => mockAquariumDs.purgeSyncedDeletions()).thenAnswer((_) async {});
+    when(
+      () => mockAquariumDs.purgeSyncedDeletions(any()),
+    ).thenAnswer((_) async {});
 
     // Fish mocks
     when(() => mockFishDs.getUnsyncedFish()).thenReturn([]);
@@ -166,7 +170,7 @@ void main() {
     ).thenAnswer((_) async => true);
     when(() => mockFishDs.applyServerUpdate(any())).thenAnswer((_) async {});
     when(() => mockFishDs.deleteFish(any())).thenAnswer((_) async => true);
-    when(() => mockFishDs.purgeSyncedDeletions()).thenAnswer((_) async {});
+    when(() => mockFishDs.purgeSyncedDeletions(any())).thenAnswer((_) async {});
 
     // FeedingLog mocks
     when(() => mockFeedingLogDs.hasUnsyncedLogs()).thenReturn(false);
@@ -1374,5 +1378,78 @@ void main() {
         expect(HiveBoxes.syncMetadata.get('default')?.lastSyncAt, isNull);
       },
     );
+  });
+
+  group('SyncService one-time recovery full sync', () {
+    setUp(() async {
+      await HiveBoxes.syncMetadata.clear();
+    });
+
+    void stubSinglePageOk() {
+      when(
+        () =>
+            mockDio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/sync'),
+          statusCode: 200,
+          data: <String, dynamic>{
+            'server_state': <String, dynamic>{},
+            'has_more': false,
+          },
+        ),
+      );
+    }
+
+    Map<String, dynamic> capturedRequest() {
+      final captured = verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          any(),
+          data: captureAny(named: 'data'),
+        ),
+      ).captured;
+      return captured.single as Map<String, dynamic>;
+    }
+
+    test(
+      'forces a FULL sync once when a delta point exists but recovery is pending',
+      () async {
+        setupDefaultMocks(isOnline: true);
+        // Broken-device state: a delta point is set, recovery has not run.
+        await HiveBoxes.syncMetadata.put(
+          'default',
+          SyncMetadataModel(lastSyncAt: DateTime.utc(2025, 1, 1)),
+        );
+        stubSinglePageOk();
+
+        final service = createSyncService();
+        // fullSync defaults to false — recovery must still force a full sync.
+        await service.syncAllWithResult();
+
+        // Full sync forced: last_sync_at omitted despite a stored delta point.
+        expect(capturedRequest()['last_sync_at'], isNull);
+        // Flag recorded so the one-shot never fires again.
+        expect(
+          HiveBoxes.syncMetadata.get('default')?.recoveryFullSyncDone,
+          isTrue,
+        );
+      },
+    );
+
+    test('runs a DELTA sync once recovery has already completed', () async {
+      setupDefaultMocks(isOnline: true);
+      final lastSync = DateTime.utc(2025, 1, 1);
+      await HiveBoxes.syncMetadata.put(
+        'default',
+        SyncMetadataModel(lastSyncAt: lastSync, recoveryFullSyncDone: true),
+      );
+      stubSinglePageOk();
+
+      final service = createSyncService();
+      await service.syncAllWithResult();
+
+      // Delta sync: last_sync_at carries the stored timestamp.
+      expect(capturedRequest()['last_sync_at'], lastSync.toIso8601String());
+    });
   });
 }

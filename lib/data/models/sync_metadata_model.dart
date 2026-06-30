@@ -8,7 +8,12 @@ part 'sync_metadata_model.g.dart';
 /// to enable delta sync (only fetching changes since last sync).
 @HiveType(typeId: 22)
 class SyncMetadataModel extends HiveObject {
-  SyncMetadataModel({this.lastSyncAt, this.syncToken, this.cursor});
+  SyncMetadataModel({
+    this.lastSyncAt,
+    this.syncToken,
+    this.cursor,
+    this.recoveryFullSyncDone = false,
+  });
 
   /// Timestamp of the last successful sync.
   ///
@@ -27,6 +32,16 @@ class SyncMetadataModel extends HiveObject {
   /// If sync was interrupted, this allows resuming from where it stopped.
   @HiveField(2)
   String? cursor;
+
+  /// Whether the one-time post-upgrade recovery full sync has run.
+  ///
+  /// Set once after the first successful full sync following the deletion-bug
+  /// fix, so a stale local tombstone for a still-alive aquarium is reconciled
+  /// against the server exactly once (a delta sync omits unchanged-alive rows
+  /// and would leave a purged/hidden aquarium unrecoverable). See deletion
+  /// bug #2.
+  @HiveField(3, defaultValue: false)
+  bool recoveryFullSyncDone;
 
   /// Whether this is the first sync (initial sync).
   bool get isInitialSync => lastSyncAt == null;

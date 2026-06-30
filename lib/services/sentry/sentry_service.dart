@@ -335,6 +335,7 @@ class SentryService {
     String message, {
     SentryLevel level = SentryLevel.info,
     Map<String, dynamic>? extras,
+    Map<String, String>? tags,
   }) async {
     if (!_isInitialized) {
       if (kDebugMode) {
@@ -346,9 +347,14 @@ class SentryService {
     await Sentry.captureMessage(
       message,
       level: level,
-      withScope: extras != null
+      withScope: (extras != null || tags != null)
           ? (scope) {
-              scope.setContexts('Extra Data', extras);
+              if (extras != null) {
+                scope.setContexts('Extra Data', extras);
+              }
+              // Tags are indexed/searchable in Sentry (unlike "Extra Data"), so
+              // promote discriminators here to allow faceting and aggregation.
+              tags?.forEach(scope.setTag);
             }
           : null,
     );

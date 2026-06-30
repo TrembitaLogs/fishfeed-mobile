@@ -372,10 +372,24 @@ class SyncService {
     _lastError = null;
 
     try {
+      // One-time post-upgrade recovery: force the first sync after the
+      // deletion-bug fix to be a FULL sync so a stale local tombstone for a
+      // still-alive aquarium is reconciled (a delta sync omits unchanged-alive
+      // rows, leaving a purged/hidden aquarium unrecoverable). See deletion
+      // bug #2. Forced only when we would otherwise run a delta (lastSyncAt set);
+      // a device whose first sync is already full just records the flag.
+      final metadata = _getSyncMetadata();
+      final recoveryPending = !(metadata?.recoveryFullSyncDone ?? false);
+      final effectiveFullSync =
+          fullSync || (recoveryPending && metadata?.lastSyncAt != null);
+      final ranFullSync = effectiveFullSync || metadata?.lastSyncAt == null;
+
       final result =
           await _performSync(
-            lastSyncAt: fullSync ? null : _getSyncMetadata()?.lastSyncAt,
-            forceLastSyncAt: fullSync,
+            lastSyncAt: effectiveFullSync
+                ? null
+                : _getSyncMetadata()?.lastSyncAt,
+            forceLastSyncAt: effectiveFullSync,
           ).timeout(
             _config.syncTimeout,
             onTimeout: () {
@@ -388,6 +402,9 @@ class SyncService {
         _updateState(SyncState.success);
         _lastSyncTime = DateTime.now();
         _currentRetryCount = 0;
+        if (recoveryPending && ranFullSync) {
+          await _markRecoveryFullSyncDone();
+        }
         _logger.i('SyncService: Sync completed - $result');
       } else {
         _lastError = result.errors.join(', ');
@@ -586,8 +603,10 @@ class SyncService {
     final syncedIds = _extractSyncedIds(data);
     await _markChangesByIdAsSynced(syncedIds, sentChanges);
 
-    // Purge soft-deleted entities that have been synced to server
-    await _purgeSyncedDeletions();
+    // Purge soft-deleted entities whose deletion the server confirmed in this
+    // response (synced ids). Scoping to confirmed ids stops a synced tombstone
+    // for a still-alive aquarium/fish from being permanently destroyed.
+    await _purgeSyncedDeletions(syncedIds.toSet());
 
     // Handle server_state - apply server data to local storage
     final serverState = data['server_state'] as Map<String, dynamic>?;
@@ -820,7 +839,12 @@ class SyncService {
           await _sentry.captureMessage(
             'Aquarium deleted by server sync',
             level: SentryLevel.warning,
-            extras: {'aquarium_id': idStr, 'origin': 'server_sync'},
+            extras: {
+              'aquarium_id': idStr,
+              'origin': 'server_sync',
+              'batch_size': deletedAquariums.length,
+            },
+            tags: {'delete_origin': 'server_sync', 'entity_type': 'aquarium'},
           );
           continue;
         }
@@ -837,7 +861,12 @@ class SyncService {
         await _sentry.captureMessage(
           'Server deletion skipped: local has unsynced edits',
           level: SentryLevel.warning,
-          extras: {'aquarium_id': idStr, 'origin': 'server_sync'},
+          extras: {
+            'aquarium_id': idStr,
+            'origin': 'server_sync',
+            'batch_size': deletedAquariums.length,
+          },
+          tags: {'delete_origin': 'server_sync', 'entity_type': 'aquarium'},
         );
       }
     }
@@ -885,7 +914,12 @@ class SyncService {
         await _sentry.captureMessage(
           'Server deletion skipped: local has unsynced edits',
           level: SentryLevel.warning,
-          extras: {'fish_id': idStr, 'origin': 'server_sync'},
+          extras: {
+            'fish_id': idStr,
+            'origin': 'server_sync',
+            'batch_size': deletedFish.length,
+          },
+          tags: {'delete_origin': 'server_sync', 'entity_type': 'fish'},
         );
       }
     }
@@ -1003,12 +1037,12 @@ class SyncService {
   ///
   /// This permanently removes entities from local storage after
   /// DELETE operations have been confirmed by the server.
-  Future<void> _purgeSyncedDeletions() async {
-    // Purge synced soft-deleted aquariums
-    await _aquariumDs.purgeSyncedDeletions();
+  Future<void> _purgeSyncedDeletions(Set<String> confirmedIds) async {
+    // Purge synced soft-deleted aquariums confirmed by the server
+    await _aquariumDs.purgeSyncedDeletions(confirmedIds);
 
-    // Purge synced soft-deleted fish
-    await _fishDs.purgeSyncedDeletions();
+    // Purge synced soft-deleted fish confirmed by the server
+    await _fishDs.purgeSyncedDeletions(confirmedIds);
 
     _logger.d('SyncService: Purged synced deletions');
   }
@@ -1194,6 +1228,14 @@ class SyncService {
   Future<void> _advanceLastSyncAt() async {
     final metadata = await _getOrCreateSyncMetadata();
     metadata.lastSyncAt = DateTime.now().toUtc();
+    await metadata.save();
+  }
+
+  /// Records that the one-time post-upgrade recovery full sync has completed,
+  /// so it is never forced again on this device. See deletion bug #2.
+  Future<void> _markRecoveryFullSyncDone() async {
+    final metadata = await _getOrCreateSyncMetadata();
+    metadata.recoveryFullSyncDone = true;
     await metadata.save();
   }
 
