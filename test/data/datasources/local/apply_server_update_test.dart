@@ -253,6 +253,51 @@ void main() {
       expect(updated!.notes, 'Local notes');
     });
 
+    test(
+      'RESURRECT: clears a synced tombstone when server reports it alive',
+      () async {
+        final oldTime = DateTime(2025, 1, 15, 10, 0);
+        final newTime = DateTime(2025, 1, 15, 12, 0);
+
+        final fish = createExistingFish(id: 'fish-1', serverUpdatedAt: oldTime);
+        fish.deletedAt = DateTime(2025, 1, 14);
+        await fishDs.saveFish(fish);
+
+        await fishDs.applyServerUpdate({
+          'id': 'fish-1',
+          'quantity': 2,
+          'updated_at': newTime.toIso8601String(),
+        });
+
+        final updated = fishDs.getFishById('fish-1');
+        expect(updated, isNotNull);
+        expect(updated!.isDeleted, isFalse);
+      },
+    );
+
+    test(
+      'RESURRECT: does NOT clear an unsynced tombstone (pending local delete)',
+      () async {
+        final oldTime = DateTime(2025, 1, 15, 10, 0);
+        final newTime = DateTime(2025, 1, 15, 12, 0);
+
+        final fish = createExistingFish(id: 'fish-1', serverUpdatedAt: oldTime);
+        fish.deletedAt = DateTime(2025, 1, 14);
+        fish.synced = false;
+        await fishDs.saveFish(fish);
+
+        await fishDs.applyServerUpdate({
+          'id': 'fish-1',
+          'quantity': 2,
+          'updated_at': newTime.toIso8601String(),
+        });
+
+        final updated = fishDs.getFishById('fish-1');
+        expect(updated, isNotNull);
+        expect(updated!.isDeleted, isTrue);
+      },
+    );
+
     test('CREATE: new fish created from server data', () async {
       await fishDs.applyServerUpdate({
         'id': 'fish-new',
@@ -590,6 +635,84 @@ void main() {
       expect(updated, isNotNull);
       expect(updated!.name, 'Local Name');
     });
+
+    test(
+      'RESURRECT: clears a synced tombstone when server reports it alive',
+      () async {
+        final oldTime = DateTime(2025, 1, 15, 10, 0);
+        final newTime = DateTime(2025, 1, 15, 12, 0);
+
+        // Synced tombstone for an aquarium the server still lists as alive.
+        final aquarium = createExistingAquarium(
+          id: 'aquarium-1',
+          serverUpdatedAt: oldTime,
+        );
+        aquarium.deletedAt = DateTime(2025, 1, 14);
+        await aquariumDs.saveAquarium(aquarium);
+
+        await aquariumDs.applyServerUpdate({
+          'id': 'aquarium-1',
+          'name': 'Alive on server',
+          'updated_at': newTime.toIso8601String(),
+        });
+
+        final updated = aquariumDs.getAquariumById('aquarium-1');
+        expect(updated, isNotNull);
+        expect(updated!.isDeleted, isFalse);
+      },
+    );
+
+    test(
+      'RESURRECT: clears a synced tombstone even when server is not newer',
+      () async {
+        final serverTime = DateTime(2025, 1, 15, 12, 0);
+
+        final aquarium = createExistingAquarium(
+          id: 'aquarium-1',
+          serverUpdatedAt: serverTime,
+        );
+        aquarium.deletedAt = DateTime(2025, 1, 14);
+        await aquariumDs.saveAquarium(aquarium);
+
+        // Server sends a not-newer timestamp but still lists it as alive — the
+        // mere presence in server_state proves the record exists.
+        await aquariumDs.applyServerUpdate({
+          'id': 'aquarium-1',
+          'name': 'Alive',
+          'updated_at': serverTime.toIso8601String(),
+        });
+
+        final updated = aquariumDs.getAquariumById('aquarium-1');
+        expect(updated, isNotNull);
+        expect(updated!.isDeleted, isFalse);
+      },
+    );
+
+    test(
+      'RESURRECT: does NOT clear an unsynced tombstone (pending local delete)',
+      () async {
+        final oldTime = DateTime(2025, 1, 15, 10, 0);
+        final newTime = DateTime(2025, 1, 15, 12, 0);
+
+        final aquarium = createExistingAquarium(
+          id: 'aquarium-1',
+          serverUpdatedAt: oldTime,
+        );
+        aquarium.deletedAt = DateTime(2025, 1, 14);
+        aquarium.synced = false; // local delete not yet pushed
+        await aquariumDs.saveAquarium(aquarium);
+
+        await aquariumDs.applyServerUpdate({
+          'id': 'aquarium-1',
+          'name': 'Server still has it',
+          'updated_at': newTime.toIso8601String(),
+        });
+
+        final updated = aquariumDs.getAquariumById('aquarium-1');
+        expect(updated, isNotNull);
+        expect(updated!.isDeleted, isTrue);
+      },
+    );
 
     test('CREATE: new aquarium created from server data', () async {
       await aquariumDs.applyServerUpdate({

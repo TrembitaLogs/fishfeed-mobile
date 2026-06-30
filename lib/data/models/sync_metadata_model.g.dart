@@ -20,19 +20,22 @@ class SyncMetadataModelAdapter extends TypeAdapter<SyncMetadataModel> {
       lastSyncAt: fields[0] as DateTime?,
       syncToken: fields[1] as String?,
       cursor: fields[2] as String?,
+      recoveryFullSyncDone: fields[3] == null ? false : fields[3] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, SyncMetadataModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.lastSyncAt)
       ..writeByte(1)
       ..write(obj.syncToken)
       ..writeByte(2)
-      ..write(obj.cursor);
+      ..write(obj.cursor)
+      ..writeByte(3)
+      ..write(obj.recoveryFullSyncDone);
   }
 
   @override

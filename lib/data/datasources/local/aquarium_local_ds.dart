@@ -243,6 +243,7 @@ class AquariumLocalDataSource {
       'Aquarium soft-deleted locally',
       level: SentryLevel.warning,
       extras: {'aquarium_id': id, 'origin': 'local_soft_delete'},
+      tags: {'delete_origin': 'local_soft_delete', 'entity_type': 'aquarium'},
     );
   }
 
@@ -285,11 +286,26 @@ class AquariumLocalDataSource {
         : DateTime.now();
 
     if (existing != null) {
+      // The server sent this aquarium in server_state → it is alive there. A
+      // *synced* local tombstone is therefore stale (the server confirmed our
+      // delete earlier but now reports the record alive, or the tombstone was
+      // created erroneously). Resurrect it so the user sees their aquarium
+      // again. An *unsynced* tombstone is a pending local delete not yet pushed,
+      // so it must be left intact to avoid undoing the user's intent.
+      final resurrectedTombstone = existing.isDeleted && existing.synced;
+      if (resurrectedTombstone) {
+        existing.deletedAt = null;
+      }
+
       // Check if server version is newer
       if (existing.serverUpdatedAt != null &&
           serverUpdatedAt != null &&
           !serverUpdatedAt.isAfter(existing.serverUpdatedAt!)) {
-        // Local version is newer or equal, skip
+        // Local version is newer or equal — skip field updates, but persist a
+        // tombstone resurrection performed above.
+        if (resurrectedTombstone) {
+          await existing.save();
+        }
         return;
       }
 
@@ -349,16 +365,21 @@ class AquariumLocalDataSource {
     }
   }
 
-  /// Permanently removes soft-deleted aquariums that have been synced.
+  /// Permanently removes soft-deleted aquariums whose deletion the server has
+  /// confirmed in this sync (their id appears in [confirmedIds], i.e. the
+  /// server's synced/deleted ids).
   ///
-  /// Call this after confirming deletions have been synced to the server.
-  Future<void> purgeSyncedDeletions() async {
+  /// Only purging server-confirmed tombstones prevents a synced tombstone for an
+  /// aquarium that is still ALIVE on the server from being permanently destroyed
+  /// — a delta sync omits unchanged-but-alive rows, so "isDeleted && synced"
+  /// alone is not proof the server deleted it.
+  Future<void> purgeSyncedDeletions(Set<String> confirmedIds) async {
     // Query the box directly for synced tombstones. getDeletedAquariums() now
     // excludes synced records (to avoid re-broadcasting confirmed deletions),
     // so filtering its result by `synced` would always be empty.
     final deleted = _aquariums.values
         .whereType<AquariumModel>()
-        .where((a) => a.isDeleted && a.synced)
+        .where((a) => a.isDeleted && a.synced && confirmedIds.contains(a.id))
         .toList();
     for (final aquarium in deleted) {
       await _aquariums.delete(aquarium.id);

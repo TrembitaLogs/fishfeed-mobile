@@ -34,6 +34,7 @@ void main() {
         any(),
         level: any(named: 'level'),
         extras: any(named: 'extras'),
+        tags: any(named: 'tags'),
       ),
     ).thenAnswer((_) async {});
     when(
@@ -88,6 +89,10 @@ void main() {
             'Aquarium soft-deleted locally',
             level: SentryLevel.warning,
             extras: {'aquarium_id': 'aq-1', 'origin': 'local_soft_delete'},
+            tags: {
+              'delete_origin': 'local_soft_delete',
+              'entity_type': 'aquarium',
+            },
           ),
         ).called(1);
       },
@@ -122,13 +127,27 @@ void main() {
         await aquariumDs.saveAquarium(buildAquarium(id: 'aq-unsynced'));
         await aquariumDs.softDelete('aq-unsynced');
 
-        await aquariumDs.purgeSyncedDeletions();
+        await aquariumDs.purgeSyncedDeletions(<String>{'aq-synced'});
 
         // Synced tombstone is gone; unsynced tombstone is preserved.
         expect(aquariumDs.getAquariumById('aq-synced'), isNull);
         expect(aquariumDs.getAquariumById('aq-unsynced'), isNotNull);
       },
     );
+
+    test('purgeSyncedDeletions preserves a synced tombstone the server did NOT '
+        'confirm deleted', () async {
+      // A synced tombstone whose id is absent from the server-confirmed set
+      // may still be alive on the server (a delta sync omits unchanged-alive
+      // rows), so it must NOT be permanently destroyed.
+      await aquariumDs.saveAquarium(buildAquarium(id: 'aq-stray'));
+      await aquariumDs.softDelete('aq-stray');
+      await aquariumDs.markAsSynced('aq-stray', DateTime(2025, 2, 1));
+
+      await aquariumDs.purgeSyncedDeletions(<String>{'some-other-id'});
+
+      expect(aquariumDs.getAquariumById('aq-stray'), isNotNull);
+    });
 
     test(
       'round-trip: soft-delete -> in getDeleted -> markAsSynced -> purged',
@@ -148,7 +167,7 @@ void main() {
           isNot(contains('aq-1')),
         );
 
-        await aquariumDs.purgeSyncedDeletions();
+        await aquariumDs.purgeSyncedDeletions(<String>{'aq-1'});
         expect(aquariumDs.getAquariumById('aq-1'), isNull);
       },
     );
@@ -218,12 +237,23 @@ void main() {
         await fishDs.saveFish(buildFish(id: 'fish-unsynced'));
         await fishDs.softDelete('fish-unsynced');
 
-        await fishDs.purgeSyncedDeletions();
+        await fishDs.purgeSyncedDeletions(<String>{'fish-synced'});
 
         expect(fishDs.getFishById('fish-synced'), isNull);
         expect(fishDs.getFishById('fish-unsynced'), isNotNull);
       },
     );
+
+    test('purgeSyncedDeletions preserves a synced tombstone the server did NOT '
+        'confirm deleted', () async {
+      await fishDs.saveFish(buildFish(id: 'fish-stray'));
+      await fishDs.softDelete('fish-stray');
+      await fishDs.markAsSynced('fish-stray', DateTime(2025, 2, 1));
+
+      await fishDs.purgeSyncedDeletions(<String>{'some-other-id'});
+
+      expect(fishDs.getFishById('fish-stray'), isNotNull);
+    });
 
     test(
       'round-trip: soft-delete -> in getDeleted -> markAsSynced -> purged',
@@ -239,7 +269,7 @@ void main() {
           isNot(contains('fish-1')),
         );
 
-        await fishDs.purgeSyncedDeletions();
+        await fishDs.purgeSyncedDeletions(<String>{'fish-1'});
         expect(fishDs.getFishById('fish-1'), isNull);
       },
     );
