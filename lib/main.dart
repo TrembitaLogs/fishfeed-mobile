@@ -86,7 +86,10 @@ Future<void> main() async {
       await BackgroundSyncService.instance.initialize(
         isInDebugMode: kDebugMode,
       );
-      await BackgroundSyncService.instance.registerPeriodicSync();
+      // NOTE: the periodic feeding-log background sync was retired — it opened
+      // the feedingLogs Hive box from a background isolate and corrupted it.
+      // Feeding-log sync now runs only in the foreground SyncService.
+      // initialize() above also cancels any legacy task on existing installs.
       await BackgroundSyncService.instance.registerPeriodicNotificationRefill();
 
       runApp(const ProviderScope(child: FishFeedApp()));

@@ -1,27 +1,22 @@
-import 'dart:io';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
-import 'package:fishfeed/core/services/secure_storage_service.dart';
 import 'package:fishfeed/data/datasources/local/aquarium_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/fish_local_ds.dart';
 import 'package:fishfeed/data/datasources/local/hive_boxes.dart';
 import 'package:fishfeed/data/datasources/local/schedule_local_ds.dart';
-import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/services/notifications/notification_orchestrator.dart';
 import 'package:fishfeed/services/notifications/notification_permission_service.dart';
 import 'package:fishfeed/services/notifications/notification_service.dart';
 import 'package:fishfeed/services/notifications/planned_alarm.dart'
     show ReconcileReason;
 
-/// Unique name for the periodic background sync task.
+/// Unique name for the (now retired) periodic background sync task.
+///
+/// Kept so existing installs can cancel any still-scheduled instance; see
+/// [BackgroundSyncService.initialize].
 const String kBackgroundSyncTaskName = 'fishfeed_background_sync';
 
 /// Task identifier for iOS BGTaskScheduler.
@@ -35,6 +30,9 @@ const String kNotificationRefillTaskName = 'notificationRefill';
 const String kNotificationRefillTaskIdentifier =
     'com.fishfeed.app.notificationRefill';
 
+/// Frequency for periodic background sync (minimum on Android is 15 minutes).
+const Duration kBackgroundSyncFrequency = Duration(minutes: 15);
+
 /// Key for storing the last background sync timestamp.
 const String _lastBackgroundSyncKey = 'last_background_sync';
 
@@ -43,28 +41,6 @@ const String _backgroundSyncErrorCountKey = 'background_sync_error_count';
 
 /// Maximum consecutive errors before increasing backoff.
 const int _maxConsecutiveErrors = 3;
-
-/// Resolves the base URL based on platform.
-/// For physical iOS device uses API_BASE_URL_IOS_DEVICE if set.
-String _resolveBaseUrl() {
-  final defaultUrl = dotenv.env['API_BASE_URL'] ?? '';
-  final iosDeviceUrl = dotenv.env['API_BASE_URL_IOS_DEVICE'];
-
-  if (Platform.isIOS && iosDeviceUrl != null && iosDeviceUrl.isNotEmpty) {
-    final isSimulator = Platform.environment.containsKey(
-      'SIMULATOR_DEVICE_NAME',
-    );
-    if (!isSimulator) {
-      debugPrint('BackgroundSync: Using iOS device URL');
-      return iosDeviceUrl;
-    }
-  }
-
-  return defaultUrl;
-}
-
-/// Frequency for periodic background sync (minimum on Android is 15 minutes).
-const Duration kBackgroundSyncFrequency = Duration(minutes: 15);
 
 /// Top-level callback dispatcher for Workmanager.
 ///
@@ -81,180 +57,22 @@ void backgroundSyncCallbackDispatcher() {
       return await _performNotificationRefill();
     }
 
-    try {
-      // Check connectivity first
-      final connectivity = Connectivity();
-      final connectivityResults = await connectivity.checkConnectivity();
-      final isOnline =
-          connectivityResults.isNotEmpty &&
-          !connectivityResults.contains(ConnectivityResult.none);
-
-      if (!isOnline) {
-        debugPrint('BackgroundSync: Offline, skipping sync');
-        return true; // Return true to not reschedule immediately
-      }
-
-      // Perform lightweight background sync
-      final result = await _performBackgroundSync();
-
-      // Update last sync timestamp on success
-      if (result) {
-        await _updateLastBackgroundSyncTime();
-        await _resetErrorCount();
-        debugPrint('BackgroundSync: Sync completed successfully');
-        // NOTE(T25): NotificationOrchestrator.reconcile(syncComplete) is intentionally
-        // NOT called here. This callback runs in a Workmanager isolate that has no
-        // Riverpod context and no access to Hive boxes opened by the main isolate.
-        // Peer-driven schedule changes are picked up within 24 h by the daily
-        // Workmanager refill job (T31). The in-app SyncService foreground path
-        // (lib/services/sync/sync_service.dart) IS the right place for this hook;
-        // see T25 scope note in the task description.
-      } else {
-        await _incrementErrorCount();
-        debugPrint('BackgroundSync: Sync completed with failures');
-      }
-
-      return true; // Task completed
-    } catch (e, stackTrace) {
-      debugPrint('BackgroundSync: Error - $e');
-      debugPrint('BackgroundSync: StackTrace - $stackTrace');
-      await _incrementErrorCount();
-      return true; // Return true to prevent immediate retry, use scheduled retry instead
-    }
+    // The legacy background feeding-log sync was removed: it opened the
+    // main-isolate-owned, AES-encrypted feedingLogs Hive box from this
+    // background isolate (in plaintext, without the cipher), which corrupted
+    // the box to a 0-byte file and lost fed-status across restarts. It also
+    // POSTed a legacy {feeding_logs:[...]} envelope the modern backend ignores
+    // while marking logs synced without server confirmation. Feeding-log sync
+    // now runs exclusively through the foreground SyncService (modern
+    // {changes:[...]} contract, single isolate). Any feeding-sync task still
+    // scheduled on an existing install is a harmless no-op here and is also
+    // cancelled on the next app launch in BackgroundSyncService.initialize.
+    debugPrint(
+      'BackgroundSync: feeding-log background sync retired; handled by the '
+      'foreground SyncService. No-op.',
+    );
+    return true;
   });
-}
-
-/// Performs the actual background sync operation.
-///
-/// This is a lightweight sync that:
-/// - Initializes Hive in the background isolate
-/// - Gets auth token from secure storage
-/// - Syncs only unsynced feeding events
-/// - Uses silent error handling (no UI)
-Future<bool> _performBackgroundSync() async {
-  debugPrint('BackgroundSync: Performing lightweight sync');
-
-  try {
-    // 1. Initialize Hive in background isolate
-    await _initializeHiveForBackground();
-
-    // 2. Get unsynced feeding logs
-    final feedingLogsBox = await Hive.openBox<FeedingLogModel>(
-      HiveBoxNames.feedingLogs,
-    );
-    final unsyncedLogs = feedingLogsBox.values
-        .whereType<FeedingLogModel>()
-        .where((log) => !log.synced)
-        .toList();
-
-    if (unsyncedLogs.isEmpty) {
-      debugPrint('BackgroundSync: No unsynced logs, skipping');
-      await feedingLogsBox.close();
-      return true;
-    }
-
-    debugPrint('BackgroundSync: Found ${unsyncedLogs.length} unsynced logs');
-
-    // 3. Get auth token from secure storage
-    const secureStorage = FlutterSecureStorage();
-    final accessToken = await secureStorage.read(
-      key: SecureStorageKeys.accessToken,
-    );
-
-    if (accessToken == null || accessToken.isEmpty) {
-      debugPrint('BackgroundSync: No auth token, skipping sync');
-      await feedingLogsBox.close();
-      return false;
-    }
-
-    // 4. Create Dio client and POST to /sync
-    final baseUrl = _resolveBaseUrl();
-    if (baseUrl.isEmpty) {
-      debugPrint('BackgroundSync: No API base URL configured');
-      await feedingLogsBox.close();
-      return false;
-    }
-
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      ),
-    );
-
-    // 5. Prepare payload (lightweight - only essential fields)
-    final payload = unsyncedLogs.map((l) => _feedingLogToJson(l)).toList();
-
-    final response = await dio.post<Map<String, dynamic>>(
-      '/sync',
-      data: {
-        'feeding_logs': payload,
-        'client_timestamp': DateTime.now().toIso8601String(),
-      },
-    );
-
-    // 6. Process response and mark events as synced
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = response.data;
-      final syncedIds = <String>[];
-
-      // Handle explicit synced_ids from server
-      if (data != null && data['synced_ids'] != null) {
-        final ids = (data['synced_ids'] as List<dynamic>)
-            .map((id) => id.toString())
-            .toList();
-        syncedIds.addAll(ids);
-      } else {
-        // No explicit synced_ids, assume all synced
-        syncedIds.addAll(unsyncedLogs.map((l) => l.id));
-      }
-
-      // Mark logs as synced in Hive
-      for (final id in syncedIds) {
-        final log = feedingLogsBox.get(id);
-        if (log is FeedingLogModel) {
-          log.synced = true;
-          await feedingLogsBox.put(id, log);
-        }
-      }
-
-      debugPrint('BackgroundSync: Synced ${syncedIds.length} logs');
-      await feedingLogsBox.close();
-      return true;
-    } else {
-      debugPrint(
-        'BackgroundSync: Sync failed with status ${response.statusCode}',
-      );
-      await feedingLogsBox.close();
-      return false;
-    }
-  } on DioException catch (e) {
-    debugPrint('BackgroundSync: Network error - ${e.message}');
-    return false;
-  } catch (e) {
-    debugPrint('BackgroundSync: Error during sync - $e');
-    return false;
-  }
-}
-
-/// Initializes Hive for background isolate.
-///
-/// Background isolates don't share memory with the main isolate,
-/// so we need to re-register adapters and initialize Hive.
-Future<void> _initializeHiveForBackground() async {
-  // Initialize Hive (safe to call multiple times)
-  await Hive.initFlutter();
-
-  // Register FeedingLogModel adapter if not registered
-  if (!Hive.isAdapterRegistered(FeedingLogModelAdapter().typeId)) {
-    Hive.registerAdapter(FeedingLogModelAdapter());
-  }
 }
 
 /// Top-level helper for the notification refill background task.
@@ -295,63 +113,12 @@ Future<bool> _performNotificationRefill() async {
   }
 }
 
-/// Converts a FeedingLogModel to JSON for API sync.
-Map<String, dynamic> _feedingLogToJson(FeedingLogModel log) {
-  return {
-    'id': log.id,
-    'schedule_id': log.scheduleId,
-    'fish_id': log.fishId,
-    'aquarium_id': log.aquariumId,
-    'scheduled_for': log.scheduledFor.toIso8601String(),
-    'action': log.action,
-    'acted_at': log.actedAt.toIso8601String(),
-    'acted_by_user_id': log.actedByUserId,
-    'acted_by_user_name': log.actedByUserName,
-    'device_id': log.deviceId,
-    'notes': log.notes,
-    'created_at': log.createdAt.toIso8601String(),
-  };
-}
-
-/// Updates the last background sync timestamp in SharedPreferences.
-Future<void> _updateLastBackgroundSyncTime() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(
-      _lastBackgroundSyncKey,
-      DateTime.now().millisecondsSinceEpoch,
-    );
-  } catch (e) {
-    debugPrint('BackgroundSync: Failed to update last sync time - $e');
-  }
-}
-
-/// Increments the consecutive error count.
-Future<void> _incrementErrorCount() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final currentCount = prefs.getInt(_backgroundSyncErrorCountKey) ?? 0;
-    await prefs.setInt(_backgroundSyncErrorCountKey, currentCount + 1);
-  } catch (e) {
-    debugPrint('BackgroundSync: Failed to increment error count - $e');
-  }
-}
-
-/// Resets the consecutive error count.
-Future<void> _resetErrorCount() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_backgroundSyncErrorCountKey, 0);
-  } catch (e) {
-    debugPrint('BackgroundSync: Failed to reset error count - $e');
-  }
-}
-
 /// Service for managing background sync registration and status.
 ///
 /// This service handles:
 /// - Workmanager initialization
-/// - Periodic task registration
+/// - Periodic notification-refill task registration
+/// - Retiring the legacy feeding-log background sync task
 /// - Tracking background sync status
 ///
 /// Example:
@@ -359,8 +126,8 @@ Future<void> _resetErrorCount() async {
 /// // Initialize in main.dart
 /// await BackgroundSyncService.instance.initialize();
 ///
-/// // Register periodic sync
-/// await BackgroundSyncService.instance.registerPeriodicSync();
+/// // Register the daily notification refill
+/// await BackgroundSyncService.instance.registerPeriodicNotificationRefill();
 /// ```
 class BackgroundSyncService {
   BackgroundSyncService._();
@@ -378,7 +145,7 @@ class BackgroundSyncService {
 
   /// Initializes Workmanager with the callback dispatcher.
   ///
-  /// Must be called before [registerPeriodicSync].
+  /// Must be called before [registerPeriodicNotificationRefill].
   /// Should be called in main() after WidgetsFlutterBinding.ensureInitialized().
   Future<void> initialize({bool isInDebugMode = false}) async {
     if (_isInitialized) return;
@@ -390,41 +157,18 @@ class BackgroundSyncService {
       isInDebugMode: isInDebugMode,
     );
 
-    _isInitialized = true;
-    debugPrint('BackgroundSyncService: Initialized');
-  }
-
-  /// Registers the periodic background sync task.
-  ///
-  /// On Android: Uses WorkManager with 15-minute minimum frequency.
-  /// On iOS: Uses BGTaskScheduler (requires additional native setup).
-  ///
-  /// The task will only run when network is available.
-  Future<void> registerPeriodicSync() async {
-    if (!_isInitialized) {
-      debugPrint(
-        'BackgroundSyncService: Not initialized, call initialize() first',
-      );
-      return;
+    // Retire the legacy feeding-log background sync on existing installs. That
+    // task opened the feedingLogs Hive box from a background isolate and
+    // corrupted it to a 0-byte file. Feeding-log sync is now foreground-only
+    // (SyncService). Cancelling here stops any previously-scheduled instance.
+    try {
+      await Workmanager().cancelByUniqueName(kBackgroundSyncTaskName);
+    } catch (e) {
+      debugPrint('BackgroundSync: Failed to cancel legacy sync task - $e');
     }
 
-    await Workmanager().registerPeriodicTask(
-      kBackgroundSyncTaskName,
-      kBackgroundSyncTaskName,
-      frequency: kBackgroundSyncFrequency,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-        requiresBatteryNotLow: true,
-      ),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
-      backoffPolicy: BackoffPolicy.exponential,
-      backoffPolicyDelay: const Duration(minutes: 5),
-    );
-
-    debugPrint(
-      'BackgroundSyncService: Periodic sync registered '
-      '(frequency: ${kBackgroundSyncFrequency.inMinutes} minutes)',
-    );
+    _isInitialized = true;
+    debugPrint('BackgroundSyncService: Initialized');
   }
 
   /// Registers the daily notification refill periodic task.
@@ -454,7 +198,7 @@ class BackgroundSyncService {
     );
   }
 
-  /// Cancels the periodic background sync task.
+  /// Cancels the legacy periodic background sync task.
   Future<void> cancelPeriodicSync() async {
     await Workmanager().cancelByUniqueName(kBackgroundSyncTaskName);
     debugPrint('BackgroundSyncService: Periodic sync cancelled');
@@ -464,24 +208,6 @@ class BackgroundSyncService {
   Future<void> cancelAll() async {
     await Workmanager().cancelAll();
     debugPrint('BackgroundSyncService: All tasks cancelled');
-  }
-
-  /// Triggers an immediate one-off background sync.
-  ///
-  /// Useful for testing or when user wants to force a sync.
-  Future<void> triggerImmediateSync() async {
-    if (!_isInitialized) {
-      debugPrint('BackgroundSyncService: Not initialized');
-      return;
-    }
-
-    await Workmanager().registerOneOffTask(
-      '${kBackgroundSyncTaskName}_immediate_${DateTime.now().millisecondsSinceEpoch}',
-      kBackgroundSyncTaskName,
-      constraints: Constraints(networkType: NetworkType.connected),
-    );
-
-    debugPrint('BackgroundSyncService: Immediate sync triggered');
   }
 
   /// Gets the last background sync time.

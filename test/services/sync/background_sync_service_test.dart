@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,6 +24,45 @@ void main() {
 
     test('kBackgroundSyncFrequency should be 15 minutes', () {
       expect(kBackgroundSyncFrequency, const Duration(minutes: 15));
+    });
+  });
+
+  group('Isolate-safety guard (feeding-log box corruption regression)', () {
+    // The Workmanager background isolate must NEVER open a Hive box the main
+    // isolate owns. On device, opening the AES-encrypted feedingLogs box from
+    // the background isolate (in plaintext, without the cipher) corrupted it to
+    // a 0-byte file, wiping fed-status across restarts. Feeding-log sync must go
+    // through the single foreground SyncService. This source guard prevents the
+    // divergent background path from being re-introduced.
+    final source = File(
+      'lib/services/sync/background_sync_service.dart',
+    ).readAsStringSync();
+
+    test('background isolate does not open the feedingLogs Hive box', () {
+      expect(
+        source.contains('openBox<FeedingLogModel>'),
+        isFalse,
+        reason:
+            'Background isolate opening the main-isolate-owned, AES-encrypted '
+            'feedingLogs box corrupts it (0-byte file). Route feeding-log sync '
+            'through the foreground SyncService instead.',
+      );
+      expect(
+        source.contains('HiveBoxNames.feedingLogs'),
+        isFalse,
+        reason: 'No background isolate may reference the feedingLogs box.',
+      );
+    });
+
+    test('background isolate does not send the legacy feeding_logs payload', () {
+      expect(
+        source.contains("'feeding_logs'"),
+        isFalse,
+        reason:
+            'The legacy {feeding_logs:[...]} envelope is ignored by the modern '
+            'backend and falsely marks logs synced. Use the modern '
+            '{changes:[...]} foreground path.',
+      );
     });
   });
 
