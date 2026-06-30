@@ -60,6 +60,10 @@ class SyncChange {
   final Map<String, dynamic> data;
 
   /// When the change was made locally.
+  ///
+  /// May be a local-zone [DateTime]; it is normalized to UTC in [toJson], which
+  /// is the single place this value is consumed. Do not rely on this field
+  /// being UTC before serialization.
   final DateTime clientUpdatedAt;
 
   /// Converts this change to JSON for the API.
@@ -69,7 +73,11 @@ class SyncChange {
       'entity_id': entityId,
       'operation': operation.name,
       'data': data,
-      'client_updated_at': clientUpdatedAt.toIso8601String(),
+      // Normalize to UTC here so every hook can pass a raw (possibly
+      // local-zone) DateTime. The backend's clock-skew guard rejects
+      // timestamps more than a few minutes in the future, so a local-time
+      // timestamp from a device east of UTC would otherwise be discarded.
+      'client_updated_at': clientUpdatedAt.toUtc().toIso8601String(),
     };
   }
 
@@ -227,7 +235,7 @@ class ChangeTracker {
           entityId: aquarium.id,
           operation: operation,
           data: _aquariumToSyncData(aquarium),
-          clientUpdatedAt: DateTime.now().toUtc(),
+          clientUpdatedAt: DateTime.now(),
         ),
       );
     }
@@ -286,7 +294,7 @@ class ChangeTracker {
           entityId: fish.id,
           operation: operation,
           data: _fishToSyncData(fish),
-          clientUpdatedAt: DateTime.now().toUtc(),
+          clientUpdatedAt: DateTime.now(),
         ),
       );
     }
@@ -401,7 +409,7 @@ class ChangeTracker {
         entityId: user.id,
         operation: SyncOperation.update,
         data: user.toSyncJson(),
-        clientUpdatedAt: DateTime.now().toUtc(),
+        clientUpdatedAt: DateTime.now(),
       ),
     ];
   }
@@ -428,7 +436,7 @@ class ChangeTracker {
           entityId: streak.userId,
           operation: operation,
           data: streak.toSyncJson(),
-          clientUpdatedAt: streak.updatedAt ?? DateTime.now().toUtc(),
+          clientUpdatedAt: streak.updatedAt ?? DateTime.now(),
         ),
       );
     }
@@ -457,7 +465,7 @@ class ChangeTracker {
           entityId: achievement.userId,
           operation: operation,
           data: achievement.toSyncJson(),
-          clientUpdatedAt: achievement.updatedAt ?? DateTime.now().toUtc(),
+          clientUpdatedAt: achievement.updatedAt ?? DateTime.now(),
         ),
       );
     }
@@ -486,7 +494,7 @@ class ChangeTracker {
           entityId: progress.userId,
           operation: operation,
           data: progress.toSyncJson(),
-          clientUpdatedAt: progress.updatedAt ?? DateTime.now().toUtc(),
+          clientUpdatedAt: progress.updatedAt ?? DateTime.now(),
         ),
       );
     }
