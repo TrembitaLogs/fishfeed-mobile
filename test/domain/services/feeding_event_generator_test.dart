@@ -273,6 +273,38 @@ void main() {
     );
 
     test(
+      'skips a past slot that predates schedule creation (no false overdue)',
+      () async {
+        final slotDate = DateTime(2020, 1, 1);
+        // Schedule was created the day AFTER the 09:00 slot — that feeding could
+        // never have happened, so it must not be reported as overdue/missed.
+        final createdAfterSlot = DateTime(2020, 1, 2);
+        final schedule = ScheduleModel(
+          id: 'schedule-created-after-slot',
+          fishId: 'fish-1',
+          aquariumId: 'aquarium-1',
+          time: '09:00',
+          intervalDays: 1,
+          anchorDate: slotDate,
+          foodType: 'flakes',
+          active: true,
+          createdAt: createdAfterSlot,
+          updatedAt: createdAfterSlot,
+          createdByUserId: 'user-1',
+        );
+        await scheduleDs.save(schedule);
+
+        final events = generator.generateEvents(
+          aquariumId: 'aquarium-1',
+          from: slotDate,
+          to: slotDate,
+        );
+
+        expect(events, isEmpty);
+      },
+    );
+
+    test(
       'should return EventStatus.fed when log exists with action=fed',
       () async {
         final date = DateTime(2025, 1, 15);

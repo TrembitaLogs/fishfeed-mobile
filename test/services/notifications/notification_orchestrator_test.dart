@@ -145,12 +145,17 @@ void main() {
     );
   }
 
-  AquariumModel makeAquarium({String id = 'a1', String userId = 'u1'}) {
+  AquariumModel makeAquarium({
+    String id = 'a1',
+    String userId = 'u1',
+    DateTime? deletedAt,
+  }) {
     return AquariumModel(
       id: id,
       userId: userId,
       name: 'Tank',
       createdAt: DateTime.now(),
+      deletedAt: deletedAt,
     );
   }
 
@@ -192,7 +197,9 @@ void main() {
       await fishDs.saveFish(makeFish());
       await scheduleDs.save(makeSchedule());
 
-      final now = DateTime(2026, 5, 6, 12, 0);
+      // 06:00 — before the 09:00 feeding so all 7 days are still in the future
+      // (planForWindow now skips occurrences whose time has already passed).
+      final now = DateTime(2026, 5, 6, 6, 0);
       final planned = orchestrator.planForWindow(now: now);
 
       expect(planned, hasLength(7));
@@ -255,6 +262,39 @@ void main() {
       final planned = orchestrator.planForWindow(now: DateTime(2026, 5, 6));
       expect(planned, isEmpty);
     });
+
+    test('skips schedules whose aquarium is soft-deleted', () async {
+      final today = DateTime(2026, 5, 6);
+      await aquariumDs.saveAquarium(makeAquarium(deletedAt: today));
+      await fishDs.saveFish(makeFish());
+      await scheduleDs.save(makeSchedule());
+
+      final planned = orchestrator.planForWindow(now: today);
+      expect(planned, isEmpty);
+    });
+
+    test(
+      'does not plan today occurrences whose time is already past',
+      () async {
+        await aquariumDs.saveAquarium(makeAquarium());
+        await fishDs.saveFish(makeFish());
+        await scheduleDs.save(makeSchedule(time: '09:00'));
+
+        // Now is noon; today's 09:00 has already passed.
+        final now = DateTime(2026, 5, 6, 12, 0);
+        final planned = orchestrator.planForWindow(now: now, windowDays: 7);
+
+        // 7-day window minus today's already-past 09:00 = 6 future alarms.
+        expect(planned, hasLength(6));
+        expect(
+          planned.any((p) => p.scheduledAt.day == 6),
+          isFalse,
+          reason: "today's already-past occurrence must not be planned",
+        );
+        expect(planned.first.scheduledAt.day, 7);
+        expect(planned.first.scheduledAt.hour, 9);
+      },
+    );
 
     test(
       'skips schedules whose fish belongs to a different aquarium',
@@ -397,7 +437,7 @@ void main() {
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
         permissionService: createPermissionMock(),
-        now: () => DateTime(2026, 5, 6, 12, 0),
+        now: () => DateTime(2026, 5, 6, 6, 0),
       );
     });
 
@@ -807,7 +847,7 @@ void main() {
         aquariumDs: aquariumDs,
         notificationService: fakeNotif,
         permissionService: createPermissionMock(),
-        now: () => DateTime(2026, 5, 6, 12, 0),
+        now: () => DateTime(2026, 5, 6, 6, 0),
       );
     });
 

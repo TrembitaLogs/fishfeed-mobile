@@ -1595,6 +1595,51 @@ void main() {
       container.dispose();
     });
 
+    test(
+      'pendingFeeding shows the most recently missed time, not the earliest',
+      () async {
+        final now = DateTime.now();
+        final twoHoursAgo = now.subtract(const Duration(hours: 2));
+        final oneHourAgo = now.subtract(const Duration(hours: 1));
+
+        when(
+          () => mockGenerator.generateTodayEventsForAllAquariums(
+            aquariumIds: any(named: 'aquariumIds'),
+            fishNameResolver: any(named: 'fishNameResolver'),
+            fishQuantityResolver: any(named: 'fishQuantityResolver'),
+            aquariumNameResolver: any(named: 'aquariumNameResolver'),
+            avatarResolver: any(named: 'avatarResolver'),
+          ),
+        ).thenReturn({
+          'aq_1': [
+            _createFeeding('s1', twoHoursAgo, EventStatus.overdue),
+            _createFeeding('s2', oneHourAgo, EventStatus.overdue),
+          ],
+        });
+
+        final container = ProviderContainer(
+          overrides: [
+            feedingEventGeneratorProvider.overrideWithValue(mockGenerator),
+            feedingServiceProvider.overrideWithValue(mockFeedingService),
+            fishRepositoryProvider.overrideWithValue(mockFishRepo),
+            aquariumRepositoryProvider.overrideWithValue(mockAquariumRepo),
+            currentUserProvider.overrideWithValue(testUser),
+          ],
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        final expectedTime =
+            '${oneHourAgo.hour.toString().padLeft(2, '0')}:'
+            '${oneHourAgo.minute.toString().padLeft(2, '0')}';
+        final result = container.read(aquariumFeedingStatusProvider('aq_1'));
+        expect(result.status, AquariumFeedingStatus.pendingFeeding);
+        expect(result.nextTime, expectedTime);
+
+        container.dispose();
+      },
+    );
+
     test('returns allFed when all feedings are completed', () async {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
