@@ -119,7 +119,7 @@ class FeedingEventGenerator {
             aquariumNameResolver: aquariumNameResolver,
             avatarResolver: avatarResolver,
           );
-          events.add(event);
+          if (event != null) events.add(event);
         }
         currentDate = currentDate.add(const Duration(days: 1));
       }
@@ -193,7 +193,12 @@ class FeedingEventGenerator {
   }
 
   /// Creates a single [ComputedFeedingEvent] for a schedule and date.
-  ComputedFeedingEvent _createEvent({
+  ///
+  /// Returns null for a past slot that predates the schedule's creation and has
+  /// no log: that feeding could never have happened, so it must not surface as a
+  /// missed/overdue event (e.g. a tank added at 18:00 must not show its 08:00
+  /// slot as missed for the same day).
+  ComputedFeedingEvent? _createEvent({
     required ScheduleModel schedule,
     required DateTime date,
     required Map<String, FeedingLogModel> logLookup,
@@ -224,6 +229,12 @@ class FeedingEventGenerator {
 
     // Get log if exists (O(1) lookup)
     final log = logLookup[lookupKey];
+
+    // Skip phantom slots: a past occurrence that predates the schedule's
+    // creation and was never acted upon never actually existed.
+    if (log == null && scheduledFor.isBefore(schedule.createdAt)) {
+      return null;
+    }
 
     // Determine status
     final status = _determineStatus(scheduledFor, log, now);

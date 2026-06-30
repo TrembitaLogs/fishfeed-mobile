@@ -560,8 +560,11 @@ final aquariumFeedingStatusProvider =
         if (overdue.isNotEmpty) {
           overdue.sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
           return (
+            // Show the MOST RECENTLY missed feeding (overdue.last), not the
+            // earliest. The earliest missed slot is the least actionable; the
+            // latest is the one the user most likely still wants to act on.
             status: AquariumFeedingStatus.pendingFeeding,
-            nextTime: overdue.first.time,
+            nextTime: overdue.last.time,
           );
         }
 

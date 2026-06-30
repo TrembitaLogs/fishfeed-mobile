@@ -112,11 +112,25 @@ class NotificationOrchestrator {
     final activeSchedules = scheduleDs.getAll().where((s) => s.active).toList();
 
     final planned = <PlannedAlarm>[];
+    // Wall-clock "now" in the scheduling zone. Built component-wise (not via
+    // instant conversion) so the comparison matches how `scheduledAt` below is
+    // constructed from local date + time, regardless of the host time zone.
+    final nowLocal = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+      now.microsecond,
+    );
     for (final s in activeSchedules) {
       final fish = fishDs.getFishById(s.fishId);
       if (fish == null || fish.isDeleted) continue;
       final aquarium = aquariumDs.getAquariumById(s.aquariumId);
-      if (aquarium == null) continue;
+      if (aquarium == null || aquarium.isDeleted) continue;
       if (fish.aquariumId != s.aquariumId) continue;
 
       for (var dayOffset = 0; dayOffset < windowDays; dayOffset++) {
@@ -137,6 +151,11 @@ class NotificationOrchestrator {
           hour,
           minute,
         );
+        // Never plan an occurrence whose time has already passed. Otherwise a
+        // diff-based reconcile run after the alarm fired would see the id
+        // missing from the OS pending set, re-add it for a past instant, and
+        // the OS would fire it immediately (duplicate "now"/"x min ago" spam).
+        if (scheduledAt.isBefore(nowLocal)) continue;
         final fishName = fish.name ?? 'fish';
         final dateStr =
             '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
