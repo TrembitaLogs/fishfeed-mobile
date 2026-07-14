@@ -80,6 +80,9 @@ class HiveBoxes {
   static bool _isInitialized = false;
   static HiveAesCipher? _cipher;
 
+  /// Secure-storage key under which the Hive AES encryption key is persisted.
+  static const String _encryptionKeyName = 'hive_encryption_key';
+
   /// Whether Hive has been initialized.
   static bool get isInitialized => _isInitialized;
 
@@ -202,19 +205,32 @@ class HiveBoxes {
     _isInitialized = true;
   }
 
+  /// Reads the existing Hive AES encryption key from secure storage.
+  ///
+  /// Returns null if no key has been persisted yet, or if secure storage is
+  /// currently inaccessible. NEVER generates or writes a key — callers that
+  /// must not risk orphaning existing encrypted data (e.g. background isolates)
+  /// use this instead of [_getOrCreateEncryptionKey].
+  static Future<List<int>?> _readEncryptionKey() async {
+    const storage = FlutterSecureStorage();
+    final encoded = await storage.read(key: _encryptionKeyName);
+    if (encoded == null) {
+      return null;
+    }
+    return base64Url.decode(encoded);
+  }
+
   /// Retrieves the Hive AES encryption key from secure storage,
   /// generating a new one on first launch.
   static Future<List<int>> _getOrCreateEncryptionKey() async {
-    const storage = FlutterSecureStorage();
-    const keyName = 'hive_encryption_key';
-
-    final encoded = await storage.read(key: keyName);
-    if (encoded != null) {
-      return base64Url.decode(encoded);
+    final existing = await _readEncryptionKey();
+    if (existing != null) {
+      return existing;
     }
 
+    const storage = FlutterSecureStorage();
     final key = Hive.generateSecureKey();
-    await storage.write(key: keyName, value: base64UrlEncode(key));
+    await storage.write(key: _encryptionKeyName, value: base64UrlEncode(key));
     return key;
   }
 
@@ -258,10 +274,36 @@ class HiveBoxes {
       Hive.registerAdapter(ScheduleModelAdapter());
     }
 
-    // Open only the boxes used by the orchestrator datasources.
-    _aquariumsBox = await Hive.openBox<AquariumModel>(HiveBoxNames.aquariums);
-    _fishBox = await Hive.openBox<FishModel>(HiveBoxNames.fish);
-    _schedulesBox = await Hive.openBox<ScheduleModel>(HiveBoxNames.schedules);
+    // Retrieve the SAME AES key the main isolate persisted so these boxes are
+    // opened WITH their cipher. Opening the AES-encrypted aquariums/fish/
+    // schedules boxes without the cipher makes Hive's crash recovery truncate
+    // them to empty, wiping the user's aquarium locally (identical to the
+    // retired feeding-log background sync). NEVER generate a key here: if it is
+    // unavailable (e.g. secure storage locked), aborting is safe — the caller
+    // treats a thrown error as a failed refill — whereas a new key would orphan
+    // all existing encrypted data.
+    final key = await _readEncryptionKey();
+    if (key == null) {
+      throw StateError(
+        'Hive encryption key unavailable in background isolate; aborting to '
+        'avoid corrupting the encrypted boxes.',
+      );
+    }
+    _cipher = HiveAesCipher(key);
+
+    // Open only the boxes used by the orchestrator datasources, WITH the cipher.
+    _aquariumsBox = await Hive.openBox<AquariumModel>(
+      HiveBoxNames.aquariums,
+      encryptionCipher: _cipher,
+    );
+    _fishBox = await Hive.openBox<FishModel>(
+      HiveBoxNames.fish,
+      encryptionCipher: _cipher,
+    );
+    _schedulesBox = await Hive.openBox<ScheduleModel>(
+      HiveBoxNames.schedules,
+      encryptionCipher: _cipher,
+    );
 
     _isInitialized = true;
   }

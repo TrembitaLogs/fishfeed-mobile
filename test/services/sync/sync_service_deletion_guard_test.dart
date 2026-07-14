@@ -411,6 +411,9 @@ void _setupDefaultMocks({
   when(() => mockAquariumDs.getUnsyncedAquariums()).thenReturn([]);
   when(() => mockAquariumDs.getModifiedAquariums()).thenReturn([]);
   when(() => mockAquariumDs.getDeletedAquariums()).thenReturn([]);
+  // Non-empty local box so the wipe self-heal (empty box + delta point ->
+  // forced full sync) stays inactive and these tests exercise the delta path.
+  when(() => mockAquariumDs.getAquariumCount()).thenReturn(1);
   when(
     () => mockAquariumDs.markAsSynced(any(), any()),
   ).thenAnswer((_) async {});

@@ -148,6 +148,9 @@ void main() {
     when(() => mockAquariumDs.getUnsyncedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getModifiedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getDeletedAquariums()).thenReturn([]);
+    // Non-empty local box by default so the wipe self-heal stays inactive
+    // unless a test explicitly simulates a truncated box.
+    when(() => mockAquariumDs.getAquariumCount()).thenReturn(1);
     when(
       () => mockAquariumDs.markAsSynced(any(), any()),
     ).thenAnswer((_) async {});
@@ -1451,5 +1454,33 @@ void main() {
       // Delta sync: last_sync_at carries the stored timestamp.
       expect(capturedRequest()['last_sync_at'], lastSync.toIso8601String());
     });
+
+    test(
+      'self-heal: forces a FULL sync when the local aquariums box was wiped '
+      'but a delta point exists, even after recovery already completed',
+      () async {
+        setupDefaultMocks(isOnline: true);
+        // Recovery one-shot already ran AND a delta point is set: a plain delta
+        // would never repopulate the alive-but-unchanged aquarium.
+        await HiveBoxes.syncMetadata.put(
+          'default',
+          SyncMetadataModel(
+            lastSyncAt: DateTime.utc(2025, 1, 1),
+            recoveryFullSyncDone: true,
+          ),
+        );
+        // Local entity data was truncated to empty (background-isolate Hive
+        // corruption): the aquariums box holds zero records.
+        when(() => mockAquariumDs.getAquariumCount()).thenReturn(0);
+        stubSinglePageOk();
+
+        final service = createSyncService();
+        await service.syncAllWithResult();
+
+        // Self-heal forces a full sync: last_sync_at omitted despite the stored
+        // delta point and the completed one-shot recovery.
+        expect(capturedRequest()['last_sync_at'], isNull);
+      },
+    );
   });
 }

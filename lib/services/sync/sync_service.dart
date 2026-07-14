@@ -380,8 +380,18 @@ class SyncService {
       // a device whose first sync is already full just records the flag.
       final metadata = _getSyncMetadata();
       final recoveryPending = !(metadata?.recoveryFullSyncDone ?? false);
+      // Self-heal: if the local entity data was wiped (e.g. a background isolate
+      // truncated the AES-encrypted aquariums box to a 0-byte file) but we have
+      // synced before, a delta sync would never re-download the alive-but-
+      // unchanged rows, leaving the app permanently empty. Force a full sync to
+      // rebuild local state. Unlike the one-shot recovery above, this is
+      // condition-based, so it re-fires on any future wipe.
+      final localDataWiped =
+          metadata?.lastSyncAt != null && _aquariumDs.getAquariumCount() == 0;
       final effectiveFullSync =
-          fullSync || (recoveryPending && metadata?.lastSyncAt != null);
+          fullSync ||
+          localDataWiped ||
+          (recoveryPending && metadata?.lastSyncAt != null);
       final ranFullSync = effectiveFullSync || metadata?.lastSyncAt == null;
 
       final result =
