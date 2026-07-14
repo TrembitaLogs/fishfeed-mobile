@@ -168,6 +168,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
   Future<void> refresh() async {
     // Delay state update to avoid modifying provider during build
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
 
     try {
       final aquariumsResult = _aquariumRepository.getCachedAquariums();
@@ -231,6 +232,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
       userId: userId,
       userDisplayName: user?.displayName,
     );
+    if (!mounted) return;
 
     switch (result) {
       case FeedingSuccess(:final streak):
@@ -245,6 +247,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
         // Refresh to get updated state from generator
         await refresh();
+        if (!mounted) return;
 
         // Refresh streak provider
         _ref.invalidate(currentStreakProvider);
@@ -292,6 +295,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
       userId: userId,
       userDisplayName: user?.displayName,
     );
+    if (!mounted) return;
 
     switch (result) {
       case FeedingSuccess():
@@ -306,6 +310,7 @@ class TodayFeedingsNotifier extends StateNotifier<TodayFeedingsState> {
 
         // Refresh to get updated state from generator
         await refresh();
+        if (!mounted) return;
 
         // Note: NO streak reset here - break detection runs on loadStreak
 
@@ -665,6 +670,7 @@ class StreakNotifier extends StateNotifier<StreakState> {
       final result = await _calculateStreakUseCase(
         CalculateStreakParams(userId: userId),
       );
+      if (!mounted) return;
 
       result.fold(
         (failure) {
@@ -681,6 +687,7 @@ class StreakNotifier extends StateNotifier<StreakState> {
         },
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to load streak: $e',
@@ -704,6 +711,7 @@ class StreakNotifier extends StateNotifier<StreakState> {
         userId,
         DateTime.now(),
       );
+      if (!mounted) return;
 
       result.fold(
         (failure) {
@@ -724,6 +732,7 @@ class StreakNotifier extends StateNotifier<StreakState> {
         },
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(error: 'Failed to increment streak: $e');
     }
   }
