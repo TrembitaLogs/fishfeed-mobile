@@ -109,6 +109,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       _repository.getInvites(aquariumId: aquariumId),
       _repository.getMembers(aquariumId: aquariumId),
     ]);
+    // Bail out if disposed during the async gap to avoid mutating a dead notifier.
+    if (!mounted) return;
 
     final invitesResult = results[0];
     final membersResult = results[1];
@@ -142,6 +144,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     );
 
     final result = await _repository.createInvite(aquariumId: aquariumId);
+    // Bail out if disposed during the async gap to avoid mutating a dead notifier.
+    if (!mounted) return;
 
     result.fold(
       (failure) {
@@ -165,6 +169,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       aquariumId: aquariumId,
       inviteId: inviteId,
     );
+    // Bail out if disposed during the async gap to avoid mutating a dead notifier.
+    if (!mounted) return;
 
     result.fold(
       (failure) {
@@ -187,6 +193,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       aquariumId: aquariumId,
       userId: userId,
     );
+    // Bail out if disposed during the async gap to avoid mutating a dead notifier.
+    if (!mounted) return;
 
     result.fold(
       (failure) {
@@ -206,6 +214,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     final result = await _repository.acceptInvite(inviteCode: inviteCode);
+    // Bail out if disposed during the async gap to avoid mutating a dead notifier.
+    if (!mounted) return;
 
     result.fold(
       (failure) {

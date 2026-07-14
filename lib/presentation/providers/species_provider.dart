@@ -62,10 +62,14 @@ class SpeciesListNotifier extends StateNotifier<SpeciesListState> {
     // 2. Fetch all pages from API
     try {
       final fetched = await _repository.fetchAllSpecies();
+      // Bail out if the notifier was disposed during the awaited fetch.
+      if (!mounted) return;
 
       _allSpecies = fetched;
       state = state.copyWith(species: fetched, isLoading: false);
     } catch (e) {
+      // Bail out if the notifier was disposed during the awaited fetch.
+      if (!mounted) return;
       // If cache was empty and API failed, use hardcoded fallback
       if (_allSpecies.isEmpty) {
         _allSpecies = SpeciesData.popularSpecies;

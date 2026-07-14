@@ -231,6 +231,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(themeMode: mode, isSaving: true);
     await _repository.setThemeMode(mode.name);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -240,6 +241,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(notificationsEnabled: enabled, isSaving: true);
     await _repository.setNotificationsEnabled(enabled);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -249,6 +251,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(feedingRemindersEnabled: enabled, isSaving: true);
     await _repository.setFeedingRemindersEnabled(enabled);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -258,6 +261,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(streakAlertsEnabled: enabled, isSaving: true);
     await _repository.setStreakAlertsEnabled(enabled);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -267,6 +271,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(weeklySummaryEnabled: enabled, isSaving: true);
     await _repository.setWeeklySummaryEnabled(enabled);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -291,6 +296,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       _repository.setQuietHoursEnd(endMinutes),
     ]);
 
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 
@@ -305,6 +311,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     state = state.copyWith(language: languageCode, isSaving: true);
     await _repository.setLanguage(languageCode);
+    if (!mounted) return;
     state = state.copyWith(isSaving: false);
   }
 

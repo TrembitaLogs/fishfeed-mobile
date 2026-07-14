@@ -69,6 +69,11 @@ class CalendarDataNotifier extends StateNotifier<CalendarDataState> {
       GetCalendarDataParams(year: year, month: month),
     );
 
+    // Bail out if the notifier was disposed during the await, otherwise the
+    // post-await `state =` inside the `.fold(...)` callbacks throws
+    // "Tried to use CalendarDataNotifier after dispose was called".
+    if (!mounted) return;
+
     result.fold(
       (failure) {
         state = state.copyWith(isLoading: false, error: failure.message);

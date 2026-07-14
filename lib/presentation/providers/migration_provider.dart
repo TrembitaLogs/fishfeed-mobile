@@ -76,6 +76,8 @@ class MigrationNotifier extends StateNotifier<MigrationState> {
     if (_migrationService.needsMigration()) {
       state = const MigrationInProgress();
       final result = await _migrationService.migrateDefaultAquarium();
+      // Guard: notifier may have been disposed during the async gap.
+      if (!mounted) return;
       if (result is MigrationError) {
         state = MigrationFailed(error: result);
         return;
@@ -85,6 +87,8 @@ class MigrationNotifier extends StateNotifier<MigrationState> {
 
     // Clean up legacy sync queue (no longer used)
     await _migrationService.clearLegacySyncQueue();
+    // Guard: notifier may have been disposed during the async gap.
+    if (!mounted) return;
 
     state = MigrationCompleted(result: lastResult ?? const NoMigrationNeeded());
   }
