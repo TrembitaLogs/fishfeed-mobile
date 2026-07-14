@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -9,8 +11,11 @@ import 'package:fishfeed/data/models/feeding_log_model.dart';
 import 'package:fishfeed/data/models/fish_model.dart';
 import 'package:fishfeed/data/models/schedule_model.dart';
 import 'package:fishfeed/data/models/user_model.dart';
+import 'package:fishfeed/data/models/water_type_adapter.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
 
   setUp(() async {
@@ -425,6 +430,98 @@ void main() {
       await HiveBoxes.clearUserData();
 
       expect(HiveBoxes.getOnboardingCompleted(), isFalse);
+    });
+  });
+
+  group('HiveBoxes - initForBackgroundIsolate (AES-cipher regression)', () {
+    // The Workmanager notification-refill task bootstraps Hive in a background
+    // isolate via initForBackgroundIsolate(). If it opens the AES-encrypted
+    // aquariums/fish/schedules boxes WITHOUT the cipher, Hive's crash recovery
+    // truncates the undecryptable files to empty, wiping the user's aquarium
+    // locally while the server row stays intact. This is the same class of bug
+    // as the retired feeding-log background sync (see background_sync_service).
+    const secureStorageChannel = MethodChannel(
+      'plugins.it_nomads.com/flutter_secure_storage',
+    );
+    const encryptionKeyName = 'hive_encryption_key';
+    late List<int> encryptionKey;
+
+    setUp(() {
+      // Mock the encryption key the main isolate persisted to secure storage,
+      // so the background isolate can retrieve the SAME key.
+      encryptionKey = Hive.generateSecureKey();
+      final encodedKey = base64UrlEncode(encryptionKey);
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(secureStorageChannel, (call) async {
+            switch (call.method) {
+              case 'read':
+                final key = (call.arguments as Map)['key'];
+                return key == encryptionKeyName ? encodedKey : null;
+              case 'containsKey':
+                return true;
+              default:
+                return null;
+            }
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(secureStorageChannel, null);
+    });
+
+    test(
+      'preserves AES-encrypted aquariums written by the main isolate',
+      () async {
+        // Arrange: the main isolate writes the aquariums box WITH the cipher.
+        if (!Hive.isAdapterRegistered(WaterTypeAdapter().typeId)) {
+          Hive.registerAdapter(WaterTypeAdapter());
+        }
+        if (!Hive.isAdapterRegistered(AquariumModelAdapter().typeId)) {
+          Hive.registerAdapter(AquariumModelAdapter());
+        }
+        final box = await Hive.openBox<AquariumModel>(
+          HiveBoxNames.aquariums,
+          encryptionCipher: HiveAesCipher(encryptionKey),
+        );
+        await box.put(
+          'a1',
+          AquariumModel(
+            id: 'a1',
+            userId: 'u1',
+            name: 'Home',
+            createdAt: DateTime(2024),
+          ),
+        );
+        // Flush and close so the background isolate reopens from disk.
+        await Hive.close();
+
+        // Act: the background isolate bootstraps and opens the same boxes.
+        await HiveBoxes.initForBackgroundIsolate();
+
+        // Assert: the encrypted aquarium survives (box not truncated to empty).
+        expect(HiveBoxes.aquariums.get('a1')?.name, 'Home');
+      },
+    );
+
+    test('throws a clean StateError (not a raw platform exception) when the '
+        'encryption key cannot be read', () async {
+      // Simulate a locked iOS device: secure storage read throws instead of
+      // returning the key.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(secureStorageChannel, (call) async {
+            if (call.method == 'read') {
+              throw PlatformException(code: 'Unexpected security result code');
+            }
+            return null;
+          });
+
+      // Must surface the intended clean StateError so the caller aborts the
+      // refill without corrupting the boxes — not an opaque platform error.
+      await expectLater(
+        HiveBoxes.initForBackgroundIsolate(),
+        throwsA(isA<StateError>()),
+      );
     });
   });
 }

@@ -148,6 +148,9 @@ void main() {
     when(() => mockAquariumDs.getUnsyncedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getModifiedAquariums()).thenReturn([]);
     when(() => mockAquariumDs.getDeletedAquariums()).thenReturn([]);
+    // Non-empty local box by default so the wipe self-heal stays inactive
+    // unless a test explicitly simulates a truncated box.
+    when(() => mockAquariumDs.getAquariumCount()).thenReturn(1);
     when(
       () => mockAquariumDs.markAsSynced(any(), any()),
     ).thenAnswer((_) async {});
@@ -1450,6 +1453,104 @@ void main() {
 
       // Delta sync: last_sync_at carries the stored timestamp.
       expect(capturedRequest()['last_sync_at'], lastSync.toIso8601String());
+    });
+
+    test(
+      'self-heal: forces a FULL sync when the local aquariums box was wiped '
+      'but a delta point exists, even after recovery already completed',
+      () async {
+        setupDefaultMocks(isOnline: true);
+        // Recovery one-shot already ran AND a delta point is set AND we know
+        // this account HAD local data: a plain delta would never repopulate the
+        // alive-but-unchanged aquarium.
+        await HiveBoxes.syncMetadata.put(
+          'default',
+          SyncMetadataModel(
+            lastSyncAt: DateTime.utc(2025, 1, 1),
+            recoveryFullSyncDone: true,
+            hadLocalData: true,
+          ),
+        );
+        // Local entity data was truncated to empty (background-isolate Hive
+        // corruption): the aquariums box holds zero records.
+        when(() => mockAquariumDs.getAquariumCount()).thenReturn(0);
+        stubSinglePageOk();
+
+        final service = createSyncService();
+        await service.syncAllWithResult();
+
+        // Self-heal forces a full sync: last_sync_at omitted despite the stored
+        // delta point and the completed one-shot recovery.
+        expect(capturedRequest()['last_sync_at'], isNull);
+      },
+    );
+
+    test('self-heal does NOT fire for an account that legitimately has zero '
+        'aquariums and never had local data (delta preserved)', () async {
+      setupDefaultMocks(isOnline: true);
+      // Synced before, recovery done, but this account never had local data
+      // (e.g. a new user who created no aquarium) — an empty box here is
+      // normal, not a wipe.
+      await HiveBoxes.syncMetadata.put(
+        'default',
+        SyncMetadataModel(
+          lastSyncAt: DateTime.utc(2025, 1, 1),
+          recoveryFullSyncDone: true,
+          hadLocalData: false,
+        ),
+      );
+      when(() => mockAquariumDs.getAquariumCount()).thenReturn(0);
+      stubSinglePageOk();
+
+      final service = createSyncService();
+      await service.syncAllWithResult();
+
+      // No wipe -> delta sync: last_sync_at carries the stored timestamp.
+      expect(
+        capturedRequest()['last_sync_at'],
+        DateTime.utc(2025, 1, 1).toIso8601String(),
+      );
+    });
+
+    test(
+      'sets hadLocalData after a successful sync that leaves local aquariums',
+      () async {
+        setupDefaultMocks(isOnline: true);
+        await HiveBoxes.syncMetadata.put(
+          'default',
+          SyncMetadataModel(
+            lastSyncAt: DateTime.utc(2025, 1, 1),
+            recoveryFullSyncDone: true,
+          ),
+        );
+        when(() => mockAquariumDs.getAquariumCount()).thenReturn(1);
+        stubSinglePageOk();
+
+        final service = createSyncService();
+        await service.syncAllWithResult();
+
+        expect(HiveBoxes.syncMetadata.get('default')?.hadLocalData, isTrue);
+      },
+    );
+
+    test('clears hadLocalData after a sync that confirms no local aquariums '
+        '(empty account converges out of the forced full sync)', () async {
+      setupDefaultMocks(isOnline: true);
+      await HiveBoxes.syncMetadata.put(
+        'default',
+        SyncMetadataModel(
+          lastSyncAt: DateTime.utc(2025, 1, 1),
+          recoveryFullSyncDone: true,
+          hadLocalData: true,
+        ),
+      );
+      when(() => mockAquariumDs.getAquariumCount()).thenReturn(0);
+      stubSinglePageOk();
+
+      final service = createSyncService();
+      await service.syncAllWithResult();
+
+      expect(HiveBoxes.syncMetadata.get('default')?.hadLocalData, isFalse);
     });
   });
 }
