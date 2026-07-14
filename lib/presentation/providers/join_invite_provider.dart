@@ -70,6 +70,7 @@ class JoinInviteNotifier extends StateNotifier<JoinInviteState> {
     state = const JoinInviteLoading();
 
     final result = await _repository.acceptInvite(inviteCode: inviteCode);
+    if (!mounted) return;
 
     result.fold(
       (failure) => state = JoinInviteError(failure: failure),

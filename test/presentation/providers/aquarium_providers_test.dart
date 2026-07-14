@@ -312,4 +312,125 @@ void main() {
       expect(updated.error, isNull);
     });
   });
+
+  // Regression guard for Sentry StateError "Tried to use UserAquariumsNotifier
+  // after `dispose` was called". Async notifier methods await, then assign
+  // `state`; if the notifier is disposed during the async gap (user leaves the
+  // screen / provider invalidated mid-operation) the post-await `state =`
+  // throws. Each method must bail out via `if (!mounted) return;` after every
+  // await.
+  group('Notifier dispose safety (mounted guards)', () {
+    /// Builds a notifier and lets the constructor's loadAquariums() settle so
+    /// it cannot interfere with the method under test.
+    Future<UserAquariumsNotifier> buildSettledNotifier() async {
+      final notifier = UserAquariumsNotifier(
+        aquariumRepository: mockRepository,
+        syncService: mockSyncService,
+      );
+      // Allow the constructor-triggered loadAquariums() to complete.
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      return notifier;
+    }
+
+    test(
+      'loadAquariums does not touch state after dispose mid-flight',
+      () async {
+        final notifier = await buildSettledNotifier();
+
+        // Repo resolves after a delay so we can dispose mid-flight.
+        when(() => mockRepository.getAquariums()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return const Right(<Aquarium>[]);
+        });
+
+        final future = notifier.loadAquariums();
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test('refresh does not touch state after dispose mid-flight', () async {
+      final notifier = await buildSettledNotifier();
+
+      when(() => mockRepository.getAquariums()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const Right(<Aquarium>[]);
+      });
+
+      final future = notifier.refresh();
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test(
+      'createAquarium does not touch state after dispose mid-flight',
+      () async {
+        final notifier = await buildSettledNotifier();
+
+        when(
+          () => mockRepository.createAquarium(
+            name: any(named: 'name'),
+            waterType: any(named: 'waterType'),
+            capacity: any(named: 'capacity'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testAquarium);
+        });
+
+        final future = notifier.createAquarium(name: 'Living Room Tank');
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'updateAquarium does not touch state after dispose mid-flight',
+      () async {
+        final notifier = await buildSettledNotifier();
+
+        when(
+          () => mockRepository.updateAquarium(
+            aquariumId: any(named: 'aquariumId'),
+            name: any(named: 'name'),
+            waterType: any(named: 'waterType'),
+            capacity: any(named: 'capacity'),
+            photoKey: any(named: 'photoKey'),
+            clearPhotoKey: any(named: 'clearPhotoKey'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testAquarium);
+        });
+
+        final future = notifier.updateAquarium(
+          aquariumId: 'aq-1',
+          name: 'Renamed Tank',
+        );
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'deleteAquarium does not touch state after dispose mid-flight',
+      () async {
+        final notifier = await buildSettledNotifier();
+
+        when(() => mockRepository.deleteAquarium(any())).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return const Right(unit);
+        });
+
+        final future = notifier.deleteAquarium('aq-1');
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+  });
 }

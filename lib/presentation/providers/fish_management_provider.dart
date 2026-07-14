@@ -174,6 +174,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
       );
 
       await _fishRepository.saveFish(fish);
+      if (!mounted) return null;
 
       // Update state
       state = state.copyWith(userFish: [...state.userFish, fish]);
@@ -191,6 +192,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       return fish;
     } catch (e) {
+      if (!mounted) return null;
       state = state.copyWith(error: 'Failed to add fish: $e');
       return null;
     }
@@ -204,6 +206,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
   Future<bool> updateFish(Fish fish) async {
     try {
       final success = await _fishRepository.updateFish(fish);
+      if (!mounted) return false;
 
       if (!success) {
         state = state.copyWith(error: 'Fish not found');
@@ -234,6 +237,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(error: 'Failed to update fish: $e');
       return false;
     }
@@ -257,11 +261,13 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       // Soft delete via repository
       await _fishRepository.softDelete(id);
+      if (!mounted) return false;
 
       // Re-plan local notifications — removes alarms for this fish's schedules.
       await _ref
           .read(notificationOrchestratorProvider)
           .reconcileForAquarium(fishToDelete.aquariumId);
+      if (!mounted) return false;
 
       // Update state immediately for responsive UI
       final updatedList = state.userFish.where((f) => f.id != id).toList();
@@ -281,6 +287,7 @@ class FishManagementNotifier extends StateNotifier<FishManagementState> {
 
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(error: 'Failed to delete fish: $e');
       return false;
     }

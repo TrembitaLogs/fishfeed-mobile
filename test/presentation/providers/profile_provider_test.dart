@@ -307,6 +307,77 @@ void main() {
     });
   });
 
+  group('Notifier dispose safety (mounted guards)', () {
+    // Regression tests for the "used after dispose" bug class: an async method
+    // awaits, the notifier is disposed during the gap (screen popped / provider
+    // invalidated), then the post-await `state =` throws
+    // "Bad state: Tried to use ProfileNotifier after dispose".
+    // Each awaited dependency is stubbed to resolve only after a delay so the
+    // test can dispose the notifier mid-operation.
+
+    test(
+      'updateNickname does not throw when disposed during repository await',
+      () async {
+        when(
+          () => mockUserRepository.updateDisplayNameLocally(
+            currentUser: any(named: 'currentUser'),
+            displayName: any(named: 'displayName'),
+          ),
+        ).thenAnswer((invocation) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final displayName = invocation.namedArguments[#displayName] as String;
+          final currentUser = invocation.namedArguments[#currentUser] as User;
+          return Right(currentUser.copyWith(displayName: displayName));
+        });
+
+        // Start the async op WITHOUT awaiting, then dispose during the gap.
+        final future = profileNotifier.updateNickname('NewNickname');
+        profileNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'updateAvatar does not throw when disposed during upload await',
+      () async {
+        when(
+          () => mockUserRepository.updateAvatar(
+            avatarFile: any(named: 'avatarFile'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testUser);
+        });
+
+        final future = profileNotifier.updateAvatar(FakeFile());
+        profileNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'updateAvatarKey does not throw when disposed during repository await',
+      () async {
+        when(
+          () => mockUserRepository.updateAvatarKeyLocally(
+            currentUser: any(named: 'currentUser'),
+            avatarKey: any(named: 'avatarKey'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return const Left(ServerFailure());
+        });
+
+        final future = profileNotifier.updateAvatarKey('local://new-key');
+        profileNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+  });
+
   group('ProfileState', () {
     test('isLoading returns true when updating nickname', () {
       const state = ProfileState(isUpdatingNickname: true);

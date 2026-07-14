@@ -90,6 +90,7 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
     state = state.copyWith(isLoading: true, error: null);
 
     final result = await _aquariumRepository.getAquariums();
+    if (!mounted) return;
 
     result.fold(
       (failure) {
@@ -116,6 +117,7 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
     }
 
     final result = await _aquariumRepository.getAquariums();
+    if (!mounted) return;
 
     result.fold(
       (failure) {
@@ -144,6 +146,7 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
       waterType: waterType,
       capacity: capacity,
     );
+    if (!mounted) return null;
 
     return result.fold(
       (failure) {
@@ -196,6 +199,7 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
       photoKey: photoKey,
       clearPhotoKey: clearPhotoKey,
     );
+    if (!mounted) return null;
 
     return result.fold(
       (failure) {
@@ -223,6 +227,7 @@ class UserAquariumsNotifier extends StateNotifier<UserAquariumsState> {
   /// Returns true on success, false on failure.
   Future<bool> deleteAquarium(String aquariumId) async {
     final result = await _aquariumRepository.deleteAquarium(aquariumId);
+    if (!mounted) return false;
 
     return result.fold(
       (failure) {

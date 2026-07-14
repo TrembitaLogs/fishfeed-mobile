@@ -149,6 +149,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         currentUser: currentUser,
         displayName: trimmedNickname,
       );
+      if (!mounted) return false;
 
       return result.fold(
         (failure) {
@@ -161,12 +162,14 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
           // 4. Trigger sync to push changes to server
           await _syncService.syncAll();
+          if (!mounted) return false;
 
           state = state.copyWith(isUpdatingNickname: false);
           return true;
         },
       );
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isUpdatingNickname: false,
         error: UnexpectedFailure(message: e.toString()),
@@ -182,6 +185,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     state = state.copyWith(isUpdatingAvatar: true, clearError: true);
 
     final result = await _userRepository.updateAvatar(avatarFile: avatarFile);
+    if (!mounted) return false;
 
     return result.fold(
       (failure) {
@@ -213,6 +217,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         currentUser: currentUser,
         avatarKey: avatarKey,
       );
+      if (!mounted) return false;
 
       return result.fold(
         (failure) {
@@ -226,6 +231,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         },
       );
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(error: UnexpectedFailure(message: e.toString()));
       return false;
     }

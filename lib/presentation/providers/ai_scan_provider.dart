@@ -76,6 +76,7 @@ class AiScanNotifier extends StateNotifier<AiScanState> {
     state = const AiScanLoading(message: 'Analyzing...');
 
     final result = await _repository.scanFishImage(imageBytes: imageBytes);
+    if (!mounted) return;
 
     result.fold(
       (failure) {
