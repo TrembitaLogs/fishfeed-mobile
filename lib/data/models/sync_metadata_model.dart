@@ -13,6 +13,7 @@ class SyncMetadataModel extends HiveObject {
     this.syncToken,
     this.cursor,
     this.recoveryFullSyncDone = false,
+    this.hadLocalData = false,
   });
 
   /// Timestamp of the last successful sync.
@@ -42,6 +43,19 @@ class SyncMetadataModel extends HiveObject {
   /// bug #2.
   @HiveField(3, defaultValue: false)
   bool recoveryFullSyncDone;
+
+  /// Whether the last successful sync left local entity data present.
+  ///
+  /// Distinguishes a background-isolate box wipe (we HAD data, now the
+  /// aquariums box is empty -> force a recovery full sync) from an account that
+  /// legitimately has no aquariums yet (never had data -> keep using delta).
+  /// Self-correcting: refreshed to `localAquariumCount > 0` after every
+  /// successful sync, so a genuinely empty account converges to false after a
+  /// single full sync instead of forcing a full sync forever. Lives in the
+  /// syncMetadata box, which the notification-refill background isolate never
+  /// opens, so it survives the wipe it is used to detect.
+  @HiveField(4, defaultValue: false)
+  bool hadLocalData;
 
   /// Whether this is the first sync (initial sync).
   bool get isInitialSync => lastSyncAt == null;

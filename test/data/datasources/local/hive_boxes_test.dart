@@ -503,5 +503,25 @@ void main() {
         expect(HiveBoxes.aquariums.get('a1')?.name, 'Home');
       },
     );
+
+    test('throws a clean StateError (not a raw platform exception) when the '
+        'encryption key cannot be read', () async {
+      // Simulate a locked iOS device: secure storage read throws instead of
+      // returning the key.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(secureStorageChannel, (call) async {
+            if (call.method == 'read') {
+              throw PlatformException(code: 'Unexpected security result code');
+            }
+            return null;
+          });
+
+      // Must surface the intended clean StateError so the caller aborts the
+      // refill without corrupting the boxes — not an opaque platform error.
+      await expectLater(
+        HiveBoxes.initForBackgroundIsolate(),
+        throwsA(isA<StateError>()),
+      );
+    });
   });
 }

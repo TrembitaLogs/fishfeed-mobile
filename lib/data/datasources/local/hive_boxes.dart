@@ -83,6 +83,19 @@ class HiveBoxes {
   /// Secure-storage key under which the Hive AES encryption key is persisted.
   static const String _encryptionKeyName = 'hive_encryption_key';
 
+  /// Secure storage used for the Hive AES encryption key.
+  ///
+  /// iOS uses `first_unlock` accessibility (matching the auth-token store in
+  /// [AuthLocalDataSource]) so the notification-refill background isolate can
+  /// read the key while the device is locked — otherwise it would open the AES
+  /// boxes without the cipher and corrupt them. Android keeps the plugin default
+  /// so the existing key is not orphaned into a different store. Reads ignore
+  /// accessibility (the plugin queries by key only), so this never fails to find
+  /// a key written under the old default accessibility.
+  static const FlutterSecureStorage _keyStorage = FlutterSecureStorage(
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
   /// Whether Hive has been initialized.
   static bool get isInitialized => _isInitialized;
 
@@ -212,12 +225,19 @@ class HiveBoxes {
   /// must not risk orphaning existing encrypted data (e.g. background isolates)
   /// use this instead of [_getOrCreateEncryptionKey].
   static Future<List<int>?> _readEncryptionKey() async {
-    const storage = FlutterSecureStorage();
-    final encoded = await storage.read(key: _encryptionKeyName);
-    if (encoded == null) {
+    try {
+      final encoded = await _keyStorage.read(key: _encryptionKeyName);
+      if (encoded == null) {
+        return null;
+      }
+      return base64Url.decode(encoded);
+    } catch (_) {
+      // Secure storage can throw (e.g. the iOS keychain is inaccessible while
+      // the device is locked) rather than returning null. Treat that like a
+      // missing key so callers hit the documented null path — a clean abort —
+      // instead of an opaque platform error.
       return null;
     }
-    return base64Url.decode(encoded);
   }
 
   /// Retrieves the Hive AES encryption key from secure storage,
@@ -225,12 +245,22 @@ class HiveBoxes {
   static Future<List<int>> _getOrCreateEncryptionKey() async {
     final existing = await _readEncryptionKey();
     if (existing != null) {
+      // Migrate keys persisted under the old plugin-default (whenUnlocked)
+      // accessibility to first_unlock, so the background isolate can read the
+      // key while the device is locked. Idempotent: once migrated, the write is
+      // a cheap in-place update. Runs only in the main (foreground) isolate.
+      await _keyStorage.write(
+        key: _encryptionKeyName,
+        value: base64UrlEncode(existing),
+      );
       return existing;
     }
 
-    const storage = FlutterSecureStorage();
     final key = Hive.generateSecureKey();
-    await storage.write(key: _encryptionKeyName, value: base64UrlEncode(key));
+    await _keyStorage.write(
+      key: _encryptionKeyName,
+      value: base64UrlEncode(key),
+    );
     return key;
   }
 

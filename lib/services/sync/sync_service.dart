@@ -382,12 +382,17 @@ class SyncService {
       final recoveryPending = !(metadata?.recoveryFullSyncDone ?? false);
       // Self-heal: if the local entity data was wiped (e.g. a background isolate
       // truncated the AES-encrypted aquariums box to a 0-byte file) but we have
-      // synced before, a delta sync would never re-download the alive-but-
-      // unchanged rows, leaving the app permanently empty. Force a full sync to
-      // rebuild local state. Unlike the one-shot recovery above, this is
-      // condition-based, so it re-fires on any future wipe.
+      // synced before AND previously held local data, a delta sync would never
+      // re-download the alive-but-unchanged rows, leaving the app permanently
+      // empty. Force a full sync to rebuild local state. The hadLocalData gate
+      // distinguishes a real wipe from an account that legitimately has no
+      // aquariums yet (which must keep using cheap delta syncs). Unlike the
+      // one-shot recovery above, this is condition-based, so it re-fires on any
+      // future wipe.
       final localDataWiped =
-          metadata?.lastSyncAt != null && _aquariumDs.getAquariumCount() == 0;
+          metadata?.lastSyncAt != null &&
+          (metadata?.hadLocalData ?? false) &&
+          _aquariumDs.getAquariumCount() == 0;
       final effectiveFullSync =
           fullSync ||
           localDataWiped ||
@@ -415,6 +420,10 @@ class SyncService {
         if (recoveryPending && ranFullSync) {
           await _markRecoveryFullSyncDone();
         }
+        // Refresh the wipe-detection high-water mark from post-sync local state:
+        // a repopulated wipe stays true, while a genuinely empty account
+        // converges to false so it stops forcing full syncs.
+        await _updateHadLocalData(_aquariumDs.getAquariumCount() > 0);
         _logger.i('SyncService: Sync completed - $result');
       } else {
         _lastError = result.errors.join(', ');
@@ -1238,6 +1247,19 @@ class SyncService {
   Future<void> _advanceLastSyncAt() async {
     final metadata = await _getOrCreateSyncMetadata();
     metadata.lastSyncAt = DateTime.now().toUtc();
+    await metadata.save();
+  }
+
+  /// Records whether local entity data is present after a successful sync.
+  ///
+  /// Lets a later empty aquariums box be recognised as a background-isolate wipe
+  /// (had data before) rather than a legitimately empty account, and lets an
+  /// empty account converge back to delta syncs. See
+  /// [SyncMetadataModel.hadLocalData].
+  Future<void> _updateHadLocalData(bool hasLocalData) async {
+    final metadata = await _getOrCreateSyncMetadata();
+    if (metadata.hadLocalData == hasLocalData) return;
+    metadata.hadLocalData = hasLocalData;
     await metadata.save();
   }
 
