@@ -256,6 +256,51 @@ void main() {
         expect(notifier.state, isA<AiScanIdle>());
       });
     });
+
+    group('Notifier dispose safety (mounted guards)', () {
+      test(
+        'scanImage does not touch state after dispose mid-flight (failure)',
+        () async {
+          // Repository resolves after a delay so we can dispose mid-flight.
+          when(
+            () => mockRepository.scanFishImage(
+              imageBytes: any(named: 'imageBytes'),
+            ),
+          ).thenAnswer((_) async {
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+            return const Left(NetworkFailure());
+          });
+
+          // Call without await to capture the in-flight future.
+          final future = notifier.scanImage(testImageBytes);
+
+          // Dispose while the scan is suspended on the delay.
+          notifier.dispose();
+
+          // Must complete without throwing StateError-after-dispose.
+          await expectLater(future, completes);
+        },
+      );
+
+      test(
+        'scanImage does not touch state after dispose mid-flight (success)',
+        () async {
+          when(
+            () => mockRepository.scanFishImage(
+              imageBytes: any(named: 'imageBytes'),
+            ),
+          ).thenAnswer((_) async {
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+            return const Right(testScanResult);
+          });
+
+          final future = notifier.scanImage(testImageBytes);
+          notifier.dispose();
+
+          await expectLater(future, completes);
+        },
+      );
+    });
   });
 
   group('AiScanState', () {

@@ -213,4 +213,39 @@ void main() {
       expect(error.requiresAuth, isFalse);
     });
   });
+
+  // Regression guard for Sentry StateError "Tried to use JoinInviteNotifier
+  // after `dispose` was called". acceptInvite() awaits the repository, then
+  // assigns `state` via result.fold(...); if the notifier is disposed during
+  // the async gap (user leaves the join screen / provider invalidated
+  // mid-operation) the post-await `state =` throws. The method must bail out
+  // via `if (!mounted) return;` after the await.
+  group('Notifier dispose safety (mounted guards)', () {
+    test(
+      'acceptInvite does not touch state after dispose mid-flight',
+      () async {
+        final mockRepo = MockFamilyRepository();
+
+        // Repository resolves after a delay so we can dispose mid-flight.
+        // The success branch assigns state (JoinInviteSuccess) post-await.
+        when(
+          () => mockRepo.acceptInvite(inviteCode: any(named: 'inviteCode')),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testMember);
+        });
+
+        final notifier = JoinInviteNotifier(repository: mockRepo);
+
+        // acceptInvite() awaits the repository before assigning state.
+        final future = notifier.acceptInvite('TEST1234');
+
+        // Dispose while acceptInvite is suspended on the repository call.
+        notifier.dispose();
+
+        // Must complete without throwing StateError-after-dispose.
+        await expectLater(future, completes);
+      },
+    );
+  });
 }

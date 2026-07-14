@@ -23,6 +23,8 @@ class MockSyncService extends Mock implements SyncService {}
 class MockNotificationOrchestrator extends Mock
     implements NotificationOrchestrator {}
 
+class MockRef extends Mock implements Ref {}
+
 const _testAquariumId = 'test-aquarium-id';
 
 void main() {
@@ -804,6 +806,98 @@ void main() {
       verify(() => mockFishRepo.getFishById('fish_1')).called(2);
 
       container.dispose();
+    });
+  });
+
+  group('Notifier dispose safety (mounted guards)', () {
+    // Each test constructs the notifier DIRECTLY (not via ProviderContainer)
+    // so it can dispose the notifier while an async method is suspended on an
+    // awaited dependency. Without a `if (!mounted) return;` guard after the
+    // await, the post-await `state = ...` throws
+    // "Bad state: Tried to use FishManagementNotifier after dispose".
+
+    test('addFish does not touch state after dispose mid-flight', () async {
+      final mockRepo = MockFishRepository();
+      final mockRef = MockRef();
+
+      when(() => mockRepo.getFishByAquariumId(_testAquariumId)).thenReturn([]);
+      // saveFish resolves after a delay so we can dispose during the gap.
+      when(() => mockRepo.saveFish(any())).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+
+      final notifier = FishManagementNotifier(
+        fishRepository: mockRepo,
+        ref: mockRef,
+        selectedAquariumId: _testAquariumId,
+      );
+
+      // Capture the future WITHOUT awaiting, then dispose during the await gap.
+      final future = notifier.addFish(speciesId: 'guppy', quantity: 1);
+      notifier.dispose();
+
+      // Must complete without throwing StateError-after-dispose.
+      await expectLater(future, completes);
+    });
+
+    test('updateFish does not touch state after dispose mid-flight', () async {
+      final mockRepo = MockFishRepository();
+      final mockRef = MockRef();
+
+      final fish = _createFish('fish_1', 'guppy', 5);
+      when(
+        () => mockRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn([fish]);
+      // updateFish resolves after a delay so we can dispose during the gap.
+      when(() => mockRepo.updateFish(any())).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return true;
+      });
+
+      final notifier = FishManagementNotifier(
+        fishRepository: mockRepo,
+        ref: mockRef,
+        selectedAquariumId: _testAquariumId,
+      );
+
+      final future = notifier.updateFish(fish.copyWith(quantity: 10));
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('deleteFish does not touch state after dispose mid-flight', () async {
+      final mockRepo = MockFishRepository();
+      final mockRef = MockRef();
+      final mockOrch = MockNotificationOrchestrator();
+
+      final fish = _createFish('fish_1', 'guppy', 5);
+      when(
+        () => mockRepo.getFishByAquariumId(_testAquariumId),
+      ).thenReturn([fish]);
+      // softDelete resolves after a delay so we can dispose during the gap.
+      when(() => mockRepo.softDelete(any())).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      // Orchestrator is read via ref after the soft-delete await.
+      when(
+        () => mockRef.read(notificationOrchestratorProvider),
+      ).thenReturn(mockOrch);
+      when(() => mockOrch.reconcileForAquarium(any())).thenAnswer(
+        (_) async =>
+            const ReconcileResult.success(added: 0, cancelled: 0, kept: 0),
+      );
+
+      final notifier = FishManagementNotifier(
+        fishRepository: mockRepo,
+        ref: mockRef,
+        selectedAquariumId: _testAquariumId,
+      );
+
+      final future = notifier.deleteFish('fish_1');
+      notifier.dispose();
+
+      await expectLater(future, completes);
     });
   });
 }

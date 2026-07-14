@@ -69,6 +69,7 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
     final result = await _calculateStatisticsUseCase(
       CalculateStatisticsParams(userId: _userId),
     );
+    if (!mounted) return;
 
     result.fold(
       (failure) {

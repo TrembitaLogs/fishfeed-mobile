@@ -101,6 +101,7 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
       }
 
       final result = await _achievementUseCase.getAllAchievements(userId);
+      if (!mounted) return;
 
       result.fold(
         (failure) {
@@ -111,6 +112,7 @@ class AchievementsNotifier extends StateNotifier<AchievementsState> {
         },
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to load achievements: $e',

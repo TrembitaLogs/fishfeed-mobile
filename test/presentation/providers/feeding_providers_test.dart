@@ -40,6 +40,8 @@ class MockStreakRepository extends Mock implements StreakRepository {}
 class MockCalculateStreakUseCase extends Mock
     implements CalculateStreakUseCase {}
 
+class MockRef extends Mock implements Ref {}
+
 /// Test helper: StreakNotifier that skips async loadStreak() in constructor.
 ///
 /// Prevents "dispose after use" errors in tests where the provider
@@ -75,6 +77,7 @@ void main() {
       ),
     );
     registerFallbackValue(const CalculateStreakParams(userId: 'fallback'));
+    registerFallbackValue(DateTime(2024, 1, 1));
   });
 
   group('TodayFeedingsState', () {
@@ -1748,6 +1751,137 @@ void main() {
       expect(result.nextTime, isNull);
 
       container.dispose();
+    });
+  });
+
+  // Regression guard for Sentry StateError "Tried to use <Notifier> after
+  // `dispose` was called". Async notifier methods await, then assign `state`;
+  // if the notifier is disposed during the async gap (user leaves the screen /
+  // provider invalidated mid-operation) the post-await `state =` throws.
+  // Each method must bail out via `if (!mounted) return;` after every await.
+  group('Notifier dispose safety (mounted guards)', () {
+    test('TodayFeedingsNotifier.refresh does not touch state after dispose '
+        'mid-flight', () async {
+      final mockGenerator = MockFeedingEventGenerator();
+      final mockFeedingService = MockFeedingService();
+      final mockFishRepo = MockFishRepository();
+      final mockAquariumRepo = MockAquariumRepository();
+      final mockRef = MockRef();
+
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
+      when(
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(const Right([]));
+
+      final notifier = TodayFeedingsNotifier(
+        feedingEventGenerator: mockGenerator,
+        feedingService: mockFeedingService,
+        aquariumRepository: mockAquariumRepo,
+        fishRepository: mockFishRepo,
+        ref: mockRef,
+      );
+
+      // refresh() awaits a 100ms delay before touching state.
+      final future = notifier.refresh();
+
+      // Dispose while refresh is suspended on the delay.
+      notifier.dispose();
+
+      // Must complete without throwing StateError-after-dispose.
+      await expectLater(future, completes);
+    });
+
+    test('TodayFeedingsNotifier.markAsFed does not touch state after dispose '
+        'when service reports already-done', () async {
+      final mockGenerator = MockFeedingEventGenerator();
+      final mockFeedingService = MockFeedingService();
+      final mockFishRepo = MockFishRepository();
+      final mockAquariumRepo = MockAquariumRepository();
+      final mockRef = MockRef();
+
+      when(() => mockFishRepo.getAllFish()).thenReturn([]);
+      when(
+        () => mockAquariumRepo.getCachedAquariums(),
+      ).thenReturn(Right([_createAquarium(id: 'aq_1')]));
+      when(() => mockRef.read(currentUserProvider)).thenReturn(null);
+      when(
+        () => mockGenerator.generateTodayEventsForAllAquariums(
+          aquariumIds: any(named: 'aquariumIds'),
+          fishNameResolver: any(named: 'fishNameResolver'),
+          fishQuantityResolver: any(named: 'fishQuantityResolver'),
+          aquariumNameResolver: any(named: 'aquariumNameResolver'),
+          avatarResolver: any(named: 'avatarResolver'),
+        ),
+      ).thenReturn({
+        'aq_1': [
+          _createFeeding('schedule_1', DateTime.now(), EventStatus.pending),
+        ],
+      });
+      // Service resolves after a delay so we can dispose mid-flight, then
+      // reports the feeding was already done (the branch that assigns state).
+      when(
+        () => mockFeedingService.markAsFed(
+          scheduleId: any(named: 'scheduleId'),
+          scheduledFor: any(named: 'scheduledFor'),
+          userId: any(named: 'userId'),
+          userDisplayName: any(named: 'userDisplayName'),
+          notes: any(named: 'notes'),
+        ),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return FeedingAlreadyDone(
+          scheduledFor: DateTime(2024, 1, 1),
+          message: 'Already fed',
+        );
+      });
+
+      final notifier = TodayFeedingsNotifier(
+        feedingEventGenerator: mockGenerator,
+        feedingService: mockFeedingService,
+        aquariumRepository: mockAquariumRepo,
+        fishRepository: mockFishRepo,
+        ref: mockRef,
+      );
+
+      final future = notifier.markAsFed('schedule_1');
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('StreakNotifier.incrementStreak does not touch state after dispose '
+        'mid-flight', () async {
+      final mockStreakRepo = MockStreakRepository();
+      final mockCalc = MockCalculateStreakUseCase();
+      final mockRef = MockRef();
+
+      when(() => mockRef.read(currentUserProvider)).thenReturn(null);
+      when(() => mockStreakRepo.incrementStreak(any(), any())).thenAnswer((
+        _,
+      ) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const Right(
+          Streak(
+            id: 's',
+            userId: 'default_user',
+            currentStreak: 1,
+            longestStreak: 1,
+          ),
+        );
+      });
+
+      // TestStreakNotifier no-ops the constructor loadStreak() so only the
+      // method under test drives async work.
+      final notifier = TestStreakNotifier(
+        streakRepository: mockStreakRepo,
+        calculateStreakUseCase: mockCalc,
+        ref: mockRef,
+      );
+
+      final future = notifier.incrementStreak();
+      notifier.dispose();
+
+      await expectLater(future, completes);
     });
   });
 }
