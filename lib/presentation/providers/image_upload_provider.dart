@@ -122,6 +122,11 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus> {
     await _queue.recoverStuckTasks();
     await _refreshStatus();
 
+    // Bail out if disposed during the awaits above: the connectivity
+    // subscription and the online processQueue() below both touch `state`
+    // (processQueue reads state.isProcessing), which throws after dispose.
+    if (!mounted) return;
+
     _wasOffline = !_connectivityService.isOnline;
     _connectivitySubscription = _connectivityService.statusStream.listen(
       _onConnectivityChanged,
@@ -167,6 +172,11 @@ class ImageUploadNotifier extends StateNotifier<ImageUploadQueueStatus> {
       imageBytes: imageBytes,
     );
     await _refreshStatus();
+
+    // Bail out if disposed during the awaits above: processQueue() reads
+    // `state`, which throws after dispose. The key is already persisted.
+    if (!mounted) return localKey;
+
     unawaited(processQueue());
     return localKey;
   }

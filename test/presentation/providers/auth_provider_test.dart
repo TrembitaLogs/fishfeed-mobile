@@ -985,4 +985,191 @@ void main() {
       expect(notified, true);
     });
   });
+
+  group('Notifier dispose safety (mounted guards)', () {
+    // Each test stubs the first awaited dependency to resolve AFTER a delay,
+    // starts the async method WITHOUT awaiting, disposes the notifier during
+    // the async gap, then asserts the returned future completes normally.
+    // Without a `mounted` guard the post-await `state =` throws
+    // "Bad state: Tried to use AuthNotifier after `dispose` was called".
+
+    test('initialize does not touch state after dispose during the '
+        'isAuthenticated await', () async {
+      when(() => mockRepository.isAuthenticated()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return false;
+      });
+
+      final future = authNotifier.initialize();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test(
+      'login does not touch state after dispose during the use-case await',
+      () async {
+        when(
+          () => mockRepository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testUser);
+        });
+
+        final future = authNotifier.login(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+        authNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'register does not touch state after dispose during the use-case await',
+      () async {
+        when(
+          () => mockRepository.register(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Right(testUser);
+        });
+
+        final future = authNotifier.register(
+          email: 'new@example.com',
+          password: 'Password1',
+          confirmPassword: 'Password1',
+        );
+        authNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test('loginWithGoogle does not touch state after dispose when sign-in '
+        'succeeds post-await', () async {
+      when(() => mockGoogleAuthService.signIn()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const GoogleSignInResult(
+          idToken: 'google-id-token',
+          email: 'test@gmail.com',
+        );
+      });
+      when(
+        () => mockRepository.oauthLogin(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+        ),
+      ).thenAnswer((_) async => Right(testUser));
+
+      final future = authNotifier.loginWithGoogle();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('loginWithGoogle does not touch state after dispose when sign-in '
+        'throws post-await', () async {
+      when(() => mockGoogleAuthService.signIn()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        throw const GoogleAuthException(GoogleAuthErrorCode.cancelled);
+      });
+
+      final future = authNotifier.loginWithGoogle();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('loginWithApple does not touch state after dispose when sign-in '
+        'succeeds post-await', () async {
+      when(() => mockAppleAuthService.signIn()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const AppleSignInResult(
+          identityToken: 'apple-id-token',
+          authorizationCode: 'auth-code',
+          userIdentifier: 'user-id',
+        );
+      });
+      when(
+        () => mockRepository.oauthLogin(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+        ),
+      ).thenAnswer((_) async => Right(testUser));
+
+      final future = authNotifier.loginWithApple();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('loginWithApple does not touch state after dispose when sign-in '
+        'throws post-await', () async {
+      when(() => mockAppleAuthService.signIn()).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        throw const AppleAuthException(AppleAuthErrorCode.notAvailable);
+      });
+
+      final future = authNotifier.loginWithApple();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test(
+      'logout does not touch state after dispose during OAuth sign-out await',
+      () async {
+        when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
+        when(
+          () => mockRepository.logout(),
+        ).thenAnswer((_) async => const Right(unit));
+
+        final future = authNotifier.logout();
+        authNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'deleteAccount does not touch state after dispose during the repository '
+      'await',
+      () async {
+        when(() => mockRepository.deleteAccount()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return const Right(unit);
+        });
+        when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {});
+
+        final future = authNotifier.deleteAccount();
+        authNotifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test('completeOnboarding does not touch state after dispose during the '
+        'persistence await', () async {
+      when(() => mockRepository.setOnboardingCompleted(true)).thenAnswer((
+        _,
+      ) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+
+      final future = authNotifier.completeOnboarding();
+      authNotifier.dispose();
+
+      await expectLater(future, completes);
+    });
+  });
 }

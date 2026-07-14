@@ -290,4 +290,94 @@ void main() {
       expect(notifier.state.error, isNull);
     });
   });
+
+  group('Notifier dispose safety (mounted guards)', () {
+    // Each test stubs the awaited repository call to resolve AFTER a delay,
+    // fires the async method without awaiting, disposes the notifier during
+    // the async gap, then asserts the returned Future still completes cleanly.
+    // Without a `mounted` guard, the post-await `state =` throws
+    // "Bad state: Tried to use FamilyNotifier after dispose was called".
+
+    test('loadFamilyData does not throw when disposed mid-await', () async {
+      when(() => mockRepository.getInvites(aquariumId: aquariumId)).thenAnswer((
+        _,
+      ) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return Right([testInvite]);
+      });
+      when(() => mockRepository.getMembers(aquariumId: aquariumId)).thenAnswer((
+        _,
+      ) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return Right([testOwner]);
+      });
+
+      final future = notifier.loadFamilyData(aquariumId);
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('createInvite does not throw when disposed mid-await', () async {
+      when(
+        () => mockRepository.createInvite(aquariumId: aquariumId),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return Right(testInvite);
+      });
+
+      final future = notifier.createInvite(aquariumId);
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('cancelInvite does not throw when disposed mid-await', () async {
+      when(
+        () => mockRepository.cancelInvite(
+          aquariumId: aquariumId,
+          inviteId: testInvite.id,
+        ),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const Right(unit);
+      });
+
+      final future = notifier.cancelInvite(aquariumId, testInvite.id);
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('removeMember does not throw when disposed mid-await', () async {
+      when(
+        () => mockRepository.removeMember(
+          aquariumId: aquariumId,
+          userId: testMember.userId,
+        ),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return const Right(unit);
+      });
+
+      final future = notifier.removeMember(aquariumId, testMember.userId);
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+
+    test('acceptInvite does not throw when disposed mid-await', () async {
+      when(
+        () => mockRepository.acceptInvite(inviteCode: testInvite.inviteCode),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return Right(testMember);
+      });
+
+      final future = notifier.acceptInvite(testInvite.inviteCode);
+      notifier.dispose();
+
+      await expectLater(future, completes);
+    });
+  });
 }

@@ -215,6 +215,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
       if (!isAuthenticated) {
         // Not authenticated - set initial state with isInitializing = false
+        if (!mounted) return;
         state = const AuthenticationState(
           isInitializing: false,
           isAuthenticated: false,
@@ -226,6 +227,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       await userResult.fold(
         (failure) async {
           // Failed to get user - not authenticated, initialization complete
+          if (!mounted) return;
           state = const AuthenticationState(
             isInitializing: false,
             isAuthenticated: false,
@@ -247,6 +249,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             // avoid a stale session (authenticated UI but no valid tokens).
             final stillAuthenticated = await _repository.isAuthenticated();
             if (!stillAuthenticated) {
+              if (!mounted) return;
               state = const AuthenticationState(
                 isInitializing: false,
                 isAuthenticated: false,
@@ -255,6 +258,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             }
           }
 
+          if (!mounted) return;
           state = AuthenticationState.authenticated(
             user,
             hasCompletedOnboarding: hasCompletedOnboarding,
@@ -272,6 +276,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             unawaited(
               _syncService.syncAll().then((_) {
                 // Re-read user from local storage after sync to pick up server changes
+                if (!mounted) return;
                 final updatedUser = _repository.getLocalUser();
                 if (updatedUser != null && updatedUser != state.user) {
                   updateUser(updatedUser);
@@ -283,6 +288,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       );
     } catch (e) {
       debugPrint('[AuthNotifier] Initialize failed with error: $e');
+      if (!mounted) return;
       state = const AuthenticationState(
         isInitializing: false,
         isAuthenticated: false,
@@ -302,6 +308,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
     await result.fold(
       (failure) async {
+        if (!mounted) return;
         state = state.copyWith(isLoading: false, error: failure);
       },
       (user) async {
@@ -324,6 +331,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         debugPrint(
           '[AuthNotifier] Setting state with hasCompletedOnboarding=$hasCompletedOnboarding',
         );
+        if (!mounted) return;
         state = AuthenticationState.authenticated(
           syncedUser,
           hasCompletedOnboarding: hasCompletedOnboarding,
@@ -357,6 +365,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       ),
     );
 
+    if (!mounted) return;
     result.fold(
       (failure) {
         state = state.copyWith(isLoading: false, error: failure);
@@ -385,6 +394,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
       await result.fold(
         (failure) async {
+          if (!mounted) return;
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
@@ -399,6 +409,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
           final syncedUser = _repository.getLocalUser() ?? user;
 
+          if (!mounted) return;
           state = AuthenticationState.authenticated(
             syncedUser,
             hasCompletedOnboarding: hasCompletedOnboarding,
@@ -416,6 +427,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         },
       );
     } on GoogleAuthException catch (e) {
+      if (!mounted) return;
       final failure = switch (e.code) {
         GoogleAuthErrorCode.cancelled => const CancellationFailure(),
         GoogleAuthErrorCode.networkError => const NetworkFailure(),
@@ -423,6 +435,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       };
       state = state.copyWith(isLoading: false, error: failure);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: const OAuthFailure(provider: 'google'),
@@ -446,6 +459,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
       await result.fold(
         (failure) async {
+          if (!mounted) return;
           state = state.copyWith(isLoading: false, error: failure);
         },
         (user) async {
@@ -460,6 +474,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
           final syncedUser = _repository.getLocalUser() ?? user;
 
+          if (!mounted) return;
           state = AuthenticationState.authenticated(
             syncedUser,
             hasCompletedOnboarding: hasCompletedOnboarding,
@@ -477,6 +492,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
         },
       );
     } on AppleAuthException catch (e) {
+      if (!mounted) return;
       final failure = switch (e.code) {
         AppleAuthErrorCode.cancelled => const CancellationFailure(),
         AppleAuthErrorCode.notAvailable => const OAuthFailure(
@@ -487,6 +503,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       };
       state = state.copyWith(isLoading: false, error: failure);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: const OAuthFailure(provider: 'apple'),
@@ -530,6 +547,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     // the prior account's entitlements on this device.
     await _purchaseService.logOut();
 
+    // Guard only the state update: all token/OAuth/RevenueCat cleanup above
+    // has already run and must never be skipped.
+    if (!mounted) return;
     state = const AuthenticationState(
       isInitializing: false,
       isAuthenticated: false,
@@ -554,6 +574,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     final failure = result.fold<Failure?>((f) => f, (_) => null);
 
     if (failure != null) {
+      if (!mounted) return null;
       state = state.copyWith(isLoading: false, error: failure);
       return failure;
     }
@@ -564,6 +585,9 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     _appleAuthService.signOut();
     await _purchaseService.logOut();
 
+    // Guard only the state update: the account deletion and OAuth/RevenueCat
+    // cleanup above have already run and must never be skipped.
+    if (!mounted) return null;
     state = const AuthenticationState(
       isInitializing: false,
       isAuthenticated: false,
@@ -576,6 +600,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
   /// Mark onboarding as completed.
   Future<void> completeOnboarding() async {
     await _repository.setOnboardingCompleted(true);
+    if (!mounted) return;
     state = state.copyWith(hasCompletedOnboarding: true);
   }
 
@@ -669,8 +694,10 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       // A later sync produced aquariums: this is a returning user. Complete
       // onboarding and refresh the auth state so the router leaves onboarding.
       await _repository.setOnboardingCompleted(true);
+      // Guard before reading `state` too: the getter also throws after dispose.
+      if (!mounted) return;
       final currentUser = state.user;
-      if (mounted && currentUser != null) {
+      if (currentUser != null) {
         state = AuthenticationState.authenticated(
           currentUser,
           hasCompletedOnboarding: true,

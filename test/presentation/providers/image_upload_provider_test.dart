@@ -523,4 +523,137 @@ void main() {
       expect(notifier.state.pendingCount, 0);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Notifier dispose safety (mounted guards)
+  // ---------------------------------------------------------------------------
+  //
+  // Regression coverage for the "used after dispose" bug class: an async method
+  // awaits, the notifier is disposed during the async gap, then the method
+  // resumes and touches `state` (directly, or indirectly via an unawaited
+  // processQueue() whose first line reads `state`). Reading/writing `state`
+  // after dispose throws
+  // "Bad state: Tried to use ImageUploadNotifier after dispose". Each async
+  // shape must return early once `!mounted`.
+  group('Notifier dispose safety (mounted guards)', () {
+    late MockImageSyncQueue mockQueue;
+    late MockImageUploadService mockUploadService;
+    late MockConnectivityService mockConnectivityService;
+    late StreamController<bool> connectivityController;
+
+    setUp(() {
+      mockQueue = MockImageSyncQueue();
+      mockUploadService = MockImageUploadService();
+      mockConnectivityService = MockConnectivityService();
+      connectivityController = StreamController<bool>.broadcast();
+
+      when(
+        () => mockConnectivityService.statusStream,
+      ).thenAnswer((_) => connectivityController.stream);
+      when(() => mockConnectivityService.isOnline).thenReturn(false);
+
+      when(() => mockQueue.initialize()).thenAnswer((_) async {});
+      when(() => mockQueue.recoverStuckTasks()).thenAnswer((_) async => 0);
+      when(() => mockQueue.readAll()).thenAnswer((_) async => []);
+      when(() => mockUploadService.processQueue()).thenAnswer((_) async {});
+    });
+
+    tearDown(() {
+      connectivityController.close();
+    });
+
+    ImageUploadNotifier buildNotifier({bool isOnline = false}) {
+      when(() => mockConnectivityService.isOnline).thenReturn(isOnline);
+      return ImageUploadNotifier(
+        queue: mockQueue,
+        uploadService: mockUploadService,
+        connectivityService: mockConnectivityService,
+      );
+    }
+
+    test(
+      'queueUpload does not touch state after dispose during async gap',
+      () async {
+        final notifier = buildNotifier();
+        await notifier.initialize();
+
+        // Compression resolves after a delay so we can dispose mid-flight.
+        when(
+          () => mockUploadService.queueUpload(
+            entityType: any(named: 'entityType'),
+            entityId: any(named: 'entityId'),
+            imageBytes: any(named: 'imageBytes'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return 'local://abc-123';
+        });
+
+        final future = notifier.queueUpload(
+          entityType: 'aquarium',
+          entityId: 'aq-1',
+          imageBytes: Uint8List.fromList([1, 2, 3]),
+        );
+        notifier.dispose();
+
+        // Without a mounted guard, the post-await unawaited(processQueue())
+        // reads `state` after dispose and raises an uncaught StateError.
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'initialize does not touch state after dispose during async gap',
+      () async {
+        final notifier = buildNotifier(isOnline: true);
+
+        // Queue init resolves after a delay so we can dispose mid-flight.
+        when(() => mockQueue.initialize()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
+
+        final future = notifier.initialize();
+        notifier.dispose();
+
+        // Without a mounted guard, initialize resumes while online and calls
+        // unawaited(processQueue()), which reads `state` after dispose.
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'processQueue does not touch state after dispose during async gap',
+      () async {
+        final notifier = buildNotifier();
+        await notifier.initialize();
+
+        when(() => mockUploadService.processQueue()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
+
+        final future = notifier.processQueue();
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+
+    test(
+      'retryFailed does not touch state after dispose during async gap',
+      () async {
+        final notifier = buildNotifier();
+        await notifier.initialize();
+
+        when(() => mockUploadService.retryFailed()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return 1;
+        });
+
+        final future = notifier.retryFailed();
+        notifier.dispose();
+
+        await expectLater(future, completes);
+      },
+    );
+  });
 }
