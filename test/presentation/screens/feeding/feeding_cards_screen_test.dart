@@ -328,6 +328,67 @@ void main() {
         expect(find.byIcon(Icons.people_alt), findsNothing);
       });
     });
+
+    group('System navigation bar inset', () {
+      // Android 15 (targetSdk 35) enforces edge-to-edge: the system navigation
+      // bar is drawn OVER the app content, so the scroll view must reserve
+      // MediaQuery.padding.bottom or its last card stays permanently hidden.
+      const navBarInset = 48.0;
+
+      List<ComputedFeedingEvent> manyFeedings(int count) => List.generate(
+        count,
+        (i) => ComputedFeedingEvent(
+          scheduleId: 's$i',
+          fishId: 'fish$i',
+          aquariumId: 'aq1',
+          scheduledFor: today.add(Duration(hours: 6, minutes: i)),
+          time: '06:${i.toString().padLeft(2, '0')}',
+          foodType: 'Flakes',
+          status: EventStatus.pending,
+          fishName: 'Fish $i',
+          aquariumName: 'Living Room Tank',
+          fishQuantity: 2,
+        ),
+      );
+
+      testWidgets('last card stays above the system navigation bar', (
+        tester,
+      ) async {
+        final ratio = tester.view.devicePixelRatio;
+        tester.view.padding = FakeViewPadding(bottom: navBarInset * ratio);
+        tester.view.viewPadding = FakeViewPadding(bottom: navBarInset * ratio);
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          buildTestWidget(
+            state: TodayFeedingsState(
+              feedings: manyFeedings(20),
+              isLoading: false,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Scroll to the very bottom of the list
+        for (var i = 0; i < 12; i++) {
+          await tester.drag(find.byType(ListView), const Offset(0, -600));
+          await tester.pumpAndSettle();
+        }
+
+        final lastCard = find.byKey(const Key('feeding_s19'));
+        expect(lastCard, findsOneWidget);
+
+        final screenHeight = tester.view.physicalSize.height / ratio;
+        final safeBottom = screenHeight - navBarInset;
+
+        expect(
+          tester.getRect(lastCard).bottom,
+          lessThanOrEqualTo(safeBottom),
+          reason:
+              'Last feeding card must be fully reachable above the navigation bar',
+        );
+      });
+    });
   });
 }
 
