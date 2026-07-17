@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:fishfeed/core/config/animation_config.dart';
+import 'package:fishfeed/core/utils/scroll_padding.dart';
 import 'package:fishfeed/domain/entities/feeding_event.dart';
 import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/aquarium_providers.dart';
@@ -314,7 +315,10 @@ class _FeedingCardsScreenState extends ConsumerState<FeedingCardsScreen> {
     return ListView(
       key: _listKey,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ).withBottomSafeArea(context),
       children: items,
     );
   }

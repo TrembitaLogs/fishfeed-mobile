@@ -21,6 +21,7 @@ import 'package:fishfeed/l10n/app_localizations.dart';
 import 'package:fishfeed/presentation/providers/auth_provider.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
 import 'package:fishfeed/presentation/screens/profile/profile_screen.dart';
+import 'package:fishfeed/presentation/screens/profile/widgets/profile_widgets.dart';
 import 'package:fishfeed/core/di/repository_providers.dart';
 import 'package:fishfeed/domain/repositories/aquarium_repository.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
@@ -139,14 +140,36 @@ void main() {
     });
   });
 
-  Widget buildTestWidget({User? user, SyncService? syncService}) {
+  Widget buildTestWidget({
+    User? user,
+    SyncService? syncService,
+    bool asHomeTab = false,
+  }) {
     final effectiveUser = user ?? testUser;
     final router = GoRouter(
       initialLocation: '/profile',
       routes: [
         GoRoute(
           path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
+          // asHomeTab mirrors HomeScreen: an IndexedStack body under a Scaffold
+          // whose NavigationBar already consumes the bottom inset.
+          builder: (context, state) => asHomeTab
+              ? Scaffold(
+                  body: const IndexedStack(children: [ProfileScreen()]),
+                  bottomNavigationBar: NavigationBar(
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.person),
+                        label: 'Profile',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.home),
+                        label: 'Home',
+                      ),
+                    ],
+                  ),
+                )
+              : const ProfileScreen(),
         ),
         GoRoute(
           path: '/paywall',
@@ -588,6 +611,76 @@ void main() {
 
         // Verify profile screen renders without errors
         expect(find.byType(ProfileScreen), findsOneWidget);
+      });
+    });
+
+    group('System navigation bar inset', () {
+      // Android 15 (targetSdk 35) enforces edge-to-edge: the system navigation
+      // bar is drawn OVER the app content. Pushed from Settings, ProfileScreen
+      // is the topmost Scaffold and has no bottomNavigationBar to consume the
+      // inset, so the scroll view must reserve it or the quick actions row
+      // stays permanently under the bar.
+      const navBarInset = 48.0;
+
+      testWidgets('quick actions stay above the system navigation bar', (
+        tester,
+      ) async {
+        final ratio = tester.view.devicePixelRatio;
+        tester.view.padding = FakeViewPadding(bottom: navBarInset * ratio);
+        tester.view.viewPadding = FakeViewPadding(bottom: navBarInset * ratio);
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        // Scroll to the very bottom of the profile
+        for (var i = 0; i < 12; i++) {
+          await tester.drag(
+            find.byType(SingleChildScrollView),
+            const Offset(0, -600),
+          );
+          await tester.pumpAndSettle();
+        }
+
+        final quickActions = find.byType(ProfileQuickActionsSection);
+        expect(quickActions, findsOneWidget);
+
+        final screenHeight = tester.view.physicalSize.height / ratio;
+        final safeBottom = screenHeight - navBarInset;
+
+        expect(
+          tester.getRect(quickActions).bottom,
+          lessThanOrEqualTo(safeBottom),
+          reason:
+              'Quick actions must be fully reachable above the navigation bar',
+        );
+      });
+
+      testWidgets('does not double-pad when shown as a Home tab', (
+        tester,
+      ) async {
+        final ratio = tester.view.devicePixelRatio;
+        tester.view.padding = FakeViewPadding(bottom: navBarInset * ratio);
+        tester.view.viewPadding = FakeViewPadding(bottom: navBarInset * ratio);
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(buildTestWidget(asHomeTab: true));
+        await tester.pumpAndSettle();
+
+        // HomeScreen's Scaffold already consumed the inset via NavigationBar,
+        // so the scroll view must fall back to its plain 16px padding.
+        final scrollView = tester.widget<SingleChildScrollView>(
+          find.descendant(
+            of: find.byType(ProfileScreen),
+            matching: find.byType(SingleChildScrollView),
+          ),
+        );
+
+        expect(
+          (scrollView.padding! as EdgeInsets).bottom,
+          16.0,
+          reason: 'Home tab must not stack the inset on top of NavigationBar',
+        );
       });
     });
   });
