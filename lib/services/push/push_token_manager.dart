@@ -109,15 +109,25 @@ class PushTokenManager {
       // Unregister from backend first
       await _pushRepository.unregisterToken();
 
-      // Delete FCM token to stop receiving any notifications
-      await _fcmService.deleteToken();
-
       if (kDebugMode) {
         print('PushTokenManager: Token unregistered after logout');
       }
     } catch (e) {
       if (kDebugMode) {
         print('PushTokenManager: Failed to unregister token: $e');
+      }
+    } finally {
+      // The local delete must run even when the backend call fails — logging
+      // out while offline is the common case. Otherwise this device keeps a
+      // live FCM token and the previous account's pushes keep arriving. A
+      // token the backend still lists resolves to UNREGISTERED and is pruned
+      // there.
+      try {
+        await _fcmService.deleteToken();
+      } catch (e) {
+        if (kDebugMode) {
+          print('PushTokenManager: Failed to delete FCM token: $e');
+        }
       }
     }
   }
