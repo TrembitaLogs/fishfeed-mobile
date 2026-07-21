@@ -14,6 +14,7 @@ import 'package:fishfeed/domain/usecases/logout_usecase.dart';
 import 'package:fishfeed/domain/usecases/oauth_login_usecase.dart';
 import 'package:fishfeed/domain/usecases/register_usecase.dart';
 import 'package:fishfeed/presentation/providers/purchase_provider.dart';
+import 'package:fishfeed/services/analytics/analytics_service.dart';
 import 'package:fishfeed/services/auth/apple_auth_service.dart';
 import 'package:fishfeed/services/auth/google_auth_service.dart';
 import 'package:fishfeed/services/purchase/purchase_service.dart';
@@ -531,6 +532,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     // Reset RevenueCat to anonymous so the next user does not inherit
     // entitlements from the expired session.
     unawaited(_purchaseService.logOut());
+    unawaited(AnalyticsService.instance.reset());
   }
 
   /// Logout the current user.
@@ -547,7 +549,11 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     // the prior account's entitlements on this device.
     await _purchaseService.logOut();
 
-    // Guard only the state update: all token/OAuth/RevenueCat cleanup above
+    // Drop the analytics identity so the next user's events start their own
+    // stream instead of continuing this device's.
+    await AnalyticsService.instance.reset();
+
+    // Guard only the state update: all token/OAuth/analytics cleanup above
     // has already run and must never be skipped.
     if (!mounted) return;
     state = const AuthenticationState(
@@ -584,6 +590,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
     await _googleAuthService.signOut();
     _appleAuthService.signOut();
     await _purchaseService.logOut();
+    await AnalyticsService.instance.reset();
 
     // Guard only the state update: the account deletion and OAuth/RevenueCat
     // cleanup above have already run and must never be skipped.

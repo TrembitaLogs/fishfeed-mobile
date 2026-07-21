@@ -300,10 +300,21 @@ class AnalyticsService {
   }
 
   /// Resets user identity on logout.
+  ///
+  /// Drops the device's anonymous distinct_id so the next user's events do
+  /// not continue the previous one's stream. Never throws: analytics cleanup
+  /// must not abort a logout.
   Future<void> reset() async {
     if (!_isInitialized) return;
 
-    await _posthog.reset();
+    try {
+      await _posthog.reset();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[Analytics] Failed to reset: $e');
+      }
+      return;
+    }
 
     if (kDebugMode) {
       debugPrint('[Analytics] User reset');
