@@ -335,17 +335,39 @@ class PurchaseService with WidgetsBindingObserver {
   /// This will reset the user to an anonymous state.
   Future<void> logOut() async {
     if (!_isInitialized) {
+      // RevenueCat never came up on this launch, but the device-local copies
+      // of the previous account's entitlements still have to go.
+      await _resetDeviceEntitlementState();
       return;
     }
 
     _breadcrumb('logOut started');
     try {
-      // RevenueCat throws LogOutWithAnonymousUserError (code 22) if the
-      // current customer is already anonymous. On x86_64 Android emulators
-      // the unhandled PlatformException can propagate as a native SIGABRT,
-      // crashing the Dart isolate. Skip the call when no real user is bound.
-      final current = await Purchases.getCustomerInfo();
-      if (current.originalAppUserId.startsWith(r'$RCAnonymousID')) {
+      // Fast path: RevenueCat throws LogOutWithAnonymousUserError (code 22)
+      // when the current customer is already anonymous, so probe first and
+      // skip the call when no real user is bound.
+      //
+      // The probe is an optimisation, not a crash guard — the native plugin
+      // surfaces code 22 as an ordinary PlatformException, handled below —
+      // and it hits the RevenueCat backend, so it fails transiently
+      // (UnknownBackendError, network) and can throw non-platform errors on a
+      // malformed reply. A probe failure must never abort the logout: that
+      // would leave the previous account's alias bound to this device.
+      CustomerInfo? current;
+      try {
+        current = await Purchases.getCustomerInfo();
+      } catch (e) {
+        _breadcrumb(
+          'logOut anonymous probe failed — proceeding',
+          data: {
+            'error': e.runtimeType.toString(),
+            'errorCode': e is PlatformException ? e.code : null,
+          },
+        );
+      }
+
+      if (current != null &&
+          current.originalAppUserId.startsWith(r'$RCAnonymousID')) {
         _cachedCustomerInfo = current;
         _customerInfoController.add(current);
         _breadcrumb('logOut skipped (already anonymous)');
@@ -363,18 +385,38 @@ class PurchaseService with WidgetsBindingObserver {
     } on PlatformException catch (e, st) {
       // Defense in depth: race between getCustomerInfo and logOut.
       if (e.code == '22') {
+        _cachedCustomerInfo = null;
         _breadcrumb('logOut swallowed LogOutWithAnonymousUserError');
         return;
       }
       if (kDebugMode) {
         print('PurchaseService: Failed to log out user: $e');
       }
-      _captureError(e, st, operation: 'logOut');
+      _cachedCustomerInfo = null;
+      _captureError(e, st, operation: 'logOut', extras: {'errorCode': e.code});
     } catch (e, st) {
       if (kDebugMode) {
         print('PurchaseService: Failed to log out user: $e');
       }
+      _cachedCustomerInfo = null;
       _captureError(e, st, operation: 'logOut');
+    } finally {
+      await _resetDeviceEntitlementState();
+    }
+  }
+
+  /// Drops every device-local copy of the previous account's entitlements.
+  ///
+  /// Runs on every [logOut] path — including RevenueCat failures — because
+  /// [isPremium], [hasRemoveAds] and [getSubscriptionStatus] read
+  /// [_cachedCustomerInfo] while [_getCachedOrCurrentStatus] reads the Hive
+  /// copy. Never throws: cache cleanup must not abort a logout.
+  Future<void> _resetDeviceEntitlementState() async {
+    try {
+      await clearCachedSubscriptionStatus();
+      _emitSubscriptionStatus(getSubscriptionStatus());
+    } catch (e, st) {
+      _captureError(e, st, operation: 'logOut.resetDeviceEntitlementState');
     }
   }
 

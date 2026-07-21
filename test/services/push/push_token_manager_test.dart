@@ -167,6 +167,34 @@ void main() {
       verify(() => mockFcmService.deleteToken()).called(1);
     });
 
+    test(
+      'should delete FCM token even when backend unregister fails',
+      () async {
+        when(
+          () => mockFcmService.getToken(),
+        ).thenAnswer((_) async => 'test-token');
+        when(
+          () => mockPushRepository.registerTokenWithRetry(
+            token: any(named: 'token'),
+            platform: any(named: 'platform'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockPushRepository.unregisterToken(),
+        ).thenThrow(Exception('offline'));
+        when(() => mockFcmService.deleteToken()).thenAnswer((_) async {});
+
+        manager.initialize();
+
+        await manager.onAuthStateChanged(isAuthenticated: true);
+        await manager.onAuthStateChanged(isAuthenticated: false);
+
+        // Otherwise the device keeps a live token and the previous account's
+        // pushes keep arriving.
+        verify(() => mockFcmService.deleteToken()).called(1);
+      },
+    );
+
     test('should not unregister if not previously authenticated', () async {
       manager.initialize();
 
