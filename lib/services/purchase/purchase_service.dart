@@ -126,7 +126,10 @@ class PurchaseService with WidgetsBindingObserver {
   ///
   /// If the API key is not configured, initialization will be skipped
   /// and a warning will be logged.
-  Future<void> initialize() async {
+  ///
+  /// [apiKey] overrides the platform lookup. Only tests pass it: the lookup
+  /// keys off `Platform`, which is neither iOS nor Android on a CI runner.
+  Future<void> initialize({String? apiKey}) async {
     if (_isInitialized) {
       if (kDebugMode) {
         print('PurchaseService: Already initialized');
@@ -134,7 +137,7 @@ class PurchaseService with WidgetsBindingObserver {
       return;
     }
 
-    final apiKey = _getApiKey();
+    apiKey ??= _getApiKey();
 
     if (apiKey == null || apiKey.isEmpty) {
       if (kDebugMode) {

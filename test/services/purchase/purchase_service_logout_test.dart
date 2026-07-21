@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fishfeed/services/purchase/purchase_service.dart';
@@ -73,13 +72,8 @@ void main() {
   late PurchaseService service;
 
   setUpAll(() async {
-    dotenv.testLoad(
-      fileInput: '''
-REVENUECAT_API_KEY_IOS=fake-ios-key
-REVENUECAT_API_KEY_ANDROID=fake-android-key
-''',
-    );
-
+    // No dotenv setup on purpose: passing the key to initialize() must be
+    // enough, which is what makes this file platform-independent.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(_purchasesChannel, (call) async {
           methodCalls.add(call.method);
@@ -110,7 +104,8 @@ REVENUECAT_API_KEY_ANDROID=fake-android-key
         });
 
     service = PurchaseService.instance;
-    await service.initialize();
+    // Explicit key: the platform lookup returns null on a Linux CI runner.
+    await service.initialize(apiKey: 'fake-test-key');
     expect(service.isInitialized, isTrue);
   });
 
